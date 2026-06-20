@@ -1,0 +1,21 @@
+# Python virtual environments & bytecode
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Node dependencies & production builds
+node_modules/
+dist/
+dist-ssr/
+*.log
+
+# Sensitive env files
+.env
+.env.local
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

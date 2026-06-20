@@ -1,0 +1,196 @@
+{
+  "31": [
+    {
+      "word_greek": "είμαι",
+      "word_chinese": "是 (动词)",
+      "word_english": "to be (verb)",
+      "pronunciation": "ee-me",
+      "example_greek": "Είμαι δάσκαλος.",
+      "example_chinese": "我是老师。"
+    },
+    {
+      "word_greek": "μένω",
+      "word_chinese": "居住，住",
+      "word_english": "to live, to stay",
+      "pronunciation": "me-no",
+      "example_greek": "Μένω στην Αθήνα.",
+      "example_chinese": "我住在雅典。"
+    },
+    {
+      "word_greek": "δάσκαλος, ο",
+      "word_chinese": "老师 (男性)",
+      "word_english": "teacher (male)",
+      "pronunciation": "tha-ska-los",
+      "example_greek": "Ο Νεκτάριος είναι δάσκαλος.",
+      "example_chinese": "内克塔里奥斯是一位老师。"
+    },
+    {
+      "word_greek": "φοιτητής, ο",
+      "word_chinese": "大学生 (男性)",
+      "word_english": "university student (male)",
+      "pronunciation": "fo-i-ti-tis",
+      "example_greek": "Ο Γεράσιμος είναι φοιτητής.",
+      "example_chinese": "杰拉西莫斯是一名大学生。"
+    },
+    {
+      "word_greek": "επάγγελμα, το",
+      "word_chinese": "职业",
+      "word_english": "profession, occupation",
+      "pronunciation": "e-pang-ye-lma",
+      "example_greek": "Τι είναι το επάγγελμά σου;",
+      "example_chinese": "你的职业是什么？"
+    },
+    {
+      "word_greek": "δουλειά, η",
+      "word_chinese": "工作，活儿",
+      "word_english": "job, work",
+      "pronunciation": "thoo-li-a",
+      "example_greek": "Η δουλειά της είναι ενδιαφέρουσα.",
+      "example_chinese": "她的工作很有趣。"
+    },
+    {
+      "word_greek": "οικογένεια, η",
+      "word_chinese": "家庭",
+      "word_english": "family",
+      "pronunciation": "i-ko-ye-ni-a",
+      "example_greek": "Η οικογένειά μου μένει στην Ελλάδα.",
+      "example_chinese": "我的家人住在希腊。"
+    },
+    {
+      "word_greek": "παιδί, το",
+      "word_chinese": "孩子",
+      "word_english": "child",
+      "pronunciation": "pe-thee",
+      "example_greek": "Έχω δύο παιδιά.",
+      "example_chinese": "我有两个孩子。"
+    },
+    {
+      "word_greek": "φίλος, ο / φίλη, η",
+      "word_chinese": "朋友 (男性/女性)",
+      "word_english": "friend (male/female)",
+      "pronunciation": "fee-los / fee-li",
+      "example_greek": "Θέλω να γνωρίσω καινούριους φίλους.",
+      "example_chinese": "我想认识新朋友。"
+    },
+    {
+      "word_greek": "αθλήματα, τα",
+      "word_chinese": "运动",
+      "word_english": "sports",
+      "pronunciation": "a-thli-ma-ta",
+      "example_greek": "Μας αρέσουν πολύ τα αθλήματα.",
+      "example_chinese": "我们非常喜欢运动。"
+    },
+    {
+      "word_greek": "ελεύθερος χρόνος, ο",
+      "word_chinese": "空闲时间",
+      "word_english": "free time",
+      "pronunciation": "e-lef-the-ros khro-nos",
+      "example_greek": "Τον ελεύθερο χρόνο μου διαβάζω βιβλία.",
+      "example_chinese": "我的空闲时间用来读书。"
+    },
+    {
+      "word_greek": "περιγράφω",
+      "word_chinese": "描述",
+      "word_english": "to describe",
+      "pronunciation": "pe-ri-gra-fo",
+      "example_greek": "Περιγράφω τους ανθρώπους στην φωτογραφία.",
+      "example_chinese": "我描述照片里的人。"
+    },
+    {
+      "word_greek": "θέλω",
+      "word_chinese": "想要",
+      "word_english": "to want",
+      "pronunciation": "the-lo",
+      "example_greek": "Θέλω να πάω στο σινεμά.",
+      "example_chinese": "我想去看电影。"
+    },
+    {
+      "word_greek": "γνωρίζω",
+      "word_chinese": "认识，知道",
+      "word_english": "to know, to meet",
+      "pronunciation": "ghno-ri-zo",
+      "example_greek": "Γνωρίζεις τον Πέτρο;",
+      "example_chinese": "你认识彼得吗？"
+    },
+    {
+      "word_greek": "κάνω",
+      "word_chinese": "做，制作",
+      "word_english": "to do, to make",
+      "pronunciation": "ka-no",
+      "example_greek": "Κάνω την εργασία μου.",
+      "example_chinese": "我做我的作业。"
+    },
+    {
+      "word_greek": "πηγαίνω",
+      "word_chinese": "去",
+      "word_english": "to go",
+      "pronunciation": "pi-ghe-no",
+      "example_greek": "Πηγαίνω στο σχολείο κάθε μέρα.",
+      "example_chinese": "我每天都去学校。"
+    },
+    {
+      "word_greek": "διαβάζω",
+      "word_chinese": "阅读，学习",
+      "word_english": "to read, to study",
+      "pronunciation": "thia-va-zo",
+      "example_greek": "Διαβάζω ένα βιβλίο.",
+      "example_chinese": "我正在读一本书。"
+    },
+    {
+      "word_greek": "μιλάω",
+      "word_chinese": "说话",
+      "word_english": "to speak, to talk",
+      "pronunciation": "mi-la-o",
+      "example_greek": "Μιλάω ελληνικά.",
+      "example_chinese": "我说希腊语。"
+    },
+    {
+      "word_greek": "Γεια σας!",
+      "word_chinese": "大家好！/ 你们好！",
+      "word_english": "Hello everyone! / Hello (plural)!",
+      "pronunciation": "ya sas",
+      "example_greek": "Γεια σας, παιδιά!",
+      "example_chinese": "孩子们，你们好！"
+    },
+    {
+      "word_greek": "χρονών",
+      "word_chinese": "岁的 (用于年龄)",
+      "word_english": "years old (used for age)",
+      "pronunciation": "khro-non",
+      "example_greek": "Είμαι είκοσι χρονών.",
+      "example_chinese": "我二十岁。"
+    },
+    {
+      "word_greek": "παντρεμένος, -η, -ο",
+      "word_chinese": "已婚的",
+      "word_english": "married",
+      "pronunciation": "pa-ndre-me-nos, -ni, -no",
+      "example_greek": "Είναι παντρεμένος με τη Μαρία.",
+      "example_chinese": "他与玛丽亚结婚了。"
+    },
+    {
+      "word_greek": "χωρισμένος, -η, -ο",
+      "word_chinese": "分居的，离异的",
+      "word_english": "separated, divorced",
+      "pronunciation": "kho-ri-sme-nos, -ni, -no",
+      "example_greek": "Ο Αντώνης είναι χωρισμένος.",
+      "example_chinese": "安东尼斯是离异的。"
+    },
+    {
+      "word_greek": "ψηλός, -ή, -ό",
+      "word_chinese": "高的",
+      "word_english": "tall",
+      "pronunciation": "psi-los, -li, -lo",
+      "example_greek": "Είναι ψηλός άντρας.",
+      "example_chinese": "他是一个高个子的男人。"
+    },
+    {
+      "word_greek": "κοντός, -ή, -ό",
+      "word_chinese": "矮的",
+      "word_english": "short",
+      "pronunciation": "ko-ndos, -ndi, -ndo",
+      "example_greek": "Η κοπέλα είναι κοντή.",
+      "example_chinese": "那个女孩很矮。"
+    }
+  ]
+}

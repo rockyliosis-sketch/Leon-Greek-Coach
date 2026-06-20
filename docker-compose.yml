@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  greek-coach:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: leon_greek_coach
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend/greek_coach.db:/app/backend/greek_coach.db
+      - ./backend/uploads:/app/backend/uploads
+      - ./materials:/app/materials
+    environment:
+      - PORT=3001
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    restart: always
