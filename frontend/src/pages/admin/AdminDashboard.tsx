@@ -307,8 +307,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           word_greek: greekPart,
           word_chinese: chinesePart,
           pronunciation: 'new',
-          example_greek: 'Αυτό είναι ' + greekPart,
-          example_chinese: '这是 ' + chinesePart
+          example_greek: '',
+          example_chinese: ''
         });
       }
     });

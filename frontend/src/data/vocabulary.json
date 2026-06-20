@@ -20,8 +20,8 @@
       "word_greek": "αγαπάω, -ώ",
       "word_chinese": "去爱",
       "pronunciation": "agapao",
-      "example_greek": "Θέλω να αγαπάω.",
-      "example_chinese": "我想 去爱。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 3,
@@ -31,8 +31,8 @@
       "word_greek": "αγάπη, η",
       "word_chinese": "爱",
       "pronunciation": "agapi",
-      "example_greek": "Τα αγαπημένα του παιχνίδια είναι το μπάσκετ και το ποδόσφαιρο.",
-      "example_chinese": "他最喜欢的运动是篮球和足球。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 4,
@@ -53,8 +53,8 @@
       "word_greek": "Αγγλία, η",
       "word_chinese": "英格兰",
       "pronunciation": "anglia",
-      "example_greek": "Η Ελισάβετ προτιμάει τους χορούς από την Αγγλία.",
-      "example_chinese": "伊丽莎白更喜欢来自英国的舞蹈。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 6,
@@ -75,8 +75,8 @@
       "word_greek": "αγελάδα, η",
       "word_chinese": "奶牛",
       "pronunciation": "agelada",
-      "example_greek": "Αυτό είναι αγελάδα.",
-      "example_chinese": "这是 奶牛。"
+      "example_greek": "Όλα τα ζώα είναι κλεισμένα στα κλουβιά τους.",
+      "example_chinese": "所有动物都被关在它们的笼子里。"
     },
     {
       "id": 8,
@@ -86,8 +86,8 @@
       "word_greek": "αγορά, η",
       "word_chinese": "市场，市场",
       "pronunciation": "agora",
-      "example_greek": "Αγοράζω ένα σπίτι.",
-      "example_chinese": "我要买房子。"
+      "example_greek": "Να ζήσεις, Δημήτρη, και χρόνια πολλά!",
+      "example_chinese": "祝你长寿，迪米特里，生日快乐！"
     },
     {
       "id": 9,
@@ -119,8 +119,8 @@
       "word_greek": "αγόρι, το",
       "word_chinese": "男生",
       "pronunciation": "agori",
-      "example_greek": "Ένα αγόρι κάνει [κούνια].",
-      "example_chinese": "一个男孩正在[摇摆]。"
+      "example_greek": "Τι ώρα ξυπνάς το πρωί;",
+      "example_chinese": "你早上几点起床？"
     },
     {
       "id": 12,
@@ -130,8 +130,8 @@
       "word_greek": "αγώνας, ο",
       "word_chinese": "比赛，比赛",
       "pronunciation": "agonas",
-      "example_greek": "Αυτό είναι αγώνας.",
-      "example_chinese": "这是 比赛，比赛。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 13,
@@ -152,8 +152,8 @@
       "word_greek": "αδερφή, η",
       "word_chinese": "姐姐",
       "pronunciation": "aderfi",
-      "example_greek": "Αυτό είναι αδερφή.",
-      "example_chinese": "这是 姐姐。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 15,
@@ -174,8 +174,8 @@
       "word_greek": "αδύνατος, -η, -ο",
       "word_chinese": "薄，苗条",
       "pronunciation": "adinatos",
-      "example_greek": "Ο Μαρίνος είναι πιο αδύνατος.",
-      "example_chinese": "马里诺队更瘦。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 17,
@@ -383,8 +383,8 @@
       "word_greek": "αλήθεια, η",
       "word_chinese": "真相",
       "pronunciation": "alithia",
-      "example_greek": "Αυτό είναι αλήθεια.",
-      "example_chinese": "这是 真相。"
+      "example_greek": "Τα παιδιά κρατούν πολύχρωμα μπαλόνια.",
+      "example_chinese": "孩子们拿着五颜六色的气球。"
     },
     {
       "id": 36,
@@ -394,8 +394,8 @@
       "word_greek": "αλλάζω",
       "word_chinese": "改变",
       "pronunciation": "allazo",
-      "example_greek": "Ο Κώστας αλλάζει στο δωμάτιό/σαλόνι το χρώμα του, τα έπιπλα και το χαλί.",
-      "example_chinese": "科斯塔斯改变了房间/客厅、家具和地毯的颜色。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 37,
@@ -548,8 +548,8 @@
       "word_greek": "απάντηση, η",
       "word_chinese": "回答，回应，",
       "pronunciation": "apadisi",
-      "example_greek": "Αυτό είναι απάντηση.",
-      "example_chinese": "这是 回答，回应，。"
+      "example_greek": "Η Μαρία σβήνει τα κεράκια στη γενέθλια τούρτα.",
+      "example_chinese": "玛丽亚吹灭了生日蛋糕上的蜡烛。"
     },
     {
       "id": 51,
@@ -559,8 +559,8 @@
       "word_greek": "απαντάω, -ώ",
       "word_chinese": "回答，重新",
       "pronunciation": "apadao",
-      "example_greek": "Θέλω να απαντάω.",
-      "example_chinese": "我想 回答，重新。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 52,
@@ -614,8 +614,8 @@
       "word_greek": "αργός, -ή, -ό",
       "word_chinese": "慢的",
       "pronunciation": "argos",
-      "example_greek": "Αυτό είναι αργός.",
-      "example_chinese": "这是 慢的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 57,
@@ -878,8 +878,8 @@
       "word_greek": "αφίσα, η",
       "word_chinese": "海报",
       "pronunciation": "afisa",
-      "example_greek": "Αυτό είναι αφίσα.",
-      "example_chinese": "这是 海报。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 81,
@@ -933,8 +933,8 @@
       "word_greek": "βασιλιάς, ο",
       "word_chinese": "国王",
       "pronunciation": "vasilias",
-      "example_greek": "Αυτό είναι βασιλιάς.",
-      "example_chinese": "这是 国王。"
+      "example_greek": "Ο βασιλιάς ζει σε ένα μεγάλο παλάτι.",
+      "example_chinese": "国王住在一个大宫殿里。"
     },
     {
       "id": 86,
@@ -944,8 +944,8 @@
       "word_greek": "βασιλοπούλα, η",
       "word_chinese": "公主",
       "pronunciation": "vasilopoila",
-      "example_greek": "Αυτό είναι βασιλοπούλα.",
-      "example_chinese": "这是 公主。"
+      "example_greek": "Η όμορφη βασιλοπούλα κοιμάται για εκατό χρόνια.",
+      "example_chinese": "美丽的公主沉睡了一百年。"
     },
     {
       "id": 87,
@@ -1043,8 +1043,8 @@
       "word_greek": "βιολί, το",
       "word_chinese": "小提琴",
       "pronunciation": "violi",
-      "example_greek": "Αυτό είναι βιολί.",
-      "example_chinese": "这是 小提琴。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 96,
@@ -1054,8 +1054,8 @@
       "word_greek": "βλέπω",
       "word_chinese": "看，看，看",
       "pronunciation": "vlepo",
-      "example_greek": "Η Θωμαή βλέπει στην τηλεόραση μια εκπομπή με πολλούς τραγουδιστές.",
-      "example_chinese": "托马斯观看电视上有许多歌手表演的节目。"
+      "example_greek": "Το βράδυ βλέπω ταινίες και κινούμενα σχέδια.",
+      "example_chinese": "晚上我看电影和卡通片。"
     },
     {
       "id": 97,
@@ -1142,8 +1142,8 @@
       "word_greek": "βράδυ, το",
       "word_chinese": "晚上",
       "pronunciation": "vradi",
-      "example_greek": "Αυτό είναι βράδυ.",
-      "example_chinese": "这是 晚上。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 105,
@@ -1472,8 +1472,8 @@
       "word_greek": "γίνομαι",
       "word_chinese": "成为",
       "pronunciation": "ginome",
-      "example_greek": "Θέλω να γίνομαι.",
-      "example_chinese": "我想 成为。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 135,
@@ -1593,8 +1593,8 @@
       "word_greek": "γουρούνι, το",
       "word_chinese": "猪",
       "pronunciation": "gouroini",
-      "example_greek": "Αυτό είναι γουρούνι.",
-      "example_chinese": "这是 猪。"
+      "example_greek": "Τα τρία γουρουνάκια χτίζουν τα σπίτια τους.",
+      "example_chinese": "三只小猪建造了它们自己的房子。"
     },
     {
       "id": 146,
@@ -1659,8 +1659,8 @@
       "word_greek": "γρήγορος, -η, -ο",
       "word_chinese": "快，快",
       "pronunciation": "grigoros",
-      "example_greek": "Αυτό είναι γρήγορος.",
-      "example_chinese": "这是 快，快。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 152,
@@ -1725,8 +1725,8 @@
       "word_greek": "δάσος, το",
       "word_chinese": "森林",
       "pronunciation": "dasos",
-      "example_greek": "Αυτό είναι δάσος.",
-      "example_chinese": "这是 森林。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 158,
@@ -1769,8 +1769,8 @@
       "word_greek": "δέκα",
       "word_chinese": "十",
       "pronunciation": "deka",
-      "example_greek": "Αυτό είναι δέκα.",
-      "example_chinese": "这是 十。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 162,
@@ -1835,8 +1835,8 @@
       "word_greek": "δεύτερος, -η, -ο",
       "word_chinese": "第二",
       "pronunciation": "deiteros",
-      "example_greek": "Αυτό είναι δεύτερος.",
-      "example_chinese": "这是 第二。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 168,
@@ -1901,8 +1901,8 @@
       "word_greek": "διαδρομή, η",
       "word_chinese": "方式，路径，路径",
       "pronunciation": "diadromi",
-      "example_greek": "Αυτό είναι διαδρομή.",
-      "example_chinese": "这是 方式，路径，路径。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 174,
@@ -2110,8 +2110,8 @@
       "word_greek": "Δούρειος Ίππος, ο",
       "word_chinese": "特洛伊木马",
       "pronunciation": "doirios-ippos",
-      "example_greek": "Αυτό είναι Δούρειος Ίππος.",
-      "example_chinese": "这是 特洛伊木马。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 193,
@@ -2121,8 +2121,8 @@
       "word_greek": "Δράκος, ο",
       "word_chinese": "龙",
       "pronunciation": "drakos",
-      "example_greek": "Αυτό είναι Δράκος.",
-      "example_chinese": "这是 龙。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 194,
@@ -2231,8 +2231,8 @@
       "word_greek": "είκοσι",
       "word_chinese": "二十",
       "pronunciation": "eikosi",
-      "example_greek": "Αυτό είναι είκοσι.",
-      "example_chinese": "这是 二十。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 204,
@@ -2253,8 +2253,8 @@
       "word_greek": "είκοσι",
       "word_chinese": "二十",
       "pronunciation": "eikosi",
-      "example_greek": "Αυτό είναι είκοσι.",
-      "example_chinese": "这是 二十。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 206,
@@ -2275,8 +2275,8 @@
       "word_greek": "Ειρήνη, η [proper name]",
       "word_chinese": "艾琳",
       "pronunciation": "irini",
-      "example_greek": "Αυτό είναι Ειρήνη.",
-      "example_chinese": "这是 艾琳。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 208,
@@ -2286,8 +2286,8 @@
       "word_greek": "ειρήνη, η",
       "word_chinese": "和平",
       "pronunciation": "irini",
-      "example_greek": "Αυτό είναι ειρήνη.",
-      "example_chinese": "这是 和平。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 209,
@@ -2341,8 +2341,8 @@
       "word_greek": "εκπομπή, η",
       "word_chinese": "表演、节目",
       "pronunciation": "ekpobi",
-      "example_greek": "Η Θωμαή βλέπει στην τηλεόραση μια εκπομπή με πολλούς τραγουδιστές.",
-      "example_chinese": "托马斯观看电视上有许多歌手表演的节目。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 214,
@@ -2396,8 +2396,8 @@
       "word_greek": "Ελισάβετ, η",
       "word_chinese": "伊丽莎白",
       "pronunciation": "elisavet",
-      "example_greek": "Η Ελισάβετ προτιμάει τους χορούς από την Αγγλία.",
-      "example_chinese": "伊丽莎白更喜欢来自英国的舞蹈。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 219,
@@ -2484,8 +2484,8 @@
       "word_greek": "εμένα",
       "word_chinese": "我",
       "pronunciation": "emena",
-      "example_greek": "Αυτό είναι εμένα.",
-      "example_chinese": "这是 我。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 227,
@@ -2572,8 +2572,8 @@
       "word_greek": "έξι",
       "word_chinese": "六",
       "pronunciation": "exi",
-      "example_greek": "Αυτό είναι έξι.",
-      "example_chinese": "这是 六。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 235,
@@ -2715,8 +2715,8 @@
       "word_greek": "εσένα",
       "word_chinese": "你",
       "pronunciation": "esena",
-      "example_greek": "Αυτό είναι εσένα.",
-      "example_chinese": "这是 你。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 248,
@@ -2858,8 +2858,8 @@
       "word_greek": "έχω",
       "word_chinese": "拥有",
       "pronunciation": "echo",
-      "example_greek": "Θέλω να έχω.",
-      "example_chinese": "我想 拥有。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 261,
@@ -2869,8 +2869,8 @@
       "word_greek": "ζέβρα, η",
       "word_chinese": "斑马",
       "pronunciation": "zevra",
-      "example_greek": "Αυτό είναι ζέβρα.",
-      "example_chinese": "这是 斑马。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 262,
@@ -2913,8 +2913,8 @@
       "word_greek": "ζωγραφική, η",
       "word_chinese": "绘画",
       "pronunciation": "zografiki",
-      "example_greek": "Αυτό είναι ζωγραφική.",
-      "example_chinese": "这是 绘画。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 266,
@@ -2924,8 +2924,8 @@
       "word_greek": "ζωγραφιά, η",
       "word_chinese": "绘画",
       "pronunciation": "zografia",
-      "example_greek": "Αυτό είναι ζωγραφιά.",
-      "example_chinese": "这是 绘画。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 267,
@@ -2957,8 +2957,8 @@
       "word_greek": "Ήβη, η",
       "word_chinese": "伊维",
       "pronunciation": "ivi",
-      "example_greek": "Αυτό είναι Ήβη.",
-      "example_chinese": "这是 伊维。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 270,
@@ -2979,8 +2979,8 @@
       "word_greek": "Ηλίας, ο",
       "word_chinese": "埃利亚斯",
       "pronunciation": "ilias",
-      "example_greek": "Αυτό είναι Ηλίας.",
-      "example_chinese": "这是 埃利亚斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 272,
@@ -3067,8 +3067,8 @@
       "word_greek": "θέα, η",
       "word_chinese": "看法",
       "pronunciation": "thea",
-      "example_greek": "Ο μπαμπάς και η μαμά πηγαίνουν στο θέατρο.",
-      "example_chinese": "爸爸和妈妈要去剧院。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 280,
@@ -3078,8 +3078,8 @@
       "word_greek": "θέατρο, το",
       "word_chinese": "剧院",
       "pronunciation": "theatro",
-      "example_greek": "Ο μπαμπάς και η μαμά πηγαίνουν στο θέατρο.",
-      "example_chinese": "爸爸和妈妈要去剧院。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 281,
@@ -3166,8 +3166,8 @@
       "word_greek": "Θωμαή, η",
       "word_chinese": "托马斯",
       "pronunciation": "thomai",
-      "example_greek": "Η Θωμαή βλέπει στην τηλεόραση μια εκπομπή με πολλούς τραγουδιστές.",
-      "example_chinese": "托马斯观看电视上有许多歌手表演的节目。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 289,
@@ -3342,8 +3342,8 @@
       "word_greek": "καθόλου",
       "word_chinese": "任何, 全部",
       "pronunciation": "katholou",
-      "example_greek": "Αυτό είναι καθόλου.",
-      "example_chinese": "这是 任何, 全部。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 305,
@@ -3397,8 +3397,8 @@
       "word_greek": "Καίτη, η",
       "word_chinese": "凯特",
       "pronunciation": "kaiti",
-      "example_greek": "Αυτό είναι Καίτη.",
-      "example_chinese": "这是 凯特。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 310,
@@ -3419,8 +3419,8 @@
       "word_greek": "καλή διασκέδαση",
       "word_chinese": "玩得开心，",
       "pronunciation": "kali-diaskedasi",
-      "example_greek": "Αυτό είναι καλή διασκέδαση.",
-      "example_chinese": "这是 玩得开心，。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 312,
@@ -3463,8 +3463,8 @@
       "word_greek": "Καλαμάτα, η",
       "word_chinese": "卡拉马塔",
       "pronunciation": "kalamata",
-      "example_greek": "Αυτό είναι Καλαμάτα.",
-      "example_chinese": "这是 卡拉马塔。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 316,
@@ -3595,8 +3595,8 @@
       "word_greek": "καρπούζι, το",
       "word_chinese": "西瓜",
       "pronunciation": "karpoizi",
-      "example_greek": "Το καρπούζι από έξω είναι πράσινο και από μέσα είναι κόκκινο.",
-      "example_chinese": "西瓜外面是绿色的，里面是红色的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 328,
@@ -3705,8 +3705,8 @@
       "word_greek": "κείμενο, το",
       "word_chinese": "文本",
       "pronunciation": "keimeno",
-      "example_greek": "Αυτό είναι κείμενο.",
-      "example_chinese": "这是 文本。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 338,
@@ -3749,8 +3749,8 @@
       "word_greek": "κερί, το",
       "word_chinese": "蜡烛",
       "pronunciation": "keri",
-      "example_greek": "Ο ΠΑΟΚ κερδίζει.",
-      "example_chinese": "帕奥克获胜。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 342,
@@ -3782,8 +3782,8 @@
       "word_greek": "κιθάρα, η",
       "word_chinese": "吉他",
       "pronunciation": "kithara",
-      "example_greek": "Η μαμά παίζει κιθάρα και ο μπαμπάς διαβάζει παραμύθια.",
-      "example_chinese": "妈妈弹吉他，爸爸读童话故事。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 345,
@@ -4134,8 +4134,8 @@
       "word_greek": "κοτόπουλο/κότα, το/η",
       "word_chinese": "鸡",
       "pronunciation": "kotopoulokota",
-      "example_greek": "Αυτό είναι κοτόπουλο/κότα.",
-      "example_chinese": "这是 鸡。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 377,
@@ -4167,8 +4167,8 @@
       "word_greek": "κούκλα, η",
       "word_chinese": "玩具娃娃",
       "pronunciation": "koikla",
-      "example_greek": "Αυτό είναι κούκλα.",
-      "example_chinese": "这是 玩具娃娃。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 380,
@@ -4387,8 +4387,8 @@
       "word_greek": "λάδι, το",
       "word_chinese": "油",
       "pronunciation": "ladi",
-      "example_greek": "Αυτό είναι λάδι.",
-      "example_chinese": "这是 油。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 400,
@@ -4431,8 +4431,8 @@
       "word_greek": "λαχανικό, το",
       "word_chinese": "蔬菜",
       "pronunciation": "lachaniko",
-      "example_greek": "και χωρίζεις τα λαχανικά από τα φρούτα.",
-      "example_chinese": "然后你把蔬菜和水果分开。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 404,
@@ -4442,8 +4442,8 @@
       "word_greek": "λάχανο, το",
       "word_chinese": "卷心菜",
       "pronunciation": "lachano",
-      "example_greek": "Με το λάχανο κάνουμε λεμονάδα.",
-      "example_chinese": "我们用卷心菜做柠檬水。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 405,
@@ -4464,8 +4464,8 @@
       "word_greek": "λεκάνη, η",
       "word_chinese": "洗脸盆",
       "pronunciation": "lekani",
-      "example_greek": "Αυτό είναι λεκάνη.",
-      "example_chinese": "这是 洗脸盆。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 407,
@@ -4508,8 +4508,8 @@
       "word_greek": "λεπτό, το",
       "word_chinese": "分钟",
       "pronunciation": "lepto",
-      "example_greek": "Αυτό είναι λεπτό.",
-      "example_chinese": "这是 分钟。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 411,
@@ -4585,8 +4585,8 @@
       "word_greek": "λίμνη, η",
       "word_chinese": "湖",
       "pronunciation": "limni",
-      "example_greek": "Αυτό είναι λίμνη.",
-      "example_chinese": "这是 湖。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 418,
@@ -4596,8 +4596,8 @@
       "word_greek": "λιοντάρι, το",
       "word_chinese": "狮子",
       "pronunciation": "liodari",
-      "example_greek": "Αυτό είναι λιοντάρι.",
-      "example_chinese": "这是 狮子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 419,
@@ -4673,8 +4673,8 @@
       "word_greek": "μάγισσα, η",
       "word_chinese": "巫婆",
       "pronunciation": "magissa",
-      "example_greek": "Αυτό είναι μάγισσα.",
-      "example_chinese": "这是 巫婆。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 426,
@@ -4684,8 +4684,8 @@
       "word_greek": "μάγος, ο",
       "word_chinese": "魔术师",
       "pronunciation": "magos",
-      "example_greek": "Αυτό είναι μάγος.",
-      "example_chinese": "这是 魔术师。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 427,
@@ -4761,8 +4761,8 @@
       "word_greek": "μαϊμού, η",
       "word_chinese": "猴",
       "pronunciation": "maimoi",
-      "example_greek": "Αυτό είναι μαϊμού.",
-      "example_chinese": "这是 猴。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 434,
@@ -4805,8 +4805,8 @@
       "word_greek": "μάλλον",
       "word_chinese": "也许，也许",
       "pronunciation": "mallon",
-      "example_greek": "Αυτό είναι μάλλον.",
-      "example_chinese": "这是 也许，也许。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 438,
@@ -4827,8 +4827,8 @@
       "word_greek": "Μανόλης, ο",
       "word_chinese": "马诺利斯",
       "pronunciation": "manolis",
-      "example_greek": "Ο Μανόλης προτιμάει τους αγώνες μπάσκετ.",
-      "example_chinese": "马诺利斯更喜欢篮球比赛。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 440,
@@ -4926,8 +4926,8 @@
       "word_greek": "μάτι, το",
       "word_chinese": "眼睛",
       "pronunciation": "mati",
-      "example_greek": "Τι μάτια έχουν οι γάτες;",
-      "example_chinese": "猫有什么眼睛？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 449,
@@ -5212,8 +5212,8 @@
       "word_greek": "μόνος, -η, -ο",
       "word_chinese": "单独，仅",
       "pronunciation": "monos",
-      "example_greek": "Αυτό είναι μόνος.",
-      "example_chinese": "这是 单独，仅。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 475,
@@ -5223,8 +5223,8 @@
       "word_greek": "μονός, -ή, -ό",
       "word_chinese": "单身的",
       "pronunciation": "monos",
-      "example_greek": "Αυτό είναι μονός.",
-      "example_chinese": "这是 单身的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 476,
@@ -5278,8 +5278,8 @@
       "word_greek": "μπάλα, η",
       "word_chinese": "球",
       "pronunciation": "bala",
-      "example_greek": "Πού είναι η μπάλα;",
-      "example_chinese": "球在哪里？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 481,
@@ -5388,8 +5388,8 @@
       "word_greek": "μπουφάν, το",
       "word_chinese": "夹克，大衣",
       "pronunciation": "boufan",
-      "example_greek": "Αυτό είναι μπουφάν.",
-      "example_chinese": "这是 夹克，大衣。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 491,
@@ -5454,8 +5454,8 @@
       "word_greek": "νέα, τα",
       "word_chinese": "消息",
       "pronunciation": "nea",
-      "example_greek": "Αυτό είναι νέα.",
-      "example_chinese": "这是 消息。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 497,
@@ -5586,8 +5586,8 @@
       "word_greek": "ντομάτα, η",
       "word_chinese": "番茄",
       "pronunciation": "domata",
-      "example_greek": "Οι ντομάτες είναι πορτοκαλί και τα αγγουράκια κόκκινα.",
-      "example_chinese": "西红柿是橙色的，黄瓜是红色的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 509,
@@ -5718,8 +5718,8 @@
       "word_greek": "ξυπνάω, -ώ",
       "word_chinese": "醒来",
       "pronunciation": "xipnao",
-      "example_greek": "Θέλω να ξυπνάω.",
-      "example_chinese": "我想 醒来。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 521,
@@ -5729,8 +5729,8 @@
       "word_greek": "ξυπνητήρι, το",
       "word_chinese": "闹钟",
       "pronunciation": "xipnitiri",
-      "example_greek": "Αυτό είναι ξυπνητήρι.",
-      "example_chinese": "这是 闹钟。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 522,
@@ -5817,8 +5817,8 @@
       "word_greek": "όλοι, -ες, -α",
       "word_chinese": "全部，每一个",
       "pronunciation": "oli",
-      "example_greek": "Αυτό είναι όλοι.",
-      "example_chinese": "这是 全部，每一个。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 530,
@@ -5828,8 +5828,8 @@
       "word_greek": "όλος, -η, -ο",
       "word_chinese": "整体",
       "pronunciation": "olos",
-      "example_greek": "Αυτό είναι όλος.",
-      "example_chinese": "这是 整体。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 531,
@@ -6037,8 +6037,8 @@
       "word_greek": "παιχνίδι, το",
       "word_chinese": "游戏、玩具",
       "pronunciation": "pechnidi",
-      "example_greek": "Τα αγαπημένα του παιχνίδια είναι το μπάσκετ και το ποδόσφαιρο.",
-      "example_chinese": "他最喜欢的运动是篮球和足球。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 550,
@@ -6048,8 +6048,8 @@
       "word_greek": "πάλι",
       "word_chinese": "再次",
       "pronunciation": "pali",
-      "example_greek": "Αυτό είναι πάλι.",
-      "example_chinese": "这是 再次。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 551,
@@ -6158,8 +6158,8 @@
       "word_greek": "παπαγάλος, ο",
       "word_chinese": "鹦鹉",
       "pronunciation": "papagalos",
-      "example_greek": "Αυτό είναι παπαγάλος.",
-      "example_chinese": "这是 鹦鹉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 561,
@@ -6279,8 +6279,8 @@
       "word_greek": "Παρασκευή, η",
       "word_chinese": "星期五",
       "pronunciation": "paraskevi",
-      "example_greek": "Αυτό είναι Παρασκευή.",
-      "example_chinese": "这是 星期五。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 572,
@@ -6389,8 +6389,8 @@
       "word_greek": "Πέμπτη, η",
       "word_chinese": "周四",
       "pronunciation": "pebti",
-      "example_greek": "Αυτό είναι Πέμπτη.",
-      "example_chinese": "这是 周四。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 582,
@@ -6411,8 +6411,8 @@
       "word_greek": "πεπόνι, το",
       "word_chinese": "瓜",
       "pronunciation": "peponi",
-      "example_greek": "Τα λεμόνια και τα πεπόνια είναι κίτρινα.",
-      "example_chinese": "柠檬和甜瓜是黄色的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 584,
@@ -6488,8 +6488,8 @@
       "word_greek": "περνάω καλά",
       "word_chinese": "玩得开心",
       "pronunciation": "pernao-kala",
-      "example_greek": "Θέλω να περνάω καλά.",
-      "example_chinese": "我想 玩得开心。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 591,
@@ -6620,8 +6620,8 @@
       "word_greek": "πιάνο, το",
       "word_chinese": "钢琴",
       "pronunciation": "piano",
-      "example_greek": "Αυτό είναι πιάνο.",
-      "example_chinese": "这是 钢琴。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 603,
@@ -6653,8 +6653,8 @@
       "word_greek": "πινέλο, το",
       "word_chinese": "刷子",
       "pronunciation": "pinelo",
-      "example_greek": "Αυτό είναι πινέλο.",
-      "example_chinese": "这是 刷子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 606,
@@ -6697,8 +6697,8 @@
       "word_greek": "πιπέρι, το",
       "word_chinese": "胡椒",
       "pronunciation": "piperi",
-      "example_greek": "Οι πιπεριές είναι πράσινες, κόκκινες και κίτρινες.",
-      "example_chinese": "辣椒有绿色、红色和黄色。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 610,
@@ -6708,8 +6708,8 @@
       "word_greek": "πιπεριά, η",
       "word_chinese": "胡椒",
       "pronunciation": "piperia",
-      "example_greek": "Οι πιπεριές είναι πράσινες, κόκκινες και κίτρινες.",
-      "example_chinese": "辣椒有绿色、红色和黄色。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 611,
@@ -6851,8 +6851,8 @@
       "word_greek": "πολλοί, -ές, -ά [countable]",
       "word_chinese": "许多，",
       "pronunciation": "polloi",
-      "example_greek": "Στο παζλ δεν λείπουν πολλά κομμάτια.",
-      "example_chinese": "拼图中没有太多缺失的部分。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 624,
@@ -7038,8 +7038,8 @@
       "word_greek": "πουλάκι, το",
       "word_chinese": "小鸟",
       "pronunciation": "poulaki",
-      "example_greek": "Το πουλάκι έξω από το κλουβί είναι πράσινο.",
-      "example_chinese": "笼子外面的鸟是绿色的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 641,
@@ -7082,8 +7082,8 @@
       "word_greek": "πριγκίπισσα, η",
       "word_chinese": "公主",
       "pronunciation": "prigipissa",
-      "example_greek": "Αυτό είναι πριγκίπισσα.",
-      "example_chinese": "这是 公主。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 645,
@@ -7093,8 +7093,8 @@
       "word_greek": "πρίγκιπας, ο",
       "word_chinese": "王子",
       "pronunciation": "prigipas",
-      "example_greek": "Εγώ είμαι ο Μικρός Πρίγκιπας.",
-      "example_chinese": "我是小王子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 646,
@@ -7203,8 +7203,8 @@
       "word_greek": "πρωί-πρωί",
       "word_chinese": "清晨，",
       "pronunciation": "proi-proi",
-      "example_greek": "Αυτό είναι πρωί-πρωί.",
-      "example_chinese": "这是 清晨，。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 656,
@@ -7368,8 +7368,8 @@
       "word_greek": "Σάββατο, το",
       "word_chinese": "周六",
       "pronunciation": "savvato",
-      "example_greek": "Αυτό είναι Σάββατο.",
-      "example_chinese": "这是 周六。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 671,
@@ -7445,8 +7445,8 @@
       "word_greek": "σελίδα, η",
       "word_chinese": "页",
       "pronunciation": "selida",
-      "example_greek": "Αυτό είναι σελίδα.",
-      "example_chinese": "这是 页。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 678,
@@ -7544,8 +7544,8 @@
       "word_greek": "σκάλα, η",
       "word_chinese": "楼梯",
       "pronunciation": "skala",
-      "example_greek": "Αυτό είναι σκάλα.",
-      "example_chinese": "这是 楼梯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 687,
@@ -7654,8 +7654,8 @@
       "word_greek": "σπίτι, το [residence]",
       "word_chinese": "房子",
       "pronunciation": "spiti",
-      "example_greek": "Είναι μακριά από το σπίτι;",
-      "example_chinese": "离家远吗？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 697,
@@ -7665,8 +7665,8 @@
       "word_greek": "σπίτι, το [family]",
       "word_chinese": "家",
       "pronunciation": "spiti",
-      "example_greek": "Είναι μακριά από το σπίτι;",
-      "example_chinese": "离家远吗？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 698,
@@ -7709,8 +7709,8 @@
       "word_greek": "σταφύλια, τα",
       "word_chinese": "葡萄",
       "pronunciation": "stafilia",
-      "example_greek": "Τα σταφύλια είναι μοβ και τα πορτοκάλια πορτοκαλί.",
-      "example_chinese": "葡萄是紫色的，橙子是橙色的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 702,
@@ -7841,8 +7841,8 @@
       "word_greek": "σχέδιο, το",
       "word_chinese": "设计",
       "pronunciation": "schedio",
-      "example_greek": "Αυτό είναι σχέδιο.",
-      "example_chinese": "这是 设计。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 714,
@@ -7896,8 +7896,8 @@
       "word_greek": "ταβέρνα, η",
       "word_chinese": "酒馆",
       "pronunciation": "taverna",
-      "example_greek": "Αυτό είναι ταβέρνα.",
-      "example_chinese": "这是 酒馆。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 719,
@@ -8017,8 +8017,8 @@
       "word_greek": "τέλεια",
       "word_chinese": "完美的",
       "pronunciation": "telia",
-      "example_greek": "Αυτό είναι τέλεια.",
-      "example_chinese": "这是 完美的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 730,
@@ -8028,8 +8028,8 @@
       "word_greek": "τελεία, η",
       "word_chinese": "点",
       "pronunciation": "teleia",
-      "example_greek": "Αυτό είναι τελεία.",
-      "example_chinese": "这是 点。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 731,
@@ -8138,8 +8138,8 @@
       "word_greek": "τηλεόραση, η",
       "word_chinese": "电视",
       "pronunciation": "tileorasi",
-      "example_greek": "Η Θωμαή βλέπει στην τηλεόραση μια εκπομπή με πολλούς τραγουδιστές.",
-      "example_chinese": "托马斯观看电视上有许多歌手表演的节目。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 741,
@@ -8215,8 +8215,8 @@
       "word_greek": "τραγούδι, το",
       "word_chinese": "歌曲",
       "pronunciation": "tragoidi",
-      "example_greek": "Η Θωμαή βλέπει στην τηλεόραση μια εκπομπή με πολλούς τραγουδιστές.",
-      "example_chinese": "托马斯观看电视上有许多歌手表演的节目。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 748,
@@ -8303,8 +8303,8 @@
       "word_greek": "Τρίτη, η",
       "word_chinese": "周二",
       "pronunciation": "triti",
-      "example_greek": "Αυτό είναι Τρίτη.",
-      "example_chinese": "这是 周二。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 756,
@@ -8369,8 +8369,8 @@
       "word_greek": "τύμπανο, το",
       "word_chinese": "鼓",
       "pronunciation": "tibano",
-      "example_greek": "Αυτό είναι τύμπανο.",
-      "example_chinese": "这是 鼓。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 762,
@@ -8512,8 +8512,8 @@
       "word_greek": "φάρμα, η",
       "word_chinese": "农场",
       "pronunciation": "farma",
-      "example_greek": "Αυτό είναι φάρμα.",
-      "example_chinese": "这是 农场。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 775,
@@ -8622,8 +8622,8 @@
       "word_greek": "φορά, η",
       "word_chinese": "时间",
       "pronunciation": "fora",
-      "example_greek": "Τι φοράει στο κεφάλι ο κλόουν;",
-      "example_chinese": "小丑头上戴的是什么？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 785,
@@ -8677,8 +8677,8 @@
       "word_greek": "φρούτο, το",
       "word_chinese": "水果",
       "pronunciation": "froito",
-      "example_greek": "και χωρίζεις τα λαχανικά από τα φρούτα.",
-      "example_chinese": "然后你把蔬菜和水果分开。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 790,
@@ -8699,8 +8699,8 @@
       "word_greek": "φτερό, το",
       "word_chinese": "羽毛、翅膀",
       "pronunciation": "ftero",
-      "example_greek": "Αυτό είναι φτερό.",
-      "example_chinese": "这是 羽毛、翅膀。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 792,
@@ -8710,8 +8710,8 @@
       "word_greek": "φύλλο, το",
       "word_chinese": "叶子",
       "pronunciation": "fillo",
-      "example_greek": "Σκουπίζω με τη σκούπα τα φύλλα στην αυλή.",
-      "example_chinese": "我用扫帚扫院子里的树叶。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 793,
@@ -9029,8 +9029,8 @@
       "word_greek": "χώμα, το",
       "word_chinese": "土壤，地面",
       "pronunciation": "choma",
-      "example_greek": "Αυτό είναι χώμα.",
-      "example_chinese": "这是 土壤，地面。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 822,
@@ -9040,8 +9040,8 @@
       "word_greek": "χώρα, η",
       "word_chinese": "国家",
       "pronunciation": "chora",
-      "example_greek": "Ποιος ζει στο χωριό;",
-      "example_chinese": "谁住在村里？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 823,
@@ -9106,8 +9106,8 @@
       "word_greek": "ψάρι, το",
       "word_chinese": "鱼",
       "pronunciation": "psari",
-      "example_greek": "Αυτό είναι ψάρι.",
-      "example_chinese": "这是 鱼。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 829,
@@ -9183,8 +9183,8 @@
       "word_greek": "ωδείο, το",
       "word_chinese": "温室",
       "pronunciation": "odeio",
-      "example_greek": "Αυτό είναι ωδείο.",
-      "example_chinese": "这是 温室。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 836,
@@ -9205,8 +9205,8 @@
       "word_greek": "ωραίος, -α, -ο [adjective]",
       "word_chinese": "好的，",
       "pronunciation": "oraios",
-      "example_greek": "Αυτό είναι ωραίος.",
-      "example_chinese": "这是 好的，。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 838,
@@ -9337,8 +9337,8 @@
       "word_greek": "αεροσυνοδός, ο/η",
       "word_chinese": "空姐/空姐",
       "pronunciation": "aerosinodos",
-      "example_greek": "Αυτό είναι αεροσυνοδός.",
-      "example_chinese": "这是 空姐/空姐。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 850,
@@ -9348,8 +9348,8 @@
       "word_greek": "αθώος, -α, -ο",
       "word_chinese": "清白的",
       "pronunciation": "athoos",
-      "example_greek": "Αυτό είναι αθώος.",
-      "example_chinese": "这是 清白的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 851,
@@ -9502,8 +9502,8 @@
       "word_greek": "αλεύρι, το",
       "word_chinese": "面粉",
       "pronunciation": "aleiri",
-      "example_greek": "Αυτό είναι αλεύρι.",
-      "example_chinese": "这是 面粉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 865,
@@ -9513,8 +9513,8 @@
       "word_greek": "Αλίκη, η",
       "word_chinese": "爱丽丝",
       "pronunciation": "aliki",
-      "example_greek": "Αυτό είναι Αλίκη.",
-      "example_chinese": "这是 爱丽丝。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 866,
@@ -9667,8 +9667,8 @@
       "word_greek": "Απρίλιος, ο",
       "word_chinese": "四月",
       "pronunciation": "aprilios",
-      "example_greek": "Αυτό είναι Απρίλιος.",
-      "example_chinese": "这是 四月。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 880,
@@ -9678,8 +9678,8 @@
       "word_greek": "teers”]",
       "word_chinese": "阿拉米斯",
       "pronunciation": "teers",
-      "example_greek": "Αυτό είναι teers”].",
-      "example_chinese": "这是 阿拉米斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 881,
@@ -9832,8 +9832,8 @@
       "word_greek": "ατύχημα, το",
       "word_chinese": "事故",
       "pronunciation": "atichima",
-      "example_greek": "Αυτό είναι ατύχημα.",
-      "example_chinese": "这是 事故。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 895,
@@ -9843,8 +9843,8 @@
       "word_greek": "ατυχία, η",
       "word_chinese": "不幸",
       "pronunciation": "atichia",
-      "example_greek": "Αυτό είναι ατυχία.",
-      "example_chinese": "这是 不幸。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 896,
@@ -9997,8 +9997,8 @@
       "word_greek": "Βέλγος, -ίδα",
       "word_chinese": "比利时人",
       "pronunciation": "velgos",
-      "example_greek": "Αυτό είναι Βέλγος.",
-      "example_chinese": "这是 比利时人。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 910,
@@ -10008,8 +10008,8 @@
       "word_greek": "Βερν, Ιούλιος, ο",
       "word_chinese": "儒勒·凡尔纳",
       "pronunciation": "vern",
-      "example_greek": "Αυτό είναι Βερν.",
-      "example_chinese": "这是 儒勒·凡尔纳。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 911,
@@ -10162,8 +10162,8 @@
       "word_greek": "Γιαπωνέζος, -α",
       "word_chinese": "日本人",
       "pronunciation": "giaponezos",
-      "example_greek": "Αυτό είναι Γιαπωνέζος.",
-      "example_chinese": "这是 日本人。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 925,
@@ -10173,8 +10173,8 @@
       "word_greek": "γιατί [explanatory]",
       "word_chinese": "因为",
       "pronunciation": "giati-explanatory",
-      "example_greek": "Αυτό είναι γιατί [explanatory].",
-      "example_chinese": "这是 因为。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 926,
@@ -10327,8 +10327,8 @@
       "word_greek": "Γωγώ, η",
       "word_chinese": "戈戈",
       "pronunciation": "gogo",
-      "example_greek": "Αυτό είναι Γωγώ.",
-      "example_chinese": "这是 戈戈。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 940,
@@ -10338,8 +10338,8 @@
       "word_greek": "δεκαεννιά",
       "word_chinese": "十九",
       "pronunciation": "dekaennia",
-      "example_greek": "Αυτό είναι δεκαεννιά.",
-      "example_chinese": "这是 十九。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 941,
@@ -10492,8 +10492,8 @@
       "word_greek": "[masc.]",
       "word_chinese": "他的",
       "pronunciation": "masc",
-      "example_greek": "Αυτό είναι [masc.].",
-      "example_chinese": "这是 他的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 955,
@@ -10503,8 +10503,8 @@
       "word_greek": "διπλανός, -ή, -ό",
       "word_chinese": "附近",
       "pronunciation": "diplanos",
-      "example_greek": "Αυτό είναι διπλανός.",
-      "example_chinese": "这是 附近。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 956,
@@ -10657,8 +10657,8 @@
       "word_greek": "εκατό",
       "word_chinese": "一百",
       "pronunciation": "ekato",
-      "example_greek": "Αυτό είναι εκατό.",
-      "example_chinese": "这是 一百。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 970,
@@ -10668,8 +10668,8 @@
       "word_greek": "εκείνη [accusative]",
       "word_chinese": "她",
       "pronunciation": "ekeini-accusative",
-      "example_greek": "Αυτό είναι εκείνη [accusative].",
-      "example_chinese": "这是 她。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 971,
@@ -10822,8 +10822,8 @@
       "word_greek": "επώνυμο, το",
       "word_chinese": "姓",
       "pronunciation": "eponimo",
-      "example_greek": "Αυτό είναι επώνυμο.",
-      "example_chinese": "这是 姓。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 985,
@@ -10833,8 +10833,8 @@
       "word_greek": "έρημος, -η, -ο",
       "word_chinese": "寂寞，",
       "pronunciation": "erimos",
-      "example_greek": "Αυτό είναι έρημος.",
-      "example_chinese": "这是 寂寞，。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 986,
@@ -10987,8 +10987,8 @@
       "word_greek": "ή [disjunctive]",
       "word_chinese": "或者",
       "pronunciation": "i-disjunctive",
-      "example_greek": "Αυτό είναι ή [disjunctive].",
-      "example_chinese": "这是 或者。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1000,
@@ -10998,8 +10998,8 @@
       "word_greek": "ηθοποιός, η",
       "word_chinese": "演员",
       "pronunciation": "ithopios",
-      "example_greek": "Αυτό είναι ηθοποιός.",
-      "example_chinese": "这是 演员。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1001,
@@ -11152,8 +11152,8 @@
       "word_greek": "θησαυρός, ο",
       "word_chinese": "宝藏",
       "pronunciation": "thisavros",
-      "example_greek": "Αυτό είναι θησαυρός.",
-      "example_chinese": "这是 宝藏。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1015,
@@ -11163,8 +11163,8 @@
       "word_greek": "Ιανουάριος, ο",
       "word_chinese": "一月",
       "pronunciation": "ianouarios",
-      "example_greek": "Αυτό είναι Ιανουάριος.",
-      "example_chinese": "这是 一月。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1016,
@@ -11317,8 +11317,8 @@
       "word_greek": "καλώ [on the phone]",
       "word_chinese": "打电话",
       "pronunciation": "kalo-on-the-phone",
-      "example_greek": "Θέλω να καλώ [on the phone].",
-      "example_chinese": "我想 打电话。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1030,
@@ -11328,8 +11328,8 @@
       "word_greek": "καλώ [to a party, etc]",
       "word_chinese": "邀请",
       "pronunciation": "kalo-to-a-party",
-      "example_greek": "Θέλω να καλώ [to a party.",
-      "example_chinese": "我想 邀请。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1031,
@@ -11482,8 +11482,8 @@
       "word_greek": "πηγαίνω κατασκήνωση",
       "word_chinese": "去",
       "pronunciation": "pigaino-kataskinosi",
-      "example_greek": "Θέλω να πηγαίνω κατασκήνωση.",
-      "example_chinese": "我想 去。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1045,
@@ -11493,8 +11493,8 @@
       "word_greek": "κατοικώ",
       "word_chinese": "居住，居住",
       "pronunciation": "katiko",
-      "example_greek": "Θέλω να κατοικώ.",
-      "example_chinese": "我想 居住，居住。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1046,
@@ -11647,8 +11647,8 @@
       "word_greek": "κόλπο, το",
       "word_chinese": "诡计",
       "pronunciation": "kolpo",
-      "example_greek": "Αυτό είναι κόλπο.",
-      "example_chinese": "这是 诡计。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1060,
@@ -11658,8 +11658,8 @@
       "word_greek": "κοπέλα, η",
       "word_chinese": "女孩",
       "pronunciation": "kopela",
-      "example_greek": "Αυτό είναι κοπέλα.",
-      "example_chinese": "这是 女孩。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1061,
@@ -11812,8 +11812,8 @@
       "word_greek": "κροκόδειλος, ο",
       "word_chinese": "鳄鱼",
       "pronunciation": "krokodilos",
-      "example_greek": "Αυτό είναι κροκόδειλος.",
-      "example_chinese": "这是 鳄鱼。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1075,
@@ -11823,8 +11823,8 @@
       "word_greek": "κρυμμένος, -η, -ο",
       "word_chinese": "隐",
       "pronunciation": "krimmenos",
-      "example_greek": "Αυτό είναι κρυμμένος.",
-      "example_chinese": "这是 隐。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1076,
@@ -11977,8 +11977,8 @@
       "word_greek": "λιμάνι, το",
       "word_chinese": "港口",
       "pronunciation": "limani",
-      "example_greek": "Αυτό είναι λιμάνι.",
-      "example_chinese": "这是 港口。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1090,
@@ -11988,8 +11988,8 @@
       "word_greek": "λίστα, η",
       "word_chinese": "列表",
       "pronunciation": "lista",
-      "example_greek": "Αυτό είναι λίστα.",
-      "example_chinese": "这是 列表。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1091,
@@ -12142,8 +12142,8 @@
       "word_greek": "Μαργαρίτα, η",
       "word_chinese": "玛格丽特",
       "pronunciation": "margarita",
-      "example_greek": "Αυτό είναι Μαργαρίτα.",
-      "example_chinese": "这是 玛格丽特。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1105,
@@ -12153,8 +12153,8 @@
       "word_greek": "Μαρία-Νεφέλη, η",
       "word_chinese": "玛丽亚·奈菲利",
       "pronunciation": "maria-nefeli",
-      "example_greek": "Αυτό είναι Μαρία-Νεφέλη.",
-      "example_chinese": "这是 玛丽亚·奈菲利。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1106,
@@ -12307,8 +12307,8 @@
       "word_greek": "Μπάμπης, ο",
       "word_chinese": "巴比斯",
       "pronunciation": "babis",
-      "example_greek": "Αυτό είναι Μπάμπης.",
-      "example_chinese": "这是 巴比斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1120,
@@ -12318,8 +12318,8 @@
       "word_greek": "μπανάνα, η",
       "word_chinese": "香蕉",
       "pronunciation": "banana",
-      "example_greek": "Αυτό είναι μπανάνα.",
-      "example_chinese": "这是 香蕉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1121,
@@ -12472,8 +12472,8 @@
       "word_greek": "Νιόβη, η",
       "word_chinese": "尼奥维",
       "pronunciation": "niovi",
-      "example_greek": "Αυτό είναι Νιόβη.",
-      "example_chinese": "这是 尼奥维。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1135,
@@ -12483,8 +12483,8 @@
       "word_greek": "νιώθω",
       "word_chinese": "去感觉",
       "pronunciation": "niotho",
-      "example_greek": "Θέλω να νιώθω.",
-      "example_chinese": "我想 去感觉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1136,
@@ -12637,8 +12637,8 @@
       "word_greek": "ογδόντα",
       "word_chinese": "八十",
       "pronunciation": "ogdoda",
-      "example_greek": "Αυτό είναι ογδόντα.",
-      "example_chinese": "这是 八十。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1150,
@@ -12648,8 +12648,8 @@
       "word_greek": "Οδυσσέας, ο",
       "word_chinese": "奥德修斯",
       "pronunciation": "odisseas",
-      "example_greek": "Εσύ είσαι ο Οδυσσέας.",
-      "example_chinese": "你是奥德修斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1151,
@@ -12802,8 +12802,8 @@
       "word_greek": "Πάτρικ, ο",
       "word_chinese": "帕特里克",
       "pronunciation": "patrik",
-      "example_greek": "Αυτό είναι Πάτρικ.",
-      "example_chinese": "这是 帕特里克。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1165,
@@ -12813,8 +12813,8 @@
       "word_greek": "παιδική χαρά, η",
       "word_chinese": "操场",
       "pronunciation": "pediki-chara",
-      "example_greek": "Αυτό είναι παιδική χαρά.",
-      "example_chinese": "这是 操场。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1166,
@@ -12967,8 +12967,8 @@
       "word_greek": "παραπάνω / πιο πάνω",
       "word_chinese": "多于",
       "pronunciation": "parapano-pio-pano",
-      "example_greek": "Αυτό είναι παραπάνω / πιο πάνω.",
-      "example_chinese": "这是 多于。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1180,
@@ -12978,8 +12978,8 @@
       "word_greek": "πάρκιγκ, το",
       "word_chinese": "停車處",
       "pronunciation": "parkig",
-      "example_greek": "Αυτό είναι πάρκιγκ.",
-      "example_chinese": "这是 停車處。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1181,
@@ -13132,8 +13132,8 @@
       "word_greek": "πίτσα, η",
       "word_chinese": "比萨",
       "pronunciation": "pitsa",
-      "example_greek": "Θα φάνε πίτσα.",
-      "example_chinese": "他们会吃披萨。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1195,
@@ -13143,8 +13143,8 @@
       "word_greek": "Πήτερ Παν, o",
       "word_chinese": "彼得·潘",
       "pronunciation": "piter-pan",
-      "example_greek": "Αυτό είναι Πήτερ Παν.",
-      "example_chinese": "这是 彼得·潘。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1196,
@@ -13297,8 +13297,8 @@
       "word_greek": "Musqeteers”]",
       "word_chinese": "波尔托斯",
       "pronunciation": "musqeteers",
-      "example_greek": "Αυτό είναι Musqeteers”].",
-      "example_chinese": "这是 波尔托斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1210,
@@ -13308,8 +13308,8 @@
       "word_greek": "πορτοφόλι, το",
       "word_chinese": "钱包",
       "pronunciation": "portofoli",
-      "example_greek": "Αυτό είναι πορτοφόλι.",
-      "example_chinese": "这是 钱包。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1211,
@@ -13462,8 +13462,8 @@
       "word_greek": "ρωσικός, -ή, -ό",
       "word_chinese": "俄语",
       "pronunciation": "rosikos",
-      "example_greek": "Αυτό είναι ρωσικός.",
-      "example_chinese": "这是 俄语。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1225,
@@ -13473,8 +13473,8 @@
       "word_greek": "Σάκης, ο",
       "word_chinese": "萨基斯",
       "pronunciation": "sakis",
-      "example_greek": "Αυτό είναι Σάκης.",
-      "example_chinese": "这是 萨基斯。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1226,
@@ -13627,8 +13627,8 @@
       "word_greek": "πηγαίνω για σκι",
       "word_chinese": "去滑雪",
       "pronunciation": "pigaino-gia-ski",
-      "example_greek": "Θέλω να πηγαίνω για σκι.",
-      "example_chinese": "我想 去滑雪。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1240,
@@ -13638,8 +13638,8 @@
       "word_greek": "σκούπα ηλεκτρική, η",
       "word_chinese": "真空",
       "pronunciation": "skoipa-ilektriki",
-      "example_greek": "Αυτό είναι σκούπα ηλεκτρική.",
-      "example_chinese": "这是 真空。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1241,
@@ -13792,8 +13792,8 @@
       "word_greek": "σταυρόλεξο, το",
       "word_chinese": "填字游戏",
       "pronunciation": "stavrolexo",
-      "example_greek": "Αυτό είναι σταυρόλεξο.",
-      "example_chinese": "这是 填字游戏。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1255,
@@ -13803,8 +13803,8 @@
       "word_greek": "στενάχωρος, -η, -ο",
       "word_chinese": "阴沉的，阴沉的",
       "pronunciation": "stenachoros",
-      "example_greek": "Αυτό είναι στενάχωρος.",
-      "example_chinese": "这是 阴沉的，阴沉的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1256,
@@ -13957,8 +13957,8 @@
       "word_greek": "σφυρίζω",
       "word_chinese": "吹口哨",
       "pronunciation": "sfirizo",
-      "example_greek": "Θέλω να σφυρίζω.",
-      "example_chinese": "我想 吹口哨。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1270,
@@ -13968,8 +13968,8 @@
       "word_greek": "σφυρίχτρα, η",
       "word_chinese": "哨",
       "pronunciation": "sfirichtra",
-      "example_greek": "Αυτό είναι σφυρίχτρα.",
-      "example_chinese": "这是 哨。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1271,
@@ -14122,8 +14122,8 @@
       "word_greek": "τίγρης/-η, ο/η",
       "word_chinese": "老虎",
       "pronunciation": "tigris-i",
-      "example_greek": "Αυτό είναι τίγρης/-η.",
-      "example_chinese": "这是 老虎。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1285,
@@ -14133,8 +14133,8 @@
       "word_greek": "Τίνκερμπελ, η",
       "word_chinese": "小叮当",
       "pronunciation": "tinkerbel",
-      "example_greek": "Αυτό είναι Τίνκερμπελ.",
-      "example_chinese": "这是 小叮当。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1286,
@@ -14287,8 +14287,8 @@
       "word_greek": "υπέροχος, -η, -ο",
       "word_chinese": "奇妙，",
       "pronunciation": "iperochos",
-      "example_greek": "Αυτό είναι υπέροχος.",
-      "example_chinese": "这是 奇妙，。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1300,
@@ -14298,8 +14298,8 @@
       "word_greek": "ύψος, το",
       "word_chinese": "高度",
       "pronunciation": "ipsos",
-      "example_greek": "Αυτό είναι ύψος.",
-      "example_chinese": "这是 高度。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1301,
@@ -14452,8 +14452,8 @@
       "word_greek": "φτάνω",
       "word_chinese": "到达",
       "pronunciation": "ftano",
-      "example_greek": "Πότε φτάνουν στην Αθήνα;",
-      "example_chinese": "他们什么时候到达雅典？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1315,
@@ -14463,8 +14463,8 @@
       "word_greek": "φτωχός, -ή, -ό",
       "word_chinese": "贫穷的",
       "pronunciation": "ftochos",
-      "example_greek": "Αυτό είναι φτωχός.",
-      "example_chinese": "这是 贫穷的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1316,
@@ -14617,8 +14617,8 @@
       "word_greek": "χιονοπόλεμος, ο",
       "word_chinese": "滚雪球",
       "pronunciation": "chionopolemos",
-      "example_greek": "Αυτό είναι χιονοπόλεμος.",
-      "example_chinese": "这是 滚雪球。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1330,
@@ -14628,8 +14628,8 @@
       "word_greek": "χοντρός, -ή, -ό",
       "word_chinese": "肥厚的",
       "pronunciation": "chodros",
-      "example_greek": "Αυτό είναι χοντρός.",
-      "example_chinese": "这是 肥厚的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1331,
@@ -14782,8 +14782,8 @@
       "word_greek": "ψυγείο, το",
       "word_chinese": "冰箱，冰箱",
       "pronunciation": "psigeio",
-      "example_greek": "Αυτό είναι ψυγείο.",
-      "example_chinese": "这是 冰箱，冰箱。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1345,
@@ -14793,8 +14793,8 @@
       "word_greek": "ωραία [adverb]",
       "word_chinese": "好的",
       "pronunciation": "oraia-adverb",
-      "example_greek": "Αυτό είναι ωραία [adverb].",
-      "example_chinese": "这是 好的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1346,
@@ -14980,8 +14980,8 @@
       "word_greek": "αξία, η",
       "word_chinese": "价值，价值",
       "pronunciation": "axia",
-      "example_greek": "Αυτό είναι αξία.",
-      "example_chinese": "这是 价值，价值。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1363,
@@ -15068,8 +15068,8 @@
       "word_greek": "ανακύκλωση, η",
       "word_chinese": "回收",
       "pronunciation": "anakiklosi",
-      "example_greek": "Αυτό είναι ανακύκλωση.",
-      "example_chinese": "这是 回收。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1371,
@@ -15123,8 +15123,8 @@
       "word_greek": "αντικείμενο, το [see also πράγμα]",
       "word_chinese": "物体，事物",
       "pronunciation": "adikeimeno",
-      "example_greek": "Κρύψτε τα μικρά αντικείμενα.",
-      "example_chinese": "隐藏小物体。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1376,
@@ -15145,8 +15145,8 @@
       "word_greek": "αποθήκη, η",
       "word_chinese": "储藏室",
       "pronunciation": "apothiki",
-      "example_greek": "Αυτό είναι αποθήκη.",
-      "example_chinese": "这是 储藏室。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1378,
@@ -15167,8 +15167,8 @@
       "word_greek": "άρθρο, το",
       "word_chinese": "文章",
       "pronunciation": "arthro",
-      "example_greek": "Αυτό είναι άρθρο.",
-      "example_chinese": "这是 文章。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1380,
@@ -15178,8 +15178,8 @@
       "word_greek": "άρρωστ-ος, -η, -ο",
       "word_chinese": "生病了，生病了",
       "pronunciation": "arrost-os",
-      "example_greek": "Αυτό είναι άρρωστ-ος.",
-      "example_chinese": "这是 生病了，生病了。"
+      "example_greek": "Πρέπει να τρως φρούτα και λαχανικά για καλή υγεία.",
+      "example_chinese": "为了身体健康，你应该多吃水果和蔬菜。"
     },
     {
       "id": 1381,
@@ -15200,8 +15200,8 @@
       "word_greek": "αστυνομία, η",
       "word_chinese": "警察",
       "pronunciation": "astinomia",
-      "example_greek": "Αυτό είναι αστυνομία.",
-      "example_chinese": "这是 警察。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1383,
@@ -15266,8 +15266,8 @@
       "word_greek": "αφήνω",
       "word_chinese": "离开，放手",
       "pronunciation": "afino",
-      "example_greek": "Θέλω να αφήνω.",
-      "example_chinese": "我想 离开，放手。"
+      "example_greek": "Σε ευχαριστώ πολύ για τις όμορφες ευχές σου.",
+      "example_chinese": "非常感谢你美好的祝愿。"
     },
     {
       "id": 1389,
@@ -15310,8 +15310,8 @@
       "word_greek": "βήχας, ο",
       "word_chinese": "咳嗽",
       "pronunciation": "vichas",
-      "example_greek": "Αυτό είναι βήχας.",
-      "example_chinese": "这是 咳嗽。"
+      "example_greek": "Μην τρως πολλά γλυκά, κάνουν κακό στα δόντια σου.",
+      "example_chinese": "不要吃太多甜食，它们对你的牙齿有害。"
     },
     {
       "id": 1393,
@@ -15354,8 +15354,8 @@
       "word_greek": "βράζω",
       "word_chinese": "煮沸",
       "pronunciation": "vrazo",
-      "example_greek": "Θέλω να βράζω.",
-      "example_chinese": "我想 煮沸。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1397,
@@ -15387,8 +15387,8 @@
       "word_greek": "γάμος, ο",
       "word_chinese": "婚礼，结婚",
       "pronunciation": "gamos",
-      "example_greek": "Αυτό είναι γάμος.",
-      "example_chinese": "这是 婚礼，结婚。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1400,
@@ -15409,8 +15409,8 @@
       "word_greek": "γερά",
       "word_chinese": "强烈地，坚定地",
       "pronunciation": "gera",
-      "example_greek": "Αυτό είναι γερά.",
-      "example_chinese": "这是 强烈地，坚定地。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1402,
@@ -15431,8 +15431,8 @@
       "word_greek": "γιατρός, ο/η",
       "word_chinese": "医生",
       "pronunciation": "giatros",
-      "example_greek": "Αυτό είναι γιατρός.",
-      "example_chinese": "这是 医生。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1404,
@@ -15442,8 +15442,8 @@
       "word_greek": "γιορτάζω",
       "word_chinese": "庆祝",
       "pronunciation": "giortazo",
-      "example_greek": "Γιορτάζει η αδελφή μου.",
-      "example_chinese": "我姐姐正在庆祝。"
+      "example_greek": "Αν δεις τη Μαρία, πες της «Χρόνια Πολλά»!",
+      "example_chinese": "如果你见到玛丽亚，对她说“节日快乐”！"
     },
     {
       "id": 1405,
@@ -15453,8 +15453,8 @@
       "word_greek": "γιορτή, η",
       "word_chinese": "聚会、盛宴",
       "pronunciation": "giorti",
-      "example_greek": "Γιορτάζει η αδελφή μου.",
-      "example_chinese": "我姐姐正在庆祝。"
+      "example_greek": "Σας εύχομαι καλά Χριστούγεννα και ευτυχισμένο το νέο έτος!",
+      "example_chinese": "祝您圣诞快乐，新年幸福！"
     },
     {
       "id": 1406,
@@ -15475,8 +15475,8 @@
       "word_greek": "γλέντι, το",
       "word_chinese": "派对",
       "pronunciation": "gledi",
-      "example_greek": "«Μύλος» τραγούδι, γλέντι και χορό;",
-      "example_chinese": "《磨》歌、宴、舞？"
+      "example_greek": "Καλή χρονιά σε όλη την οικογένεια!",
+      "example_chinese": "祝全家新年好！"
     },
     {
       "id": 1408,
@@ -15519,8 +15519,8 @@
       "word_greek": "γρίπη, η",
       "word_chinese": "流感",
       "pronunciation": "gripi",
-      "example_greek": "Αυτό είναι γρίπη.",
-      "example_chinese": "这是 流感。"
+      "example_greek": "Πιες ένα ποτήρι γάλα πριν κοιμηθείς.",
+      "example_chinese": "睡觉前喝一杯牛奶。"
     },
     {
       "id": 1412,
@@ -15618,8 +15618,8 @@
       "word_greek": "δίαιτα, η",
       "word_chinese": "饮食",
       "pronunciation": "dieta",
-      "example_greek": "Αυτό είναι δίαιτα.",
-      "example_chinese": "这是 饮食。"
+      "example_greek": "Πάρε αυτό το φάρμακο τρεις φορές την ημέρα μετά το φαγητό.",
+      "example_chinese": "饭后服用此药，一日三次。"
     },
     {
       "id": 1421,
@@ -15629,8 +15629,8 @@
       "word_greek": "πηγαίνω διακοπές",
       "word_chinese": "去度假/休假",
       "pronunciation": "pigaino-diakopes",
-      "example_greek": "Θέλω να πηγαίνω διακοπές.",
-      "example_chinese": "我想 去度假/休假。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1422,
@@ -15695,8 +15695,8 @@
       "word_greek": "διατροφή, η [food]",
       "word_chinese": "营养, 饮食, 营养",
       "pronunciation": "diatrofi",
-      "example_greek": "Αυτό είναι διατροφή.",
-      "example_chinese": "这是 营养, 饮食, 营养。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1428,
@@ -15706,8 +15706,8 @@
       "word_greek": "διατροφή, η [divorce]",
       "word_chinese": "赡养费",
       "pronunciation": "diatrofi",
-      "example_greek": "Αυτό είναι διατροφή.",
-      "example_chinese": "这是 赡养费。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1429,
@@ -15750,8 +15750,8 @@
       "word_greek": "δίκλινο (δωμάτιο), το",
       "word_chinese": "双人间",
       "pronunciation": "diklino",
-      "example_greek": "Αυτό είναι δίκλινο.",
-      "example_chinese": "这是 双人间。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1433,
@@ -15882,8 +15882,8 @@
       "word_greek": "εκπαίδευση, η",
       "word_chinese": "教育、培训",
       "pronunciation": "ekpaidevsi",
-      "example_greek": "Αυτό είναι εκπαίδευση.",
-      "example_chinese": "这是 教育、培训。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1445,
@@ -15904,8 +15904,8 @@
       "word_greek": "ελαιόλαδο, το",
       "word_chinese": "橄榄油",
       "pronunciation": "eleolado",
-      "example_greek": "Αυτό είναι ελαιόλαδο.",
-      "example_chinese": "这是 橄榄油。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1447,
@@ -15937,8 +15937,8 @@
       "word_greek": "Ελευθερία, η [proper name]",
       "word_chinese": "埃莱夫塞里亚",
       "pronunciation": "elevtheria",
-      "example_greek": "Αυτό είναι Ελευθερία.",
-      "example_chinese": "这是 埃莱夫塞里亚。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1450,
@@ -15948,8 +15948,8 @@
       "word_greek": "εμπειρία, η",
       "word_chinese": "经验",
       "pronunciation": "ebiria",
-      "example_greek": "Στο πίνακα Α] κρατάς σύντομες σημειώσεις για τις σπουδές, τις γνώσεις και την επαγγελματική σου εμπειρία για τη θέση αυτή.",
-      "example_chinese": "在表 A] 中，您简要记录了您针对该职位的学习、知识和专业经验。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1451,
@@ -16003,8 +16003,8 @@
       "word_greek": "ενοίκιο, το",
       "word_chinese": "租",
       "pronunciation": "enoikio",
-      "example_greek": "Αυτό είναι ενοίκιο.",
-      "example_chinese": "这是 租。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1456,
@@ -16014,8 +16014,8 @@
       "word_greek": "ενοικίαση, η",
       "word_chinese": "出租，租赁",
       "pronunciation": "enikiasi",
-      "example_greek": "Αυτό είναι ενοικίαση.",
-      "example_chinese": "这是 出租，租赁。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1457,
@@ -16080,8 +16080,8 @@
       "word_greek": "εξωτερικό, το",
       "word_chinese": "海外，国外",
       "pronunciation": "exoteriko",
-      "example_greek": "Αυτό είναι εξωτερικό.",
-      "example_chinese": "这是 海外，国外。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1463,
@@ -16124,8 +16124,8 @@
       "word_greek": "επιθυμώ",
       "word_chinese": "渴望，想要",
       "pronunciation": "epithimo",
-      "example_greek": "Θέλω να επιθυμώ.",
-      "example_chinese": "我想 渴望，想要。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1467,
@@ -16135,8 +16135,8 @@
       "word_greek": "επικοινωνώ",
       "word_chinese": "联系，联系，沟通",
       "pronunciation": "epikinono",
-      "example_greek": "Θέλω να επικοινωνώ.",
-      "example_chinese": "我想 联系，联系，沟通。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1468,
@@ -16146,8 +16146,8 @@
       "word_greek": "επικοινωνία, η",
       "word_chinese": "沟通、联系",
       "pronunciation": "epikinonia",
-      "example_greek": "Αυτό είναι επικοινωνία.",
-      "example_chinese": "这是 沟通、联系。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1469,
@@ -16201,8 +16201,8 @@
       "word_greek": "ΕΥΑΘ (Εταιρεία Ύδρευσης και Αποχέτευσης Θεσσαλονίκης)",
       "word_chinese": "塞萨洛尼基供水和污水处理公司",
       "pronunciation": "evath",
-      "example_greek": "Αυτό είναι ΕΥΑΘ.",
-      "example_chinese": "这是 塞萨洛尼基供水和污水处理公司。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1474,
@@ -16212,8 +16212,8 @@
       "word_greek": "EΥΔΑΠ (Εταιρεία Ύδρευσης και Αποχέτευσης Πρωτεύουσας)",
       "word_chinese": "雅典供水和污水处理公司",
       "pronunciation": "eidap",
-      "example_greek": "Αυτό είναι EΥΔΑΠ.",
-      "example_chinese": "这是 雅典供水和污水处理公司。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1475,
@@ -16311,8 +16311,8 @@
       "word_greek": "ισόγειο, το",
       "word_chinese": "一楼",
       "pronunciation": "isogio",
-      "example_greek": "Αυτό είναι ισόγειο.",
-      "example_chinese": "这是 一楼。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1484,
@@ -16476,8 +16476,8 @@
       "word_greek": "Καλή όρεξη!",
       "word_chinese": "祝您好胃口！ ",
       "pronunciation": "kali-orexi",
-      "example_greek": "Αυτό είναι Καλή όρεξη!.",
-      "example_chinese": "这是 祝您好胃口！ 。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1499,
@@ -16553,8 +16553,8 @@
       "word_greek": "κέικ, το",
       "word_chinese": "蛋糕",
       "pronunciation": "keik",
-      "example_greek": "Αυτό είναι κέικ.",
-      "example_chinese": "这是 蛋糕。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1506,
@@ -16564,8 +16564,8 @@
       "word_greek": "κεφαλαίo γράμμα, το",
       "word_chinese": "大写字母",
       "pronunciation": "kefalaio-gramma",
-      "example_greek": "Αυτό είναι κεφαλαίo γράμμα.",
-      "example_chinese": "这是 大写字母。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1507,
@@ -16608,8 +16608,8 @@
       "word_greek": "κίνδυνος, ο",
       "word_chinese": "危险，风险",
       "pronunciation": "kindinos",
-      "example_greek": "Αυτό είναι κίνδυνος.",
-      "example_chinese": "这是 危险，风险。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1511,
@@ -16630,8 +16630,8 @@
       "word_greek": "κινητό τηλέφωνο, το",
       "word_chinese": "手机",
       "pronunciation": "kinito-tilefono",
-      "example_greek": "Αυτό είναι κινητό τηλέφωνο.",
-      "example_chinese": "这是 手机。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1513,
@@ -16696,8 +16696,8 @@
       "word_greek": "κοτόπουλο, το / κότα, η",
       "word_chinese": "鸡",
       "pronunciation": "kotopoulo",
-      "example_greek": "Αυτό είναι κοτόπουλο.",
-      "example_chinese": "这是 鸡。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1519,
@@ -16718,8 +16718,8 @@
       "word_greek": "κούραση, η",
       "word_chinese": "疲倦，疲劳",
       "pronunciation": "koirasi",
-      "example_greek": "Αυτό είναι κούραση.",
-      "example_chinese": "这是 疲倦，疲劳。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1521,
@@ -16729,8 +16729,8 @@
       "word_greek": "κρασί, το",
       "word_chinese": "葡萄酒",
       "pronunciation": "krasi",
-      "example_greek": "Αυτό είναι κρασί.",
-      "example_chinese": "这是 葡萄酒。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1522,
@@ -16740,8 +16740,8 @@
       "word_greek": "κρύβω",
       "word_chinese": "隐藏",
       "pronunciation": "krivo",
-      "example_greek": "Το σπίτι κρύβει κινδύνους για τα μικρά παιδιά. Προσοχή!",
-      "example_chinese": "这所房子对小孩子来说隐藏着危险。注意力！"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1523,
@@ -16751,8 +16751,8 @@
       "word_greek": "κρύ-ος, -α, -ο",
       "word_chinese": "寒冷，寒冷",
       "pronunciation": "kri-os",
-      "example_greek": "Αυτό είναι κρύ-ος.",
-      "example_chinese": "这是 寒冷，寒冷。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1524,
@@ -16773,8 +16773,8 @@
       "word_greek": "κρυώνω",
       "word_chinese": "变冷，变冷",
       "pronunciation": "kriono",
-      "example_greek": "Θέλω να κρυώνω.",
-      "example_chinese": "我想 变冷，变冷。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1526,
@@ -16795,8 +16795,8 @@
       "word_greek": "λειτουργία, η",
       "word_chinese": "服务、操作、功能",
       "pronunciation": "litourgia",
-      "example_greek": "Αυτό είναι λειτουργία.",
-      "example_chinese": "这是 服务、操作、功能。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1528,
@@ -16839,8 +16839,8 @@
       "word_greek": "Λύκειο, το",
       "word_chinese": "中学",
       "pronunciation": "likio",
-      "example_greek": "Τι περιμένουν με μεγάλη χαρά οι μαθητές της Τρίτης Λυκείου;",
-      "example_chinese": "三中的学生们在期待什么？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1532,
@@ -16861,8 +16861,8 @@
       "word_greek": "μαγειρική, η",
       "word_chinese": "烹饪",
       "pronunciation": "magiriki",
-      "example_greek": "Αυτό είναι μαγειρική.",
-      "example_chinese": "这是 烹饪。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1534,
@@ -16872,8 +16872,8 @@
       "word_greek": "μαγειρεύω",
       "word_chinese": "做饭",
       "pronunciation": "magireio",
-      "example_greek": "Θέλω να μαγειρεύω.",
-      "example_chinese": "我想 做饭。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1535,
@@ -16905,8 +16905,8 @@
       "word_greek": "μάσκα, η",
       "word_chinese": "面具",
       "pronunciation": "maska",
-      "example_greek": "Αυτό είναι μάσκα.",
-      "example_chinese": "这是 面具。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1538,
@@ -16916,8 +16916,8 @@
       "word_greek": "μέλλον, το",
       "word_chinese": "未来",
       "pronunciation": "mellon",
-      "example_greek": "Αυτό είναι μέλλον.",
-      "example_chinese": "这是 未来。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1539,
@@ -16927,8 +16927,8 @@
       "word_greek": "μεζές, ο",
       "word_chinese": "小吃, 美味佳肴, 开胃菜",
       "pronunciation": "mezes",
-      "example_greek": "Αυτό είναι μεζές.",
-      "example_chinese": "这是 小吃, 美味佳肴, 开胃菜。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1540,
@@ -17070,8 +17070,8 @@
       "word_greek": "μονόκλινο (δωμάτιο), το",
       "word_chinese": "单人间",
       "pronunciation": "monoklino",
-      "example_greek": "Αυτό είναι μονόκλινο.",
-      "example_chinese": "这是 单人间。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1553,
@@ -17147,8 +17147,8 @@
       "word_greek": "νοικιάζω",
       "word_chinese": "出租",
       "pronunciation": "nikiazo",
-      "example_greek": "Θέλω να νοικιάζω.",
-      "example_chinese": "我想 出租。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1560,
@@ -17158,8 +17158,8 @@
       "word_greek": "νοσοκόμος, ο / νοσοκόμα, η",
       "word_chinese": "护士",
       "pronunciation": "nosokomos",
-      "example_greek": "Αυτό είναι νοσοκόμος.",
-      "example_chinese": "这是 护士。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1561,
@@ -17180,8 +17180,8 @@
       "word_greek": "ξαναβλέπω",
       "word_chinese": "再次见面",
       "pronunciation": "xanavlepo",
-      "example_greek": "Θέλω να ξαναβλέπω.",
-      "example_chinese": "我想 再次见面。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1563,
@@ -17202,8 +17202,8 @@
       "word_greek": "ξηρός καρπός, ο",
       "word_chinese": "干果/坚果",
       "pronunciation": "xiros-karpos",
-      "example_greek": "Αυτό είναι ξηρός καρπός.",
-      "example_chinese": "这是 干果/坚果。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1565,
@@ -17224,8 +17224,8 @@
       "word_greek": "οδοντίατρος, ο/η",
       "word_chinese": "牙医",
       "pronunciation": "ododiatros",
-      "example_greek": "Αυτό είναι οδοντίατρος.",
-      "example_chinese": "这是 牙医。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1567,
@@ -17246,8 +17246,8 @@
       "word_greek": "ομορφιά, η",
       "word_chinese": "美丽",
       "pronunciation": "omorfia",
-      "example_greek": "Αυτό είναι ομορφιά.",
-      "example_chinese": "这是 美丽。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1569,
@@ -17257,8 +17257,8 @@
       "word_greek": "οξυγόνο, το",
       "word_chinese": "氧",
       "pronunciation": "oxigono",
-      "example_greek": "Αυτό είναι οξυγόνο.",
-      "example_chinese": "这是 氧。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1570,
@@ -17312,8 +17312,8 @@
       "word_greek": "ούζο, το",
       "word_chinese": "茴香酒",
       "pronunciation": "oizo",
-      "example_greek": "Αυτό είναι ούζο.",
-      "example_chinese": "这是 茴香酒。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1575,
@@ -17323,8 +17323,8 @@
       "word_greek": "παγωνιά, η",
       "word_chinese": "严寒",
       "pronunciation": "pagonia",
-      "example_greek": "Αυτό είναι παγωνιά.",
-      "example_chinese": "这是 严寒。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1576,
@@ -17334,8 +17334,8 @@
       "word_greek": "Πανεπιστήμιο, το",
       "word_chinese": "大学",
       "pronunciation": "panepistimio",
-      "example_greek": "Αυτό είναι Πανεπιστήμιο.",
-      "example_chinese": "这是 大学。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1577,
@@ -17378,8 +17378,8 @@
       "word_greek": "παντρεύομαι",
       "word_chinese": "结婚",
       "pronunciation": "padreiome",
-      "example_greek": "Θέλω να παντρεύομαι.",
-      "example_chinese": "我想 结婚。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1581,
@@ -17400,8 +17400,8 @@
       "word_greek": "Παρακαλώ! [in response to “Thank you!”]",
       "word_chinese": "不客气！",
       "pronunciation": "parakalo-in-response-to-thank-you",
-      "example_greek": "Αυτό είναι Παρακαλώ! [in response to “Thank you!”].",
-      "example_chinese": "这是 不客气！。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1583,
@@ -17444,8 +17444,8 @@
       "word_greek": "πάστα, η",
       "word_chinese": "蛋糕，甜甜的",
       "pronunciation": "pasta",
-      "example_greek": "Αυτό είναι πάστα.",
-      "example_chinese": "这是 蛋糕，甜甜的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1587,
@@ -17455,8 +17455,8 @@
       "word_greek": "πελάτης, ο / πελάτισσα, η",
       "word_chinese": "顾客，客户",
       "pronunciation": "pelatis",
-      "example_greek": "Αυτό είναι πελάτης.",
-      "example_chinese": "这是 顾客，客户。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1588,
@@ -17499,8 +17499,8 @@
       "word_greek": "πληγή, η",
       "word_chinese": "伤口，受伤",
       "pronunciation": "pligi",
-      "example_greek": "Αυτό είναι πληγή.",
-      "example_chinese": "这是 伤口，受伤。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1592,
@@ -17510,8 +17510,8 @@
       "word_greek": "πληροφορία, η πληροφορίες, οι",
       "word_chinese": "信息，信息",
       "pronunciation": "pliroforia",
-      "example_greek": "Θέλεις περισσότερες πληροφορίες και κάνεις ερωτήσεις.",
-      "example_chinese": "您想要更多信息并提出问题。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1593,
@@ -17587,8 +17587,8 @@
       "word_greek": "πόνος, ο",
       "word_chinese": "疼痛，疼痛",
       "pronunciation": "ponos",
-      "example_greek": "Αυτό είναι πόνος.",
-      "example_chinese": "这是 疼痛，疼痛。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1600,
@@ -17598,8 +17598,8 @@
       "word_greek": "πονόδοντος, ο",
       "word_chinese": "牙疼",
       "pronunciation": "ponododos",
-      "example_greek": "Θέλω να πονόδοντος.",
-      "example_chinese": "我想 牙疼。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1601,
@@ -17620,8 +17620,8 @@
       "word_greek": "πονοκέφαλος, ο",
       "word_chinese": "头痛",
       "pronunciation": "ponokefalos",
-      "example_greek": "Αυτό είναι πονοκέφαλος.",
-      "example_chinese": "这是 头痛。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1603,
@@ -17697,8 +17697,8 @@
       "word_greek": "πρίζα, η",
       "word_chinese": "插座",
       "pronunciation": "priza",
-      "example_greek": "Προσέξτε τις ηλεκτρικές πρίζες.",
-      "example_chinese": "注意电源插座。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1610,
@@ -17752,8 +17752,8 @@
       "word_greek": "πρόσωπο, το [individual, or in grammar]",
       "word_chinese": "人",
       "pronunciation": "prosopo",
-      "example_greek": "Αυτό είναι πρόσωπο.",
-      "example_chinese": "这是 人。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1615,
@@ -17763,8 +17763,8 @@
       "word_greek": "πρόσωπο, το [part of the body]",
       "word_chinese": "脸",
       "pronunciation": "prosopo",
-      "example_greek": "Αυτό είναι πρόσωπο.",
-      "example_chinese": "这是 脸。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1616,
@@ -17774,8 +17774,8 @@
       "word_greek": "προσκαλώ [to a party, an event, etc; see also καλώ]",
       "word_chinese": "邀请",
       "pronunciation": "proskalo-to-a-party",
-      "example_greek": "Θέλω να προσκαλώ [to a party.",
-      "example_chinese": "我想 邀请。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1617,
@@ -17829,8 +17829,8 @@
       "word_greek": "πρωινό (γεύμα), το",
       "word_chinese": "早餐",
       "pronunciation": "proino",
-      "example_greek": "Αυτό είναι πρωινό.",
-      "example_chinese": "这是 早餐。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1622,
@@ -17895,8 +17895,8 @@
       "word_greek": "σαλάτα, η",
       "word_chinese": "沙拉",
       "pronunciation": "salata",
-      "example_greek": "Αυτό είναι σαλάτα.",
-      "example_chinese": "这是 沙拉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1628,
@@ -17950,8 +17950,8 @@
       "word_greek": "σκόρδο, το",
       "word_chinese": "蒜",
       "pronunciation": "skordo",
-      "example_greek": "Αυτό είναι σκόρδο.",
-      "example_chinese": "这是 蒜。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1633,
@@ -17961,8 +17961,8 @@
       "word_greek": "σόδα (μαγειρική), η",
       "word_chinese": "小苏打",
       "pronunciation": "soda",
-      "example_greek": "Αυτό είναι σόδα.",
-      "example_chinese": "这是 小苏打。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1634,
@@ -17983,8 +17983,8 @@
       "word_greek": "σπυρί, το",
       "word_chinese": "疙瘩",
       "pronunciation": "spiri",
-      "example_greek": "Αυτό είναι σπυρί.",
-      "example_chinese": "这是 疙瘩。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1636,
@@ -18005,8 +18005,8 @@
       "word_greek": "σπουδές, οι",
       "word_chinese": "研究",
       "pronunciation": "spoudes",
-      "example_greek": "Στο πίνακα Α] κρατάς σύντομες σημειώσεις για τις σπουδές, τις γνώσεις και την επαγγελματική σου εμπειρία για τη θέση αυτή.",
-      "example_chinese": "在表 A] 中，您简要记录了您针对该职位的学习、知识和专业经验。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1638,
@@ -18093,8 +18093,8 @@
       "word_greek": "συνέντευξη, η",
       "word_chinese": "面试",
       "pronunciation": "sinedevxi",
-      "example_greek": "Αυτό είναι συνέντευξη.",
-      "example_chinese": "这是 面试。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1646,
@@ -18170,8 +18170,8 @@
       "word_greek": "συσκευή, η",
       "word_chinese": "装置、器具",
       "pronunciation": "siskevi",
-      "example_greek": "Αυτό είναι συσκευή.",
-      "example_chinese": "这是 装置、器具。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1653,
@@ -18181,8 +18181,8 @@
       "word_greek": "συστημένο γράμμα, το",
       "word_chinese": "挂号信",
       "pronunciation": "sistimeno-gramma",
-      "example_greek": "Αυτό είναι συστημένο γράμμα.",
-      "example_chinese": "这是 挂号信。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1654,
@@ -18203,8 +18203,8 @@
       "word_greek": "σχολείο, το / σχολή, η",
       "word_chinese": "学校",
       "pronunciation": "scholeio",
-      "example_greek": "Ποια μαθήματα γίνονται και στη Δευτέρα και στην Τρίτη τάξη του Δημοτικού Σχολείου;",
-      "example_chinese": "小学周一和三年级都教授哪些课程？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1656,
@@ -18225,8 +18225,8 @@
       "word_greek": "σώμα, το",
       "word_chinese": "身体",
       "pronunciation": "soma",
-      "example_greek": "Αυτό είναι σώμα.",
-      "example_chinese": "这是 身体。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1658,
@@ -18247,8 +18247,8 @@
       "word_greek": "ταυτότητα αστυνομική, η",
       "word_chinese": "身份证/身份证",
       "pronunciation": "tavtotita-astinomiki",
-      "example_greek": "Αυτό είναι ταυτότητα αστυνομική.",
-      "example_chinese": "这是 身份证/身份证。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1660,
@@ -18280,8 +18280,8 @@
       "word_greek": "τζάμι, το",
       "word_chinese": "窗户",
       "pronunciation": "tzami",
-      "example_greek": "Αυτό είναι τζάμι.",
-      "example_chinese": "这是 窗户。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1663,
@@ -18302,8 +18302,8 @@
       "word_greek": "τηλεφώνημα, το",
       "word_chinese": "打电话，打电话",
       "pronunciation": "tilefonima",
-      "example_greek": "Αυτό είναι τηλεφώνημα.",
-      "example_chinese": "这是 打电话，打电话。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1665,
@@ -18313,8 +18313,8 @@
       "word_greek": "τηλεφωνώ / παίρνω τηλέφωνο",
       "word_chinese": "打电话，打电话",
       "pronunciation": "tilefono-pairno-tilefono",
-      "example_greek": "Θέλω να τηλεφωνώ / παίρνω τηλέφωνο.",
-      "example_chinese": "我想 打电话，打电话。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1666,
@@ -18324,8 +18324,8 @@
       "word_greek": "τίποτα",
       "word_chinese": "没有什么",
       "pronunciation": "tipota",
-      "example_greek": "Αυτό είναι τίποτα.",
-      "example_chinese": "这是 没有什么。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1667,
@@ -18379,8 +18379,8 @@
       "word_greek": "τροφή, η",
       "word_chinese": "食物",
       "pronunciation": "trofi",
-      "example_greek": "Αυτό είναι τροφή.",
-      "example_chinese": "这是 食物。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1672,
@@ -18434,8 +18434,8 @@
       "word_greek": "υπνοδωμάτιο, το",
       "word_chinese": "卧室",
       "pronunciation": "ipnodomatio",
-      "example_greek": "Αυτό είναι υπνοδωμάτιο.",
-      "example_chinese": "这是 卧室。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1677,
@@ -18489,8 +18489,8 @@
       "word_greek": "φαρμακείο, το",
       "word_chinese": "药房，药店",
       "pronunciation": "farmakeio",
-      "example_greek": "Αυτό είναι φαρμακείο.",
-      "example_chinese": "这是 药房，药店。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1682,
@@ -18511,8 +18511,8 @@
       "word_greek": "φάρμακο, το",
       "word_chinese": "药品，药物",
       "pronunciation": "farmako",
-      "example_greek": "Αυτό είναι φάρμακο.",
-      "example_chinese": "这是 药品，药物。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1684,
@@ -18533,8 +18533,8 @@
       "word_greek": "φεστιβάλ, το",
       "word_chinese": "节日",
       "pronunciation": "festival",
-      "example_greek": "Σε ποιο πάρκο θα γίνει το φεστιβάλ;",
-      "example_chinese": "节日将在哪个公园举行？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1686,
@@ -18577,8 +18577,8 @@
       "word_greek": "φιλοξενώ",
       "word_chinese": "主持，招待",
       "pronunciation": "filoxeno",
-      "example_greek": "Θέλω να φιλοξενώ.",
-      "example_chinese": "我想 主持，招待。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1690,
@@ -18632,8 +18632,8 @@
       "word_greek": "φόρμα, η",
       "word_chinese": "运动服",
       "pronunciation": "forma",
-      "example_greek": "Αυτό είναι φόρμα.",
-      "example_chinese": "这是 运动服。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1695,
@@ -18643,8 +18643,8 @@
       "word_greek": "φυτό, το",
       "word_chinese": "植物",
       "pronunciation": "fito",
-      "example_greek": "Αυτό είναι φυτό.",
-      "example_chinese": "这是 植物。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1696,
@@ -18665,8 +18665,8 @@
       "word_greek": "φωτιά, η",
       "word_chinese": "火",
       "pronunciation": "fotia",
-      "example_greek": "Αυτό είναι φωτιά.",
-      "example_chinese": "这是 火。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1698,
@@ -18676,8 +18676,8 @@
       "word_greek": "χάπι, το",
       "word_chinese": "丸",
       "pronunciation": "chapi",
-      "example_greek": "Αυτό είναι χάπι.",
-      "example_chinese": "这是 丸。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1699,
@@ -18698,8 +18698,8 @@
       "word_greek": "χαρίζω",
       "word_chinese": "捐赠，赠送礼物",
       "pronunciation": "charizo",
-      "example_greek": "Θέλω να χαρίζω.",
-      "example_chinese": "我想 捐赠，赠送礼物。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1701,
@@ -18775,8 +18775,8 @@
       "word_greek": "αδικία, η",
       "word_chinese": "不公正",
       "pronunciation": "adikia",
-      "example_greek": "Αυτό είναι αδικία.",
-      "example_chinese": "这是 不公正。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1708,
@@ -18786,8 +18786,8 @@
       "word_greek": "αδικώ (verb)",
       "word_chinese": "对待不公正、错误",
       "pronunciation": "adiko",
-      "example_greek": "Αυτό είναι αδικώ.",
-      "example_chinese": "这是 对待不公正、错误。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1709,
@@ -18874,8 +18874,8 @@
       "word_greek": "αλυσίδα, η",
       "word_chinese": "链",
       "pronunciation": "alisida",
-      "example_greek": "Αυτό είναι αλυσίδα.",
-      "example_chinese": "这是 链。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1717,
@@ -18885,8 +18885,8 @@
       "word_greek": "αμαρτία, η",
       "word_chinese": "罪",
       "pronunciation": "amartia",
-      "example_greek": "Αυτό είναι αμαρτία.",
-      "example_chinese": "这是 罪。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1718,
@@ -18973,8 +18973,8 @@
       "word_greek": "ανασταίνω (verb)",
       "word_chinese": "复活",
       "pronunciation": "anastaino",
-      "example_greek": "Αυτό είναι ανασταίνω.",
-      "example_chinese": "这是 复活。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1726,
@@ -18984,8 +18984,8 @@
       "word_greek": "ανατολή, η",
       "word_chinese": "日出，东方",
       "pronunciation": "anatoli",
-      "example_greek": "Αυτό είναι ανατολή.",
-      "example_chinese": "这是 日出，东方。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1727,
@@ -19072,8 +19072,8 @@
       "word_greek": "αξιόπιστος, -η, -ο",
       "word_chinese": "值得信赖的，可靠的",
       "pronunciation": "axiopistos",
-      "example_greek": "Αυτό είναι αξιόπιστος.",
-      "example_chinese": "这是 值得信赖的，可靠的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1735,
@@ -19083,8 +19083,8 @@
       "word_greek": "αξιωματικός, ο",
       "word_chinese": "官",
       "pronunciation": "axiomatikos",
-      "example_greek": "Αυτό είναι αξιωματικός.",
-      "example_chinese": "这是 官。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1736,
@@ -19171,8 +19171,8 @@
       "word_greek": "αποδράζω (verb)",
       "word_chinese": "逃脱",
       "pronunciation": "apodrazo",
-      "example_greek": "Αυτό είναι αποδράζω.",
-      "example_chinese": "这是 逃脱。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1744,
@@ -19182,8 +19182,8 @@
       "word_greek": "αποκαλύπτω (verb)",
       "word_chinese": "揭露，揭露",
       "pronunciation": "apokalipto",
-      "example_greek": "Αυτό είναι αποκαλύπτω.",
-      "example_chinese": "这是 揭露，揭露。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1745,
@@ -19270,8 +19270,8 @@
       "word_greek": "απορώ (verb)",
       "word_chinese": "想知道，感到困惑",
       "pronunciation": "aporo",
-      "example_greek": "Αυτό είναι απορώ.",
-      "example_chinese": "这是 想知道，感到困惑。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1753,
@@ -19281,8 +19281,8 @@
       "word_greek": "αποσπώ (verb)",
       "word_chinese": "分离，分散注意力",
       "pronunciation": "apospo",
-      "example_greek": "Αυτό είναι αποσπώ.",
-      "example_chinese": "这是 分离，分散注意力。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1754,
@@ -19369,8 +19369,8 @@
       "word_greek": "άγνωστ-ος, -η, -ο [adj]",
       "word_chinese": "未知的，不熟悉的",
       "pronunciation": "agnost-os",
-      "example_greek": "Αυτό είναι άγνωστ-ος.",
-      "example_chinese": "这是 未知的，不熟悉的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1762,
@@ -19380,8 +19380,8 @@
       "word_greek": "άγνωστος, o / άγνωστη, η [noun]",
       "word_chinese": "陌生人",
       "pronunciation": "agnostos",
-      "example_greek": "Αυτό είναι άγνωστος.",
-      "example_chinese": "这是 陌生人。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1763,
@@ -19468,8 +19468,8 @@
       "word_greek": "αισθάνομαι",
       "word_chinese": "去感觉，去感觉",
       "pronunciation": "esthanome",
-      "example_greek": "Θέλω να αισθάνομαι.",
-      "example_chinese": "我想 去感觉，去感觉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1771,
@@ -19479,8 +19479,8 @@
       "word_greek": "αισθηματικ-ός, -ή, -ό",
       "word_chinese": "情绪化的，多愁善感的",
       "pronunciation": "esthimatik-os",
-      "example_greek": "Αυτό είναι αισθηματικ-ός.",
-      "example_chinese": "这是 情绪化的，多愁善感的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1772,
@@ -19567,8 +19567,8 @@
       "word_greek": "αμύγδαλο, το",
       "word_chinese": "杏仁",
       "pronunciation": "amigdalo",
-      "example_greek": "Αυτό είναι αμύγδαλο.",
-      "example_chinese": "这是 杏仁。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1780,
@@ -19578,8 +19578,8 @@
       "word_greek": "ανάγκη, η",
       "word_chinese": "需要，必要性",
       "pronunciation": "anagi",
-      "example_greek": "Αυτό είναι ανάγκη.",
-      "example_chinese": "这是 需要，必要性。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1781,
@@ -19666,8 +19666,8 @@
       "word_greek": "ανακατεμέν-ος, -η, -ο",
       "word_chinese": "混合的，混合的",
       "pronunciation": "anakatemen-os",
-      "example_greek": "Αυτό είναι ανακατεμέν-ος.",
-      "example_chinese": "这是 混合的，混合的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1789,
@@ -19677,8 +19677,8 @@
       "word_greek": "αξεσουάρ, το",
       "word_chinese": "配饰",
       "pronunciation": "axesouar",
-      "example_greek": "Αυτό είναι αξεσουάρ.",
-      "example_chinese": "这是 配饰。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1790,
@@ -19765,8 +19765,8 @@
       "word_greek": "αποκτώ",
       "word_chinese": "拥有，获得",
       "pronunciation": "apokto",
-      "example_greek": "Θέλω να αποκτώ.",
-      "example_chinese": "我想 拥有，获得。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1798,
@@ -19776,8 +19776,8 @@
       "word_greek": "Απόκριες, οι",
       "word_chinese": "狂欢节/万圣节",
       "pronunciation": "apokries",
-      "example_greek": "Αυτό είναι Απόκριες.",
-      "example_chinese": "这是 狂欢节/万圣节。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1799,
@@ -19864,8 +19864,8 @@
       "word_greek": "αρχαία ελληνικά, τα [school subject]",
       "word_chinese": "古希腊语",
       "pronunciation": "archaia-ellinika",
-      "example_greek": "Αυτό είναι αρχαία ελληνικά.",
-      "example_chinese": "这是 古希腊语。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1807,
@@ -19875,8 +19875,8 @@
       "word_greek": "αρχαιότητα, η",
       "word_chinese": "古代，远古时代",
       "pronunciation": "archeotita",
-      "example_greek": "Αυτό είναι αρχαιότητα.",
-      "example_chinese": "这是 古代，远古时代。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1808,
@@ -19963,8 +19963,8 @@
       "word_greek": "βαρετ-ός, -ή, -ό",
       "word_chinese": "无聊的",
       "pronunciation": "varet-os",
-      "example_greek": "Αυτό είναι βαρετ-ός.",
-      "example_chinese": "这是 无聊的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1816,
@@ -19974,8 +19974,8 @@
       "word_greek": "βασικ-ός, -ή, -ό",
       "word_chinese": "基本的、主要的",
       "pronunciation": "vasik-os",
-      "example_greek": "Αυτό είναι βασικ-ός.",
-      "example_chinese": "这是 基本的、主要的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1817,
@@ -20062,8 +20062,8 @@
       "word_greek": "Βουλγαρία, η",
       "word_chinese": "保加利亚",
       "pronunciation": "voulgaria",
-      "example_greek": "Αυτό είναι Βουλγαρία.",
-      "example_chinese": "这是 保加利亚。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1825,
@@ -20073,8 +20073,8 @@
       "word_greek": "βραστ-ός, -ή, -ό",
       "word_chinese": "煮沸",
       "pronunciation": "vrast-os",
-      "example_greek": "Αυτό είναι βραστ-ός.",
-      "example_chinese": "这是 煮沸。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1826,
@@ -20161,8 +20161,8 @@
       "word_greek": "γέννηση, η",
       "word_chinese": "出生",
       "pronunciation": "gennisi",
-      "example_greek": "Αυτό είναι γέννηση.",
-      "example_chinese": "这是 出生。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1834,
@@ -20172,8 +20172,8 @@
       "word_greek": "γερμανική γλώσσα, η (/γερμανικά, τα)",
       "word_chinese": "德语",
       "pronunciation": "germaniki-glossa",
-      "example_greek": "Αυτό είναι γερμανική γλώσσα.",
-      "example_chinese": "这是 德语。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1835,
@@ -20260,8 +20260,8 @@
       "word_greek": "γραμματοκιβώτιο, το",
       "word_chinese": "邮箱, 信箱, 信箱",
       "pronunciation": "grammatokivotio",
-      "example_greek": "Αυτό είναι γραμματοκιβώτιο.",
-      "example_chinese": "这是 邮箱, 信箱, 信箱。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1843,
@@ -20271,8 +20271,8 @@
       "word_greek": "γρήγορα [adv]",
       "word_chinese": "快，快",
       "pronunciation": "grigora-adv",
-      "example_greek": "Αυτό είναι γρήγορα [adv].",
-      "example_chinese": "这是 快，快。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1844,
@@ -20359,8 +20359,8 @@
       "word_greek": "ΔΕΗ (Δημόσια Επιχείρηση Ηλεκτρισμού)",
       "word_chinese": "南澳希腊公共电力公司",
       "pronunciation": "dei",
-      "example_greek": " β. Η Ζωή άφησε το λογαριασμό της ΔΕΗ και τα χρήματα πάνω στο γραφείο.",
-      "example_chinese": " B．佐伊将 PPC 帐户和钱留在桌子上。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1852,
@@ -20370,8 +20370,8 @@
       "word_greek": "δεξιά [adv]",
       "word_chinese": "正确的",
       "pronunciation": "dexia-adv",
-      "example_greek": "Θέλω να δεξιά [adv].",
-      "example_chinese": "我想 正确的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1853,
@@ -20458,8 +20458,8 @@
       "word_greek": "δηλητηριάζω",
       "word_chinese": "毒害",
       "pronunciation": "dilitiriazo",
-      "example_greek": "Θέλω να δηλητηριάζω.",
-      "example_chinese": "我想 毒害。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1861,
@@ -20469,8 +20469,8 @@
       "word_greek": "δηλητηρίαση, η",
       "word_chinese": "中毒",
       "pronunciation": "dilitiriasi",
-      "example_greek": "Αυτό είναι δηλητηρίαση.",
-      "example_chinese": "这是 中毒。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1862,
@@ -20557,8 +20557,8 @@
       "word_greek": "διάθεση, η",
       "word_chinese": "情绪",
       "pronunciation": "diathesi",
-      "example_greek": "Αυτό είναι διάθεση.",
-      "example_chinese": "这是 情绪。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1870,
@@ -20568,8 +20568,8 @@
       "word_greek": "Kαλή διασκέδαση!",
       "word_chinese": "玩得开心！ ",
       "pronunciation": "kali-diaskedasi",
-      "example_greek": "Αυτό είναι Kαλή διασκέδαση!.",
-      "example_chinese": "这是 玩得开心！ 。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1871,
@@ -20656,8 +20656,8 @@
       "word_greek": "δραματικ-ός, -ή, -ό",
       "word_chinese": "戏剧性",
       "pronunciation": "dramatik-os",
-      "example_greek": "Αυτό είναι δραματικ-ός.",
-      "example_chinese": "这是 戏剧性。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1879,
@@ -20667,8 +20667,8 @@
       "word_greek": "δραματική ταινία, η",
       "word_chinese": "戏剧",
       "pronunciation": "dramatiki-tenia",
-      "example_greek": "Αυτό είναι δραματική ταινία.",
-      "example_chinese": "这是 戏剧。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1880,
@@ -20755,8 +20755,8 @@
       "word_greek": "εαυτός, ο",
       "word_chinese": "自己",
       "pronunciation": "eavtos",
-      "example_greek": "Αυτό είναι εαυτός.",
-      "example_chinese": "这是 自己。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1888,
@@ -20766,8 +20766,8 @@
       "word_greek": "έβδομ-ος, -η, -ο",
       "word_chinese": "第七",
       "pronunciation": "evdom-os",
-      "example_greek": "Αυτό είναι έβδομ-ος.",
-      "example_chinese": "这是 第七。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1889,
@@ -20854,8 +20854,8 @@
       "word_greek": "ειδοποίηση, η",
       "word_chinese": "通知，通知",
       "pronunciation": "idopoiisi",
-      "example_greek": "Αυτό είναι ειδοποίηση.",
-      "example_chinese": "这是 通知，通知。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1897,
@@ -20865,8 +20865,8 @@
       "word_greek": "εκτίμηση, η",
       "word_chinese": "尊重，尊重",
       "pronunciation": "ektimisi",
-      "example_greek": "Αυτό είναι εκτίμηση.",
-      "example_chinese": "这是 尊重，尊重。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1898,
@@ -20953,8 +20953,8 @@
       "word_greek": "ελαφρύς, -ιά, -ύ",
       "word_chinese": "光",
       "pronunciation": "elafris",
-      "example_greek": "Αυτό είναι ελαφρύς.",
-      "example_chinese": "这是 光。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1906,
@@ -20964,8 +20964,8 @@
       "word_greek": "Έλληνας, ο / Ελληνίδα, η",
       "word_chinese": "希腊语",
       "pronunciation": "ellinas",
-      "example_greek": "Αυτό είναι Έλληνας.",
-      "example_chinese": "这是 希腊语。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1907,
@@ -21052,8 +21052,8 @@
       "word_greek": "επίσημ-ος, -η, -ο",
       "word_chinese": "正式的，正式的",
       "pronunciation": "episim-os",
-      "example_greek": "Αυτό είναι επίσημ-ος.",
-      "example_chinese": "这是 正式的，正式的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1915,
@@ -21063,8 +21063,8 @@
       "word_greek": "επίσημα",
       "word_chinese": "正式地，正式地",
       "pronunciation": "episima",
-      "example_greek": "Αυτό είναι επίσημα.",
-      "example_chinese": "这是 正式地，正式地。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1916,
@@ -21151,8 +21151,8 @@
       "word_greek": "ερωτηματολόγιο, το",
       "word_chinese": "调查问卷",
       "pronunciation": "erotimatologio",
-      "example_greek": "Αυτό είναι ερωτηματολόγιο.",
-      "example_chinese": "这是 调查问卷。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1924,
@@ -21162,8 +21162,8 @@
       "word_greek": "ετοιμάζω [see also προετοιμάζω]",
       "word_chinese": "准备",
       "pronunciation": "etimazo-see-also-proetimazo",
-      "example_greek": "Θέλω να ετοιμάζω [see also προετοιμάζω].",
-      "example_chinese": "我想 准备。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1925,
@@ -21250,8 +21250,8 @@
       "word_greek": "ζητάω, -ώ",
       "word_chinese": "要求",
       "pronunciation": "zitao",
-      "example_greek": "Θέλω να ζητάω.",
-      "example_chinese": "我想 要求。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1933,
@@ -21261,8 +21261,8 @@
       "word_greek": "ζυμαρικό, το",
       "word_chinese": "面食",
       "pronunciation": "zimariko",
-      "example_greek": "Αυτό είναι ζυμαρικό.",
-      "example_chinese": "这是 面食。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1934,
@@ -21349,8 +21349,8 @@
       "word_greek": "ημερομηνία, η",
       "word_chinese": "日期",
       "pronunciation": "imerominia",
-      "example_greek": "Αυτό είναι ημερομηνία.",
-      "example_chinese": "这是 日期。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1942,
@@ -21360,8 +21360,8 @@
       "word_greek": "ήπι-ος, -α, -ο",
       "word_chinese": "温和的，温柔的",
       "pronunciation": "ipi-os",
-      "example_greek": "Αυτό είναι ήπι-ος.",
-      "example_chinese": "这是 温和的，温柔的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1943,
@@ -21448,8 +21448,8 @@
       "word_greek": "ιερ-ός, -ή, -ό",
       "word_chinese": "神圣的，神圣的",
       "pronunciation": "ier-os",
-      "example_greek": "Αυτό είναι ιερ-ός.",
-      "example_chinese": "这是 神圣的，神圣的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1951,
@@ -21459,8 +21459,8 @@
       "word_greek": "ιστοσελίδα, η",
       "word_chinese": "网页",
       "pronunciation": "istoselida",
-      "example_greek": "Αυτό είναι ιστοσελίδα.",
-      "example_chinese": "这是 网页。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1952,
@@ -21547,8 +21547,8 @@
       "word_greek": "καλλυντικό, το",
       "word_chinese": "化妆品",
       "pronunciation": "kallidiko",
-      "example_greek": "Αυτό είναι καλλυντικό.",
-      "example_chinese": "这是 化妆品。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1960,
@@ -21558,8 +21558,8 @@
       "word_greek": "καλαμπόκι, το",
       "word_chinese": "玉米",
       "pronunciation": "kalaboki",
-      "example_greek": "Αυτό είναι καλαμπόκι.",
-      "example_chinese": "这是 玉米。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1961,
@@ -21646,8 +21646,8 @@
       "word_greek": "Πόσο κάνει;",
       "word_chinese": "它要多少钱？",
       "pronunciation": "poso-kani",
-      "example_greek": "Αυτό είναι Πόσο κάνει;.",
-      "example_chinese": "这是 它要多少钱？。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1969,
@@ -21657,8 +21657,8 @@
       "word_greek": "καρδιολόγος, ο/η",
       "word_chinese": "心脏病专家",
       "pronunciation": "kardiologos",
-      "example_greek": "Αυτό είναι καρδιολόγος.",
-      "example_chinese": "这是 心脏病专家。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1970,
@@ -21745,8 +21745,8 @@
       "word_greek": "κατανόηση προφορικού λόγου, η",
       "word_chinese": "听力理解",
       "pronunciation": "katanoisi-proforikoi-logou",
-      "example_greek": "Αυτό είναι κατανόηση προφορικού λόγου.",
-      "example_chinese": "这是 听力理解。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1978,
@@ -21756,8 +21756,8 @@
       "word_greek": "καταπληκτικά [adv]",
       "word_chinese": "令人惊讶地, 奇妙地",
       "pronunciation": "katapliktika-adv",
-      "example_greek": "Αυτό είναι καταπληκτικά [adv].",
-      "example_chinese": "这是 令人惊讶地, 奇妙地。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1979,
@@ -21844,8 +21844,8 @@
       "word_greek": "κεντρικό δελτίο ειδήσεων",
       "word_chinese": "消息",
       "pronunciation": "kedriko-deltio-idiseon",
-      "example_greek": "Αυτό είναι κεντρικό δελτίο ειδήσεων.",
-      "example_chinese": "这是 消息。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1987,
@@ -21855,8 +21855,8 @@
       "word_greek": "κεραυνός, ο",
       "word_chinese": "雷",
       "pronunciation": "keravnos",
-      "example_greek": "Αυτό είναι κεραυνός.",
-      "example_chinese": "这是 雷。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1988,
@@ -21943,8 +21943,8 @@
       "word_greek": "κλείνω [a door, a window, the radio]",
       "word_chinese": "关闭，关闭，关掉",
       "pronunciation": "kleino-a-door",
-      "example_greek": "Θέλω να κλείνω [a door.",
-      "example_chinese": "我想 关闭，关闭，关掉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1996,
@@ -21954,8 +21954,8 @@
       "word_greek": "κλείνω [a ticket, a room at a hotel, etc.]",
       "word_chinese": "预订",
       "pronunciation": "kleino-a-ticket",
-      "example_greek": "Θέλω να κλείνω [a ticket.",
-      "example_chinese": "我想 预订。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 1997,
@@ -22042,8 +22042,8 @@
       "word_greek": "κορυφή, η",
       "word_chinese": "顶部，峰顶",
       "pronunciation": "korifi",
-      "example_greek": "Θέλω να κορυφή.",
-      "example_chinese": "我想 顶部，峰顶。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2005,
@@ -22053,8 +22053,8 @@
       "word_greek": "κόσμημα, το",
       "word_chinese": "珠宝，珠宝",
       "pronunciation": "kosmima",
-      "example_greek": "Αυτό είναι κόσμημα.",
-      "example_chinese": "这是 珠宝，珠宝。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2006,
@@ -22141,8 +22141,8 @@
       "word_greek": "κρατικ-ός, -ή, -ό",
       "word_chinese": "国家的，国家的",
       "pronunciation": "kratik-os",
-      "example_greek": "Αυτό είναι κρατικ-ός.",
-      "example_chinese": "这是 国家的，国家的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2014,
@@ -22152,8 +22152,8 @@
       "word_greek": "κρέμα, η",
       "word_chinese": "奶油",
       "pronunciation": "krema",
-      "example_greek": "Αυτό είναι κρέμα.",
-      "example_chinese": "这是 奶油。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2015,
@@ -22240,8 +22240,8 @@
       "word_greek": "λεξιλόγιο, το",
       "word_chinese": "词汇",
       "pronunciation": "lexilogio",
-      "example_greek": "Αυτό είναι λεξιλόγιο.",
-      "example_chinese": "这是 词汇。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2023,
@@ -22251,8 +22251,8 @@
       "word_greek": "λεπτομέρεια, η",
       "word_chinese": "细节",
       "pronunciation": "leptomeria",
-      "example_greek": "Αυτό είναι λεπτομέρεια.",
-      "example_chinese": "这是 细节。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2024,
@@ -22339,8 +22339,8 @@
       "word_greek": "μαλακ-ός, -ή, -ό",
       "word_chinese": "柔软、光滑",
       "pronunciation": "malak-os",
-      "example_greek": "Αυτό είναι μαλακ-ός.",
-      "example_chinese": "这是 柔软、光滑。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2032,
@@ -22350,8 +22350,8 @@
       "word_greek": "Μάρθα, η",
       "word_chinese": "玛莎",
       "pronunciation": "martha",
-      "example_greek": "Αυτό είναι Μάρθα.",
-      "example_chinese": "这是 玛莎。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2033,
@@ -22438,8 +22438,8 @@
       "word_greek": "μέγαρο, το",
       "word_chinese": "宫殿",
       "pronunciation": "megaro",
-      "example_greek": "Αυτό είναι μέγαρο.",
-      "example_chinese": "这是 宫殿。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2041,
@@ -22449,8 +22449,8 @@
       "word_greek": "μελαχριν-ός, -ή, -ό",
       "word_chinese": "黑头发",
       "pronunciation": "melachrin-os",
-      "example_greek": "Αυτό είναι μελαχριν-ός.",
-      "example_chinese": "这是 黑头发。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2042,
@@ -22537,8 +22537,8 @@
       "word_greek": "μεταφορικό μέσο, το",
       "word_chinese": "交通工具",
       "pronunciation": "metaforiko-meso",
-      "example_greek": "Αυτό είναι μεταφορικό μέσο.",
-      "example_chinese": "这是 交通工具。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2050,
@@ -22548,8 +22548,8 @@
       "word_greek": "μετρό, το",
       "word_chinese": "地铁，地铁，地下，管道",
       "pronunciation": "metro",
-      "example_greek": "Αυτό είναι μετρό.",
-      "example_chinese": "这是 地铁，地铁，地下，管道。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2051,
@@ -22636,8 +22636,8 @@
       "word_greek": "μπουκάλι, το",
       "word_chinese": "瓶子",
       "pronunciation": "boukali",
-      "example_greek": "Αυτό είναι μπουκάλι.",
-      "example_chinese": "这是 瓶子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2059,
@@ -22647,8 +22647,8 @@
       "word_greek": "μπρόκολο, το",
       "word_chinese": "西兰花",
       "pronunciation": "brokolo",
-      "example_greek": "Αυτό είναι μπρόκολο.",
-      "example_chinese": "这是 西兰花。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2060,
@@ -22735,8 +22735,8 @@
       "word_greek": "νονά, η",
       "word_chinese": "教母",
       "pronunciation": "nona",
-      "example_greek": "Αυτό είναι νονά.",
-      "example_chinese": "这是 教母。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2068,
@@ -22746,8 +22746,8 @@
       "word_greek": "νομίζω",
       "word_chinese": "去思考、去相信",
       "pronunciation": "nomizo",
-      "example_greek": "Θέλω να νομίζω.",
-      "example_chinese": "我想 去思考、去相信。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2069,
@@ -22834,8 +22834,8 @@
       "word_greek": "ξαναγυρίζω",
       "word_chinese": "回去，返回",
       "pronunciation": "xanagirizo",
-      "example_greek": "Θέλω να ξαναγυρίζω.",
-      "example_chinese": "我想 回去，返回。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2077,
@@ -22845,8 +22845,8 @@
       "word_greek": "ξαναδιαβάζω",
       "word_chinese": "再读一遍",
       "pronunciation": "xanadiavazo",
-      "example_greek": "Θέλω να ξαναδιαβάζω.",
-      "example_chinese": "我想 再读一遍。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2078,
@@ -22933,8 +22933,8 @@
       "word_greek": "ξεχωριστ-ός, -ή, -ό",
       "word_chinese": "清楚的",
       "pronunciation": "xechorist-os",
-      "example_greek": "Αυτό είναι ξεχωριστ-ός.",
-      "example_chinese": "这是 清楚的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2086,
@@ -22944,8 +22944,8 @@
       "word_greek": "ξεχνάω, -ώ",
       "word_chinese": "忘记",
       "pronunciation": "xechnao",
-      "example_greek": "Θέλω να ξεχνάω.",
-      "example_chinese": "我想 忘记。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2087,
@@ -23032,8 +23032,8 @@
       "word_greek": "οικογενειακή κατάσταση, η",
       "word_chinese": "婚姻状况",
       "pronunciation": "ikogeniaki-katastasi",
-      "example_greek": "Αυτό είναι οικογενειακή κατάσταση.",
-      "example_chinese": "这是 婚姻状况。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2095,
@@ -23043,8 +23043,8 @@
       "word_greek": "οινόπνευμα, το",
       "word_chinese": "酒精、烈酒",
       "pronunciation": "inopnevma",
-      "example_greek": "Αυτό είναι οινόπνευμα.",
-      "example_chinese": "这是 酒精、烈酒。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2096,
@@ -23131,8 +23131,8 @@
       "word_greek": "όσπριο, το",
       "word_chinese": "豆类",
       "pronunciation": "osprio",
-      "example_greek": "Αυτό είναι όσπριο.",
-      "example_chinese": "这是 豆类。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2104,
@@ -23142,8 +23142,8 @@
       "word_greek": "ουζερί, το",
       "word_chinese": "希腊小酒馆",
       "pronunciation": "ouzeri",
-      "example_greek": "Αυτό είναι ουζερί.",
-      "example_chinese": "这是 希腊小酒馆。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2105,
@@ -23230,8 +23230,8 @@
       "word_greek": "παντζάρι, το",
       "word_chinese": "甜菜根",
       "pronunciation": "padzari",
-      "example_greek": "Αυτό είναι παντζάρι.",
-      "example_chinese": "这是 甜菜根。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2113,
@@ -23241,8 +23241,8 @@
       "word_greek": "παραγωγή γραπτού λόγου",
       "word_chinese": "写作",
       "pronunciation": "paragogi-graptoi-logou",
-      "example_greek": "Αυτό είναι παραγωγή γραπτού λόγου.",
-      "example_chinese": "这是 写作。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2114,
@@ -23329,8 +23329,8 @@
       "word_greek": "παρατήρηση, η",
       "word_chinese": "评论，评论",
       "pronunciation": "paratirisi",
-      "example_greek": "Αυτό είναι παρατήρηση.",
-      "example_chinese": "这是 评论，评论。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2122,
@@ -23340,8 +23340,8 @@
       "word_greek": "παροιμία, η",
       "word_chinese": "谚语，说",
       "pronunciation": "parimia",
-      "example_greek": "Αυτό είναι παροιμία.",
-      "example_chinese": "这是 谚语，说。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2123,
@@ -23428,8 +23428,8 @@
       "word_greek": "Περαστικά!",
       "word_chinese": "快点好起来！",
       "pronunciation": "perastika",
-      "example_greek": "Αυτό είναι Περαστικά!.",
-      "example_chinese": "这是 快点好起来！。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2131,
@@ -23439,8 +23439,8 @@
       "word_greek": "περιβάλλον, το",
       "word_chinese": "环境",
       "pronunciation": "perivallon",
-      "example_greek": "Βήμα 3ο Λες τη μητέρα σου ποια μικρά πράγματα μπορεί να κάνει κάθε μέρα για να βοηθήσει το περιβάλλον.",
-      "example_chinese": "步骤 3 告诉你的妈妈她每天可以做哪些小事来帮助保护环境。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2132,
@@ -23527,8 +23527,8 @@
       "word_greek": "θα είμαι πίσω",
       "word_chinese": "我会回来的",
       "pronunciation": "tha-eime-piso",
-      "example_greek": "Αυτό είναι θα είμαι πίσω.",
-      "example_chinese": "这是 我会回来的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2140,
@@ -23538,8 +23538,8 @@
       "word_greek": "πλανήτης, ο",
       "word_chinese": "行星",
       "pronunciation": "planitis",
-      "example_greek": "Αυτό είναι πλανήτης.",
-      "example_chinese": "这是 行星。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2141,
@@ -23626,8 +23626,8 @@
       "word_greek": "πολυκατάστημα, το",
       "word_chinese": "百货商店",
       "pronunciation": "polikatastima",
-      "example_greek": "Αυτό είναι πολυκατάστημα.",
-      "example_chinese": "这是 百货商店。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2149,
@@ -23637,8 +23637,8 @@
       "word_greek": "πολύς, πολλή, πολύ [non countable]",
       "word_chinese": "很多",
       "pronunciation": "polis",
-      "example_greek": "Αυτό είναι πολύς.",
-      "example_chinese": "这是 很多。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2150,
@@ -23725,8 +23725,8 @@
       "word_greek": "πρόγραμμα, το",
       "word_chinese": "节目/节目",
       "pronunciation": "programma",
-      "example_greek": "Ποιο είναι το πρόγραμμα;",
-      "example_chinese": "程序是什么？"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2158,
@@ -23736,8 +23736,8 @@
       "word_greek": "προγραμματισμέν-ος, -η, -ο",
       "word_chinese": "计划的，预定的",
       "pronunciation": "programmatismen-os",
-      "example_greek": "Αυτό είναι προγραμματισμέν-ος.",
-      "example_chinese": "这是 计划的，预定的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2159,
@@ -23824,8 +23824,8 @@
       "word_greek": "πρωινό, το",
       "word_chinese": "早晨",
       "pronunciation": "proino",
-      "example_greek": "Αυτό είναι πρωινό.",
-      "example_chinese": "这是 早晨。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2167,
@@ -23835,8 +23835,8 @@
       "word_greek": "πρωιν-ός, -ή, -ό [adj]",
       "word_chinese": "早上，早",
       "pronunciation": "proin-os",
-      "example_greek": "Αυτό είναι πρωιν-ός.",
-      "example_chinese": "这是 早上，早。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2168,
@@ -23923,8 +23923,8 @@
       "word_greek": "ράτσα ζώου, η",
       "word_chinese": "谱系",
       "pronunciation": "ratsa-zoou",
-      "example_greek": "Αυτό είναι ράτσα ζώου.",
-      "example_chinese": "这是 谱系。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2176,
@@ -23934,8 +23934,8 @@
       "word_greek": "ρεσιτάλ, το",
       "word_chinese": "独奏会",
       "pronunciation": "resital",
-      "example_greek": "Αυτό είναι ρεσιτάλ.",
-      "example_chinese": "这是 独奏会。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2177,
@@ -24022,8 +24022,8 @@
       "word_greek": "Σαμ, ο",
       "word_chinese": "山姆",
       "pronunciation": "sam",
-      "example_greek": "Αυτό είναι Σαμ.",
-      "example_chinese": "这是 山姆。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2185,
@@ -24033,8 +24033,8 @@
       "word_greek": "Σαίξπηρ Ουίλιαμ, o",
       "word_chinese": "莎士比亚·威廉",
       "pronunciation": "saixpir-ouiliam",
-      "example_greek": "Αυτό είναι Σαίξπηρ Ουίλιαμ.",
-      "example_chinese": "这是 莎士比亚·威廉。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2186,
@@ -24121,8 +24121,8 @@
       "word_greek": "σίγουρα [adv]",
       "word_chinese": "肯定，当然，当然，当然",
       "pronunciation": "sigoura-adv",
-      "example_greek": "Αυτό είναι σίγουρα [adv].",
-      "example_chinese": "这是 肯定，当然，当然，当然。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2194,
@@ -24132,8 +24132,8 @@
       "word_greek": "σινεμά, το [see also κινηματογράφος]",
       "word_chinese": "电影院，电影",
       "pronunciation": "sinema",
-      "example_greek": "Αυτό είναι σινεμά.",
-      "example_chinese": "这是 电影院，电影。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2195,
@@ -24220,8 +24220,8 @@
       "word_greek": "σκουπίζω",
       "word_chinese": "擦、扫",
       "pronunciation": "skoupizo",
-      "example_greek": "Θέλω να σκουπίζω.",
-      "example_chinese": "我想 擦、扫。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2203,
@@ -24231,8 +24231,8 @@
       "word_greek": "σκούφος, ο / σκουφί, το",
       "word_chinese": "毛线帽、帽子",
       "pronunciation": "skoifos",
-      "example_greek": "Αυτό είναι σκούφος.",
-      "example_chinese": "这是 毛线帽、帽子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2204,
@@ -24319,8 +24319,8 @@
       "word_greek": "στοιχείο, το",
       "word_chinese": "数据",
       "pronunciation": "sticheio",
-      "example_greek": "Αυτό είναι στοιχείο.",
-      "example_chinese": "这是 数据。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2212,
@@ -24330,8 +24330,8 @@
       "word_greek": "στρώνω",
       "word_chinese": "放置、放置、制作",
       "pronunciation": "strono",
-      "example_greek": "Θέλω να στρώνω.",
-      "example_chinese": "我想 放置、放置、制作。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2213,
@@ -24418,8 +24418,8 @@
       "word_greek": "συμβουλή, η",
       "word_chinese": "建议",
       "pronunciation": "simvouli",
-      "example_greek": "Αυτό είναι συμβουλή.",
-      "example_chinese": "这是 建议。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2221,
@@ -24429,8 +24429,8 @@
       "word_greek": "συμπαθώ",
       "word_chinese": "喜欢",
       "pronunciation": "sibatho",
-      "example_greek": "Θέλω να συμπαθώ.",
-      "example_chinese": "我想 喜欢。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2222,
@@ -24517,8 +24517,8 @@
       "word_greek": "συνθέτης, ο/η",
       "word_chinese": "作曲家",
       "pronunciation": "sinthetis",
-      "example_greek": "Αυτό είναι συνθέτης.",
-      "example_chinese": "这是 作曲家。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2230,
@@ -24528,8 +24528,8 @@
       "word_greek": "συμπεριφορά, η",
       "word_chinese": "行为、态度",
       "pronunciation": "siberifora",
-      "example_greek": "Αυτό είναι συμπεριφορά.",
-      "example_chinese": "这是 行为、态度。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2231,
@@ -24616,8 +24616,8 @@
       "word_greek": "σχεδόν",
       "word_chinese": "几乎",
       "pronunciation": "schedon",
-      "example_greek": "Αυτό είναι σχεδόν.",
-      "example_chinese": "这是 几乎。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2239,
@@ -24627,8 +24627,8 @@
       "word_greek": "σε σχέση με",
       "word_chinese": "有关于",
       "pronunciation": "se-schesi-me",
-      "example_greek": "Αυτό είναι σε σχέση με.",
-      "example_chinese": "这是 有关于。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2240,
@@ -24715,8 +24715,8 @@
       "word_greek": "τέλει-ος, -α, -ο",
       "word_chinese": "完美的",
       "pronunciation": "teli-os",
-      "example_greek": "Αυτό είναι τέλει-ος.",
-      "example_chinese": "这是 完美的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2248,
@@ -24726,8 +24726,8 @@
       "word_greek": "τελειώνω",
       "word_chinese": "结束，结束",
       "pronunciation": "teliono",
-      "example_greek": "Θέλω να τελειώνω.",
-      "example_chinese": "我想 结束，结束。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2249,
@@ -24814,8 +24814,8 @@
       "word_greek": "τουλάχιστον",
       "word_chinese": "至少",
       "pronunciation": "toulachiston",
-      "example_greek": "Αυτό είναι τουλάχιστον.",
-      "example_chinese": "这是 至少。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2257,
@@ -24825,8 +24825,8 @@
       "word_greek": "τουρίστας, ο / τουρίστρια, η",
       "word_chinese": "游客",
       "pronunciation": "touristas",
-      "example_greek": "Θέλω να τουρίστας.",
-      "example_chinese": "我想 游客。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2258,
@@ -24913,8 +24913,8 @@
       "word_greek": "Τρίπολη, η",
       "word_chinese": "硅藻土",
       "pronunciation": "tripoli",
-      "example_greek": "Αυτό είναι Τρίπολη.",
-      "example_chinese": "这是 硅藻土。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2266,
@@ -24924,8 +24924,8 @@
       "word_greek": "τρυφερ-ός, -ή, -ό",
       "word_chinese": "温柔的，温和的，柔软的",
       "pronunciation": "trifer-os",
-      "example_greek": "Αυτό είναι τρυφερ-ός.",
-      "example_chinese": "这是 温柔的，温和的，柔软的。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2267,
@@ -25012,8 +25012,8 @@
       "word_greek": "υποψήφιος, o / υποψήφια, η [noun]",
       "word_chinese": "候选人",
       "pronunciation": "ipopsifios",
-      "example_greek": "Αυτό είναι υποψήφιος.",
-      "example_chinese": "这是 候选人。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2275,
@@ -25023,8 +25023,8 @@
       "word_greek": "ύστερα",
       "word_chinese": "之后，之后，然后",
       "pronunciation": "istera",
-      "example_greek": "Αυτό είναι ύστερα.",
-      "example_chinese": "这是 之后，之后，然后。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2276,
@@ -25111,8 +25111,8 @@
       "word_greek": "φιλολογία, η",
       "word_chinese": "文学、语言学",
       "pronunciation": "filologia",
-      "example_greek": "Αυτό είναι φιλολογία.",
-      "example_chinese": "这是 文学、语言学。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2284,
@@ -25122,8 +25122,8 @@
       "word_greek": "φουντούκι, το",
       "word_chinese": "榛子",
       "pronunciation": "foudoiki",
-      "example_greek": "Αυτό είναι φουντούκι.",
-      "example_chinese": "这是 榛子。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2285,
@@ -25210,8 +25210,8 @@
       "word_greek": "φυτεύω",
       "word_chinese": "种植",
       "pronunciation": "fiteio",
-      "example_greek": "Θέλω να φυτεύω.",
-      "example_chinese": "我想 种植。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2293,
@@ -25221,8 +25221,8 @@
       "word_greek": "φυσάω, -ώ",
       "word_chinese": "吹",
       "pronunciation": "fisao",
-      "example_greek": "Θέλω να φυσάω.",
-      "example_chinese": "我想 吹。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2294,
@@ -25309,8 +25309,8 @@
       "word_greek": "χαλάω, -ώ",
       "word_chinese": "分解",
       "pronunciation": "chalao",
-      "example_greek": "Θέλω να χαλάω.",
-      "example_chinese": "我想 分解。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2302,
@@ -25320,8 +25320,8 @@
       "word_greek": "χαμάμ, το",
       "word_chinese": "土耳其浴",
       "pronunciation": "chamam",
-      "example_greek": "Αυτό είναι χαμάμ.",
-      "example_chinese": "这是 土耳其浴。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2303,
@@ -25408,8 +25408,8 @@
       "word_greek": "χλιαρός, -ή, -ό",
       "word_chinese": "温",
       "pronunciation": "chliaros",
-      "example_greek": "Αυτό είναι χλιαρός.",
-      "example_chinese": "这是 温。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2311,
@@ -25419,8 +25419,8 @@
       "word_greek": "χόμπι, το",
       "word_chinese": "爱好",
       "pronunciation": "chobi",
-      "example_greek": "Αυτό είναι χόμπι.",
-      "example_chinese": "这是 爱好。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2312,
@@ -25507,8 +25507,8 @@
       "word_greek": "χρωματιστ-ός, -ή, -ό",
       "word_chinese": "色彩缤纷/色彩缤纷",
       "pronunciation": "chromatist-os",
-      "example_greek": "Αυτό είναι χρωματιστ-ός.",
-      "example_chinese": "这是 色彩缤纷/色彩缤纷。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2320,
@@ -25518,8 +25518,8 @@
       "word_greek": "ψητ-ός, -ή, -ό",
       "word_chinese": "烤，烤，烤",
       "pronunciation": "psit-os",
-      "example_greek": "Αυτό είναι ψητ-ός.",
-      "example_chinese": "这是 烤，烤，烤。"
+      "example_greek": "",
+      "example_chinese": ""
     },
     {
       "id": 2321,

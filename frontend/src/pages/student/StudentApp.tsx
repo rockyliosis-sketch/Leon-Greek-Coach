@@ -17,7 +17,8 @@ import {
   Layers,
   Check,
   X,
-  Volume2
+  Volume2,
+  Settings
 } from 'lucide-react';
 
 // Import local static vocabulary compilation
@@ -1838,6 +1839,9 @@ export default function StudentApp() {
               src="/leon_avatar.png" 
               alt="Leon Scout Avatar" 
               className="welcome-avatar"
+              style={{ cursor: 'pointer' }}
+              onClick={() => window.location.href = '/admin'}
+              title="进入家长控制后台"
             />
             <div className="welcome-text">
               <h1 className="welcome-title">
@@ -2933,12 +2937,32 @@ export default function StudentApp() {
                 );
               })()}
             </div>
-            <button 
-              onClick={() => setShowRulesModal(true)} 
-              className="rules-button"
-            >
-              积分规则 & 升级进度 | Κανόνες & Πρόοδος
-            </button>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <button 
+                onClick={() => setShowRulesModal(true)} 
+                className="rules-button"
+                style={{ margin: 0 }}
+              >
+                积分规则 & 升级进度 | Κανόνες & Πρόοδος
+              </button>
+              <button 
+                onClick={() => window.location.href = '/admin'} 
+                className="rules-button"
+                style={{ 
+                  margin: 0, 
+                  background: 'rgba(255, 149, 0, 0.08)', 
+                  color: '#FF9500', 
+                  border: '1px solid rgba(255, 149, 0, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 600
+                }}
+              >
+                <Settings size={13} />
+                <span>家长通道 | Γονείς</span>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -4064,6 +4088,44 @@ export default function StudentApp() {
           </div>
         )}
       </main>
+
+      {/* Premium Footer with Parent Portal Link */}
+      <footer style={{
+        padding: '24px 16px 40px 16px',
+        textAlign: 'center',
+        borderTop: '1px solid rgba(0, 0, 0, 0.05)',
+        marginTop: '40px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '12px'
+      }}>
+        <p style={{ fontSize: '12px', color: '#86868B', margin: 0, fontWeight: 500 }}>
+          © 2026 Leon Greek Coach · 智能希腊语自适应学习空间
+        </p>
+        <button 
+          onClick={() => window.location.href = '/admin'}
+          style={{
+            background: 'rgba(255, 149, 0, 0.08)',
+            color: '#FF9500',
+            border: '1px solid rgba(255, 149, 0, 0.2)',
+            borderRadius: '12px',
+            padding: '8px 24px',
+            fontSize: '13px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(255, 149, 0, 0.05)',
+            transition: 'all 0.2s ease'
+          }}
+          className="parent-portal-footer-btn"
+        >
+          <Settings size={14} />
+          <span>进入家长控制后台 | Διαχείριση Γονέων</span>
+        </button>
+      </footer>
 
       {/* 4. Score Rules & Level Progress Modal */}
       {showRulesModal && (() => {
