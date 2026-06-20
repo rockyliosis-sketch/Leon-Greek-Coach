@@ -1759,7 +1759,7 @@ export default function StudentApp() {
               </p>
             </div>
           </div>
-          {/* Creative CSS Greek Flag Gradient Overlay */}
+          {/* Creative CSS Greek Flag Wave SVG Overlay */}
           <div className="welcome-banner-decor" style={{
             position: 'absolute',
             right: 0,
@@ -1767,48 +1767,47 @@ export default function StudentApp() {
             bottom: 0,
             width: '45%',
             minWidth: '320px',
-            display: 'flex',
-            flexDirection: 'column',
-            opacity: 0.35,
+            opacity: 0.45,
             zIndex: 1,
-            pointerEvents: 'none',
-            maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
-            WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)'
+            pointerEvents: 'none'
           }}>
-            {/* 9 Stripes */}
-            {Array.from({ length: 9 }).map((_, idx) => (
-              <div key={idx} style={{
-                flex: 1,
-                background: idx % 2 === 0 ? '#0071E3' : '#FFFFFF'
-              }} />
-            ))}
-            {/* Canton (Blue Square with White Cross) */}
-            <div style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '120px',
-              height: '55.5%', // 5 out of 9 stripes
-              background: '#0071E3',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {/* Horizontal Bar of Cross */}
-              <div style={{
-                position: 'absolute',
-                width: '100%',
-                height: '14px',
-                background: '#FFFFFF'
-              }} />
-              {/* Vertical Bar of Cross */}
-              <div style={{
-                position: 'absolute',
-                width: '14px',
-                height: '100%',
-                background: '#FFFFFF'
-              }} />
-            </div>
+            <svg viewBox="0 0 500 200" width="100%" height="100%" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
+              <defs>
+                <linearGradient id="bannerFlagBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#0071E3" stopOpacity="0" />
+                  <stop offset="25%" stopColor="#0071E3" stopOpacity="0.15" />
+                  <stop offset="60%" stopColor="#0D5EAF" stopOpacity="0.75" />
+                  <stop offset="100%" stopColor="#0A4B8F" stopOpacity="0.95" />
+                </linearGradient>
+                <linearGradient id="bannerFlagWhite" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0" />
+                  <stop offset="35%" stopColor="#FFFFFF" stopOpacity="0.08" />
+                  <stop offset="70%" stopColor="#FFFFFF" stopOpacity="0.55" />
+                  <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0.85" />
+                </linearGradient>
+                <filter id="bannerGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              
+              {/* Flowing blue background wave */}
+              <path d="M 80,0 C 220,-20 280,120 420,30 C 470,0 520,20 500,0 L 500,200 L 80,200 Z" fill="url(#bannerFlagBlue)" />
+              
+              {/* Flowing white stripes */}
+              <path d="M 120,40 C 240,0 300,140 440,50 C 480,20 520,40 500,30 L 500,200 L 120,200 Z" fill="url(#bannerFlagWhite)" opacity="0.3" />
+              <path d="M 160,80 C 270,30 330,160 460,90 C 490,65 520,80 500,75 L 500,200 L 160,200 Z" fill="url(#bannerFlagWhite)" opacity="0.25" />
+              <path d="M 200,120 C 300,70 370,180 480,130 C 500,115 520,125 500,122 L 500,200 L 200,200 Z" fill="url(#bannerFlagWhite)" opacity="0.2" />
+
+              {/* Canton (positioned at top right of the banner flag area) */}
+              <g transform="translate(390, 20)" filter="url(#bannerGlow)">
+                {/* Rounded Canton */}
+                <rect x="0" y="0" width="80" height="60" rx="12" fill="#0D5EAF" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+                {/* Rounded Canton Cross */}
+                <rect x="33" y="6" width="14" height="48" rx="3" fill="#FFFFFF" />
+                <rect x="6" y="23" width="68" height="14" rx="3" fill="#FFFFFF" />
+              </g>
+            </svg>
           </div>
         </div>
 
@@ -2035,7 +2034,7 @@ export default function StudentApp() {
           </div>
 
           {/* Right: Detailed List */}
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="ebbinghaus-right-col" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#1D1D1F', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span>今日复习任务分解</span>
               <span style={{
@@ -2418,21 +2417,9 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/zeus.png" 
-                alt="Zeus" 
+                src="/hephaestus.png" 
+                alt="Hephaestus" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>单词连连看</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
@@ -2485,18 +2472,6 @@ export default function StudentApp() {
                 src="/athena.png" 
                 alt="Athena" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>拼字大作战</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
@@ -2549,18 +2524,6 @@ export default function StudentApp() {
                 src="/apollo.png" 
                 alt="Apollo" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>智能选择题</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
@@ -2613,18 +2576,6 @@ export default function StudentApp() {
                 src="/ares.png" 
                 alt="Ares" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>判断对错</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
@@ -2677,18 +2628,6 @@ export default function StudentApp() {
                 src="/hermes.png" 
                 alt="Hermes" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>希腊语翻译汉语</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
@@ -2738,21 +2677,9 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/poseidon.png" 
-                alt="Poseidon" 
+                src="/artemis.png" 
+                alt="Artemis" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>汉语翻译希腊语</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
@@ -2802,21 +2729,9 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/hades.png" 
-                alt="Hades" 
+                src="/aphrodite.png" 
+                alt="Aphrodite" 
                 className="game-character-img"
-                style={{
-                  position: 'absolute',
-                  right: '-10px',
-                  top: '20px',
-                  height: '90px',
-                  width: 'auto',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
-                  zIndex: 2,
-                  pointerEvents: 'none',
-                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}
               />
               <h3 className="game-title" style={{ marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 真题写作与口语挑战
@@ -2886,12 +2801,10 @@ export default function StudentApp() {
             <div className="navbar-stats-row">
               <span className="score-label">
                 <span>学习总积分</span>
-                <span style={{ fontSize: '9px', color: '#86868B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Συνολικοί Πόντοι
-                </span>
+                <span className="score-label-gr">Συνολικοί Πόντοι</span>
               </span>
-              <div className="score-badge" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Trophy size={14} />
+              <div className="score-badge">
+                <Trophy size={13} />
                 <span>{score} XP</span>
               </div>
               {(() => {
