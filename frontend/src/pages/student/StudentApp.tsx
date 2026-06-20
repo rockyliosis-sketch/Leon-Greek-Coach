@@ -294,6 +294,22 @@ const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string>
   return dates;
 };
 
+const isWordDueToday = (wordId: number, targetDateStr: string, activatedDatesMap: Record<number, string>) => {
+  const actDateStr = activatedDatesMap[wordId];
+  if (!actDateStr || actDateStr === 'LOCKED') return false;
+  
+  const activationDate = new Date(actDateStr);
+  activationDate.setHours(0, 0, 0, 0);
+  
+  const targetDate = new Date(targetDateStr);
+  targetDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = targetDate.getTime() - activationDate.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays === 0 || EBBINGHAUS_INTERVALS.includes(diffDays);
+};
+
 // Helper to remove accents and case for safe verification
 const cleanChar = (c: string) => {
   return c
@@ -845,28 +861,23 @@ export default function StudentApp() {
     selectedUnits.forEach(gUnit => {
       // Find all words in unlockedVocab belonging to this global unit
       const unitWords = unlockedVocab.filter(w => w.unit === gUnit);
-
-      // We want to select up to 20 words for this unit to avoid overwhelming Leon.
-      // Sort them so that activated words are prioritized.
-      const sortedUnitWords = [...unitWords].sort((a, b) => {
-        const actA = activatedDates[a.id];
-        const actB = activatedDates[b.id];
-        
-        const hasActA = actA && actA !== 'LOCKED';
-        const hasActB = actB && actB !== 'LOCKED';
-        
-        if (hasActA && !hasActB) return -1;
-        if (!hasActA && hasActB) return 1;
-        
-        return a.id - b.id;
-      });
-
-      const selectedWords = sortedUnitWords.slice(0, 20);
-      deck.push(...selectedWords);
+      
+      // Sort unit words by ID
+      const sortedUnitWords = [...unitWords].sort((a, b) => a.id - b.id);
+      
+      deck.push(...sortedUnitWords);
     });
 
-    // Sort strictly by sequence: A1-A -> A1-B -> A2, then unit number
+    // Sort so that:
+    // 1. Words due today are at the very beginning of the daily deck
+    // 2. Then sort strictly by sequence: A1-A -> A1-B -> A2, then unit number, then ID
     const sortBooks = (a: Word, b: Word) => {
+      const dueA = isWordDueToday(a.id, selectedDateStr, activatedDates);
+      const dueB = isWordDueToday(b.id, selectedDateStr, activatedDates);
+      
+      if (dueA && !dueB) return -1;
+      if (!dueA && dueB) return 1;
+
       const order: Record<string, number> = { 'A1-A': 1, 'A1-B': 2, 'A2': 3 };
       const bookA = order[a.book_id.toUpperCase()] || 99;
       const bookB = order[b.book_id.toUpperCase()] || 99;
@@ -876,7 +887,7 @@ export default function StudentApp() {
     };
 
     return deck.sort(sortBooks);
-  }, [allVocab, selectedUnits, activatedDates]);
+  }, [allVocab, selectedUnits, activatedDates, selectedDateStr]);
 
   // Determine if active level is A1 or A2 based on current active vocabulary
   const activeExamLevel = useMemo(() => {
