@@ -1929,20 +1929,21 @@ export default function StudentApp() {
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
           marginBottom: '40px',
           display: 'grid',
-          gridTemplateColumns: '1.2fr 1fr 220px',
+          gridTemplateColumns: '1.2fr 1.8fr',
           gap: '32px',
           position: 'relative'
         }} className="ebbinghaus-container">
-          {/* Mobile Zeus (absolute positioned) */}
-          <img 
-            src="/zeus.png" 
-            alt="Zeus" 
-            className="section-char-img section-char-mobile-only"
-          />
           {/* Left: SVG Line Chart */}
           <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <span>艾宾浩斯遗忘曲线智能追踪</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+              <img 
+                src="/zeus.png" 
+                alt="Zeus" 
+                className="header-char-img"
+              />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: 0, display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <span>艾宾浩斯遗忘曲线智能追踪</span>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '12px', color: '#86868B', fontWeight: 600 }}>当前日期 / Ημερομηνία:</span>
                 <span style={{
@@ -1962,6 +1963,8 @@ export default function StudentApp() {
             <p style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, margin: '0 0 6px 0', textTransform: 'uppercase' }}>
               Αναλυτής Καμπύλης Λήθης Ebbinghaus
             </p>
+          </div>
+        </div>
             <p style={{ fontSize: '13px', color: '#86868B', margin: '0 0 20px 0', lineHeight: 1.5 }}>
               动态追踪今日复习词汇的记忆留存率。绿色发光的节点表示今日正在激活调度的记忆周期。
               <span style={{ display: 'block', fontSize: '11.5px', color: '#86868B', marginTop: '4px' }}>
@@ -2142,14 +2145,6 @@ export default function StudentApp() {
             </div>
           </div>
           
-          {/* Desktop Zeus Column */}
-          <div className="section-char-desktop-column">
-            <img 
-              src="/zeus.png" 
-              alt="Zeus" 
-              className="section-char-desktop-img"
-            />
-          </div>
         </div>
 
         <div id="today-guide" style={{
@@ -2159,22 +2154,18 @@ export default function StudentApp() {
           padding: '32px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
           marginBottom: '48px',
-          position: 'relative',
-          display: 'grid',
-          gridTemplateColumns: '1fr 220px',
-          gap: '32px'
+          position: 'relative'
         }}>
-          {/* Mobile Poseidon (absolute positioned) */}
-          <img 
-            src="/poseidon.png" 
-            alt="Poseidon" 
-            className="section-char-img section-char-mobile-only"
-          />
           {/* Left Column: Title and Content */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <div>
-              <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
+            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+              <img 
+                src="/poseidon.png" 
+                alt="Poseidon" 
+                className="header-char-img"
+              />
+              <div>
+                <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
               <p style={{ fontSize: '13px', color: '#86868B', margin: '4px 0 0 0', fontWeight: 550 }}>
                 Καθημερινός Οδηγός Μελέτης & Λεξιλόγιο Επανάληψης
               </p>
@@ -2418,38 +2409,27 @@ export default function StudentApp() {
             </div>
           )}
           </div>
-          
-          {/* Desktop Poseidon Column */}
-          <div className="section-char-desktop-column">
-            <img 
-              src="/poseidon.png" 
-              alt="Poseidon" 
-              className="section-char-desktop-img"
-            />
-          </div>
         </div>
 
         <div id="adaptive-training" style={{
           position: 'relative',
-          marginTop: '60px',
-          display: 'grid',
-          gridTemplateColumns: '1fr 220px',
-          gap: '32px'
+          marginTop: '60px'
         }}>
-          {/* Mobile Hades (absolute positioned) */}
-          <img 
-            src="/hades.png" 
-            alt="Hades" 
-            className="section-char-img section-char-mobile-only"
-          />
           {/* Left Column: Title and Content */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
-            <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
-            <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
-              Ενότητες Προσαρμοστικής Εκπαίδευσης
-            </p>
-          </div>
+            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+              <img 
+                src="/hades.png" 
+                alt="Hades" 
+                className="header-char-img"
+              />
+              <div>
+                <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
+                <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
+                  Ενότητες Προσαρμοστικής Εκπαίδευσης
+                </p>
+              </div>
+            </div>
           
           <div className="game-hub-grid">
             
@@ -2832,17 +2812,7 @@ export default function StudentApp() {
                 进入挑战 / Πρόκληση <ChevronRight size={16} />
               </button>
             </div>
-
           </div>
-          </div>
-          
-          {/* Desktop Hades Column */}
-          <div className="section-char-desktop-column">
-            <img 
-              src="/hades.png" 
-              alt="Hades" 
-              className="section-char-desktop-img"
-            />
           </div>
         </div>
       </div>

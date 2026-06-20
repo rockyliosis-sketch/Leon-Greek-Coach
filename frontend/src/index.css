@@ -819,31 +819,9 @@ body {
   font-weight: 500;
 }
 
-/* Section Character Image (Mobile Only Overlay Style) */
-.section-char-img {
-  position: absolute;
-  right: 20px;
-  top: -60px;
-  height: 270px;
-  width: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.15));
-  z-index: 10;
-  pointer-events: none;
-  transition: transform 0.3s ease;
-}
-
-/* Specific position for Zeus standing on top of Ebbinghaus title on desktop (unused now, but kept safe) */
-.ebbinghaus-container .section-char-img {
-  right: 20px;
-  left: auto;
-  top: -60px;
-  height: 270px;
-}
-
 .ebbinghaus-container {
   padding: 32px !important;
-  margin-top: 60px !important; /* Normal margin instead of 220px */
+  margin-top: 32px !important;
 }
 
 /* Reset spacing on desktop columns to allow them to stretch normally */
@@ -870,32 +848,18 @@ body {
   margin-right: 0 !important;
 }
 
-/* New clean grid character columns styling for desktop */
-.section-char-desktop-column {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  height: 100%;
-}
-
-.section-char-desktop-img {
-  height: 270px;
+/* Section Header Character Styling */
+.header-char-img {
+  height: 85px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.15));
-  pointer-events: none;
-  transition: transform 0.3s ease;
-  z-index: 10;
-  margin-top: -40px; /* Stand dynamically on card top border */
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12));
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
-.section-char-desktop-img:hover {
+.header-char-img:hover {
   transform: scale(1.05);
-}
-
-.section-char-mobile-only {
-  display: none !important;
 }
 
 /* Card Character Image */
@@ -975,21 +939,12 @@ body {
     gap: 12px;
   }
   
-  /* Show mobile character overlay & hide desktop character columns on mobile */
-  .section-char-mobile-only {
-    display: block !important;
-  }
-  .section-char-desktop-column {
-    display: none !important;
-  }
-  
   /* Ebbinghaus Container Mobile Overrides */
   .ebbinghaus-container {
     grid-template-columns: 1fr !important;
     gap: 24px !important;
     padding: 24px !important;
-    padding-top: 100px !important;
-    margin-top: 60px !important; /* Ensure Zeus doesn't overlap elements above on mobile */
+    margin-top: 24px !important;
   }
   .ebbinghaus-container > div:first-of-type {
     padding-left: 0 !important;
@@ -998,9 +953,7 @@ body {
   /* Today Guide Mobile Overrides */
   #today-guide {
     grid-template-columns: 1fr !important;
-    padding-top: 100px !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding: 24px !important;
     position: relative;
   }
   #today-guide > div:first-of-type {
@@ -1010,7 +963,7 @@ body {
   /* Adaptive Training Section Header Mobile Overrides */
   #adaptive-training {
     grid-template-columns: 1fr !important;
-    padding-top: 100px !important;
+    padding: 24px !important;
     position: relative;
   }
   #adaptive-training > div:first-of-type {
@@ -1029,27 +982,6 @@ body {
     top: 12px !important;
     height: 70px !important;
     width: auto !important;
-  }
-  
-  /* Section character images shift to top-right on mobile */
-  .section-char-img {
-    left: auto !important;
-    right: -15px !important; /* Pushed further to the right */
-    top: -45px !important;
-    height: 210px !important;
-    width: auto !important;
-  }
-  
-  .ebbinghaus-container .section-char-img {
-    left: auto !important;
-    right: -15px !important;
-    top: -45px !important;
-    height: 210px !important;
-  }
-  
-  .section-header-with-icon {
-    padding-left: 0 !important;
-    padding-right: 180px !important; /* Prevent text overlap with 210px avatar */
   }
   
   /* Navbar Mobile Responsiveness */
