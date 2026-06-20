@@ -827,7 +827,8 @@ body {
 }
 
 .section-header-with-icon {
-  padding-right: 220px; /* Leave space on the right for the 270px avatar */
+  position: relative;
+  padding-right: 180px; /* Leave space on the right for the 270px avatar */
   padding-left: 0;
 }
 
@@ -846,7 +847,15 @@ body {
 }
 
 .ebbinghaus-right-col {
-  padding-right: 120px;
+  padding-right: 0; /* Zeus is in the left column now, no need for right column padding */
+}
+
+.today-units-list {
+  margin-right: 200px; /* Leaves space for Poseidon on desktop */
+}
+
+#adaptive-training {
+  margin-bottom: 90px; /* Pushes the cards down to prevent Hades overlapping */
 }
 
 /* Quick Nav Container */
@@ -1014,6 +1023,14 @@ body {
   
   .ebbinghaus-right-col {
     padding-right: 0 !important;
+  }
+  
+  .today-units-list {
+    margin-right: 0 !important;
+  }
+  
+  #adaptive-training {
+    margin-bottom: 24px !important;
   }
   
   /* Review task item stacks on mobile */
