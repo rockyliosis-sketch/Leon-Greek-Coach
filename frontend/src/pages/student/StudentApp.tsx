@@ -962,6 +962,17 @@ export default function StudentApp() {
     return { newWords: newW, reviewWords: revW };
   }, [allVocab, activatedDates, selectedDateStr]);
 
+  const spannedMonths = useMemo(() => {
+    if (selectedUnits.length === 0) return 0;
+    const oldestUnit = Math.min(...selectedUnits);
+    const oldestSched = getUnitSchedule(oldestUnit);
+    const oldestStart = new Date(START_DATE);
+    oldestStart.setDate(oldestStart.getDate() + oldestSched.startOffset);
+    const targetDate = new Date(selectedDateStr);
+    const diffDays = Math.round((targetDate.getTime() - oldestStart.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(1, Math.round(diffDays / 30.4));
+  }, [selectedUnits, selectedDateStr]);
+
   // Group unique units and pad to at least 4 units (Most Recent -> Most Remote)
   const uniqueUnitsList = useMemo(() => {
     const getUnitInfoFromGlobal = (globalUnit: number) => {
@@ -1938,14 +1949,14 @@ export default function StudentApp() {
           <div className="stat-card">
             <div className="stat-header">
               <div>
-                <span className="stat-badge badge-green">今日新词</span>
-                <div style={{ fontSize: '9px', color: '#34C759', fontWeight: 700, marginTop: '2px' }}>ΝΕΕΣ ΛΕΞΕΙΣ</div>
+                <span className="stat-badge badge-green">记忆横跨周期</span>
+                <div style={{ fontSize: '9px', color: '#34C759', fontWeight: 700, marginTop: '2px' }}>ΧΡΟΝΙΚΟ ΕΥΡΟΣ</div>
               </div>
-              <Sparkles size={16} className="text-green" />
+              <Calendar size={16} className="text-green" />
             </div>
-            <div className="stat-value">{newWords.length}</div>
-            <div className="stat-desc">今日新增激活的单词</div>
-            <div style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>Νέες ενεργοποιημένες λέξεις</div>
+            <div className="stat-value">~{spannedMonths} 个月</div>
+            <div className="stat-desc">今日横跨遗忘曲线大致几个月</div>
+            <div style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>Χρονική κάλυψη επανάληψης</div>
           </div>
 
           <div className="stat-card">
@@ -2099,11 +2110,12 @@ export default function StudentApp() {
                   { day: 15, x: 340, y: 110, retention: '28%' },
                   { day: 30, x: 400, y: 120, retention: '21%' }
                 ].map((node, i) => {
-                  const wordCount = ebbinghausStats.counts[node.day] || 0;
-                  const isActive = wordCount > 0;
-                  const nodeDateStr = ebbinghausStats.dates[node.day];
-                  const unitInfo = nodeDateStr ? getUnitForDate(nodeDateStr) : null;
-                  const unitNameLabel = unitInfo ? unitInfo.displayUnitName : `D${node.day}`;
+                  const unitIndex = [0, 0, 0, 0, 1, 2, 3][i];
+                  const unitItem = uniqueUnitsList[unitIndex];
+                  const isActive = !!(unitItem && unitItem.count > 0);
+                  const unitNameLabel = unitItem ? unitItem.displayUnit : `D${node.day}`;
+                  const dateRangeStr = unitItem ? unitItem.dateRange : '';
+                  const wordCount = unitItem ? unitItem.count : 0;
 
                   return (
                     <g key={i}>
@@ -2132,7 +2144,7 @@ export default function StudentApp() {
                         {unitNameLabel}
                       </text>
                       <text x={node.x} y="163" fontSize="7.5" fill="#86868B" textAnchor="middle">
-                        {unitInfo ? unitInfo.dateRangeStr : ''}
+                        {dateRangeStr}
                       </text>
                       {isActive && (
                         <text x={node.x} y="174" fontSize="8.5" fontWeight="900" fill="#34C759" textAnchor="middle">
@@ -2555,15 +2567,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：8 组对碰 (共 40 词)
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 8 γύροι (40 λέξεις)
-                </span>
               </div>
               <button 
                 onClick={() => startModule('matching')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2607,15 +2616,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：40 道题
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 40 ερωτήσεις
-                </span>
               </div>
               <button 
                 onClick={() => startModule('spelling')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2659,15 +2665,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：30 道题
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 30 ερωτήσεις
-                </span>
               </div>
               <button 
                 onClick={() => startModule('quiz')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2711,15 +2714,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：40 道题 (包含单词与句子)
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 40 ερωτήσεις (λέξεις & προτάσεις)
-                </span>
               </div>
               <button 
                 onClick={() => startModule('truefalse')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2763,15 +2763,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：20 道题 (包含单词与句子)
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 20 ερωτήσεις (λέξεις & προτάσεις)
-                </span>
               </div>
               <button 
                 onClick={() => startModule('translation_gr_zh')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2815,15 +2812,12 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：20 道题 (包含单词与句子)
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 20 ερωτήσεις (λέξεις & προτάσεις)
-                </span>
               </div>
               <button 
                 onClick={() => startModule('translation_zh_gr')} 
                 className="btn-premium btn-blue-filled"
               >
-                开始特训 / Έναρξη <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
 
@@ -2878,9 +2872,6 @@ export default function StudentApp() {
               </p>
               <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
                 题量：6 大精选真题挑战
-                <span style={{ display: 'block', fontSize: '11px', color: '#86868B', fontWeight: 550, marginTop: '2px' }}>
-                  Ερωτήσεις: 6 επίσημα θέματα
-                </span>
               </div>
               <button 
                 onClick={() => {
@@ -2891,7 +2882,7 @@ export default function StudentApp() {
                 }} 
                 className="btn-premium btn-blue-filled"
               >
-                进入挑战 / Πρόκληση <ChevronRight size={16} />
+                开始 <ChevronRight size={16} />
               </button>
             </div>
           </div>
