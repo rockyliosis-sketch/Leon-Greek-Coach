@@ -212,6 +212,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [rawMD, setRawMD] = useState('');
   const [parsedWordsCount, setParsedWordsCount] = useState<number | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadBookId, setUploadBookId] = useState('A1-A');
+  const [uploadUnit, setUploadUnit] = useState('1');
+  const [customBookId, setCustomBookId] = useState('');
+  const [isCustomBook, setIsCustomBook] = useState(false);
 
   // Activation picker date
   const [activationDate, setActivationDate] = useState(() => {
@@ -285,6 +289,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     e.preventDefault();
     if (!rawMD.trim()) return;
 
+    const targetBookId = (isCustomBook ? customBookId.trim() : uploadBookId) || 'NEW_UPLOAD';
+    const targetUnit = parseInt(uploadUnit, 10) || 1;
+
     // Simple markdown word extractor: matches lines like:
     // **Greek** /pronunciation/ - Chinese
     // or simply: Greek - Chinese
@@ -302,8 +309,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
         newWordsList.push({
           id: currentId++,
-          book_id: 'NEW_UPLOAD',
-          unit: 99, // New scans unit identifier
+          book_id: targetBookId,
+          unit: targetUnit,
           word_greek: greekPart,
           word_chinese: chinesePart,
           pronunciation: 'new',
@@ -336,9 +343,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <div className="admin-panel mb-8">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <h3 className="admin-panel-title" style={{ marginBottom: '4px' }}>新课单词激活控制台</h3>
+            <h3 className="admin-panel-title" style={{ marginBottom: '4px' }}>单元课程与特训授权控制台</h3>
             <p style={{ fontSize: '13px', color: '#86868B', fontWeight: 500 }}>
-              选择课本单元与激活日期，让它们正式注入 Leon 的每日自适应复习流中。
+              选择对应的课本单元与授权生效日期，将其所包含的单词、语法要点与配套特训注入 Leon 的每日自适应复习与智能训练流中。
             </p>
           </div>
           
@@ -353,16 +360,29 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
 
+        <div style={{ 
+          background: 'rgba(0,113,227,0.05)', 
+          borderLeft: '4px solid #0071E3',
+          padding: '12px 16px', 
+          borderRadius: '8px', 
+          marginBottom: '24px', 
+          fontSize: '13px', 
+          color: '#1D1D1F',
+          lineHeight: '1.5'
+        }}>
+          💡 <strong>词汇统计提示：</strong> 此处显示的“单元包含词汇”数量是根据教材附录索引爬取/导入的全部词汇总量（包含核心生词、常用关联词、姓名/代词及课文复习词），并非全部是未学过的全新生词。授权解锁后，系统将自动结合遗忘曲线和特训模块对 Leon 进行智能追踪与针对性训练。
+        </div>
+
         <div className="overflow-x-auto">
           <table className="admin-table">
             <thead>
               <tr>
                 <th className="admin-th" style={{ width: '15%' }}>课本章节 / 书籍 ID</th>
-                <th className="admin-th" style={{ width: '25%' }}>单元名称</th>
-                <th className="admin-th" style={{ width: '35%' }}>核心语法与重点知识点</th>
-                <th className="admin-th" style={{ width: '10%' }}>生词总量</th>
-                <th className="admin-th" style={{ width: '15%' }}>当前激活状态</th>
-                <th className="admin-th" style={{ width: '10%' }}>管理操作</th>
+                <th className="admin-th" style={{ width: '25%' }}>单元课程</th>
+                <th className="admin-th" style={{ width: '35%' }}>核心语法与配套教学内容</th>
+                <th className="admin-th" style={{ width: '10%' }}>单元包含词汇</th>
+                <th className="admin-th" style={{ width: '15%' }}>课程与特训授权状态</th>
+                <th className="admin-th" style={{ width: '10%' }}>授权操作</th>
               </tr>
             </thead>
             <tbody>
@@ -384,19 +404,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <td className="admin-td" style={{ fontSize: '13px', lineHeight: '1.5', color: '#515154', fontWeight: 500 }}>
                         {getUnitGrammarPoints(bookName, unitNum)}
                       </td>
-                      <td className="admin-td">{words.length} 个单词</td>
+                      <td className="admin-td">{words.length} 词</td>
                       <td className="admin-td">
                         {isUnitActivated ? (
                           <span style={{ color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            已完全激活 ({activatedInUnitCount}/{words.length})
+                            已授权学习 (解锁) ({activatedInUnitCount}/{words.length})
                           </span>
                         ) : activatedInUnitCount > 0 ? (
                           <span style={{ color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            部分激活 ({activatedInUnitCount}/{words.length})
+                            部分授权 ({activatedInUnitCount}/{words.length})
                           </span>
                         ) : (
                           <span style={{ color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            未激活 (待学新课)
+                            未授权 (锁定中)
                           </span>
                         )}
                       </td>
@@ -407,7 +427,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             className="btn-premium"
                             style={{ background: 'rgba(255,59,48,0.08)', color: '#FF3B30', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
                           >
-                            取消激活
+                            锁定此单元
                           </button>
                         ) : (
                           <button 
@@ -415,7 +435,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                             className="btn-premium"
                             style={{ background: 'rgba(52,199,89,0.08)', color: '#34C759', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
                           >
-                            激活此单元
+                            授权解锁单元
                           </button>
                         )}
                       </td>
@@ -433,26 +453,98 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const renderUploadTab = () => (
     <div className="animate-fade-in">
       <div className="admin-panel mb-8">
-        <h3 className="admin-panel-title">新课扫描件 (MD 格式) 导入与解析</h3>
+        <h3 className="admin-panel-title">课外教材与自主内容导入 (MD 格式)</h3>
         <p style={{ fontSize: '14px', color: '#86868B', marginBottom: '24px', lineHeight: '1.6' }}>
-          支持直接粘贴扫描 OCR 出来的 Markdown 文本。系统会自动提取包含的希腊语新词，并将其存入待学习的新词待命池中。
+          支持直接粘贴扫描 OCR 或老师提供的 Markdown 文本。系统会自动提取其中的希腊语词汇，并根据您指定的书籍和单元，将其归档到对应的课程授权列表中。
         </p>
 
         {uploadSuccess && (
           <div style={{ background: 'rgba(52,199,89,0.08)', color: '#34C759', padding: '16px', borderRadius: '12px', marginBottom: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={20} />
-            成功解析并导入 {parsedWordsCount} 个新单词！请前往“单词激活”标签页进行课时激活。
+            成功解析并导入 {parsedWordsCount} 个单词！请前往“课程单元与特训授权”标签页进行解锁授权。
           </div>
         )}
 
         <form onSubmit={handleMDUpload}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <div className="admin-input-group" style={{ marginBottom: 0 }}>
+              <label className="admin-label" style={{ fontWeight: 600 }}>归属教材 / 书籍 ID</label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                {['A1-A', 'A1-B', 'A2'].map(b => (
+                  <button
+                    key={b}
+                    type="button"
+                    onClick={() => {
+                      setUploadBookId(b);
+                      setIsCustomBook(false);
+                    }}
+                    className={`btn-premium ${uploadBookId === b && !isCustomBook ? 'btn-blue-filled' : ''}`}
+                    style={{ 
+                      padding: '6px 14px', 
+                      fontSize: '13px', 
+                      width: 'auto',
+                      background: uploadBookId === b && !isCustomBook ? '#0071E3' : 'rgba(0,0,0,0.04)',
+                      color: uploadBookId === b && !isCustomBook ? '#fff' : '#1D1D1F',
+                      border: 'none'
+                    }}
+                  >
+                    {b}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setIsCustomBook(true)}
+                  className={`btn-premium ${isCustomBook ? 'btn-blue-filled' : ''}`}
+                  style={{ 
+                    padding: '6px 14px', 
+                    fontSize: '13px', 
+                    width: 'auto',
+                    background: isCustomBook ? '#0071E3' : 'rgba(0,0,0,0.04)',
+                    color: isCustomBook ? '#fff' : '#1D1D1F',
+                    border: 'none'
+                  }}
+                >
+                  自定义书籍
+                </button>
+              </div>
+              {isCustomBook && (
+                <input
+                  type="text"
+                  value={customBookId}
+                  onChange={e => setCustomBookId(e.target.value)}
+                  placeholder="例如: 学校补充, 新概念希腊语"
+                  className="admin-input"
+                  style={{ padding: '8px 12px' }}
+                  required
+                />
+              )}
+            </div>
+
+            <div className="admin-input-group" style={{ marginBottom: 0 }}>
+              <label className="admin-label" style={{ fontWeight: 600 }}>导入单元编号 (1-99)</label>
+              <input
+                type="number"
+                min="1"
+                max="99"
+                value={uploadUnit}
+                onChange={e => setUploadUnit(e.target.value)}
+                className="admin-input"
+                style={{ padding: '8px 12px', height: '38px' }}
+                required
+              />
+              <span style={{ fontSize: '11px', color: '#86868B', marginTop: '4px', display: 'block' }}>
+                导入词汇将直接合并到该单元的授权表格行中，解锁后 Leon 即可学习。
+              </span>
+            </div>
+          </div>
+
           <div className="admin-input-group">
             <label className="admin-label">请在此输入/粘贴新课文的单词 Markdown 文本 (支持 "希腊文 - 中文释义" 的格式):</label>
             <textarea 
               rows={12}
               value={rawMD}
               onChange={e => setRawMD(e.target.value)}
-              placeholder={`# 希腊语第6课新词汇\nκαλημέρα - 早上好\nτραπέζι, το - 桌子\nαυτοκίνητο, το - 汽车`}
+              placeholder={`# 希腊语第6课新词汇\\nκαλημέρα - 早上好\\nτραπέζι, το - 桌子\\nαυτοκίνητο, το - 汽车`}
               className="admin-input"
               style={{ fontFamily: 'monospace', resize: 'vertical', padding: '16px' }}
             />
@@ -495,14 +587,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             className={`admin-nav-item ${activeTab === 'activation' ? 'active' : ''}`}
           >
             <Layers size={18} />
-            <span>新课单词激活</span>
+            <span>单元课程与特训授权</span>
           </button>
           <button 
             onClick={() => setActiveTab('upload')} 
             className={`admin-nav-item ${activeTab === 'upload' ? 'active' : ''}`}
           >
             <FolderPlus size={18} />
-            <span>新课教材导入</span>
+            <span>课外与零散内容导入</span>
           </button>
         </nav>
 
@@ -520,9 +612,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       <main className="admin-content">
         <div className="admin-header">
           <div>
-            <h2 className="admin-title">Leon 学习进度管理器</h2>
+            <h2 className="admin-title">Leon 希腊语课程内容与特训授权中心</h2>
             <p style={{ color: '#86868B', fontSize: '15px', fontWeight: 500, marginTop: '4px' }}>
-              通过设定激活生日，控制 Leon 每日艾宾浩斯复习流的数据结构。
+              家长可在此解锁或锁定各章节的教学单元、语法要点及配套特训，控制 Leon 的每日自适应复习流的课程与练习范围。
             </p>
           </div>
         </div>
@@ -530,15 +622,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* Stats Grid */}
         <div className="admin-grid-3">
           <div className="admin-stat-card">
-            <span className="admin-stat-label">词库总单词数</span>
+            <span className="admin-stat-label">系统总收录词汇量</span>
             <div className="admin-stat-val text-blue">{totalWords}</div>
           </div>
           <div className="admin-stat-card">
-            <span className="admin-stat-label">已激活复习数</span>
+            <span className="admin-stat-label">已解锁授权词汇</span>
             <div className="admin-stat-val text-green">{activatedCount}</div>
           </div>
           <div className="admin-stat-card">
-            <span className="admin-stat-label">待学习（未激活）数</span>
+            <span className="admin-stat-label">未授权（锁定中）</span>
             <div className="admin-stat-val text-orange">{pendingCount}</div>
           </div>
         </div>

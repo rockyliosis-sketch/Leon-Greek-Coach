@@ -770,6 +770,19 @@ export default function StudentApp() {
     setCompletedModulesForDate(currentCompleted[dateStr] || []);
   }, []);
 
+  // Filter allVocab to only contain unlocked words as of selectedDateStr
+  const unlockedVocab = useMemo(() => {
+    return allVocab.filter(word => {
+      const actDateStr = activatedDates[word.id];
+      if (!actDateStr || actDateStr === 'LOCKED') return false;
+      const activationDate = new Date(actDateStr);
+      activationDate.setHours(0, 0, 0, 0);
+      const targetDate = new Date(selectedDateStr);
+      targetDate.setHours(0, 0, 0, 0);
+      return activationDate <= targetDate;
+    });
+  }, [allVocab, activatedDates, selectedDateStr]);
+
   const selectedUnits = useMemo(() => {
     const targetDateInfo = getUnitForDate(selectedDateStr);
     const currentGlobalUnit = targetDateInfo.unitNum;
@@ -830,8 +843,8 @@ export default function StudentApp() {
     const deck: Word[] = [];
 
     selectedUnits.forEach(gUnit => {
-      // Find all words in allVocab belonging to this global unit
-      const unitWords = allVocab.filter(w => w.unit === gUnit);
+      // Find all words in unlockedVocab belonging to this global unit
+      const unitWords = unlockedVocab.filter(w => w.unit === gUnit);
 
       // We want to select up to 20 words for this unit to avoid overwhelming Leon.
       // Sort them so that activated words are prioritized.
@@ -1138,7 +1151,7 @@ export default function StudentApp() {
     if (pool.length < 40) {
       const extraNeeded = 40 - pool.length;
       const fallbackList = filterDuplicateTranslations(
-        allVocab.filter(w => !pool.some(p => p.id === w.id))
+        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
@@ -1161,7 +1174,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...spellingItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, allVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel]);
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
@@ -1266,7 +1279,7 @@ export default function StudentApp() {
     if (pool.length < 30) {
       const extraNeeded = 30 - pool.length;
       const fallbackList = filterDuplicateTranslations(
-        allVocab.filter(w => !pool.some(p => p.id === w.id))
+        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
@@ -1289,7 +1302,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...quizItems];
     return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [dailyDeck, allVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
@@ -1300,7 +1313,7 @@ export default function StudentApp() {
     const correct = currentQuizWord.word_chinese;
     const targetIsProper = isGreekProperNoun(currentQuizWord.word_greek);
     
-    let candidates = allVocab.filter(w => {
+    let candidates = unlockedVocab.filter(w => {
       if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
       if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
       
@@ -1309,11 +1322,18 @@ export default function StudentApp() {
     });
 
     if (candidates.length < 3) {
-      candidates = allVocab.filter(w => {
+      candidates = unlockedVocab.filter(w => {
         if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
         if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
         return true;
       });
+      if (candidates.length < 3) {
+        candidates = allVocab.filter(w => {
+          if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
+          if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
+          return true;
+        });
+      }
     }
 
     const distractors = candidates.map(w => w.word_chinese);
@@ -1373,7 +1393,7 @@ export default function StudentApp() {
     if (pool.length < 40) {
       const extraNeeded = 40 - pool.length;
       const fallbackList = filterDuplicateTranslations(
-        allVocab.filter(w => !pool.some(p => p.id === w.id))
+        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
@@ -1414,7 +1434,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...tfItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, allVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel]);
 
   const currentTfWord = tfPool[tfIndex] || null;
 
@@ -1478,7 +1498,7 @@ export default function StudentApp() {
     if (pool.length < 20) {
       const extraNeeded = 20 - pool.length;
       const fallbackList = filterDuplicateTranslations(
-        allVocab.filter(w => !pool.some(p => p.id === w.id))
+        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
@@ -1518,7 +1538,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, allVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel]);
 
   const translationZhGrPool = useMemo(() => {
     let pool = [...dailyDeck];
@@ -1526,7 +1546,7 @@ export default function StudentApp() {
     if (pool.length < 20) {
       const extraNeeded = 20 - pool.length;
       const fallbackList = filterDuplicateTranslations(
-        allVocab.filter(w => !pool.some(p => p.id === w.id))
+        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
@@ -1566,7 +1586,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, allVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel]);
 
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
@@ -1655,7 +1675,7 @@ export default function StudentApp() {
       if (pool.length < 40) {
         const extraNeeded = 40 - pool.length;
         const fallbackList = filterDuplicateTranslations(
-          allVocab.filter(w => !pool.some(p => p.id === w.id))
+          unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
         );
         pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
       }
