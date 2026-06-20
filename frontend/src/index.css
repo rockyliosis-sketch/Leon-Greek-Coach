@@ -177,6 +177,11 @@ body {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 48px;
+  background: linear-gradient(135deg, #0A4B8F 0%, #0071E3 50%, #00A3FF 100%);
+  border-radius: 28px;
+  padding: 36px;
+  color: #FFFFFF;
+  box-shadow: 0 8px 32px rgba(0, 113, 227, 0.15);
 }
 
 .welcome-title {
@@ -799,7 +804,9 @@ body {
 }
 
 .welcome-title {
-  color: #FFFFFF;
+  color: #FFFFFF !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+  background: none !important;
   font-size: 32px;
   margin: 0;
   font-weight: 850;
@@ -812,7 +819,7 @@ body {
   font-weight: 500;
 }
 
-/* Section Character Image */
+/* Section Character Image (Mobile Only Overlay Style) */
 .section-char-img {
   position: absolute;
   right: 20px;
@@ -826,7 +833,7 @@ body {
   transition: transform 0.3s ease;
 }
 
-/* Specific position for Zeus standing on top of Ebbinghaus title on desktop */
+/* Specific position for Zeus standing on top of Ebbinghaus title on desktop (unused now, but kept safe) */
 .ebbinghaus-container .section-char-img {
   right: 20px;
   left: auto;
@@ -839,10 +846,56 @@ body {
   margin-top: 60px !important; /* Normal margin instead of 220px */
 }
 
+/* Reset spacing on desktop columns to allow them to stretch normally */
 .section-header-with-icon {
   position: relative;
-  padding-right: 180px; /* Leave space on the right for the 270px avatar */
+  padding-right: 0 !important;
   padding-left: 0;
+}
+
+.ebbinghaus-right-col {
+  padding-right: 0 !important;
+}
+
+.today-units-list {
+  margin-right: 0 !important;
+}
+
+#adaptive-training {
+  margin-bottom: 56px !important;
+}
+
+#adaptive-training .game-hub-grid {
+  margin-top: 24px !important;
+  margin-right: 0 !important;
+}
+
+/* New clean grid character columns styling for desktop */
+.section-char-desktop-column {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 100%;
+}
+
+.section-char-desktop-img {
+  height: 270px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.15));
+  pointer-events: none;
+  transition: transform 0.3s ease;
+  z-index: 10;
+  margin-top: -40px; /* Stand dynamically on card top border */
+}
+
+.section-char-desktop-img:hover {
+  transform: scale(1.05);
+}
+
+.section-char-mobile-only {
+  display: none !important;
 }
 
 /* Card Character Image */
@@ -857,29 +910,6 @@ body {
   z-index: 2;
   pointer-events: none;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ebbinghaus-right-col {
-  padding-right: 180px; /* Leave space on the right for Zeus */
-}
-
-.today-units-list {
-  margin-right: 200px; /* Leaves space for Poseidon on desktop */
-}
-
-#adaptive-training {
-  margin-bottom: 56px !important;
-}
-
-#adaptive-training .section-char-img {
-  top: -60px !important;
-  right: 20px !important;
-  height: 270px !important;
-}
-
-#adaptive-training .game-hub-grid {
-  margin-top: 24px !important; /* Reset margin-top to normal */
-  margin-right: 240px; /* Push the grid left to leave space for Hades on the right */
 }
 
 /* Quick Nav Container */
@@ -929,6 +959,9 @@ body {
   }
   .welcome-title {
     font-size: 22px !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    background: none !important;
   }
   .welcome-subtitle {
     font-size: 13px !important;
@@ -940,6 +973,14 @@ body {
   .quick-nav-container {
     flex-direction: column;
     gap: 12px;
+  }
+  
+  /* Show mobile character overlay & hide desktop character columns on mobile */
+  .section-char-mobile-only {
+    display: block !important;
+  }
+  .section-char-desktop-column {
+    display: none !important;
   }
   
   /* Ebbinghaus Container Mobile Overrides */
@@ -956,6 +997,7 @@ body {
   
   /* Today Guide Mobile Overrides */
   #today-guide {
+    grid-template-columns: 1fr !important;
     padding-top: 100px !important;
     padding-left: 24px !important;
     padding-right: 24px !important;
@@ -967,6 +1009,7 @@ body {
   
   /* Adaptive Training Section Header Mobile Overrides */
   #adaptive-training {
+    grid-template-columns: 1fr !important;
     padding-top: 100px !important;
     position: relative;
   }

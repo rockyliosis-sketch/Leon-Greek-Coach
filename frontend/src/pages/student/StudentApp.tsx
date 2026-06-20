@@ -1767,12 +1767,22 @@ export default function StudentApp() {
             bottom: 0,
             width: '45%',
             minWidth: '320px',
-            opacity: 0.45,
+            opacity: 1.0,
             zIndex: 1,
             pointerEvents: 'none'
           }}>
             <svg viewBox="0 0 500 200" width="100%" height="100%" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
               <defs>
+                <clipPath id="flagClip">
+                  <rect width="120" height="80" rx="8" />
+                </clipPath>
+                <linearGradient id="flagShading" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#000000" stopOpacity="0.2" />
+                  <stop offset="25%" stopColor="#FFFFFF" stopOpacity="0.25" />
+                  <stop offset="50%" stopColor="#000000" stopOpacity="0.25" />
+                  <stop offset="75%" stopColor="#FFFFFF" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#000000" stopOpacity="0.15" />
+                </linearGradient>
                 <linearGradient id="bannerFlagBlue" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#0071E3" stopOpacity="0" />
                   <stop offset="25%" stopColor="#0071E3" stopOpacity="0.15" />
@@ -1798,14 +1808,29 @@ export default function StudentApp() {
               <path d="M 120,40 C 240,0 300,140 440,50 C 480,20 520,40 500,30 L 500,200 L 120,200 Z" fill="url(#bannerFlagWhite)" opacity="0.3" />
               <path d="M 160,80 C 270,30 330,160 460,90 C 490,65 520,80 500,75 L 500,200 L 160,200 Z" fill="url(#bannerFlagWhite)" opacity="0.25" />
               <path d="M 200,120 C 300,70 370,180 480,130 C 500,115 520,125 500,122 L 500,200 L 200,200 Z" fill="url(#bannerFlagWhite)" opacity="0.2" />
-
-              {/* Canton (positioned at top right of the banner flag area) */}
-              <g transform="translate(390, 20)" filter="url(#bannerGlow)">
-                {/* Rounded Canton */}
-                <rect x="0" y="0" width="80" height="60" rx="12" fill="#0D5EAF" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                {/* Rounded Canton Cross */}
-                <rect x="33" y="6" width="14" height="48" rx="3" fill="#FFFFFF" />
-                <rect x="6" y="23" width="68" height="14" rx="3" fill="#FFFFFF" />
+ 
+              {/* Waving/3D Greek Flag Card */}
+              <g transform="translate(260, 45) rotate(-3) scale(1.25)" filter="url(#bannerGlow)">
+                {/* Flag shadow */}
+                <rect width="120" height="80" rx="8" fill="rgba(0,0,0,0.2)" transform="translate(3, 4)" />
+                {/* Flag Clip Group */}
+                <g clipPath="url(#flagClip)">
+                  {/* White base */}
+                  <rect width="120" height="80" fill="#FFFFFF" />
+                  {/* 5 Blue Stripes */}
+                  <rect y="0" width="120" height="8.89" fill="#0D5EAF" />
+                  <rect y="17.78" width="120" height="8.89" fill="#0D5EAF" />
+                  <rect y="35.56" width="120" height="8.89" fill="#0D5EAF" />
+                  <rect y="53.33" width="120" height="8.89" fill="#0D5EAF" />
+                  <rect y="71.11" width="120" height="8.89" fill="#0D5EAF" />
+                  {/* Canton */}
+                  <rect x="0" y="0" width="44.44" height="44.44" fill="#0D5EAF" />
+                  {/* Canton Cross */}
+                  <rect x="0" y="17.78" width="44.44" height="8.89" fill="#FFFFFF" />
+                  <rect x="17.78" y="0" width="8.89" height="44.44" fill="#FFFFFF" />
+                  {/* Shading overlay (simulates waviness) */}
+                  <rect width="120" height="80" fill="url(#flagShading)" opacity="0.35" />
+                </g>
               </g>
             </svg>
           </div>
@@ -1900,18 +1925,19 @@ export default function StudentApp() {
           background: '#FFFFFF',
           border: '1px solid rgba(0, 0, 0, 0.04)',
           borderRadius: '28px',
-          padding: '110px 32px 32px 32px',
+          padding: '32px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
           marginBottom: '40px',
           display: 'grid',
-          gridTemplateColumns: '1.2fr 1fr',
+          gridTemplateColumns: '1.2fr 1fr 220px',
           gap: '32px',
           position: 'relative'
         }} className="ebbinghaus-container">
+          {/* Mobile Zeus (absolute positioned) */}
           <img 
             src="/zeus.png" 
             alt="Zeus" 
-            className="section-char-img"
+            className="section-char-img section-char-mobile-only"
           />
           {/* Left: SVG Line Chart */}
           <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -2115,6 +2141,15 @@ export default function StudentApp() {
               })}
             </div>
           </div>
+          
+          {/* Desktop Zeus Column */}
+          <div className="section-char-desktop-column">
+            <img 
+              src="/zeus.png" 
+              alt="Zeus" 
+              className="section-char-desktop-img"
+            />
+          </div>
         </div>
 
         <div id="today-guide" style={{
@@ -2124,14 +2159,20 @@ export default function StudentApp() {
           padding: '32px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
           marginBottom: '48px',
-          position: 'relative'
+          position: 'relative',
+          display: 'grid',
+          gridTemplateColumns: '1fr 220px',
+          gap: '32px'
         }}>
+          {/* Mobile Poseidon (absolute positioned) */}
           <img 
             src="/poseidon.png" 
             alt="Poseidon" 
-            className="section-char-img"
+            className="section-char-img section-char-mobile-only"
           />
-          <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+          {/* Left Column: Title and Content */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <div>
               <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
               <p style={{ fontSize: '13px', color: '#86868B', margin: '4px 0 0 0', fontWeight: 550 }}>
@@ -2376,15 +2417,34 @@ export default function StudentApp() {
               })}
             </div>
           )}
+          </div>
+          
+          {/* Desktop Poseidon Column */}
+          <div className="section-char-desktop-column">
+            <img 
+              src="/poseidon.png" 
+              alt="Poseidon" 
+              className="section-char-desktop-img"
+            />
+          </div>
         </div>
 
-        <div id="adaptive-training" style={{ position: 'relative', marginTop: '60px' }}>
+        <div id="adaptive-training" style={{
+          position: 'relative',
+          marginTop: '60px',
+          display: 'grid',
+          gridTemplateColumns: '1fr 220px',
+          gap: '32px'
+        }}>
+          {/* Mobile Hades (absolute positioned) */}
           <img 
             src="/hades.png" 
             alt="Hades" 
-            className="section-char-img"
+            className="section-char-img section-char-mobile-only"
           />
-          <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
+          {/* Left Column: Title and Content */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
             <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
             <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
               Ενότητες Προσαρμοστικής Εκπαίδευσης
@@ -2773,6 +2833,16 @@ export default function StudentApp() {
               </button>
             </div>
 
+          </div>
+          </div>
+          
+          {/* Desktop Hades Column */}
+          <div className="section-char-desktop-column">
+            <img 
+              src="/hades.png" 
+              alt="Hades" 
+              className="section-char-desktop-img"
+            />
           </div>
         </div>
       </div>
