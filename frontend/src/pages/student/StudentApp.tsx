@@ -311,6 +311,42 @@ const removeGreekAccents = (str: string): string => {
     .replace(/\s+/g, " "); // consolidate spaces
 };
 
+const getSpellingTargetWord = (word: string): string => {
+  // If there's a parenthesis, remove it (e.g. "άντρας, ο (σύζυγος)" -> "άντρας, ο")
+  let cleaned = word.replace(/\s*\(.*?\)/g, '');
+  
+  // If there's a comma, take only the first part (e.g. "αβγό, το" -> "αβγό")
+  if (cleaned.includes(',')) {
+    cleaned = cleaned.split(',')[0];
+  }
+  
+  // Also remove common articles from the beginning if any (e.g. "το αεροπλάνο" -> "αεροπλάνο")
+  const articles = ['ο', 'η', 'το', 'τα', 'οι', 'της', 'του', 'τον', 'την', 'μας', 'σας', 'μου', 'σου'];
+  const words = cleaned.trim().split(/\s+/);
+  if (words.length > 1 && articles.includes(words[0].toLowerCase())) {
+    words.shift();
+  }
+  
+  return words.join(' ').trim();
+};
+
+const cleanGreekForComparison = (str: string): string => {
+  let cleaned = str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove combining marks (accents)
+    .toLowerCase();
+  
+  // Remove punctuation
+  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+  
+  // Remove common articles from the beginning or end of the words
+  const words = cleaned.split(/\s+/);
+  const articles = new Set(['ο', 'η', 'το', 'τα', 'οι', 'της', 'του', 'τον', 'την', 'μας', 'σας', 'μου', 'σου']);
+  const filteredWords = words.filter(w => !articles.has(w));
+  
+  return filteredWords.join('').trim();
+};
+
 const cleanChinese = (str: string): string => {
   return str
     .toLowerCase()
@@ -320,7 +356,33 @@ const cleanChinese = (str: string): string => {
 };
 
 const getCleanSpellingWord = (word: string): string => {
-  return removeGreekAccents(word).replace(/\s+/g, '');
+  const target = getSpellingTargetWord(word);
+  return removeGreekAccents(target).replace(/\s+/g, '');
+};
+
+const isGreekProperNoun = (word: string): boolean => {
+  const trimmed = word.trim();
+  if (trimmed.length === 0) return false;
+  const firstChar = trimmed[0];
+  return firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase();
+};
+
+const filterDuplicateTranslations = <T extends { word_greek: string; word_chinese: string }>(list: T[]): T[] => {
+  const seenChinese = new Set<string>();
+  const seenGreek = new Set<string>();
+  const result: T[] = [];
+  
+  list.forEach(w => {
+    const cleanZh = cleanChinese(w.word_chinese);
+    const cleanGr = removeGreekAccents(w.word_greek);
+    if (!seenChinese.has(cleanZh) && !seenGreek.has(cleanGr)) {
+      seenChinese.add(cleanZh);
+      seenGreek.add(cleanGr);
+      result.push(w);
+    }
+  });
+  
+  return result;
 };
 
 const getGreeceDateString = () => {
@@ -707,46 +769,57 @@ export default function StudentApp() {
     setCompletedModulesForDate(currentCompleted[dateStr] || []);
   }, []);
 
-  // 1. Get the 4 selected global units for selectedDateStr
   const selectedUnits = useMemo(() => {
     const targetDateInfo = getUnitForDate(selectedDateStr);
     const currentGlobalUnit = targetDateInfo.unitNum;
 
-    const uniqueUnits = new Set<number>();
-    uniqueUnits.add(currentGlobalUnit);
+    // Parse selectedDateStr to get a stable daily seed
+    const dateParts = selectedDateStr.split('-');
+    const year = parseInt(dateParts[0], 10) || 2026;
+    const month = parseInt(dateParts[1], 10) || 6;
+    const day = parseInt(dateParts[2], 10) || 20;
+    const dateSeed = year * 372 + month * 31 + day;
 
-    // Check past Ebbinghaus dates (e.g. 1, 2, 4, 7, 15, 30 days ago) to find review units
-    [1, 2, 4, 7, 15, 30].forEach(day => {
-      const pastDate = new Date(selectedDateStr);
-      pastDate.setDate(pastDate.getDate() - day);
-      const pastDateStr = pastDate.toISOString().split('T')[0];
-      const uInfo = getUnitForDate(pastDateStr);
-      if (uInfo.unitNum >= 1 && uInfo.unitNum <= 39) {
-        uniqueUnits.add(uInfo.unitNum);
+    if (currentGlobalUnit >= 31) {
+      // Currently in A2:
+      // 1. Current A2 unit
+      // 2. Previous A2 unit (or if current is 31, pad with 30)
+      const u2 = currentGlobalUnit - 1 >= 31 ? currentGlobalUnit - 1 : 30;
+      // 3. Rotated unit from A1-B (units 16 to 30)
+      const u3 = 16 + (dateSeed % 15);
+      // 4. Rotated unit from A1-A (units 1 to 15)
+      const u4 = 1 + (dateSeed % 15);
+
+      const list = [currentGlobalUnit, u2, u3, u4];
+      return Array.from(new Set(list));
+    } else if (currentGlobalUnit >= 16) {
+      // Currently in A1-B:
+      // 1. Current A1-B unit
+      // 2. Previous A1-B unit (clamped to >= 16)
+      const u2 = currentGlobalUnit - 1 >= 16 ? currentGlobalUnit - 1 : 15;
+      // 3. Rotated unit from A1-A (units 1 to 15)
+      const u3 = 1 + (dateSeed % 15);
+      // 4. Another rotated unit from A1-A
+      const u4 = 1 + ((dateSeed + 5) % 15);
+
+      const list = [currentGlobalUnit, u2, u3, u4];
+      return Array.from(new Set(list));
+    } else {
+      // Currently in A1-A:
+      // All units from A1-A (1 to 15)
+      const u1 = currentGlobalUnit;
+      const u2 = currentGlobalUnit - 1 >= 1 ? currentGlobalUnit - 1 : 1;
+      const u3 = currentGlobalUnit - 2 >= 1 ? currentGlobalUnit - 2 : 2;
+      const u4 = currentGlobalUnit - 3 >= 1 ? currentGlobalUnit - 3 : 3;
+
+      const list = [u1, u2, u3, u4];
+      let pad = 1;
+      while (list.length < 4 && pad <= 15) {
+        if (!list.includes(pad)) list.push(pad);
+        pad++;
       }
-    });
-
-    let sortedUnits = Array.from(uniqueUnits).sort((a, b) => b - a);
-
-    // Pad downward first
-    let padUnitDn = currentGlobalUnit - 1;
-    while (sortedUnits.length < 4 && padUnitDn >= 1) {
-      if (!sortedUnits.includes(padUnitDn)) {
-        sortedUnits.push(padUnitDn);
-      }
-      padUnitDn--;
+      return Array.from(new Set(list));
     }
-    // Pad upward if still less than 4
-    let padUnitUp = currentGlobalUnit + 1;
-    while (sortedUnits.length < 4 && padUnitUp <= 39) {
-      if (!sortedUnits.includes(padUnitUp)) {
-        sortedUnits.push(padUnitUp);
-      }
-      padUnitUp++;
-    }
-
-    // Sort descending so the most recent is at the top
-    return sortedUnits.sort((a, b) => b - a);
   }, [selectedDateStr]);
 
   // Compute daily deck based on selected date (integrating early review rotation)
@@ -938,52 +1011,13 @@ export default function StudentApp() {
 
       const count = dailyDeck.filter((w: any) => w.unit === gUnit).length;
 
-      const daysRepresented: number[] = [];
-      [0, 1, 2, 4, 7, 15, 30].forEach(day => {
-        const sourceDate = ebbinghausStats.dates[day];
-        if (sourceDate) {
-          const uInfo = getUnitForDate(sourceDate);
-          if (uInfo.unitNum === gUnit) {
-            daysRepresented.push(day);
-          }
-        }
-      });
-
-      let retentionStr = "";
-      if (daysRepresented.length > 0) {
-        const retentionMap: Record<number, string> = {
-          0: '100%', 1: '58%', 2: '44%', 4: '36%', 7: '33%', 15: '28%', 30: '21%'
-        };
-        if (daysRepresented.length === 1) {
-          retentionStr = retentionMap[daysRepresented[0]];
-        } else {
-          const retValues = daysRepresented.map(d => parseInt(retentionMap[d]));
-          const maxRet = Math.max(...retValues);
-          const minRet = Math.min(...retValues);
-          retentionStr = `${maxRet}% - ${minRet}%`;
-        }
-      } else {
-        retentionStr = "巩固 / Εμπέδωση";
-      }
-
-      let cycleTextCn = "";
-      let cycleTextGr = "";
-      if (daysRepresented.length > 0) {
-        const cycleLabelsCn: Record<number, string> = {
-          0: '今日学习', 1: '第1天复习', 2: '第2天复习', 4: '第4天复习', 7: '第7天复习', 15: '第15天复习', 30: '第30天复习'
-        };
-        const cycleLabelsGr: Record<number, string> = {
-          0: 'Σήμερα', 1: '1η Μέρα', 2: '2η Μέρα', 4: '4η Μέρα', 7: '7η Μέρα', 15: '15η Μέρα', 30: '30η Μέρα'
-        };
-        cycleTextCn = `周期: ${daysRepresented.map(d => cycleLabelsCn[d]).join(', ')}`;
-        cycleTextGr = `Κύκλος: ${daysRepresented.map(d => cycleLabelsGr[d]).join(', ')}`;
-      } else {
-        cycleTextCn = "早期内容巩固";
-        cycleTextGr = "Εμπέδωση Παλαιού Υλικού";
-      }
-
       const uInfo = getUnitInfoFromGlobal(gUnit);
-      const unitChineseName = getUnitChineseName(uInfo.bookId, gUnit);
+      const fullName = getUnitChineseName(uInfo.bookId, gUnit);
+      
+      // Parse main title and parenthesized translation
+      const match = fullName.match(/^(.*?)\s*\((.*?)\)\s*$/);
+      const mainTitle = match ? match[1].trim() : fullName.trim();
+      const translationText = match ? match[2].trim() : "";
 
       return {
         gUnit,
@@ -991,16 +1025,14 @@ export default function StudentApp() {
         unitNum: uInfo.unitNum,
         displayUnit: uInfo.displayUnitName,
         dateRange: uInfo.dateRangeStr,
-        unitChineseName,
+        mainTitle,
+        translationText,
         labelCn,
         labelGr,
-        count,
-        retentionStr,
-        cycleTextCn,
-        cycleTextGr
+        count
       };
     });
-  }, [selectedUnits, dailyDeck, selectedDateStr, ebbinghausStats]);
+  }, [selectedUnits, dailyDeck]);
 
 
 
@@ -1090,9 +1122,12 @@ export default function StudentApp() {
 
   const spellingPool = useMemo(() => {
     let pool = [...dailyDeck];
+    pool = filterDuplicateTranslations(pool);
     if (pool.length < 40) {
       const extraNeeded = 40 - pool.length;
-      const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+      const fallbackList = filterDuplicateTranslations(
+        allVocab.filter(w => !pool.some(p => p.id === w.id))
+      );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
     const spellingItems = pool.slice(0, 40).map(w => ({
@@ -1112,7 +1147,8 @@ export default function StudentApp() {
       detailed_tip: q.detailed_tip
     }));
 
-    return [...examItems, ...spellingItems].slice(0, 40);
+    const combined = [...examItems, ...spellingItems];
+    return filterDuplicateTranslations(combined).slice(0, 40);
   }, [dailyDeck, allVocab, activeExamLevel]);
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
@@ -1214,9 +1250,12 @@ export default function StudentApp() {
 
   const quizPool = useMemo(() => {
     let pool = [...dailyDeck];
+    pool = filterDuplicateTranslations(pool);
     if (pool.length < 30) {
       const extraNeeded = 30 - pool.length;
-      const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+      const fallbackList = filterDuplicateTranslations(
+        allVocab.filter(w => !pool.some(p => p.id === w.id))
+      );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
     const quizItems = pool.slice(0, 30).map(w => ({
@@ -1236,7 +1275,8 @@ export default function StudentApp() {
       detailed_tip: q.detailed_tip
     }));
 
-    return [...examItems, ...quizItems].slice(0, 30);
+    const combined = [...examItems, ...quizItems];
+    return filterDuplicateTranslations(combined).slice(0, 30);
   }, [dailyDeck, allVocab, activeExamLevel]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
@@ -1246,9 +1286,25 @@ export default function StudentApp() {
       return [...(currentQuizWord as any).options].sort(() => Math.random() - 0.5);
     }
     const correct = currentQuizWord.word_chinese;
-    const distractors = allVocab
-      .filter(w => w.word_chinese !== correct)
-      .map(w => w.word_chinese);
+    const targetIsProper = isGreekProperNoun(currentQuizWord.word_greek);
+    
+    let candidates = allVocab.filter(w => {
+      if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
+      if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
+      
+      const isCandProper = isGreekProperNoun(w.word_greek);
+      return isCandProper === targetIsProper;
+    });
+
+    if (candidates.length < 3) {
+      candidates = allVocab.filter(w => {
+        if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
+        if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
+        return true;
+      });
+    }
+
+    const distractors = candidates.map(w => w.word_chinese);
     const uniqueDistractors = Array.from(new Set(distractors))
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
@@ -1301,9 +1357,12 @@ export default function StudentApp() {
 
   const tfPool = useMemo(() => {
     let pool = [...dailyDeck];
+    pool = filterDuplicateTranslations(pool);
     if (pool.length < 40) {
       const extraNeeded = 40 - pool.length;
-      const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+      const fallbackList = filterDuplicateTranslations(
+        allVocab.filter(w => !pool.some(p => p.id === w.id))
+      );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
     const tfItems = pool.slice(0, 40).map((word, idx) => {
@@ -1317,6 +1376,8 @@ export default function StudentApp() {
         chinese: testSentence ? word.example_chinese! : word.word_chinese,
         wordGreek: word.word_greek,
         wordChinese: word.word_chinese,
+        word_greek: word.word_greek,
+        word_chinese: word.word_chinese,
         pronunciation: word.pronunciation || '',
         detailed_tip: ''
       };
@@ -1332,12 +1393,15 @@ export default function StudentApp() {
       chinese: q.chinese,
       wordGreek: '',
       wordChinese: '',
+      word_greek: q.greek,
+      word_chinese: q.chinese,
       pronunciation: '',
       detailed_tip: q.detailed_tip,
       answer: q.answer
     }));
 
-    return [...examItems, ...tfItems].slice(0, 40);
+    const combined = [...examItems, ...tfItems];
+    return filterDuplicateTranslations(combined).slice(0, 40);
   }, [dailyDeck, allVocab, activeExamLevel]);
 
   const currentTfWord = tfPool[tfIndex] || null;
@@ -1398,9 +1462,12 @@ export default function StudentApp() {
 
   const translationGrZhPool = useMemo(() => {
     let pool = [...dailyDeck];
+    pool = filterDuplicateTranslations(pool);
     if (pool.length < 20) {
       const extraNeeded = 20 - pool.length;
-      const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+      const fallbackList = filterDuplicateTranslations(
+        allVocab.filter(w => !pool.some(p => p.id === w.id))
+      );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
     const transItems = pool.slice(0, 20).map((word, idx) => {
@@ -1414,6 +1481,8 @@ export default function StudentApp() {
         chinese: testSentence ? word.example_chinese! : word.word_chinese,
         wordGreek: word.word_greek,
         wordChinese: word.word_chinese,
+        word_greek: word.word_greek,
+        word_chinese: word.word_chinese,
         pronunciation: word.pronunciation || '',
         detailed_tip: ''
       };
@@ -1429,18 +1498,24 @@ export default function StudentApp() {
       chinese: q.chinese,
       wordGreek: '',
       wordChinese: '',
+      word_greek: q.greek,
+      word_chinese: q.chinese,
       pronunciation: '',
       detailed_tip: q.detailed_tip
     }));
 
-    return [...examItems, ...transItems].slice(0, 20);
+    const combined = [...examItems, ...transItems];
+    return filterDuplicateTranslations(combined).slice(0, 20);
   }, [dailyDeck, allVocab, activeExamLevel]);
 
   const translationZhGrPool = useMemo(() => {
     let pool = [...dailyDeck];
+    pool = filterDuplicateTranslations(pool);
     if (pool.length < 20) {
       const extraNeeded = 20 - pool.length;
-      const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+      const fallbackList = filterDuplicateTranslations(
+        allVocab.filter(w => !pool.some(p => p.id === w.id))
+      );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
     const transItems = pool.slice(0, 20).map((word, idx) => {
@@ -1454,6 +1529,8 @@ export default function StudentApp() {
         chinese: testSentence ? word.example_chinese! : word.word_chinese,
         wordGreek: word.word_greek,
         wordChinese: word.word_chinese,
+        word_greek: word.word_greek,
+        word_chinese: word.word_chinese,
         pronunciation: word.pronunciation || '',
         detailed_tip: ''
       };
@@ -1469,11 +1546,14 @@ export default function StudentApp() {
       chinese: q.chinese,
       wordGreek: '',
       wordChinese: '',
+      word_greek: q.greek,
+      word_chinese: q.chinese,
       pronunciation: '',
       detailed_tip: q.detailed_tip
     }));
 
-    return [...examItems, ...transItems].slice(0, 20);
+    const combined = [...examItems, ...transItems];
+    return filterDuplicateTranslations(combined).slice(0, 20);
   }, [dailyDeck, allVocab, activeExamLevel]);
 
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
@@ -1514,9 +1594,9 @@ export default function StudentApp() {
   };
 
   const handleCheckTransZhGr = () => {
-    const cleanUser = removeGreekAccents(userTransZhGrInput);
-    const cleanAnswer = removeGreekAccents(currentTransZhGr.greek);
-    const correct = cleanUser === cleanAnswer || (cleanAnswer.includes(cleanUser) && cleanUser.length > 2);
+    const cleanUser = cleanGreekForComparison(userTransZhGrInput);
+    const cleanAnswer = cleanGreekForComparison(currentTransZhGr.greek);
+    const correct = cleanUser === cleanAnswer;
     if (correct) {
       setTransZhGrChecked(true);
       setIsCorrectTransZhGrInput(correct);
@@ -1559,9 +1639,12 @@ export default function StudentApp() {
       setMatchErrors({});
       
       let pool = [...dailyDeck].sort(() => Math.random() - 0.5);
+      pool = filterDuplicateTranslations(pool);
       if (pool.length < 40) {
         const extraNeeded = 40 - pool.length;
-        const fallbackList = allVocab.filter(w => !pool.some(p => p.id === w.id));
+        const fallbackList = filterDuplicateTranslations(
+          allVocab.filter(w => !pool.some(p => p.id === w.id))
+        );
         pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
       }
       const matchingItems = pool.slice(0, 40).map(w => ({
@@ -1583,7 +1666,8 @@ export default function StudentApp() {
         detailed_tip: q.detailed_tip
       }));
 
-      let combined = [...examItems, ...matchingItems].slice(0, 40);
+      let combined = [...examItems, ...matchingItems];
+      combined = filterDuplicateTranslations(combined).slice(0, 40);
       setMatchingPool(combined);
       setupMatchingRound(combined, 0);
     }
@@ -2102,8 +2186,8 @@ export default function StudentApp() {
                     background: item.count > 0 ? 'rgba(52, 199, 89, 0.05)' : '#F5F5F7',
                     border: item.count > 0 ? '1px solid rgba(52, 199, 89, 0.15)' : '1px solid rgba(0,0,0,0.02)'
                   }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '75%', textAlign: 'left' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '75%', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '2px' }}>
                         <span style={{
                           fontSize: '9.5px',
                           fontWeight: 750,
@@ -2115,18 +2199,16 @@ export default function StudentApp() {
                           {item.labelCn}
                         </span>
                         <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#1D1D1F' }}>
-                          {item.displayUnit} - {item.unitChineseName}
+                          {item.displayUnit} - {item.mainTitle}
                         </span>
                       </div>
-                      <span style={{ fontSize: '11px', color: '#86868B', lineHeight: 1.3 }}>
-                        预估学习日期: {item.dateRange} | {item.cycleTextCn}
-                      </span>
-                      <span style={{ fontSize: '9.5px', color: '#86868B', fontStyle: 'italic', display: 'block', marginTop: '1px' }}>
-                        {item.cycleTextGr}
-                      </span>
+                      {item.translationText && (
+                        <span style={{ fontSize: '11px', color: '#86868B', lineHeight: 1.3 }}>
+                          {item.translationText}
+                        </span>
+                      )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#86868B' }}>{item.retentionStr}</span>
                       <span style={{
                         padding: '4px 8px',
                         borderRadius: '8px',
