@@ -44,7 +44,7 @@ body {
 }
 
 .navbar-container {
-  max-w: 1100px;
+  max-width: 1100px;
   margin: 0 auto;
   height: 64px;
   display: flex;
@@ -106,7 +106,7 @@ body {
 }
 
 .main-content {
-  max-w: 1100px;
+  max-width: 1100px;
   width: 100%;
   margin: 0 auto;
   padding: 40px 24px;
@@ -492,7 +492,7 @@ body {
 }
 
 .flashcard-module {
-  max-w: 600px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 40px 0;
 }
@@ -519,7 +519,7 @@ body {
 }
 
 .game-module {
-  max-w: 960px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -722,17 +722,186 @@ body {
   animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Welcome Banner Content */
+.welcome-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 2;
+  width: 100%;
+}
+
+.welcome-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  object-fit: cover;
+  background: #FFFFFF;
+}
+
+.welcome-title {
+  color: #FFFFFF;
+  font-size: 32px;
+  margin: 0;
+  font-weight: 850;
+}
+
+.welcome-subtitle {
+  color: rgba(255,255,255,0.9);
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Section Character Image */
+.section-char-img {
+  position: absolute;
+  left: -20px;
+  top: -40px;
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12));
+  z-index: 10;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+.section-header-with-icon {
+  padding-left: 75px;
+}
+
+/* Quick Nav Container */
+.quick-nav-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+/* Review Task Item */
+.review-task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+/* Matching Game Grid */
+.matching-game-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
 /* Responsive Grid Tweaks */
-@media (max-w: 768px) {
+@media (max-width: 768px) {
   .welcome-banner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
+    padding: 28px 20px !important;
+  }
+  .welcome-banner-decor {
+    display: none !important;
+  }
+  .welcome-banner-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .welcome-avatar {
+    width: 80px;
+    height: 80px;
+  }
+  .welcome-title {
+    font-size: 22px !important;
+  }
+  .welcome-subtitle {
+    font-size: 13px !important;
   }
   .stats-grid, .game-hub-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  .welcome-title {
-    font-size: 32px;
+  .quick-nav-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  /* Ebbinghaus Container Mobile Overrides */
+  .ebbinghaus-container {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    padding: 24px !important;
+    padding-top: 80px !important;
+  }
+  .ebbinghaus-container > div:first-of-type {
+    padding-left: 0 !important;
+  }
+  
+  /* Today Guide Mobile Overrides */
+  #today-guide {
+    padding-top: 85px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  #today-guide > div:first-of-type {
+    padding-left: 0 !important;
+  }
+  
+  /* Adaptive Training Section Header Mobile Overrides */
+  #adaptive-training {
+    padding-top: 60px !important;
+  }
+  #adaptive-training > div:first-of-type {
+    padding-left: 0 !important;
+  }
+  
+  /* Game Cards Mobile Overrides */
+  .game-card {
+    padding-right: 24px !important;
+    padding-top: 80px !important;
+  }
+  .game-character-img {
+    right: 16px !important;
+    top: -30px !important;
+    height: 80px !important;
+  }
+  
+  /* Section character images shift to top-right on mobile */
+  .section-char-img {
+    left: auto !important;
+    right: 16px !important;
+    top: -30px !important;
+    height: 80px !important;
+  }
+  .section-header-with-icon {
+    padding-left: 0 !important;
+  }
+  
+  /* Review task item stacks on mobile */
+  .review-task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .review-task-item > div:first-of-type {
+    width: 100% !important;
+  }
+  .review-task-item > div:last-of-type {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Matching Game Mobile Grid */
+  .matching-game-grid {
+    gap: 16px !important;
   }
 }
+

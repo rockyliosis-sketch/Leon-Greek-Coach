@@ -1725,7 +1725,7 @@ export default function StudentApp() {
 
         {/* Top Banner with Leon Scout Portrait */}
         <div className="welcome-banner" style={{
-          background: 'linear-gradient(135deg, #0071E3, #818CF8)',
+          background: 'linear-gradient(135deg, #0071E3, #2563EB)',
           borderRadius: '28px',
           padding: '36px',
           color: '#FFFFFF',
@@ -1733,31 +1733,25 @@ export default function StudentApp() {
           justifyContent: 'space-between',
           alignItems: 'center',
           boxShadow: '0 8px 32px rgba(0, 113, 227, 0.12)',
-          marginBottom: '40px'
+          marginBottom: '40px',
+          position: 'relative',
+          overflow: 'hidden'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <div className="welcome-banner-content">
             {/* Scout Avatar */}
             <img 
               src="/leon_avatar.png" 
               alt="Leon Scout Avatar" 
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                border: '3px solid #FFFFFF',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                objectFit: 'cover',
-                background: '#FFFFFF'
-              }}
+              className="welcome-avatar"
             />
             <div className="welcome-text">
-              <h1 className="welcome-title" style={{ color: '#FFFFFF', background: 'none', WebkitTextFillColor: 'initial', fontSize: '32px', margin: 0, fontWeight: 850 }}>
+              <h1 className="welcome-title">
                 Leon 的希腊语学习中心
               </h1>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', fontWeight: 700, margin: '2px 0 6px 0', textTransform: 'uppercase' }}>
                 Κέντρο Εκμάθησης Ελληνικών του Leon
               </p>
-              <p className="welcome-subtitle" style={{ color: 'rgba(255,255,255,0.9)', margin: 0, fontSize: '15px', fontWeight: 500 }}>
+              <p className="welcome-subtitle">
                 智能记忆曲线调度 · 每日自适应复习空间
               </p>
               <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: '2px 0 0 0' }}>
@@ -1765,23 +1759,56 @@ export default function StudentApp() {
               </p>
             </div>
           </div>
-          {/* Decorative Parthenon Illustration */}
-          <div className="welcome-banner-decor" style={{ display: 'flex', alignItems: 'center' }}>
-            <img 
-              src="/greek_banner.png" 
-              alt="Greek Temple" 
-              style={{
-                height: '110px',
-                width: 'auto',
-                opacity: 0.95,
-                borderRadius: '18px',
-                background: 'rgba(255,255,255,0.15)',
-                padding: '6px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                backdropFilter: 'blur(5px)',
-                WebkitBackdropFilter: 'blur(5px)'
-              }}
-            />
+          {/* Creative CSS Greek Flag Gradient Overlay */}
+          <div className="welcome-banner-decor" style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: '45%',
+            minWidth: '320px',
+            display: 'flex',
+            flexDirection: 'column',
+            opacity: 0.35,
+            zIndex: 1,
+            pointerEvents: 'none',
+            maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)'
+          }}>
+            {/* 9 Stripes */}
+            {Array.from({ length: 9 }).map((_, idx) => (
+              <div key={idx} style={{
+                flex: 1,
+                background: idx % 2 === 0 ? '#0071E3' : '#FFFFFF'
+              }} />
+            ))}
+            {/* Canton (Blue Square with White Cross) */}
+            <div style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '120px',
+              height: '55.5%', // 5 out of 9 stripes
+              background: '#0071E3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {/* Horizontal Bar of Cross */}
+              <div style={{
+                position: 'absolute',
+                width: '100%',
+                height: '14px',
+                background: '#FFFFFF'
+              }} />
+              {/* Vertical Bar of Cross */}
+              <div style={{
+                position: 'absolute',
+                width: '14px',
+                height: '100%',
+                background: '#FFFFFF'
+              }} />
+            </div>
           </div>
         </div>
 
@@ -1828,7 +1855,7 @@ export default function StudentApp() {
         </div>
 
         {/* Quick Navigation Anchors */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
+        <div className="quick-nav-container">
           <button 
             onClick={() => document.getElementById('today-guide')?.scrollIntoView({ behavior: 'smooth' })}
             className="btn-premium"
@@ -1885,20 +1912,10 @@ export default function StudentApp() {
           <img 
             src="/zeus.png" 
             alt="Zeus" 
-            style={{ 
-              position: 'absolute', 
-              left: '-20px', 
-              top: '-40px', 
-              height: '110px', 
-              width: 'auto', 
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
-              zIndex: 10,
-              pointerEvents: 'none'
-            }} 
+            className="section-char-img"
           />
           {/* Left: SVG Line Chart */}
-          <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '75px' }}>
+          <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <span>艾宾浩斯遗忘曲线智能追踪</span>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
@@ -2053,15 +2070,9 @@ export default function StudentApp() {
                 }
 
                 return (
-                  <div key={item.gUnit} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    borderRadius: '12px',
+                  <div key={item.gUnit} className="review-task-item" style={{
                     background: item.count > 0 ? 'rgba(52, 199, 89, 0.05)' : '#F5F5F7',
-                    border: item.count > 0 ? '1px solid rgba(52, 199, 89, 0.15)' : '1px solid rgba(0,0,0,0.02)',
-                    transition: 'all 0.2s'
+                    border: item.count > 0 ? '1px solid rgba(52, 199, 89, 0.15)' : '1px solid rgba(0,0,0,0.02)'
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', width: '75%', textAlign: 'left' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
@@ -2119,19 +2130,9 @@ export default function StudentApp() {
           <img 
             src="/poseidon.png" 
             alt="Poseidon" 
-            style={{ 
-              position: 'absolute', 
-              left: '-20px', 
-              top: '-40px', 
-              height: '110px', 
-              width: 'auto', 
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
-              zIndex: 10,
-              pointerEvents: 'none'
-            }} 
+            className="section-char-img"
           />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingLeft: '75px' }}>
+          <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <div>
               <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
               <p style={{ fontSize: '13px', color: '#86868B', margin: '4px 0 0 0', fontWeight: 550 }}>
@@ -2382,19 +2383,9 @@ export default function StudentApp() {
           <img 
             src="/hades.png" 
             alt="Hades" 
-            style={{ 
-              position: 'absolute', 
-              left: '-20px', 
-              top: '-35px', 
-              height: '110px', 
-              width: 'auto', 
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
-              zIndex: 10,
-              pointerEvents: 'none'
-            }} 
+            className="section-char-img"
           />
-          <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '75px', marginBottom: '24px' }}>
+          <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
             <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
             <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
               Ενότητες Προσαρμοστικής Εκπαίδευσης
@@ -2427,8 +2418,8 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/aphrodite.png" 
-                alt="Aphrodite" 
+                src="/zeus.png" 
+                alt="Zeus" 
                 className="game-character-img"
                 style={{
                   position: 'absolute',
@@ -2747,8 +2738,8 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/hermes.png" 
-                alt="Hermes" 
+                src="/poseidon.png" 
+                alt="Poseidon" 
                 className="game-character-img"
                 style={{
                   position: 'absolute',
@@ -2788,13 +2779,7 @@ export default function StudentApp() {
             </div>
 
             {/* Writing & Speaking Challenge */}
-            <div className="game-card border-blue" style={{
-              position: 'relative',
-              background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.05), rgba(0, 113, 227, 0.05))',
-              border: '1.5px solid rgba(0, 113, 227, 0.15)',
-              boxShadow: '0 8px 24px rgba(129, 140, 248, 0.08)',
-              paddingRight: '90px'
-            }}>
+            <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('writing_speaking') && (
                 <div style={{
                   position: 'absolute',
@@ -2817,8 +2802,8 @@ export default function StudentApp() {
                 </div>
               )}
               <img 
-                src="/athena.png" 
-                alt="Athena" 
+                src="/hades.png" 
+                alt="Hades" 
                 className="game-character-img"
                 style={{
                   position: 'absolute',
@@ -2868,11 +2853,6 @@ export default function StudentApp() {
                   setShowChallengeTip(false);
                 }} 
                 className="btn-premium btn-blue-filled"
-                style={{
-                  background: 'linear-gradient(135deg, #0071E3, #818CF8)',
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0, 113, 227, 0.2)'
-                }}
               >
                 进入挑战 / Πρόκληση <ChevronRight size={16} />
               </button>
@@ -2902,9 +2882,9 @@ export default function StudentApp() {
             <span className="navbar-brand">Leon Greek Coach</span>
           </div>
 
-          <div className="navbar-right" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="score-label" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: '4px' }}>
+          <div className="navbar-right">
+            <div className="navbar-stats-row">
+              <span className="score-label">
                 <span>学习总积分</span>
                 <span style={{ fontSize: '9px', color: '#86868B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Συνολικοί Πόντοι
@@ -2917,18 +2897,9 @@ export default function StudentApp() {
               {(() => {
                 const currentLevel = getLevelInfo(score);
                 return (
-                  <div style={{
+                  <div className="level-badge" style={{
                     background: currentLevel.gradient,
-                    color: '#FFFFFF',
-                    borderRadius: '12px',
-                    padding: '4px 10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: `0 4px 10px ${currentLevel.glowColor}`,
-                    border: '1px solid rgba(255,255,255,0.2)'
+                    boxShadow: `0 4px 10px ${currentLevel.glowColor}`
                   }}>
                     <span>{currentLevel.icon}</span>
                     <span>{currentLevel.name}</span>
@@ -2938,21 +2909,7 @@ export default function StudentApp() {
             </div>
             <button 
               onClick={() => setShowRulesModal(true)} 
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#0071E3',
-                fontSize: '11px',
-                fontWeight: 650,
-                cursor: 'pointer',
-                padding: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                transition: 'color 0.2s'
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#0077ED')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#0071E3')}
+              className="rules-button"
             >
               积分规则 & 升级进度 | Κανόνες & Πρόοδος
             </button>
@@ -2975,7 +2932,7 @@ export default function StudentApp() {
               Πρόοδος: Γύρος {matchingRound + 1} / 8 (40 λέξεις συνολικά)
             </div>
             <div className="game-container-card" style={{ padding: '32px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+              <div className="matching-game-grid">
                 {/* Greek Cards */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <h4 style={{ fontWeight: 'bold', color: '#1D1D1F', marginBottom: '2px' }}>希腊语</h4>
