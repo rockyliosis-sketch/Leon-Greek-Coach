@@ -1884,6 +1884,7 @@ export default function StudentApp() {
           {/* Left: SVG Line Chart */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <img src="/zeus.png" alt="Zeus" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
               <span>艾宾浩斯遗忘曲线智能追踪</span>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '12px', color: '#86868B', fontWeight: 600 }}>当前日期 / Ημερομηνία:</span>
@@ -2091,51 +2092,6 @@ export default function StudentApp() {
           </div>
         </div>
 
-        {/* Greek Mythology Companions Card */}
-        <div style={{
-          background: 'linear-gradient(135deg, #E0F2FE, #F0FDFA)',
-          border: '1px solid rgba(14, 165, 233, 0.15)',
-          borderRadius: '24px',
-          padding: '24px',
-          marginBottom: '40px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '24px',
-          boxShadow: '0 10px 25px -5px rgba(14,165,233,0.05)'
-        }} className="greek-companions-card">
-          <div style={{ flex: 1 }}>
-            <span style={{
-              background: '#0ea5e9',
-              color: '#FFFFFF',
-              fontSize: '11px',
-              fontWeight: 700,
-              padding: '3px 8px',
-              borderRadius: '6px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>奥林匹斯之光 / Φως του Ολύμπου</span>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0369a1', margin: '8px 0 4px 0' }}>
-              希腊神话学习伙伴已就位！
-            </h3>
-            <p style={{ fontSize: '13px', color: '#0284c7', margin: 0, lineHeight: 1.5 }}>
-              宙斯 (Zeus)、雅典娜 (Athena) 与赫尔墨斯 (Hermes) 正在默默守护 Leon 的每一次拼写与词汇挑战。今天也要像神明一样充满智慧与勇气哦！
-            </p>
-          </div>
-          <img 
-            src="/greek_gods.png" 
-            alt="Greek Gods" 
-            style={{
-              height: '100px',
-              width: 'auto',
-              borderRadius: '16px',
-              background: '#FFFFFF',
-              padding: '8px',
-              boxShadow: '0 4px 12px rgba(14,165,233,0.1)'
-            }}
-          />
-        </div>
-
         {/* 1. 今日课程与调度复习导学 (Today's Course & Review Guide) */}
         <div id="today-guide" style={{
           background: '#FFFFFF',
@@ -2146,18 +2102,7 @@ export default function StudentApp() {
           marginBottom: '48px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              background: 'linear-gradient(135deg, #0071E3, #818CF8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#FFFFFF'
-            }}>
-              <BookOpen size={20} />
-            </div>
+            <img src="/poseidon.png" alt="Poseidon" style={{ height: '48px', width: 'auto', objectFit: 'contain' }} />
             <div>
               <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
               <p style={{ fontSize: '13px', color: '#86868B', margin: '4px 0 0 0', fontWeight: 550 }}>
@@ -2406,7 +2351,10 @@ export default function StudentApp() {
 
         {/* 2. 自适应特训模块 (Adaptive Training Modules) */}
         <div id="adaptive-training">
-          <h2 className="section-title" style={{ marginBottom: '2px' }}>自适应特训模块</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2px' }}>
+            <img src="/hades.png" alt="Hades" style={{ height: '48px', width: 'auto', objectFit: 'contain' }} />
+            <h2 className="section-title" style={{ margin: 0 }}>自适应特训模块</h2>
+          </div>
           <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, marginBottom: '24px', textTransform: 'uppercase' }}>
             Ενότητες Προσαρμοστικής Εκπαίδευσης
           </p>
@@ -2435,8 +2383,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-blue-light text-blue">
-                <Layers size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/aphrodite.png" alt="Aphrodite" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>单词连连看</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
@@ -2484,8 +2432,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-green-light text-green">
-                <Play size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/athena.png" alt="Athena" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>拼字大作战</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
@@ -2533,8 +2481,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-orange-light text-orange">
-                <HelpCircle size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/apollo.png" alt="Apollo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>智能选择题</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
@@ -2582,8 +2530,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-blue-light text-blue">
-                <CheckCircle size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/ares.png" alt="Ares" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>判断对错</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
@@ -2631,8 +2579,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-green-light text-green">
-                <Award size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/hermes.png" alt="Hermes" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>希腊语翻译汉语</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
@@ -2680,8 +2628,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-orange-light text-orange">
-                <Sparkles size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/hermes.png" alt="Hermes" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px' }}>汉语翻译希腊语</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
@@ -2734,8 +2682,8 @@ export default function StudentApp() {
                   ✓
                 </div>
               )}
-              <div className="game-icon-bg bg-blue-light text-blue" style={{ background: 'rgba(0, 113, 227, 0.1)' }}>
-                <BookOpen size={24} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
+                <img src="/athena.png" alt="Athena" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <h3 className="game-title" style={{ marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 真题写作与口语挑战
