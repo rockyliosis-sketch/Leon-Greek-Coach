@@ -1713,6 +1713,13 @@ export default function StudentApp() {
               align-items: flex-start !important;
               gap: 20px !important;
             }
+            .welcome-banner-decor {
+              display: none !important;
+            }
+            .greek-companions-card {
+              flex-direction: column !important;
+              text-align: center !important;
+            }
           }
         `}</style>
 
@@ -1757,6 +1764,24 @@ export default function StudentApp() {
                 Έξυπνος Προγραμματισμός Καμπύλης Μνήμης · Καθημερινός Χώρος Προσαρμοστικής Επανάληψης
               </p>
             </div>
+          </div>
+          {/* Decorative Parthenon Illustration */}
+          <div className="welcome-banner-decor" style={{ display: 'flex', alignItems: 'center' }}>
+            <img 
+              src="/greek_banner.png" 
+              alt="Greek Temple" 
+              style={{
+                height: '110px',
+                width: 'auto',
+                opacity: 0.95,
+                borderRadius: '18px',
+                background: 'rgba(255,255,255,0.15)',
+                padding: '6px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                backdropFilter: 'blur(5px)',
+                WebkitBackdropFilter: 'blur(5px)'
+              }}
+            />
           </div>
         </div>
 
@@ -2064,6 +2089,51 @@ export default function StudentApp() {
               })}
             </div>
           </div>
+        </div>
+
+        {/* Greek Mythology Companions Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, #E0F2FE, #F0FDFA)',
+          border: '1px solid rgba(14, 165, 233, 0.15)',
+          borderRadius: '24px',
+          padding: '24px',
+          marginBottom: '40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '24px',
+          boxShadow: '0 10px 25px -5px rgba(14,165,233,0.05)'
+        }} className="greek-companions-card">
+          <div style={{ flex: 1 }}>
+            <span style={{
+              background: '#0ea5e9',
+              color: '#FFFFFF',
+              fontSize: '11px',
+              fontWeight: 700,
+              padding: '3px 8px',
+              borderRadius: '6px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>奥林匹斯之光 / Φως του Ολύμπου</span>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0369a1', margin: '8px 0 4px 0' }}>
+              希腊神话学习伙伴已就位！
+            </h3>
+            <p style={{ fontSize: '13px', color: '#0284c7', margin: 0, lineHeight: 1.5 }}>
+              宙斯 (Zeus)、雅典娜 (Athena) 与赫尔墨斯 (Hermes) 正在默默守护 Leon 的每一次拼写与词汇挑战。今天也要像神明一样充满智慧与勇气哦！
+            </p>
+          </div>
+          <img 
+            src="/greek_gods.png" 
+            alt="Greek Gods" 
+            style={{
+              height: '100px',
+              width: 'auto',
+              borderRadius: '16px',
+              background: '#FFFFFF',
+              padding: '8px',
+              boxShadow: '0 4px 12px rgba(14,165,233,0.1)'
+            }}
+          />
         </div>
 
         {/* 1. 今日课程与调度复习导学 (Today's Course & Review Guide) */}
