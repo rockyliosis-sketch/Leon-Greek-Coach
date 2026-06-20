@@ -312,7 +312,19 @@ body {
   color: #1D1D1F;
   margin-bottom: 10px;
   letter-spacing: -0.01em;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+  transform-origin: left center;
 }
+
+.game-card:hover .game-title {
+  transform: scale(1.06);
+  color: #0071E3;
+}
+
+.game-card:hover .game-character-img {
+  transform: scale(1.12) rotate(2deg) translateY(-4px) !important;
+}
+
 
 .game-description {
   font-size: 14px;

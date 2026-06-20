@@ -1879,12 +1879,27 @@ export default function StudentApp() {
           marginBottom: '40px',
           display: 'grid',
           gridTemplateColumns: '1.2fr 1fr',
-          gap: '32px'
+          gap: '32px',
+          position: 'relative'
         }} className="ebbinghaus-container">
+          <img 
+            src="/zeus.png" 
+            alt="Zeus" 
+            style={{ 
+              position: 'absolute', 
+              left: '-20px', 
+              top: '-40px', 
+              height: '110px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} 
+          />
           {/* Left: SVG Line Chart */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '75px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <img src="/zeus.png" alt="Zeus" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
               <span>艾宾浩斯遗忘曲线智能追踪</span>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '12px', color: '#86868B', fontWeight: 600 }}>当前日期 / Ημερομηνία:</span>
@@ -2092,17 +2107,31 @@ export default function StudentApp() {
           </div>
         </div>
 
-        {/* 1. 今日课程与调度复习导学 (Today's Course & Review Guide) */}
         <div id="today-guide" style={{
           background: '#FFFFFF',
           border: '1px solid rgba(0, 0, 0, 0.04)',
           borderRadius: '28px',
           padding: '32px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
-          marginBottom: '48px'
+          marginBottom: '48px',
+          position: 'relative'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <img src="/poseidon.png" alt="Poseidon" style={{ height: '48px', width: 'auto', objectFit: 'contain' }} />
+          <img 
+            src="/poseidon.png" 
+            alt="Poseidon" 
+            style={{ 
+              position: 'absolute', 
+              left: '-20px', 
+              top: '-40px', 
+              height: '110px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} 
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingLeft: '75px' }}>
             <div>
               <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>今日学习导学与调度复习词汇</h2>
               <p style={{ fontSize: '13px', color: '#86868B', margin: '4px 0 0 0', fontWeight: 550 }}>
@@ -2349,20 +2378,33 @@ export default function StudentApp() {
           )}
         </div>
 
-        {/* 2. 自适应特训模块 (Adaptive Training Modules) */}
-        <div id="adaptive-training">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2px' }}>
-            <img src="/hades.png" alt="Hades" style={{ height: '48px', width: 'auto', objectFit: 'contain' }} />
-            <h2 className="section-title" style={{ margin: 0 }}>自适应特训模块</h2>
+        <div id="adaptive-training" style={{ position: 'relative', marginTop: '60px' }}>
+          <img 
+            src="/hades.png" 
+            alt="Hades" 
+            style={{ 
+              position: 'absolute', 
+              left: '-20px', 
+              top: '-35px', 
+              height: '110px', 
+              width: 'auto', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.12))',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} 
+          />
+          <div style={{ display: 'flex', flexDirection: 'column', paddingLeft: '75px', marginBottom: '24px' }}>
+            <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
+            <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
+              Ενότητες Προσαρμοστικής Εκπαίδευσης
+            </p>
           </div>
-          <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, marginBottom: '24px', textTransform: 'uppercase' }}>
-            Ενότητες Προσαρμοστικής Εκπαίδευσης
-          </p>
           
           <div className="game-hub-grid">
             
             {/* Card Matching */}
-            <div className="game-card border-blue" style={{ position: 'relative' }}>
+            <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('matching') && (
                 <div style={{
                   position: 'absolute',
@@ -2378,14 +2420,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/aphrodite.png" alt="Aphrodite" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/aphrodite.png" 
+                alt="Aphrodite" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>单词连连看</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
                 ΤΑΙΡΙΑΣΜΑ ΛΕΞΕΩΝ
@@ -2411,7 +2468,7 @@ export default function StudentApp() {
             </div>
 
             {/* Spelling */}
-            <div className="game-card border-green" style={{ position: 'relative' }}>
+            <div className="game-card border-green" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('spelling') && (
                 <div style={{
                   position: 'absolute',
@@ -2427,14 +2484,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/athena.png" alt="Athena" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/athena.png" 
+                alt="Athena" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>拼字大作战</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
                 ΜΑΧΗ ΟΡΘΟΓΡΑΦΙΑΣ
@@ -2460,7 +2532,7 @@ export default function StudentApp() {
             </div>
 
             {/* MCQ */}
-            <div className="game-card border-orange" style={{ position: 'relative' }}>
+            <div className="game-card border-orange" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('quiz') && (
                 <div style={{
                   position: 'absolute',
@@ -2476,14 +2548,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/apollo.png" alt="Apollo" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/apollo.png" 
+                alt="Apollo" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>智能选择题</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
                 ΕΡΩΤΗΣΕΙΣ ΠΟΛΛΑΠΛΗΣ ΕΠΙΛΟΓΗΣ
@@ -2509,7 +2596,7 @@ export default function StudentApp() {
             </div>
 
             {/* True/False */}
-            <div className="game-card border-blue" style={{ position: 'relative' }}>
+            <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('truefalse') && (
                 <div style={{
                   position: 'absolute',
@@ -2525,14 +2612,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/ares.png" alt="Ares" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/ares.png" 
+                alt="Ares" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>判断对错</h3>
               <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
                 ΣΩΣΤΟ Η ΛΑΘΟΣ
@@ -2558,7 +2660,7 @@ export default function StudentApp() {
             </div>
 
             {/* Greek to Chinese Translation */}
-            <div className="game-card border-green" style={{ position: 'relative' }}>
+            <div className="game-card border-green" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('translation_gr_zh') && (
                 <div style={{
                   position: 'absolute',
@@ -2574,14 +2676,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/hermes.png" alt="Hermes" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/hermes.png" 
+                alt="Hermes" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>希腊语翻译汉语</h3>
               <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginBottom: '8px' }}>
                 ΜΕΤΑΦΡΑΣΗ ΑΠΟ ΕΛΛΗΝΙΚΑ ΣΕ ΚΙΝΕΖΙΚΑ
@@ -2607,7 +2724,7 @@ export default function StudentApp() {
             </div>
 
             {/* Chinese to Greek Translation */}
-            <div className="game-card border-orange" style={{ position: 'relative' }}>
+            <div className="game-card border-orange" style={{ position: 'relative', paddingRight: '90px' }}>
               {completedModulesForDate.includes('translation_zh_gr') && (
                 <div style={{
                   position: 'absolute',
@@ -2623,14 +2740,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/hermes.png" alt="Hermes" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/hermes.png" 
+                alt="Hermes" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px' }}>汉语翻译希腊语</h3>
               <div style={{ fontSize: '11px', color: '#FF9500', fontWeight: 700, marginBottom: '8px' }}>
                 ΜΕΤΑΦΡΑΣΗ ΑΠΟ ΚΙΝΕΖΙΚΑ ΣΕ ΕΛΛΗΝΙΚΑ
@@ -2660,7 +2792,8 @@ export default function StudentApp() {
               position: 'relative',
               background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.05), rgba(0, 113, 227, 0.05))',
               border: '1.5px solid rgba(0, 113, 227, 0.15)',
-              boxShadow: '0 8px 24px rgba(129, 140, 248, 0.08)'
+              boxShadow: '0 8px 24px rgba(129, 140, 248, 0.08)',
+              paddingRight: '90px'
             }}>
               {completedModulesForDate.includes('writing_speaking') && (
                 <div style={{
@@ -2677,14 +2810,29 @@ export default function StudentApp() {
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
                   fontWeight: 'bold',
-                  fontSize: '12px'
+                  fontSize: '12px',
+                  zIndex: 3
                 }} title="今日已完成">
                   ✓
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', width: '56px', marginBottom: '20px' }}>
-                <img src="/athena.png" alt="Athena" style={{ height: '56px', width: 'auto', objectFit: 'contain' }} />
-              </div>
+              <img 
+                src="/athena.png" 
+                alt="Athena" 
+                className="game-character-img"
+                style={{
+                  position: 'absolute',
+                  right: '-10px',
+                  top: '20px',
+                  height: '90px',
+                  width: 'auto',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.1))',
+                  zIndex: 2,
+                  pointerEvents: 'none',
+                  transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              />
               <h3 className="game-title" style={{ marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 真题写作与口语挑战
                 <span style={{
