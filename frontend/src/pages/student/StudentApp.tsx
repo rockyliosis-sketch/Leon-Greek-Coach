@@ -1900,7 +1900,7 @@ export default function StudentApp() {
           background: '#FFFFFF',
           border: '1px solid rgba(0, 0, 0, 0.04)',
           borderRadius: '28px',
-          padding: '32px',
+          padding: '110px 32px 32px 32px',
           boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
           marginBottom: '40px',
           display: 'grid',
@@ -1908,13 +1908,13 @@ export default function StudentApp() {
           gap: '32px',
           position: 'relative'
         }} className="ebbinghaus-container">
+          <img 
+            src="/zeus.png" 
+            alt="Zeus" 
+            className="section-char-img"
+          />
           {/* Left: SVG Line Chart */}
-          <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
-            <img 
-              src="/zeus.png" 
-              alt="Zeus" 
-              className="section-char-img"
-            />
+          <div className="section-header-with-icon" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', margin: '0 0 2px 0', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <span>艾宾浩斯遗忘曲线智能追踪</span>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>

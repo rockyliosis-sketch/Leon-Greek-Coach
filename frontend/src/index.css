@@ -828,15 +828,15 @@ body {
 
 /* Specific position for Zeus standing on top of Ebbinghaus title on desktop */
 .ebbinghaus-container .section-char-img {
-  left: 40px;
-  right: auto;
-  top: -190px;
+  right: 20px;
+  left: auto;
+  top: -60px;
   height: 270px;
 }
 
 .ebbinghaus-container {
-  padding-top: 110px !important;
-  margin-top: 140px !important;
+  padding: 32px !important;
+  margin-top: 60px !important; /* Normal margin instead of 220px */
 }
 
 .section-header-with-icon {
@@ -860,7 +860,7 @@ body {
 }
 
 .ebbinghaus-right-col {
-  padding-right: 0; /* Zeus is in the left column now, no need for right column padding */
+  padding-right: 180px; /* Leave space on the right for Zeus */
 }
 
 .today-units-list {
@@ -868,7 +868,18 @@ body {
 }
 
 #adaptive-training {
-  margin-bottom: 150px; /* Pushes the cards down on desktop to prevent Hades overlapping */
+  margin-bottom: 56px !important;
+}
+
+#adaptive-training .section-char-img {
+  top: -60px !important;
+  right: 20px !important;
+  height: 270px !important;
+}
+
+#adaptive-training .game-hub-grid {
+  margin-top: 24px !important; /* Reset margin-top to normal */
+  margin-right: 240px; /* Push the grid left to leave space for Hades on the right */
 }
 
 /* Quick Nav Container */
@@ -937,6 +948,7 @@ body {
     gap: 24px !important;
     padding: 24px !important;
     padding-top: 100px !important;
+    margin-top: 60px !important; /* Ensure Zeus doesn't overlap elements above on mobile */
   }
   .ebbinghaus-container > div:first-of-type {
     padding-left: 0 !important;
@@ -1052,6 +1064,11 @@ body {
   
   #adaptive-training {
     margin-bottom: 24px !important;
+  }
+  
+  #adaptive-training .game-hub-grid {
+    margin-top: 24px !important; /* Reset desktop margin-top on mobile */
+    margin-right: 0 !important; /* Reset desktop margin-right on mobile */
   }
   
   /* Review task item stacks on mobile */
