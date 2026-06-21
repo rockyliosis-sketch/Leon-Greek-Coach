@@ -347,8 +347,17 @@ const getSpellingTargetWord = (word: string): string => {
   return words.join(' ').trim();
 };
 
+const removeBracketContents = (str: string): string => {
+  return str
+    .replace(/\(.*?\)/g, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/（.*?）/g, '')
+    .replace(/【.*?】/g, '');
+};
+
 const cleanGreekForComparison = (str: string): string => {
-  let cleaned = str
+  let cleaned = removeBracketContents(str);
+  cleaned = cleaned
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // remove combining marks (accents)
     .toLowerCase();
@@ -365,7 +374,8 @@ const cleanGreekForComparison = (str: string): string => {
 };
 
 const cleanChinese = (str: string): string => {
-  return str
+  let cleaned = removeBracketContents(str);
+  return cleaned
     .toLowerCase()
     .trim()
     .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?，。？！；：]/g, "")
@@ -877,6 +887,19 @@ export default function StudentApp() {
       
       if (dueA && !dueB) return -1;
       if (!dueA && dueB) return 1;
+
+      // Deterministic shuffle for "due today" words based on dateSeed
+      // so the student doesn't see the exact same batch on consecutive due days.
+      if (dueA && dueB) {
+        const dateParts = selectedDateStr.split('-');
+        const y = parseInt(dateParts[0], 10) || 2026;
+        const m = parseInt(dateParts[1], 10) || 6;
+        const d = parseInt(dateParts[2], 10) || 20;
+        const dateSeed = y * 372 + m * 31 + d;
+        const hashA = (a.id * 137 + dateSeed) % 1000;
+        const hashB = (b.id * 137 + dateSeed) % 1000;
+        return hashA - hashB;
+      }
 
       const order: Record<string, number> = { 'A1-A': 1, 'A1-B': 2, 'A2': 3 };
       const bookA = order[a.book_id.toUpperCase()] || 99;

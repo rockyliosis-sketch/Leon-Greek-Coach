@@ -381,17 +381,17 @@ def main():
     
     print(f"A1 mapped: {len(a1_mapped)}, unmapped: {len(a1_unmapped)}")
     
-    # Distribute unmapped A1 words evenly
+    # Distribute unmapped A1 words to the final review unit of A1-B (Unit 30) instead of randomly
     for idx, item in enumerate(a1_unmapped):
-        unit = (idx % 30) + 1
-        book_id = "a1-a" if unit <= 15 else "a1-b"
-        p_start = a1_a_ranges.get(unit, (58, 65))[0] if unit <= 15 else a1_b_ranges.get(unit, (6, 17))[0]
+        book_id = "a1-b"
+        unit = 30
+        p_start = a1_b_ranges.get(unit, (169, 175))[0]
         a1_mapped.append({
             "item": item,
             "book_id": book_id,
             "unit": unit,
             "page_number": p_start,
-            "match_type": "fallback_even"
+            "match_type": "fallback_end_of_book"
         })
         
     # ------------------
@@ -459,16 +459,16 @@ def main():
     
     print(f"A2 mapped: {len(a2_mapped)}, unmapped: {len(a2_unmapped)}")
     
-    # Distribute unmapped A2 words evenly
+    # Distribute unmapped A2 words to the final review unit of A2 (Unit 39)
     for idx, item in enumerate(a2_unmapped):
-        unit = 31 + (idx % 9)
-        p_start = a2_ranges.get(unit, (4, 39))[0]
+        unit = 39
+        p_start = a2_ranges.get(unit, (142, 148))[0]
         a2_mapped.append({
             "item": item,
             "book_id": "a2",
             "unit": unit,
             "page_number": p_start,
-            "match_type": "fallback_even"
+            "match_type": "fallback_end_of_book"
         })
 
     # ------------------
