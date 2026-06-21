@@ -520,25 +520,8 @@ def main():
             
     print(f"A1 textbook matched: {len(a1_mapped)}, unmapped: {len(a1_unmapped)}")
     
-    # Classify unmapped A1 words via Gemini
-    if len(a1_unmapped) > 0:
-        print("Classifying A1 unmapped words via Gemini...")
-        a1_unmapped_formatted = [{"word_greek": w["word_greek"], "word_english": w["word_english"]} for w in a1_unmapped]
-        a1_semantic_map = classify_unmapped_gemini(a1_unmapped_formatted, "A1")
-        
-        for item in a1_unmapped:
-            gk = item["word_greek"]
-            unit = a1_semantic_map.get(gk, 1) # fallback to unit 1 if missing
-            book_id = "a1-a" if unit <= 15 else "a1-b"
-            p_start = a1_a_ranges.get(unit, (58, 65))[0] if unit <= 15 else a1_b_ranges.get(unit, (6, 17))[0]
-            
-            a1_mapped.append({
-                "item": item,
-                "book_id": book_id,
-                "unit": unit,
-                "page_number": p_start,
-                "match_type": "semantic_gemini"
-            })
+    # Exclude unmapped A1 words to ensure we only include words actually taught in the textbook lessons
+    print(f"Excluding {len(a1_unmapped)} unmapped A1 words that do not physically appear in the textbook lessons.")
             
     # ------------------
     # Step 2: Map A2 Words (Filter duplicates from A1)
@@ -595,24 +578,8 @@ def main():
             
     print(f"A2 textbook matched: {len(a2_mapped)}, unmapped: {len(a2_unmapped)}")
     
-    # Classify unmapped A2 words via Gemini
-    if len(a2_unmapped) > 0:
-        print("Classifying A2 unmapped words via Gemini...")
-        a2_unmapped_formatted = [{"word_greek": w["word_greek"], "word_english": w["word_english"]} for w in a2_unmapped]
-        a2_semantic_map = classify_unmapped_gemini(a2_unmapped_formatted, "A2")
-        
-        for item in a2_unmapped:
-            gk = item["word_greek"]
-            unit = a2_semantic_map.get(gk, 31) # fallback to unit 31 if missing
-            p_start = a2_ranges.get(unit, (4, 39))[0]
-            
-            a2_mapped.append({
-                "item": item,
-                "book_id": "a2",
-                "unit": unit,
-                "page_number": p_start,
-                "match_type": "semantic_gemini"
-            })
+    # Exclude unmapped A2 words to ensure we only include words actually taught in the textbook lessons
+    print(f"Excluding {len(a2_unmapped)} unmapped A2 words that do not physically appear in the textbook lessons.")
             
     # Add Unit 38 dummy word to prevent blank unit 38 display (1-word helper)
     # The user noted that Unit 38 review is 4-6. We can add a review helper word
