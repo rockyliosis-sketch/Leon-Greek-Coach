@@ -481,11 +481,21 @@ def main():
     combined_list = a1_mapped + a2_mapped
     total_to_process = len(combined_list)
     
+    seen_bases = set()
+    
     for idx, entry in enumerate(combined_list):
         item = entry["item"]
         book_id = entry["book_id"]
         unit = entry["unit"]
         page_number = entry["page_number"]
+        
+        greek = item["word_greek"]
+        clean_base = get_clean_greek_base(greek)
+        norm_base = normalize_greek(clean_base)
+        
+        if norm_base in seen_bases:
+            continue
+        seen_bases.add(norm_base)
         
         greek = item["word_greek"]
         english = item["word_english"]

@@ -810,8 +810,11 @@ export default function StudentApp() {
   }, [allVocab, activatedDates, selectedDateStr]);
 
   const selectedUnits = useMemo(() => {
-    const targetDateInfo = getUnitForDate(selectedDateStr);
-    const currentGlobalUnit = targetDateInfo.unitNum;
+    // Determine the current global unit based on the highest unit unlocked so far
+    let currentGlobalUnit = 1;
+    if (unlockedVocab.length > 0) {
+      currentGlobalUnit = Math.max(...unlockedVocab.map(w => w.unit));
+    }
 
     // Parse selectedDateStr to get a stable daily seed
     const dateParts = selectedDateStr.split('-');
