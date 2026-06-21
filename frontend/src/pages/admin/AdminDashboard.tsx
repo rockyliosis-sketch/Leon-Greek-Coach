@@ -157,6 +157,34 @@ const getUnitSchedule = (unit: number): UnitSchedule => {
   return a2Schedules[unit] || { startOffset: 294, duration: 14 };
 };
 
+const getUnitFromDate = (dateStr: string): number => {
+  try {
+    let normalized = dateStr.replace(/[\/\u5e74\u6708]/g, '-').replace(/\u65e5/g, '');
+    const date = new Date(normalized);
+    if (isNaN(date.getTime())) return 1;
+
+    const baseDate = new Date(START_DATE);
+    const diffTime = date.getTime() - baseDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return 1;
+    if (diffDays < 210) {
+      return Math.floor(diffDays / 7) + 1;
+    }
+    if (diffDays < 224) return 31;
+    if (diffDays < 238) return 32;
+    if (diffDays < 252) return 33;
+    if (diffDays < 266) return 34;
+    if (diffDays < 280) return 35;
+    if (diffDays < 294) return 36;
+    if (diffDays < 308) return 37;
+    if (diffDays < 322) return 38;
+    return 39;
+  } catch (e) {
+    return 1;
+  }
+};
+
 const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string> => {
   const dates: Record<number, string> = {};
   const unitGroups: Record<number, Word[]> = {};
@@ -187,13 +215,20 @@ const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string>
   return dates;
 };
 
-const isWordActive = (wordId: number, targetDateStr: string, activatedMap: Record<number, string>, calculatedMap: Record<number, string>) => {
-  const manual = activatedMap[wordId];
+const isWordActive = (
+  wordId: number, 
+  targetDateStr: string, 
+  activatedMap: Record<number, string> = {}, 
+  calculatedMap: Record<number, string> = {}
+) => {
+  const map = activatedMap || {};
+  const calcMap = calculatedMap || {};
+  const manual = map[wordId];
   if (manual === 'LOCKED') return false;
   if (manual) {
     return manual <= targetDateStr;
   }
-  const calc = calculatedMap[wordId];
+  const calc = calcMap[wordId];
   if (calc) {
     return calc <= targetDateStr;
   }
@@ -232,9 +267,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setAllVocab(mergedVocab);
 
     const calcDates = getCalculatedActivationDates(mergedVocab);
-    setCalculatedActivationDates(calcDates);
+    setCalculatedActivationDates(calcDates || {});
 
-    const activated = JSON.parse(localStorage.getItem('leon_activated_words') || '{}');
+    let activated = {};
+    try {
+      const stored = localStorage.getItem('leon_activated_words');
+      if (stored) {
+        activated = JSON.parse(stored) || {};
+      }
+    } catch (e) {}
     setActivatedWords(activated);
   }, []);
 
@@ -274,10 +315,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleActivateUnit = (bookId: string, unit: number) => {
     const bookKey = bookId.toUpperCase();
     const wordsInUnit = groupedUnits[bookKey]?.[unit] || [];
-    const newActivated = { ...activatedWords };
+    const newActivated = { ...(activatedWords || {}) };
     
     wordsInUnit.forEach(w => {
-      newActivated[w.id] = activationDate;
+      if (w && w.id) {
+        newActivated[w.id] = activationDate;
+      }
     });
 
     setActivatedWords(newActivated);
@@ -288,10 +331,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleDeactivateUnit = (bookId: string, unit: number) => {
     const bookKey = bookId.toUpperCase();
     const wordsInUnit = groupedUnits[bookKey]?.[unit] || [];
-    const newActivated = { ...activatedWords };
+    const newActivated = { ...(activatedWords || {}) };
     
     wordsInUnit.forEach(w => {
-      newActivated[w.id] = 'LOCKED';
+      if (w && w.id) {
+        newActivated[w.id] = 'LOCKED';
+      }
     });
 
     setActivatedWords(newActivated);
@@ -313,7 +358,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const newWordsList: Word[] = [];
     let currentId = allVocab.length > 0 ? Math.max(...allVocab.map(w => w.id)) + 1 : 1;
 
+    let currentUnit = targetUnit;
+
     lines.forEach(line => {
+      // Parse dates from the MD content. Looks for YYYY-MM-DD, YYYY/MM/DD, or YYYY年MM月DD日
+      const dateMatch = line.match(/(\d{4})[-\/\u5e74](\d{1,2})[-\/\u6708](\d{1,2})\u65e5?/);
+      if (dateMatch) {
+        const year = dateMatch[1];
+        const month = dateMatch[2].padStart(2, '0');
+        const day = dateMatch[3].padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        currentUnit = getUnitFromDate(dateStr);
+      }
+
       // Regex parsing Greek / Chinese pairs
       const match = line.match(/(?:[\u0370-\u03FF\u1F00-\u1FFF]+[,\s]*)+[^\s\-]*\s*-\s*.+/);
       if (match) {
@@ -324,7 +381,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         newWordsList.push({
           id: currentId++,
           book_id: targetBookId,
-          unit: targetUnit,
+          unit: currentUnit,
           word_greek: greekPart,
           word_chinese: chinesePart,
           pronunciation: 'new',
@@ -439,7 +496,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <button 
                             onClick={() => handleDeactivateUnit(bookName, unitNum)}
                             className="btn-premium"
-                            style={{ whiteSpace: 'nowrap', background: 'rgba(255,59,48,0.08)', color: '#FF3B30', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
+                            style={{ 
+                              whiteSpace: 'nowrap', 
+                              background: 'rgba(255,59,48,0.08)', 
+                              color: '#FF3B30', 
+                              padding: '6px 14px', 
+                              fontSize: '12px', 
+                              width: '120px', 
+                              minWidth: '120px', 
+                              marginTop: 0, 
+                              justifyContent: 'center', 
+                              display: 'inline-flex' 
+                            }}
                           >
                             锁定此单元
                           </button>
@@ -447,7 +515,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <button 
                             onClick={() => handleActivateUnit(bookName, unitNum)}
                             className="btn-premium"
-                            style={{ whiteSpace: 'nowrap', background: 'rgba(52,199,89,0.08)', color: '#34C759', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
+                            style={{ 
+                              whiteSpace: 'nowrap', 
+                              background: 'rgba(52,199,89,0.08)', 
+                              color: '#34C759', 
+                              padding: '6px 14px', 
+                              fontSize: '12px', 
+                              width: '120px', 
+                              minWidth: '120px', 
+                              marginTop: 0, 
+                              justifyContent: 'center', 
+                              display: 'inline-flex' 
+                            }}
                           >
                             授权解锁单元
                           </button>

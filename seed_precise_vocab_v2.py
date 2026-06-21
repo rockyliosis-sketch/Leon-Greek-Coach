@@ -140,6 +140,18 @@ def get_possible_stems(word):
     
     return sorted(list(stems), key=len, reverse=True)
 
+def is_stem_match(tok, stem):
+    if not tok.startswith(stem):
+        return False
+    stem_len = len(stem)
+    tok_len = len(tok)
+    if stem_len <= 3:
+        return tok_len <= stem_len + 1
+    elif stem_len <= 5:
+        return tok_len <= stem_len + 2
+    else:
+        return tok_len <= stem_len + 3
+
 def parse_textbook_tokens(path):
     if not os.path.exists(path):
         print(f"Warning: textbook path not found {path}")
@@ -476,6 +488,9 @@ def main():
     # Filter A1 single letters
     a1_clean = [w for w in a1_glossary if len(normalize_greek(get_clean_greek_base(w["word_greek"]))) > 1]
     
+    # Complete set of A1 words in glossary (normalized)
+    a1_glossary_norm_set = set(normalize_greek(get_clean_greek_base(w["word_greek"])) for w in a1_clean)
+    
     # ------------------
     # Step 1: Map A1 Words
     # ------------------
@@ -489,15 +504,17 @@ def main():
         
         mapped_to = None
         
-        # Search page by page in ascending order to find the first page
+        # Search page by page, EXCLUDING alphabet pages (10-57) in first pass
         for book_id, book_pages in [("a1-a", a1_a_pages), ("a1-b", a1_b_pages)]:
             for p in sorted(book_pages.keys()):
+                if book_id == "a1-a" and 10 <= p <= 57:
+                    continue
                 tokens = book_pages[p]
                 # Check if any stem matches
                 matched = False
                 for stem in stems:
                     for tok in tokens:
-                        if tok.startswith(stem) and len(tok) <= len(stem) + 3:
+                        if is_stem_match(tok, stem):
                             matched = True
                             break
                     if matched: break
@@ -516,19 +533,15 @@ def main():
                 "match_type": mapped_to[3]
             })
         else:
+            # Word is not found in unit lessons. It is either an alphabet-only word or unmapped. We exclude it.
             a1_unmapped.append(item)
             
-    print(f"A1 textbook matched: {len(a1_mapped)}, unmapped: {len(a1_unmapped)}")
+    print(f"A1 textbook matched: {len(a1_mapped)}, unmapped (excluded): {len(a1_unmapped)}")
     
-    # Exclude unmapped A1 words to ensure we only include words actually taught in the textbook lessons
-    print(f"Excluding {len(a1_unmapped)} unmapped A1 words that do not physically appear in the textbook lessons.")
-            
     # ------------------
     # Step 2: Map A2 Words (Filter duplicates from A1)
     # ------------------
     print("Mapping A2 words...")
-    # Normalize set of A1 mapped words
-    a1_norm_set = set(normalize_greek(get_clean_greek_base(w["item"]["word_greek"])) for w in a1_mapped)
     
     a2_filtered = []
     for item in a2_glossary:
@@ -536,7 +549,8 @@ def main():
         norm_base = normalize_greek(greek_base)
         if len(norm_base) <= 1:
             continue
-        if norm_base not in a1_norm_set:
+        # Filter out ANY word that was present in the A1 glossary to prevent basic A1 words in A2 Unit 31
+        if norm_base not in a1_glossary_norm_set:
             a2_filtered.append(item)
             
     print(f"A2 remaining unique words after duplicate filtering: {len(a2_filtered)}")
@@ -556,7 +570,7 @@ def main():
             matched = False
             for stem in stems:
                 for tok in tokens:
-                    if tok.startswith(stem) and len(tok) <= len(stem) + 3:
+                    if is_stem_match(tok, stem):
                         matched = True
                         break
                 if matched: break
@@ -576,11 +590,8 @@ def main():
         else:
             a2_unmapped.append(item)
             
-    print(f"A2 textbook matched: {len(a2_mapped)}, unmapped: {len(a2_unmapped)}")
+    print(f"A2 textbook matched: {len(a2_mapped)}, unmapped (excluded): {len(a2_unmapped)}")
     
-    # Exclude unmapped A2 words to ensure we only include words actually taught in the textbook lessons
-    print(f"Excluding {len(a2_unmapped)} unmapped A2 words that do not physically appear in the textbook lessons.")
-            
     # Add Unit 38 dummy word to prevent blank unit 38 display (1-word helper)
     # The user noted that Unit 38 review is 4-6. We can add a review helper word
     a2_mapped.append({
