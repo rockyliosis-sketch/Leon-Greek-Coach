@@ -191,11 +191,11 @@ const isWordActive = (wordId: number, targetDateStr: string, activatedMap: Recor
   const manual = activatedMap[wordId];
   if (manual === 'LOCKED') return false;
   if (manual) {
-    return new Date(manual) <= new Date(targetDateStr);
+    return manual <= targetDateStr;
   }
   const calc = calculatedMap[wordId];
   if (calc) {
-    return new Date(calc) <= new Date(targetDateStr);
+    return calc <= targetDateStr;
   }
   return false;
 };
@@ -407,15 +407,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <td className="admin-td">{words.length} 词</td>
                       <td className="admin-td">
                         {isUnitActivated ? (
-                          <span style={{ color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                          <span style={{ whiteSpace: 'nowrap', color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
                             已授权学习 (解锁) ({activatedInUnitCount}/{words.length})
                           </span>
                         ) : activatedInUnitCount > 0 ? (
-                          <span style={{ color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                          <span style={{ whiteSpace: 'nowrap', color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
                             部分授权 ({activatedInUnitCount}/{words.length})
                           </span>
                         ) : (
-                          <span style={{ color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                          <span style={{ whiteSpace: 'nowrap', color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
                             未授权 (锁定中)
                           </span>
                         )}
@@ -425,7 +425,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <button 
                             onClick={() => handleDeactivateUnit(bookName, unitNum)}
                             className="btn-premium"
-                            style={{ background: 'rgba(255,59,48,0.08)', color: '#FF3B30', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
+                            style={{ whiteSpace: 'nowrap', background: 'rgba(255,59,48,0.08)', color: '#FF3B30', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
                           >
                             锁定此单元
                           </button>
@@ -433,7 +433,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           <button 
                             onClick={() => handleActivateUnit(bookName, unitNum)}
                             className="btn-premium"
-                            style={{ background: 'rgba(52,199,89,0.08)', color: '#34C759', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
+                            style={{ whiteSpace: 'nowrap', background: 'rgba(52,199,89,0.08)', color: '#34C759', padding: '6px 14px', fontSize: '12px', width: 'auto' }}
                           >
                             授权解锁单元
                           </button>
