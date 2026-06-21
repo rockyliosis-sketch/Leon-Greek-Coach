@@ -24849,6 +24849,17 @@
       "pronunciation": "i-ora-eine-tesserisimisi",
       "example_greek": "Αυτό είναι η ώρα είναι τεσσερισήμισι.",
       "example_chinese": "这是 现在是四点半。"
+    },
+    {
+      "id": 9938,
+      "book_id": "a2",
+      "unit": 38,
+      "page_number": 0,
+      "word_greek": "Ώρα για επανάληψη",
+      "word_chinese": "第四至六单元复习",
+      "pronunciation": "ora gia epanalipsi",
+      "example_greek": "Πάμε να κάνουμε επανάληψη.",
+      "example_chinese": "我们来复习吧。"
     }
   ]
 }

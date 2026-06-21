@@ -247,6 +247,20 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // Group vocabulary by Book and Unit for easy bulk activation
   const groupedUnits = React.useMemo(() => {
     const groups: Record<string, Record<number, Word[]>> = {};
+    
+    // Pre-fill with all known books and units so empty units (e.g. Unit 38 review) show up
+    const knownUnits: Record<string, number[]> = {
+      "A1-A": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+      "A1-B": [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30],
+      "A2": [31,32,33,34,35,36,37,38,39]
+    };
+    Object.keys(knownUnits).forEach(book => {
+      groups[book] = {};
+      knownUnits[book].forEach(unit => {
+        groups[book][unit] = [];
+      });
+    });
+
     allVocab.forEach(word => {
       const book = word.book_id.toUpperCase();
       if (!groups[book]) groups[book] = {};

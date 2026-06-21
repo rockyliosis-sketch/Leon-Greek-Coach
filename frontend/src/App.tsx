@@ -4,6 +4,8 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import { useState } from 'react';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
     return localStorage.getItem('leon_admin_auth') === 'true';
@@ -20,28 +22,30 @@ function App() {
   };
 
   return (
-    <Router>
-      <Routes>
-        {/* Frontend Learning App */}
-        <Route path="/" element={<StudentApp />} />
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          {/* Frontend Learning App */}
+          <Route path="/" element={<StudentApp />} />
 
-        {/* Independent Admin Backend */}
-        <Route path="/admin" element={
-          isAdminAuthenticated ? 
-          <Navigate to="/admin/dashboard" replace /> : 
-          <AdminLogin onLogin={handleLoginSuccess} />
-        } />
-        
-        <Route path="/admin/dashboard/*" element={
-          isAdminAuthenticated ? 
-          <AdminDashboard onLogout={handleLogout} /> : 
-          <Navigate to="/admin" replace />
-        } />
+          {/* Independent Admin Backend */}
+          <Route path="/admin" element={
+            isAdminAuthenticated ? 
+            <Navigate to="/admin/dashboard" replace /> : 
+            <AdminLogin onLogin={handleLoginSuccess} />
+          } />
+          
+          <Route path="/admin/dashboard/*" element={
+            isAdminAuthenticated ? 
+            <AdminDashboard onLogout={handleLogout} /> : 
+            <Navigate to="/admin" replace />
+          } />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
