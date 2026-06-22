@@ -175,15 +175,9 @@ const getUnitSchedule = (unit: number): UnitSchedule => {
   if (unit >= 1 && unit <= 30) {
     return { startOffset: (unit - 1) * 7, duration: 7 };
   }
-  const a2Schedules: Record<number, UnitSchedule> = {
-    31: { startOffset: 210, duration: 14 },
-    32: { startOffset: 224, duration: 14 },
-    33: { startOffset: 238, duration: 14 },
-    34: { startOffset: 252, duration: 14 },
-    35: { startOffset: 266, duration: 14 },
-    36: { startOffset: 280, duration: 14 },
-  };
-  return a2Schedules[unit] || { startOffset: 294, duration: 14 };
+  // For unit >= 31: starts at day 210, each unit has a duration of 14 days
+  const offset = 210 + (unit - 31) * 14;
+  return { startOffset: offset, duration: 14 };
 };
 
 const getUnitForDate = (dateStr: string): { bookId: string; unitNum: number; displayUnitName: string; dateRangeStr: string } => {
@@ -810,60 +804,138 @@ export default function StudentApp() {
   }, [allVocab, activatedDates, selectedDateStr]);
 
   const selectedUnits = useMemo(() => {
-    // Determine the current global unit based on the highest unit unlocked so far
-    let currentGlobalUnit = 1;
-    if (unlockedVocab.length > 0) {
-      currentGlobalUnit = Math.max(...unlockedVocab.map(w => w.unit));
+    // 1. Get the list of all unique units that have unlocked words as of selectedDateStr
+    const availableUnits = Array.from(new Set(unlockedVocab.map(w => w.unit)))
+      .filter(u => typeof u === 'number' && !isNaN(u))
+      .sort((a, b) => a - b);
+
+    if (availableUnits.length === 0) {
+      return [1];
     }
 
-    // Parse selectedDateStr to get a stable daily seed
+    // Determine the current chronological unit based on the date
+    const currentChronologicalUnit = getUnitForDate(selectedDateStr).unitNum;
+    // Determine the maximum unit unlocked so far
+    const maxUnlockedUnit = Math.max(...availableUnits);
+    // The active unit is the minimum of chronological schedule and max unlocked
+    const activeUnit = Math.min(currentChronologicalUnit, maxUnlockedUnit);
+
+    // Stable daily seed
     const dateParts = selectedDateStr.split('-');
     const year = parseInt(dateParts[0], 10) || 2026;
     const month = parseInt(dateParts[1], 10) || 6;
     const day = parseInt(dateParts[2], 10) || 20;
     const dateSeed = year * 372 + month * 31 + day;
 
-    if (currentGlobalUnit >= 31) {
-      // Currently in A2:
-      // 1. Current A2 unit
-      // 2. Previous A2 unit (or if current is 31, pad with 30)
-      const u2 = currentGlobalUnit - 1 >= 31 ? currentGlobalUnit - 1 : 30;
-      // 3. Rotated unit from A1-B (units 16 to 30)
-      const u3 = 16 + (dateSeed % 15);
-      // 4. Rotated unit from A1-A (units 1 to 15)
-      const u4 = 1 + (dateSeed % 15);
+    // We want to pick up to 4 unique units representing the 4 tiers of temporal distance.
+    const selected: number[] = [];
 
-      const list = [currentGlobalUnit, u2, u3, u4];
-      return Array.from(new Set(list));
-    } else if (currentGlobalUnit >= 16) {
-      // Currently in A1-B:
-      // 1. Current A1-B unit
-      // 2. Previous A1-B unit (clamped to >= 16)
-      const u2 = currentGlobalUnit - 1 >= 16 ? currentGlobalUnit - 1 : 15;
-      // 3. Rotated unit from A1-A (units 1 to 15)
-      const u3 = 1 + (dateSeed % 15);
-      // 4. Another rotated unit from A1-A
-      const u4 = 1 + ((dateSeed + 5) % 15);
+    // Helper to check if a unit is already selected
+    const isSelected = (u: number) => selected.includes(u);
 
-      const list = [currentGlobalUnit, u2, u3, u4];
-      return Array.from(new Set(list));
-    } else {
-      // Currently in A1-A:
-      // All units from A1-A (1 to 15)
-      const u1 = currentGlobalUnit;
-      const u2 = currentGlobalUnit - 1 >= 1 ? currentGlobalUnit - 1 : 1;
-      const u3 = currentGlobalUnit - 2 >= 1 ? currentGlobalUnit - 2 : 2;
-      const u4 = currentGlobalUnit - 3 >= 1 ? currentGlobalUnit - 3 : 3;
+    // Helper to get candidates in a range that are available and not yet selected
+    const getCandidates = (min: number, max: number) => {
+      return availableUnits.filter(u => u >= min && u <= max && !isSelected(u));
+    };
 
-      const list = [u1, u2, u3, u4];
-      let pad = 1;
-      while (list.length < 4 && pad <= 15) {
-        if (!list.includes(pad)) list.push(pad);
-        pad++;
-      }
-      return Array.from(new Set(list));
+    // Helper to pick one candidate using dateSeed
+    const pickFromCandidates = (candidates: number[]) => {
+      if (candidates.length === 0) return null;
+      return candidates[dateSeed % candidates.length];
+    };
+
+    // 1. Recent Review (最近的复习)
+    // Target: activeUnit
+    let recent = activeUnit;
+    if (!availableUnits.includes(recent)) {
+      // Fallback to the highest available unit <= activeUnit
+      const lowerUnits = availableUnits.filter(u => u <= activeUnit);
+      recent = lowerUnits.length > 0 ? lowerUnits[lowerUnits.length - 1] : availableUnits[availableUnits.length - 1];
     }
-  }, [selectedDateStr]);
+    selected.push(recent);
+
+    if (availableUnits.length >= 4) {
+      // 2. Remote Review (最遥远的复习)
+      // Target: early A1-A (Units 1 to 11 depending on activeUnit)
+      let remoteTargetMin = 1;
+      let remoteTargetMax = 11;
+      if (activeUnit >= 31) {
+        remoteTargetMin = 1;
+        remoteTargetMax = 11;
+      } else if (activeUnit >= 16) {
+        remoteTargetMin = 1;
+        remoteTargetMax = 5;
+      } else {
+        remoteTargetMin = 1;
+        remoteTargetMax = Math.max(1, activeUnit - 3);
+      }
+      
+      let candidates = getCandidates(remoteTargetMin, remoteTargetMax);
+      let remoteVal = pickFromCandidates(candidates);
+      if (remoteVal === null) {
+        // Fallback: pick the lowest available unit not yet selected
+        const remaining = availableUnits.filter(u => !isSelected(u));
+        remoteVal = remaining[0];
+      }
+      selected.push(remoteVal);
+
+      // 3. Moderately Recent Review (稍近的复习)
+      // Target: early A2 or late A1-B (Units 25 to activeUnit - 1)
+      let modRecentTargetMin = 25;
+      let modRecentTargetMax = Math.max(25, activeUnit - 1);
+      if (activeUnit >= 31) {
+        modRecentTargetMin = 25;
+        modRecentTargetMax = activeUnit - 1;
+      } else if (activeUnit >= 16) {
+        modRecentTargetMin = 12;
+        modRecentTargetMax = activeUnit - 1;
+      } else {
+        modRecentTargetMin = 1;
+        modRecentTargetMax = Math.max(1, activeUnit - 1);
+      }
+
+      candidates = getCandidates(modRecentTargetMin, modRecentTargetMax);
+      let modRecentVal = pickFromCandidates(candidates);
+      if (modRecentVal === null) {
+        // Fallback: pick the highest available unit not yet selected
+        const remaining = availableUnits.filter(u => !isSelected(u));
+        modRecentVal = remaining[remaining.length - 1];
+      }
+      selected.push(modRecentVal);
+
+      // 4. Moderately Remote Review (稍远的复习)
+      // Target: early A1-B or late A1-A (Units 12 to 24)
+      let modRemoteTargetMin = 12;
+      let modRemoteTargetMax = 24;
+      if (activeUnit >= 31) {
+        modRemoteTargetMin = 12;
+        modRemoteTargetMax = 24;
+      } else if (activeUnit >= 16) {
+        modRemoteTargetMin = 6;
+        modRemoteTargetMax = 11;
+      } else {
+        modRemoteTargetMin = 1;
+        modRemoteTargetMax = Math.max(1, activeUnit - 2);
+      }
+
+      candidates = getCandidates(modRemoteTargetMin, modRemoteTargetMax);
+      let modRemoteVal = pickFromCandidates(candidates);
+      if (modRemoteVal === null) {
+        // Fallback: pick any remaining available unit (middle one)
+        const remaining = availableUnits.filter(u => !isSelected(u));
+        modRemoteVal = remaining[Math.floor(remaining.length / 2)];
+      }
+      selected.push(modRemoteVal);
+    } else {
+      // Less than 4 units in availableUnits, just add all remaining available units
+      availableUnits.forEach(u => {
+        if (!isSelected(u)) selected.push(u);
+      });
+    }
+
+    // Sort selected units in descending order to match Recent -> Remote order
+    return selected.sort((a, b) => b - a);
+  }, [unlockedVocab, selectedDateStr]);
 
   // Compute daily deck based on selected date (integrating early review rotation)
   const dailyDeck = useMemo(() => {

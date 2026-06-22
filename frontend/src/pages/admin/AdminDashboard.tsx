@@ -146,15 +146,9 @@ const getUnitSchedule = (unit: number): UnitSchedule => {
   if (unit >= 1 && unit <= 30) {
     return { startOffset: (unit - 1) * 7, duration: 7 };
   }
-  const a2Schedules: Record<number, UnitSchedule> = {
-    31: { startOffset: 210, duration: 14 },
-    32: { startOffset: 224, duration: 14 },
-    33: { startOffset: 238, duration: 14 },
-    34: { startOffset: 252, duration: 14 },
-    35: { startOffset: 266, duration: 14 },
-    36: { startOffset: 280, duration: 14 },
-  };
-  return a2Schedules[unit] || { startOffset: 294, duration: 14 };
+  // For unit >= 31: starts at day 210, each unit has a duration of 14 days
+  const offset = 210 + (unit - 31) * 14;
+  return { startOffset: offset, duration: 14 };
 };
 
 const getUnitFromDate = (dateStr: string): number => {
@@ -171,15 +165,9 @@ const getUnitFromDate = (dateStr: string): number => {
     if (diffDays < 210) {
       return Math.floor(diffDays / 7) + 1;
     }
-    if (diffDays < 224) return 31;
-    if (diffDays < 238) return 32;
-    if (diffDays < 252) return 33;
-    if (diffDays < 266) return 34;
-    if (diffDays < 280) return 35;
-    if (diffDays < 294) return 36;
-    if (diffDays < 308) return 37;
-    if (diffDays < 322) return 38;
-    return 39;
+    // For diffDays >= 210, map to unit >= 31, each unit spanning 14 days
+    const computedUnit = 31 + Math.floor((diffDays - 210) / 14);
+    return Math.min(39, computedUnit); // Clamp to max 39 for A2 level limits
   } catch (e) {
     return 1;
   }
