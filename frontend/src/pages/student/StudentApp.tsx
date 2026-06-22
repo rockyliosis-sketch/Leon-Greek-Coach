@@ -288,6 +288,58 @@ const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string>
   return dates;
 };
 
+const getResolvedActivationDates = (
+  vocabList: Word[],
+  activatedMap: Record<number, string> = {},
+  calculatedMap: Record<number, string> = {}
+): Record<number, string> => {
+  const finalDates: Record<number, string> = {};
+  
+  const unitGroups: Record<number, Word[]> = {};
+  vocabList.forEach(w => {
+    if (!unitGroups[w.unit]) {
+      unitGroups[w.unit] = [];
+    }
+    unitGroups[w.unit].push(w);
+  });
+
+  const unlockedUnits = new Set<number>([1, 2, 3]); // default unlocked
+  
+  Object.keys(unitGroups).forEach(unitStr => {
+    const unit = parseInt(unitStr, 10);
+    const words = unitGroups[unit];
+    const hasManualUnlock = words.some(w => {
+      const val = activatedMap[w.id];
+      return val && val !== 'LOCKED';
+    });
+    if (hasManualUnlock) {
+      unlockedUnits.add(unit);
+    }
+  });
+
+  vocabList.forEach(w => {
+    if (!unlockedUnits.has(w.unit)) {
+      finalDates[w.id] = 'LOCKED';
+      return;
+    }
+
+    const calcDateStr = calculatedMap[w.id];
+    const manualDateStr = activatedMap[w.id];
+
+    if (manualDateStr && manualDateStr !== 'LOCKED') {
+      if (calcDateStr) {
+        finalDates[w.id] = calcDateStr < manualDateStr ? calcDateStr : manualDateStr;
+      } else {
+        finalDates[w.id] = manualDateStr;
+      }
+    } else {
+      finalDates[w.id] = calcDateStr || START_DATE;
+    }
+  });
+
+  return finalDates;
+};
+
 const isWordDueToday = (wordId: number, targetDateStr: string, activatedDatesMap: Record<number, string>) => {
   const actDateStr = activatedDatesMap[wordId];
   if (!actDateStr || actDateStr === 'LOCKED') return false;
@@ -770,11 +822,45 @@ export default function StudentApp() {
 
     let activated = {} as Record<number, string>;
     try {
-      activated = JSON.parse(localStorage.getItem('leon_activated_words') || '{}');
+      const stored = localStorage.getItem('leon_activated_words');
+      if (stored) {
+        activated = JSON.parse(stored) || {};
+      }
     } catch (e) {}
 
+    // Ensure all words in mergedVocab have a defined status in activated.
+    let hasChanges = false;
+    mergedVocab.forEach(w => {
+      if (activated[w.id] === undefined) {
+        // Check if other words in this unit are already unlocked by the parent
+        const isUnitAlreadyUnlocked = mergedVocab.some(other => 
+          other.unit === w.unit && 
+          activated[other.id] !== undefined && 
+          activated[other.id] !== 'LOCKED'
+        );
+
+        if (isUnitAlreadyUnlocked) {
+          const sibling = mergedVocab.find(other => 
+            other.unit === w.unit && 
+            activated[other.id] !== undefined && 
+            activated[other.id] !== 'LOCKED'
+          );
+          activated[w.id] = sibling ? activated[sibling.id] : START_DATE;
+        } else if ([1, 2, 3].includes(w.unit)) {
+          activated[w.id] = START_DATE;
+        } else {
+          activated[w.id] = 'LOCKED';
+        }
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      localStorage.setItem('leon_activated_words', JSON.stringify(activated));
+    }
+
     const calculatedDates = getCalculatedActivationDates(mergedVocab);
-    const finalActivated = { ...calculatedDates, ...activated };
+    const finalActivated = getResolvedActivationDates(mergedVocab, activated, calculatedDates);
     setActivatedDates(finalActivated);
 
     // Reset score to 0 for the new scoring rules (run once)

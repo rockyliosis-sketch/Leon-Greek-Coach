@@ -203,24 +203,66 @@ const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string>
   return dates;
 };
 
+const getResolvedActivationDates = (
+  vocabList: Word[],
+  activatedMap: Record<number, string> = {},
+  calculatedMap: Record<number, string> = {}
+): Record<number, string> => {
+  const finalDates: Record<number, string> = {};
+  
+  const unitGroups: Record<number, Word[]> = {};
+  vocabList.forEach(w => {
+    if (!unitGroups[w.unit]) {
+      unitGroups[w.unit] = [];
+    }
+    unitGroups[w.unit].push(w);
+  });
+
+  const unlockedUnits = new Set<number>([1, 2, 3]); // default unlocked
+  
+  Object.keys(unitGroups).forEach(unitStr => {
+    const unit = parseInt(unitStr, 10);
+    const words = unitGroups[unit];
+    const hasManualUnlock = words.some(w => {
+      const val = activatedMap[w.id];
+      return val && val !== 'LOCKED';
+    });
+    if (hasManualUnlock) {
+      unlockedUnits.add(unit);
+    }
+  });
+
+  vocabList.forEach(w => {
+    if (!unlockedUnits.has(w.unit)) {
+      finalDates[w.id] = 'LOCKED';
+      return;
+    }
+
+    const calcDateStr = calculatedMap[w.id];
+    const manualDateStr = activatedMap[w.id];
+
+    if (manualDateStr && manualDateStr !== 'LOCKED') {
+      if (calcDateStr) {
+        finalDates[w.id] = calcDateStr < manualDateStr ? calcDateStr : manualDateStr;
+      } else {
+        finalDates[w.id] = manualDateStr;
+      }
+    } else {
+      finalDates[w.id] = calcDateStr || START_DATE;
+    }
+  });
+
+  return finalDates;
+};
+
 const isWordActive = (
   wordId: number, 
   targetDateStr: string, 
-  activatedMap: Record<number, string> = {}, 
-  calculatedMap: Record<number, string> = {}
+  resolvedDates: Record<number, string>
 ) => {
-  const map = activatedMap || {};
-  const calcMap = calculatedMap || {};
-  const manual = map[wordId];
-  if (manual === 'LOCKED') return false;
-  if (manual) {
-    return manual <= targetDateStr;
-  }
-  const calc = calcMap[wordId];
-  if (calc) {
-    return calc <= targetDateStr;
-  }
-  return false;
+  const val = resolvedDates[wordId];
+  if (!val || val === 'LOCKED') return false;
+  return val <= targetDateStr;
 };
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
@@ -257,20 +299,57 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const calcDates = getCalculatedActivationDates(mergedVocab);
     setCalculatedActivationDates(calcDates || {});
 
-    let activated = {};
+    let activated = {} as Record<number, string>;
     try {
       const stored = localStorage.getItem('leon_activated_words');
       if (stored) {
         activated = JSON.parse(stored) || {};
       }
     } catch (e) {}
+
+    // Ensure all words in mergedVocab have a defined status in activated.
+    let hasChanges = false;
+    mergedVocab.forEach(w => {
+      if (activated[w.id] === undefined) {
+        // Check if other words in this unit are already unlocked by the parent
+        const isUnitAlreadyUnlocked = mergedVocab.some(other => 
+          other.unit === w.unit && 
+          activated[other.id] !== undefined && 
+          activated[other.id] !== 'LOCKED'
+        );
+
+        if (isUnitAlreadyUnlocked) {
+          const sibling = mergedVocab.find(other => 
+            other.unit === w.unit && 
+            activated[other.id] !== undefined && 
+            activated[other.id] !== 'LOCKED'
+          );
+          activated[w.id] = sibling ? activated[sibling.id] : START_DATE;
+        } else if ([1, 2, 3].includes(w.unit)) {
+          activated[w.id] = START_DATE;
+        } else {
+          activated[w.id] = 'LOCKED';
+        }
+        hasChanges = true;
+      }
+    });
+
+    if (hasChanges) {
+      localStorage.setItem('leon_activated_words', JSON.stringify(activated));
+    }
+
     setActivatedWords(activated);
   }, []);
+
+  // Compute resolved activation dates
+  const resolvedActivationDates = React.useMemo(() => {
+    return getResolvedActivationDates(allVocab, activatedWords, calculatedActivationDates);
+  }, [allVocab, activatedWords, calculatedActivationDates]);
 
   // Compute stats
   const totalWords = allVocab.length;
   const todayStr = new Date().toISOString().split('T')[0];
-  const activatedCount = allVocab.filter(w => isWordActive(w.id, todayStr, activatedWords, calculatedActivationDates)).length;
+  const activatedCount = allVocab.filter(w => isWordActive(w.id, todayStr, resolvedActivationDates)).length;
   const pendingCount = totalWords - activatedCount;
 
   // Group vocabulary by Book and Unit for easy bulk activation
@@ -448,8 +527,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               {Object.entries(groupedUnits).map(([bookName, units]) => {
                 return Object.entries(units).map(([unitNumStr, words]) => {
                   const unitNum = parseInt(unitNumStr, 10);
-                  const isUnitActivated = words.every(w => isWordActive(w.id, activationDate, activatedWords, calculatedActivationDates));
-                  const activatedInUnitCount = words.filter(w => isWordActive(w.id, activationDate, activatedWords, calculatedActivationDates)).length;
+                  const isUnitActivated = words.every(w => isWordActive(w.id, activationDate, resolvedActivationDates));
+                  const activatedInUnitCount = words.filter(w => isWordActive(w.id, activationDate, resolvedActivationDates)).length;
 
                   return (
                     <tr key={`${bookName}-${unitNum}`} className="hover-bg-gray">
