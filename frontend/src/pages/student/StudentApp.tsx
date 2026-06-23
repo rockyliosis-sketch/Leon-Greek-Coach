@@ -258,82 +258,135 @@ const getUnitDateRange = (globalUnit: number): string => {
   return `${formatDate(uStart)} - ${formatDate(uEnd)}`;
 };
 
-const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string> => {
-  const dates: Record<number, string> = {};
-  const unitGroups: Record<number, Word[]> = {};
+const getMondayDateStr = (dateStr: string): string => {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  const monday = new Date(d.setDate(diff));
+  return monday.toISOString().split('T')[0];
+};
+
+const getWeekRangeStr = (mondayStr: string): string => {
+  const d = new Date(mondayStr);
+  if (isNaN(d.getTime())) return '';
+  const sunday = new Date(d);
+  sunday.setDate(d.getDate() + 6);
   
-  vocabList.forEach(w => {
-    if (!unitGroups[w.unit]) {
-      unitGroups[w.unit] = [];
-    }
-    unitGroups[w.unit].push(w);
-  });
+  const formatMDay = (date: Date) => `${date.getMonth() + 1}月${date.getDate()}日`;
+  return `${formatMDay(d)} - ${formatMDay(sunday)}`;
+};
 
-  Object.keys(unitGroups).forEach(unitStr => {
-    const unit = parseInt(unitStr, 10);
-    const group = unitGroups[unit].sort((a, b) => a.id - b.id);
-    const { startOffset, duration } = getUnitSchedule(unit);
-    const N = group.length;
+const getUnitStudyDate = (
+  bookId: string,
+  unitNum: number,
+  studyDatesMap: Record<string, string> = {}
+): string => {
+  const key = `${bookId.toUpperCase()}_${unitNum}`;
+  if (studyDatesMap[key] !== undefined) {
+    return studyDatesMap[key];
+  }
+  
+  // Default behaviors:
+  // Units 1 to 30 (A1-A and A1-B) are default unlocked.
+  // We compute their default calculated schedule date.
+  if (bookId.toUpperCase() === 'A1-A' || bookId.toUpperCase() === 'A1-B' || unitNum <= 30) {
+    const { startOffset } = getUnitSchedule(unitNum);
+    const d = new Date(START_DATE);
+    d.setDate(d.getDate() + startOffset);
+    return getMondayDateStr(d.toISOString().split('T')[0]);
+  }
+  
+  return 'LOCKED';
+};
 
-    group.forEach((word, idx) => {
-      const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
-      const totalOffset = startOffset + wordOffset;
-
-      const actDate = new Date(START_DATE);
-      actDate.setDate(actDate.getDate() + totalOffset);
-      dates[word.id] = actDate.toISOString().split('T')[0];
+const migrateFromOldActivatedWords = (vocabList: Word[]): Record<string, string> => {
+  const studyDates: Record<string, string> = {};
+  try {
+    const oldStored = localStorage.getItem('leon_activated_words');
+    if (!oldStored) return {};
+    const oldActivated = JSON.parse(oldStored) || {};
+    
+    // Group words by book and unit
+    const unitWordsMap: Record<string, Word[]> = {};
+    vocabList.forEach(w => {
+      const key = `${w.book_id.toUpperCase()}_${w.unit}`;
+      if (!unitWordsMap[key]) {
+        unitWordsMap[key] = [];
+      }
+      unitWordsMap[key].push(w);
     });
-  });
 
-  return dates;
+    Object.keys(unitWordsMap).forEach(key => {
+      const words = unitWordsMap[key];
+      const lockedCount = words.filter(w => oldActivated[w.id] === 'LOCKED').length;
+      const unlockedWords = words.filter(w => oldActivated[w.id] && oldActivated[w.id] !== 'LOCKED');
+      
+      const [bookId, unitNumStr] = key.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      
+      if (unitNum <= 30) {
+        // Default unlocked: only migrate if there was a manual unlock date.
+        // If locked/undefined, do not write anything (so they fallback to default unlocked).
+        if (unlockedWords.length > 0) {
+          const dates = unlockedWords.map(w => oldActivated[w.id]);
+          const earliestDate = dates.reduce((min, d) => d < min ? d : min, dates[0]);
+          studyDates[key] = getMondayDateStr(earliestDate);
+        }
+      } else {
+        // Default locked: migrate manual dates or lock states
+        if (unlockedWords.length > 0) {
+          const dates = unlockedWords.map(w => oldActivated[w.id]);
+          const earliestDate = dates.reduce((min, d) => d < min ? d : min, dates[0]);
+          studyDates[key] = getMondayDateStr(earliestDate);
+        } else {
+          studyDates[key] = 'LOCKED';
+        }
+      }
+    });
+  } catch (e) {}
+  return studyDates;
 };
 
 const getResolvedActivationDates = (
   vocabList: Word[],
-  activatedMap: Record<number, string> = {},
-  calculatedMap: Record<number, string> = {}
+  studyDatesMap: Record<string, string> = {}
 ): Record<number, string> => {
   const finalDates: Record<number, string> = {};
   
-  const unitGroups: Record<number, Word[]> = {};
+  // Group words by book and unit
+  const unitWordsMap: Record<string, Word[]> = {};
   vocabList.forEach(w => {
-    if (!unitGroups[w.unit]) {
-      unitGroups[w.unit] = [];
+    const key = `${w.book_id.toUpperCase()}_${w.unit}`;
+    if (!unitWordsMap[key]) {
+      unitWordsMap[key] = [];
     }
-    unitGroups[w.unit].push(w);
+    unitWordsMap[key].push(w);
   });
 
-  const unlockedUnits = new Set<number>([1, 2, 3]); // default unlocked
-  
-  Object.keys(unitGroups).forEach(unitStr => {
-    const unit = parseInt(unitStr, 10);
-    const words = unitGroups[unit];
-    const hasManualUnlock = words.some(w => {
-      const val = activatedMap[w.id];
-      return val && val !== 'LOCKED';
-    });
-    if (hasManualUnlock) {
-      unlockedUnits.add(unit);
-    }
-  });
-
-  vocabList.forEach(w => {
-    if (!unlockedUnits.has(w.unit)) {
-      finalDates[w.id] = 'LOCKED';
-      return;
-    }
-
-    const calcDateStr = calculatedMap[w.id];
-    const manualDateStr = activatedMap[w.id];
-
-    if (manualDateStr && manualDateStr !== 'LOCKED') {
-      if (calcDateStr) {
-        finalDates[w.id] = calcDateStr < manualDateStr ? calcDateStr : manualDateStr;
-      } else {
-        finalDates[w.id] = manualDateStr;
-      }
+  Object.keys(unitWordsMap).forEach(key => {
+    const [bookId, unitNumStr] = key.split('_');
+    const unitNum = parseInt(unitNumStr, 10);
+    const words = unitWordsMap[key].sort((a, b) => a.id - b.id);
+    const N = words.length;
+    
+    const studyDateStr = getUnitStudyDate(bookId, unitNum, studyDatesMap);
+    
+    if (studyDateStr === 'LOCKED') {
+      words.forEach(w => {
+        finalDates[w.id] = 'LOCKED';
+      });
     } else {
-      finalDates[w.id] = calcDateStr || START_DATE;
+      // Distribute words over the unit's duration
+      const duration = (unitNum >= 31) ? 14 : 7;
+      const baseDate = new Date(studyDateStr);
+      
+      words.forEach((w, idx) => {
+        const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
+        const actDate = new Date(baseDate);
+        actDate.setDate(baseDate.getDate() + wordOffset);
+        finalDates[w.id] = actDate.toISOString().split('T')[0];
+      });
     }
   });
 
@@ -761,6 +814,7 @@ export default function StudentApp() {
   const [selectedDateStr, setSelectedDateStr] = useState<string>(getGreeceDateString);
 
   const [allVocab, setAllVocab] = useState<Word[]>([]);
+  const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   const [activatedDates, setActivatedDates] = useState<Record<number, string>>({});
   const [score, setScore] = useState<number>(() => {
     return parseInt(localStorage.getItem('leon_score') || '0', 10);
@@ -820,47 +874,20 @@ export default function StudentApp() {
     } catch (e) {}
     setAllVocab(mergedVocab);
 
-    let activated = {} as Record<number, string>;
+    let studyDates = {} as Record<string, string>;
     try {
-      const stored = localStorage.getItem('leon_activated_words');
+      const stored = localStorage.getItem('leon_unit_study_dates');
       if (stored) {
-        activated = JSON.parse(stored) || {};
+        studyDates = JSON.parse(stored) || {};
+      } else {
+        // Run migration from old leon_activated_words if available
+        studyDates = migrateFromOldActivatedWords(mergedVocab);
+        localStorage.setItem('leon_unit_study_dates', JSON.stringify(studyDates));
       }
     } catch (e) {}
+    setUnitStudyDates(studyDates);
 
-    // Ensure all words in mergedVocab have a defined status in activated.
-    let hasChanges = false;
-    mergedVocab.forEach(w => {
-      if (activated[w.id] === undefined) {
-        // Check if other words in this unit are already unlocked by the parent
-        const isUnitAlreadyUnlocked = mergedVocab.some(other => 
-          other.unit === w.unit && 
-          activated[other.id] !== undefined && 
-          activated[other.id] !== 'LOCKED'
-        );
-
-        if (isUnitAlreadyUnlocked) {
-          const sibling = mergedVocab.find(other => 
-            other.unit === w.unit && 
-            activated[other.id] !== undefined && 
-            activated[other.id] !== 'LOCKED'
-          );
-          activated[w.id] = sibling ? activated[sibling.id] : START_DATE;
-        } else if ([1, 2, 3].includes(w.unit)) {
-          activated[w.id] = START_DATE;
-        } else {
-          activated[w.id] = 'LOCKED';
-        }
-        hasChanges = true;
-      }
-    });
-
-    if (hasChanges) {
-      localStorage.setItem('leon_activated_words', JSON.stringify(activated));
-    }
-
-    const calculatedDates = getCalculatedActivationDates(mergedVocab);
-    const finalActivated = getResolvedActivationDates(mergedVocab, activated, calculatedDates);
+    const finalActivated = getResolvedActivationDates(mergedVocab, studyDates);
     setActivatedDates(finalActivated);
 
     // Reset score to 0 for the new scoring rules (run once)
@@ -889,149 +916,110 @@ export default function StudentApp() {
     });
   }, [allVocab, activatedDates, selectedDateStr]);
 
-  const selectedUnits = useMemo(() => {
-    // 1. Get the list of all unique units that have unlocked words as of selectedDateStr
-    const availableUnits = Array.from(new Set(unlockedVocab.map(w => w.unit)))
-      .filter(u => typeof u === 'number' && !isNaN(u))
-      .sort((a, b) => a - b);
+  const selectedUnitKeys = useMemo(() => {
+    // 1. Get the list of all unique unit keys that have unlocked words as of selectedDateStr
+    // A unit key is represented as "BOOK_UNIT", e.g. "A1-A_1", "A2_31"
+    const availableUnitKeys = Array.from(
+      new Set(unlockedVocab.map(w => `${w.book_id.toUpperCase()}_${w.unit}`))
+    );
 
-    if (availableUnits.length === 0) {
-      return [1];
+    if (availableUnitKeys.length === 0) {
+      return ["A1-A_1"];
     }
 
-    // Determine the current chronological unit based on the date
-    const currentChronologicalUnit = getUnitForDate(selectedDateStr).unitNum;
-    // Determine the maximum unit unlocked so far
-    const maxUnlockedUnit = Math.max(...availableUnits);
-    // The active unit is the minimum of chronological schedule and max unlocked
-    const activeUnit = Math.min(currentChronologicalUnit, maxUnlockedUnit);
-
-    // Stable daily seed
-    const dateParts = selectedDateStr.split('-');
-    const year = parseInt(dateParts[0], 10) || 2026;
-    const month = parseInt(dateParts[1], 10) || 6;
-    const day = parseInt(dateParts[2], 10) || 20;
-    const dateSeed = year * 372 + month * 31 + day;
-
-    // We want to pick up to 4 unique units representing the 4 tiers of temporal distance.
-    const selected: number[] = [];
-
-    // Helper to check if a unit is already selected
-    const isSelected = (u: number) => selected.includes(u);
-
-    // Helper to get candidates in a range that are available and not yet selected
-    const getCandidates = (min: number, max: number) => {
-      return availableUnits.filter(u => u >= min && u <= max && !isSelected(u));
-    };
-
-    // Helper to pick one candidate using dateSeed
-    const pickFromCandidates = (candidates: number[]) => {
-      if (candidates.length === 0) return null;
-      return candidates[dateSeed % candidates.length];
-    };
-
-    // 1. Recent Review (最近的复习)
-    // Target: activeUnit
-    let recent = activeUnit;
-    if (!availableUnits.includes(recent)) {
-      // Fallback to the highest available unit <= activeUnit
-      const lowerUnits = availableUnits.filter(u => u <= activeUnit);
-      recent = lowerUnits.length > 0 ? lowerUnits[lowerUnits.length - 1] : availableUnits[availableUnits.length - 1];
-    }
-    selected.push(recent);
-
-    if (availableUnits.length >= 4) {
-      // 2. Remote Review (最遥远的复习)
-      // Target: early A1-A (Units 1 to 11 depending on activeUnit)
-      let remoteTargetMin = 1;
-      let remoteTargetMax = 11;
-      if (activeUnit >= 31) {
-        remoteTargetMin = 1;
-        remoteTargetMax = 11;
-      } else if (activeUnit >= 16) {
-        remoteTargetMin = 1;
-        remoteTargetMax = 5;
-      } else {
-        remoteTargetMin = 1;
-        remoteTargetMax = Math.max(1, activeUnit - 3);
-      }
+    // Sort all available unit keys chronologically based on their study dates.
+    // The study date comes from getUnitStudyDate(bookId, unitNum, unitStudyDates).
+    // Earlier study dates will be at the beginning of the list, more recent ones at the end.
+    availableUnitKeys.sort((keyA, keyB) => {
+      const [bookA, unitNumStrA] = keyA.split('_');
+      const unitNumA = parseInt(unitNumStrA, 10);
+      const dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
       
-      let candidates = getCandidates(remoteTargetMin, remoteTargetMax);
-      let remoteVal = pickFromCandidates(candidates);
-      if (remoteVal === null) {
-        // Fallback: pick the lowest available unit not yet selected
-        const remaining = availableUnits.filter(u => !isSelected(u));
-        remoteVal = remaining[0];
+      const [bookB, unitNumStrB] = keyB.split('_');
+      const unitNumB = parseInt(unitNumStrB, 10);
+      const dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      
+      if (dateA !== dateB) {
+        return dateA.localeCompare(dateB);
       }
-      selected.push(remoteVal);
+      return keyA.localeCompare(keyB);
+    });
 
-      // 3. Moderately Recent Review (稍近的复习)
-      // Target: early A2 or late A1-B (Units 25 to activeUnit - 1)
-      let modRecentTargetMin = 25;
-      let modRecentTargetMax = Math.max(25, activeUnit - 1);
-      if (activeUnit >= 31) {
-        modRecentTargetMin = 25;
-        modRecentTargetMax = activeUnit - 1;
-      } else if (activeUnit >= 16) {
-        modRecentTargetMin = 12;
-        modRecentTargetMax = activeUnit - 1;
-      } else {
-        modRecentTargetMin = 1;
-        modRecentTargetMax = Math.max(1, activeUnit - 1);
+    const N = availableUnitKeys.length;
+    
+    // We select up to 4 unique unit keys to represent the 4 tiers of temporal distance:
+    // 1. Most Recent (最近)
+    // 2. Earliest (最早)
+    // 3. Recent (较近)
+    // 4. Earlier (较早)
+    const selected: string[] = [];
+    const addUnitKey = (key: string) => {
+      if (!selected.includes(key)) {
+        selected.push(key);
       }
+    };
 
-      candidates = getCandidates(modRecentTargetMin, modRecentTargetMax);
-      let modRecentVal = pickFromCandidates(candidates);
-      if (modRecentVal === null) {
-        // Fallback: pick the highest available unit not yet selected
-        const remaining = availableUnits.filter(u => !isSelected(u));
-        modRecentVal = remaining[remaining.length - 1];
+    if (N >= 4) {
+      // 1. Most Recent (最近): the last element in chronological order
+      addUnitKey(availableUnitKeys[N - 1]);
+      
+      // 2. Earliest (最早): the first element in chronological order
+      addUnitKey(availableUnitKeys[0]);
+      
+      // 3. Recent (较近): around 70% of chronological distance
+      let targetRecent = Math.floor(N * 0.7);
+      while (targetRecent < N - 1 && selected.includes(availableUnitKeys[targetRecent])) {
+        targetRecent++;
       }
-      selected.push(modRecentVal);
-
-      // 4. Moderately Remote Review (稍远的复习)
-      // Target: early A1-B or late A1-A (Units 12 to 24)
-      let modRemoteTargetMin = 12;
-      let modRemoteTargetMax = 24;
-      if (activeUnit >= 31) {
-        modRemoteTargetMin = 12;
-        modRemoteTargetMax = 24;
-      } else if (activeUnit >= 16) {
-        modRemoteTargetMin = 6;
-        modRemoteTargetMax = 11;
-      } else {
-        modRemoteTargetMin = 1;
-        modRemoteTargetMax = Math.max(1, activeUnit - 2);
+      while (targetRecent > 0 && selected.includes(availableUnitKeys[targetRecent])) {
+        targetRecent--;
       }
-
-      candidates = getCandidates(modRemoteTargetMin, modRemoteTargetMax);
-      let modRemoteVal = pickFromCandidates(candidates);
-      if (modRemoteVal === null) {
-        // Fallback: pick any remaining available unit (middle one)
-        const remaining = availableUnits.filter(u => !isSelected(u));
-        modRemoteVal = remaining[Math.floor(remaining.length / 2)];
+      addUnitKey(availableUnitKeys[targetRecent]);
+      
+      // 4. Earlier (较早): around 30% of chronological distance
+      let targetEarlier = Math.floor(N * 0.3);
+      while (targetEarlier > 0 && selected.includes(availableUnitKeys[targetEarlier])) {
+        targetEarlier--;
       }
-      selected.push(modRemoteVal);
+      while (targetEarlier < N - 1 && selected.includes(availableUnitKeys[targetEarlier])) {
+        targetEarlier++;
+      }
+      addUnitKey(availableUnitKeys[targetEarlier]);
     } else {
-      // Less than 4 units in availableUnits, just add all remaining available units
-      availableUnits.forEach(u => {
-        if (!isSelected(u)) selected.push(u);
-      });
+      // Less than 4 unit keys available: add all of them
+      availableUnitKeys.forEach(key => addUnitKey(key));
     }
 
-    // Sort selected units in descending order to match Recent -> Remote order
-    return selected.sort((a, b) => b - a);
-  }, [unlockedVocab, selectedDateStr]);
+    // Sort selected unit keys in descending chronological order (Most Recent -> Earliest)
+    // to match the student app layout structure (Recent -> Remote)
+    return selected.sort((keyA, keyB) => {
+      const [bookA, unitNumStrA] = keyA.split('_');
+      const unitNumA = parseInt(unitNumStrA, 10);
+      const dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      
+      const [bookB, unitNumStrB] = keyB.split('_');
+      const unitNumB = parseInt(unitNumStrB, 10);
+      const dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA); // Descending chronological order
+      }
+      return keyB.localeCompare(keyA);
+    });
+  }, [unlockedVocab, unitStudyDates]);
 
   // Compute daily deck based on selected date (integrating early review rotation)
   const dailyDeck = useMemo(() => {
-    if (allVocab.length === 0 || selectedUnits.length === 0) return [];
+    if (allVocab.length === 0 || selectedUnitKeys.length === 0) return [];
 
     const deck: Word[] = [];
 
-    selectedUnits.forEach(gUnit => {
-      // Find all words in unlockedVocab belonging to this global unit
-      const unitWords = unlockedVocab.filter(w => w.unit === gUnit);
+    selectedUnitKeys.forEach(gUnitKey => {
+      const [bookId, unitNumStr] = gUnitKey.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      
+      // Find all words in unlockedVocab belonging to this book and unit
+      const unitWords = unlockedVocab.filter(w => w.book_id.toUpperCase() === bookId.toUpperCase() && w.unit === unitNum);
       
       // Sort unit words by ID
       const sortedUnitWords = [...unitWords].sort((a, b) => a.id - b.id);
@@ -1050,7 +1038,6 @@ export default function StudentApp() {
       if (!dueA && dueB) return 1;
 
       // Deterministic shuffle for "due today" words based on dateSeed
-      // so the student doesn't see the exact same batch on consecutive due days.
       if (dueA && dueB) {
         const dateParts = selectedDateStr.split('-');
         const y = parseInt(dateParts[0], 10) || 2026;
@@ -1071,7 +1058,7 @@ export default function StudentApp() {
     };
 
     return deck.sort(sortBooks);
-  }, [allVocab, selectedUnits, activatedDates, selectedDateStr]);
+  }, [allVocab, selectedUnitKeys, activatedDates, selectedDateStr]);
 
   // Determine if active level is A1 or A2 based on current active vocabulary
   const activeExamLevel = useMemo(() => {
@@ -1172,47 +1159,50 @@ export default function StudentApp() {
   }, [allVocab, activatedDates, selectedDateStr]);
 
   const spannedMonths = useMemo(() => {
-    if (selectedUnits.length === 0) return 0;
-    const oldestUnit = Math.min(...selectedUnits);
-    const oldestSched = getUnitSchedule(oldestUnit);
-    const oldestStart = new Date(START_DATE);
-    oldestStart.setDate(oldestStart.getDate() + oldestSched.startOffset);
+    if (selectedUnitKeys.length === 0) return 0;
+    
+    // Find the oldest study date among all selected units
+    let oldestDateStr: string | null = null;
+    selectedUnitKeys.forEach(key => {
+      const [bookId, unitNumStr] = key.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      const studyDateStr = getUnitStudyDate(bookId, unitNum, unitStudyDates);
+      if (studyDateStr !== 'LOCKED') {
+        if (!oldestDateStr || studyDateStr < oldestDateStr) {
+          oldestDateStr = studyDateStr;
+        }
+      }
+    });
+
+    if (!oldestDateStr) return 1;
+
+    const oldestStart = new Date(oldestDateStr);
     const targetDate = new Date(selectedDateStr);
     const diffDays = Math.round((targetDate.getTime() - oldestStart.getTime()) / (1000 * 60 * 60 * 24));
     return Math.max(1, Math.round(diffDays / 30.4));
-  }, [selectedUnits, selectedDateStr]);
+  }, [selectedUnitKeys, selectedDateStr, unitStudyDates]);
 
   // Group unique units and pad to at least 4 units (Most Recent -> Most Remote)
   const uniqueUnitsList = useMemo(() => {
-    const getUnitInfoFromGlobal = (globalUnit: number) => {
-      let bookId = "A1-A";
-      let unitNum = globalUnit;
-      if (globalUnit >= 1 && globalUnit <= 15) {
-        bookId = "A1-A";
-        unitNum = globalUnit;
-      } else if (globalUnit >= 16 && globalUnit <= 30) {
-        bookId = "A1-B";
-        unitNum = globalUnit - 15;
-      } else {
-        bookId = "A2";
-        unitNum = globalUnit - 30;
+    const getUnitInfoFromKey = (unitKey: string) => {
+      const [bookId, unitNumStr] = unitKey.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      
+      const studyDateStr = getUnitStudyDate(bookId, unitNum, unitStudyDates);
+      let dateRangeStr = '';
+      if (studyDateStr !== 'LOCKED') {
+        dateRangeStr = getWeekRangeStr(studyDateStr);
       }
-      const sched = getUnitSchedule(globalUnit);
-      const uStart = new Date(START_DATE);
-      uStart.setDate(uStart.getDate() + sched.startOffset);
-      const uEnd = new Date(uStart);
-      uEnd.setDate(uStart.getDate() + sched.duration - 1);
-      const formatDate = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
       return {
         bookId,
         unitNum,
         displayUnitName: `${bookId} U${unitNum}`,
-        dateRangeStr: `${formatDate(uStart)} - ${formatDate(uEnd)}`
+        dateRangeStr
       };
     };
 
-    const N = selectedUnits.length;
-    return selectedUnits.map((gUnit, i) => {
+    const N = selectedUnitKeys.length;
+    return selectedUnitKeys.map((unitKey, i) => {
       let labelCn = "";
       let labelGr = "";
       if (i === 0) {
@@ -1229,10 +1219,12 @@ export default function StudentApp() {
         labelGr = "Παλαιότερη Επανάληψη";
       }
 
-      const count = dailyDeck.filter((w: any) => w.unit === gUnit).length;
+      const [bookId, unitNumStr] = unitKey.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      const count = dailyDeck.filter((w: any) => w.book_id.toUpperCase() === bookId.toUpperCase() && w.unit === unitNum).length;
 
-      const uInfo = getUnitInfoFromGlobal(gUnit);
-      const fullName = getUnitChineseName(uInfo.bookId, gUnit);
+      const uInfo = getUnitInfoFromKey(unitKey);
+      const fullName = getUnitChineseName(bookId, unitNum);
       
       // Parse main title and parenthesized translation
       const match = fullName.match(/^(.*?)\s*\((.*?)\)\s*$/);
@@ -1240,9 +1232,9 @@ export default function StudentApp() {
       const translationText = match ? match[2].trim() : "";
 
       return {
-        gUnit,
-        bookId: uInfo.bookId,
-        unitNum: uInfo.unitNum,
+        unitKey,
+        bookId,
+        unitNum,
         displayUnit: uInfo.displayUnitName,
         dateRange: uInfo.dateRangeStr,
         mainTitle,
@@ -1252,7 +1244,7 @@ export default function StudentApp() {
         count
       };
     });
-  }, [selectedUnits, dailyDeck]);
+  }, [selectedUnitKeys, dailyDeck, unitStudyDates]);
 
 
 
@@ -1979,20 +1971,21 @@ export default function StudentApp() {
 
   const renderDashboard = () => {
     // Group words in dailyDeck by book and unit for today's lesson plan overview
-    const todayUnitsMap: Record<string, { bookId: string; unit: number; words: Word[] }> = {};
+    const todayUnitsMap: Record<string, { bookId: string; unit: number; unitKey: string; words: Word[] }> = {};
     dailyDeck.forEach(word => {
-      const key = `${word.book_id}-${word.unit}`;
-      if (!todayUnitsMap[key]) {
-        todayUnitsMap[key] = {
+      const unitKey = `${word.book_id.toUpperCase()}_${word.unit}`;
+      if (!todayUnitsMap[unitKey]) {
+        todayUnitsMap[unitKey] = {
           bookId: word.book_id,
           unit: word.unit,
+          unitKey,
           words: []
         };
       }
-      todayUnitsMap[key].words.push(word);
+      todayUnitsMap[unitKey].words.push(word);
     });
     const todayUnits = Object.values(todayUnitsMap).sort((a, b) => {
-      return selectedUnits.indexOf(a.unit) - selectedUnits.indexOf(b.unit);
+      return selectedUnitKeys.indexOf(a.unitKey) - selectedUnitKeys.indexOf(b.unitKey);
     });
 
     return (
@@ -2413,7 +2406,7 @@ export default function StudentApp() {
                 }
 
                 return (
-                  <div key={item.gUnit} className="review-task-item" style={{
+                  <div key={item.unitKey} className="review-task-item" style={{
                     background: item.count > 0 ? 'rgba(52, 199, 89, 0.05)' : '#F5F5F7',
                     border: item.count > 0 ? '1px solid rgba(52, 199, 89, 0.15)' : '1px solid rgba(0,0,0,0.02)'
                   }}>

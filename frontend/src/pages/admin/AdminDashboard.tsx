@@ -79,7 +79,11 @@ const getUnitChineseName = (bookId: string, unitNum: number): string => {
     }
   };
 
-  return unitNames[bookKey]?.[unitNum] || "新学期课文";
+  if (unitNames[bookKey]?.[unitNum]) {
+    return unitNames[bookKey][unitNum];
+  }
+
+  return `自定义导入内容 (Unit ${unitNum})`;
 };
 
 const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
@@ -173,82 +177,135 @@ const getUnitFromDate = (dateStr: string): number => {
   }
 };
 
-const getCalculatedActivationDates = (vocabList: Word[]): Record<number, string> => {
-  const dates: Record<number, string> = {};
-  const unitGroups: Record<number, Word[]> = {};
+const getMondayDateStr = (dateStr: string): string => {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
+  const monday = new Date(d.setDate(diff));
+  return monday.toISOString().split('T')[0];
+};
+
+const getWeekRangeStr = (mondayStr: string): string => {
+  const d = new Date(mondayStr);
+  if (isNaN(d.getTime())) return '';
+  const sunday = new Date(d);
+  sunday.setDate(d.getDate() + 6);
   
-  vocabList.forEach(w => {
-    if (!unitGroups[w.unit]) {
-      unitGroups[w.unit] = [];
-    }
-    unitGroups[w.unit].push(w);
-  });
+  const formatMDay = (date: Date) => `${date.getMonth() + 1}月${date.getDate()}日`;
+  return `${formatMDay(d)} - ${formatMDay(sunday)}`;
+};
 
-  Object.keys(unitGroups).forEach(unitStr => {
-    const unit = parseInt(unitStr, 10);
-    const group = unitGroups[unit].sort((a, b) => a.id - b.id);
-    const { startOffset, duration } = getUnitSchedule(unit);
-    const N = group.length;
+const getUnitStudyDate = (
+  bookId: string,
+  unitNum: number,
+  studyDatesMap: Record<string, string> = {}
+): string => {
+  const key = `${bookId.toUpperCase()}_${unitNum}`;
+  if (studyDatesMap[key] !== undefined) {
+    return studyDatesMap[key];
+  }
+  
+  // Default behaviors:
+  // Units 1 to 30 (A1-A and A1-B) are default unlocked.
+  // We compute their default calculated schedule date.
+  if (bookId.toUpperCase() === 'A1-A' || bookId.toUpperCase() === 'A1-B' || unitNum <= 30) {
+    const { startOffset } = getUnitSchedule(unitNum);
+    const d = new Date(START_DATE);
+    d.setDate(d.getDate() + startOffset);
+    return getMondayDateStr(d.toISOString().split('T')[0]);
+  }
+  
+  return 'LOCKED';
+};
 
-    group.forEach((word, idx) => {
-      const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
-      const totalOffset = startOffset + wordOffset;
-
-      const actDate = new Date(START_DATE);
-      actDate.setDate(actDate.getDate() + totalOffset);
-      dates[word.id] = actDate.toISOString().split('T')[0];
+const migrateFromOldActivatedWords = (vocabList: Word[]): Record<string, string> => {
+  const studyDates: Record<string, string> = {};
+  try {
+    const oldStored = localStorage.getItem('leon_activated_words');
+    if (!oldStored) return {};
+    const oldActivated = JSON.parse(oldStored) || {};
+    
+    // Group words by book and unit
+    const unitWordsMap: Record<string, Word[]> = {};
+    vocabList.forEach(w => {
+      const key = `${w.book_id.toUpperCase()}_${w.unit}`;
+      if (!unitWordsMap[key]) {
+        unitWordsMap[key] = [];
+      }
+      unitWordsMap[key].push(w);
     });
-  });
 
-  return dates;
+    Object.keys(unitWordsMap).forEach(key => {
+      const words = unitWordsMap[key];
+      const lockedCount = words.filter(w => oldActivated[w.id] === 'LOCKED').length;
+      const unlockedWords = words.filter(w => oldActivated[w.id] && oldActivated[w.id] !== 'LOCKED');
+      
+      const [bookId, unitNumStr] = key.split('_');
+      const unitNum = parseInt(unitNumStr, 10);
+      
+      if (unitNum <= 30) {
+        // Default unlocked: only migrate if there was a manual unlock date.
+        // If locked/undefined, do not write anything (so they fallback to default unlocked).
+        if (unlockedWords.length > 0) {
+          const dates = unlockedWords.map(w => oldActivated[w.id]);
+          const earliestDate = dates.reduce((min, d) => d < min ? d : min, dates[0]);
+          studyDates[key] = getMondayDateStr(earliestDate);
+        }
+      } else {
+        // Default locked: migrate manual dates or lock states
+        if (unlockedWords.length > 0) {
+          const dates = unlockedWords.map(w => oldActivated[w.id]);
+          const earliestDate = dates.reduce((min, d) => d < min ? d : min, dates[0]);
+          studyDates[key] = getMondayDateStr(earliestDate);
+        } else {
+          studyDates[key] = 'LOCKED';
+        }
+      }
+    });
+  } catch (e) {}
+  return studyDates;
 };
 
 const getResolvedActivationDates = (
   vocabList: Word[],
-  activatedMap: Record<number, string> = {},
-  calculatedMap: Record<number, string> = {}
+  studyDatesMap: Record<string, string> = {}
 ): Record<number, string> => {
   const finalDates: Record<number, string> = {};
   
-  const unitGroups: Record<number, Word[]> = {};
+  // Group words by book and unit
+  const unitWordsMap: Record<string, Word[]> = {};
   vocabList.forEach(w => {
-    if (!unitGroups[w.unit]) {
-      unitGroups[w.unit] = [];
+    const key = `${w.book_id.toUpperCase()}_${w.unit}`;
+    if (!unitWordsMap[key]) {
+      unitWordsMap[key] = [];
     }
-    unitGroups[w.unit].push(w);
+    unitWordsMap[key].push(w);
   });
 
-  const unlockedUnits = new Set<number>([1, 2, 3]); // default unlocked
-  
-  Object.keys(unitGroups).forEach(unitStr => {
-    const unit = parseInt(unitStr, 10);
-    const words = unitGroups[unit];
-    const hasManualUnlock = words.some(w => {
-      const val = activatedMap[w.id];
-      return val && val !== 'LOCKED';
-    });
-    if (hasManualUnlock) {
-      unlockedUnits.add(unit);
-    }
-  });
-
-  vocabList.forEach(w => {
-    if (!unlockedUnits.has(w.unit)) {
-      finalDates[w.id] = 'LOCKED';
-      return;
-    }
-
-    const calcDateStr = calculatedMap[w.id];
-    const manualDateStr = activatedMap[w.id];
-
-    if (manualDateStr && manualDateStr !== 'LOCKED') {
-      if (calcDateStr) {
-        finalDates[w.id] = calcDateStr < manualDateStr ? calcDateStr : manualDateStr;
-      } else {
-        finalDates[w.id] = manualDateStr;
-      }
+  Object.keys(unitWordsMap).forEach(key => {
+    const [bookId, unitNumStr] = key.split('_');
+    const unitNum = parseInt(unitNumStr, 10);
+    const words = unitWordsMap[key].sort((a, b) => a.id - b.id);
+    const N = words.length;
+    
+    const studyDateStr = getUnitStudyDate(bookId, unitNum, studyDatesMap);
+    
+    if (studyDateStr === 'LOCKED') {
+      words.forEach(w => {
+        finalDates[w.id] = 'LOCKED';
+      });
     } else {
-      finalDates[w.id] = calcDateStr || START_DATE;
+      // Distribute words over the unit's duration
+      const duration = (unitNum >= 31) ? 14 : 7;
+      const baseDate = new Date(studyDateStr);
+      
+      words.forEach((w, idx) => {
+        const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
+        const actDate = new Date(baseDate);
+        actDate.setDate(baseDate.getDate() + wordOffset);
+        finalDates[w.id] = actDate.toISOString().split('T')[0];
+      });
     }
   });
 
@@ -270,8 +327,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   
   // Vocabulary & Activation states
   const [allVocab, setAllVocab] = useState<Word[]>([]);
-  const [activatedWords, setActivatedWords] = useState<Record<number, string>>({});
-  const [calculatedActivationDates, setCalculatedActivationDates] = useState<Record<number, string>>({});
+  const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   
   // Upload states
   const [rawMD, setRawMD] = useState('');
@@ -282,11 +338,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [customBookId, setCustomBookId] = useState('');
   const [isCustomBook, setIsCustomBook] = useState(false);
 
-  // Activation picker date
-  const [activationDate, setActivationDate] = useState(() => {
-    return new Date().toISOString().split('T')[0];
-  });
-
   // Load vocabulary & activation dates
   useEffect(() => {
     let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
@@ -296,55 +347,24 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     } catch (e) {}
     setAllVocab(mergedVocab);
 
-    const calcDates = getCalculatedActivationDates(mergedVocab);
-    setCalculatedActivationDates(calcDates || {});
-
-    let activated = {} as Record<number, string>;
+    let studyDates = {} as Record<string, string>;
     try {
-      const stored = localStorage.getItem('leon_activated_words');
+      const stored = localStorage.getItem('leon_unit_study_dates');
       if (stored) {
-        activated = JSON.parse(stored) || {};
+        studyDates = JSON.parse(stored) || {};
+      } else {
+        // Run migration from old leon_activated_words if available
+        studyDates = migrateFromOldActivatedWords(mergedVocab);
+        localStorage.setItem('leon_unit_study_dates', JSON.stringify(studyDates));
       }
     } catch (e) {}
-
-    // Ensure all words in mergedVocab have a defined status in activated.
-    let hasChanges = false;
-    mergedVocab.forEach(w => {
-      if (activated[w.id] === undefined) {
-        // Check if other words in this unit are already unlocked by the parent
-        const isUnitAlreadyUnlocked = mergedVocab.some(other => 
-          other.unit === w.unit && 
-          activated[other.id] !== undefined && 
-          activated[other.id] !== 'LOCKED'
-        );
-
-        if (isUnitAlreadyUnlocked) {
-          const sibling = mergedVocab.find(other => 
-            other.unit === w.unit && 
-            activated[other.id] !== undefined && 
-            activated[other.id] !== 'LOCKED'
-          );
-          activated[w.id] = sibling ? activated[sibling.id] : START_DATE;
-        } else if ([1, 2, 3].includes(w.unit)) {
-          activated[w.id] = START_DATE;
-        } else {
-          activated[w.id] = 'LOCKED';
-        }
-        hasChanges = true;
-      }
-    });
-
-    if (hasChanges) {
-      localStorage.setItem('leon_activated_words', JSON.stringify(activated));
-    }
-
-    setActivatedWords(activated);
+    setUnitStudyDates(studyDates);
   }, []);
 
   // Compute resolved activation dates
   const resolvedActivationDates = React.useMemo(() => {
-    return getResolvedActivationDates(allVocab, activatedWords, calculatedActivationDates);
-  }, [allVocab, activatedWords, calculatedActivationDates]);
+    return getResolvedActivationDates(allVocab, unitStudyDates);
+  }, [allVocab, unitStudyDates]);
 
   // Compute stats
   const totalWords = allVocab.length;
@@ -378,36 +398,30 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     return groups;
   }, [allVocab]);
 
+  // Handle unit date update
+  const handleUpdateUnitDate = (bookId: string, unit: number, dateStr: string) => {
+    const key = `${bookId.toUpperCase()}_${unit}`;
+    const normalizedDate = getMondayDateStr(dateStr);
+    const newDates = { ...unitStudyDates, [key]: normalizedDate };
+    setUnitStudyDates(newDates);
+    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+  };
+
   // Handle unit activation
   const handleActivateUnit = (bookId: string, unit: number) => {
-    const bookKey = bookId.toUpperCase();
-    const wordsInUnit = groupedUnits[bookKey]?.[unit] || [];
-    const newActivated = { ...(activatedWords || {}) };
-    
-    wordsInUnit.forEach(w => {
-      if (w && w.id) {
-        newActivated[w.id] = activationDate;
-      }
-    });
-
-    setActivatedWords(newActivated);
-    localStorage.setItem('leon_activated_words', JSON.stringify(newActivated));
+    const key = `${bookId.toUpperCase()}_${unit}`;
+    const currentWeekMonday = getMondayDateStr(new Date().toISOString().split('T')[0]);
+    const newDates = { ...unitStudyDates, [key]: currentWeekMonday };
+    setUnitStudyDates(newDates);
+    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
   };
 
   // Handle unit deactivation
   const handleDeactivateUnit = (bookId: string, unit: number) => {
-    const bookKey = bookId.toUpperCase();
-    const wordsInUnit = groupedUnits[bookKey]?.[unit] || [];
-    const newActivated = { ...(activatedWords || {}) };
-    
-    wordsInUnit.forEach(w => {
-      if (w && w.id) {
-        newActivated[w.id] = 'LOCKED';
-      }
-    });
-
-    setActivatedWords(newActivated);
-    localStorage.setItem('leon_activated_words', JSON.stringify(newActivated));
+    const key = `${bookId.toUpperCase()}_${unit}`;
+    const newDates = { ...unitStudyDates, [key]: 'LOCKED' };
+    setUnitStudyDates(newDates);
+    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
   };
 
   // Mock parse MD file and add words to custom vocab
@@ -418,14 +432,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const targetBookId = (isCustomBook ? customBookId.trim() : uploadBookId) || 'NEW_UPLOAD';
     const targetUnit = parseInt(uploadUnit, 10) || 1;
 
-    // Simple markdown word extractor: matches lines like:
-    // **Greek** /pronunciation/ - Chinese
-    // or simply: Greek - Chinese
+    // Simple markdown word extractor
     const lines = rawMD.split('\n');
     const newWordsList: Word[] = [];
     let currentId = allVocab.length > 0 ? Math.max(...allVocab.map(w => w.id)) + 1 : 1;
 
     let currentUnit = targetUnit;
+    let uploadedUnitDate: string | null = null;
 
     lines.forEach(line => {
       // Parse dates from the MD content. Looks for YYYY-MM-DD, YYYY/MM/DD, or YYYY年MM月DD日
@@ -434,8 +447,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         const year = dateMatch[1];
         const month = dateMatch[2].padStart(2, '0');
         const day = dateMatch[3].padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-        currentUnit = getUnitFromDate(dateStr);
+        uploadedUnitDate = `${year}-${month}-${day}`;
+        currentUnit = getUnitFromDate(uploadedUnitDate);
       }
 
       // Regex parsing Greek / Chinese pairs
@@ -463,6 +476,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       const updatedCustom = [...existingCustom, ...newWordsList];
       localStorage.setItem('leon_custom_vocab', JSON.stringify(updatedCustom));
       
+      // Update study date for this custom unit if a date was found in MD
+      if (uploadedUnitDate) {
+        const key = `${targetBookId.toUpperCase()}_${targetUnit}`;
+        const normalizedDate = getMondayDateStr(uploadedUnitDate);
+        const newDates = { ...unitStudyDates, [key]: normalizedDate };
+        setUnitStudyDates(newDates);
+        localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+      }
+
       // Update global list
       setAllVocab([...allVocab, ...newWordsList]);
       setParsedWordsCount(newWordsList.length);
@@ -483,18 +505,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div>
             <h3 className="admin-panel-title" style={{ marginBottom: '4px' }}>单元课程与特训授权控制台</h3>
             <p style={{ fontSize: '13px', color: '#86868B', fontWeight: 500 }}>
-              选择对应的课本单元与授权生效日期，将其所包含的单词、语法要点与配套特训注入 Leon 的每日自适应复习与智能训练流中。
+              解锁或锁定教材单元以控制 Leon 的学习范围，并为每个单元单独设定开始学习日期（按周规划）。
             </p>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Calendar size={18} className="text-orange" />
-            <input 
-              type="date" 
-              value={activationDate} 
-              onChange={e => setActivationDate(e.target.value)} 
-              className="date-picker-input"
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,113,227,0.04)', padding: '6px 14px', borderRadius: '10px', border: '1px solid rgba(0,113,227,0.1)' }}>
+            <Calendar size={16} className="text-blue" />
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#0071E3' }}>系统当前日期: {todayStr}</span>
           </div>
         </div>
 
@@ -515,20 +532,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <table className="admin-table">
             <thead>
               <tr>
-                <th className="admin-th" style={{ width: '15%' }}>课本章节 / 书籍 ID</th>
-                <th className="admin-th" style={{ width: '25%' }}>单元课程</th>
-                <th className="admin-th" style={{ width: '35%' }}>核心语法与配套教学内容</th>
+                <th className="admin-th" style={{ width: '12%' }}>课本章节 / 书籍 ID</th>
+                <th className="admin-th" style={{ width: '18%' }}>单元课程</th>
+                <th className="admin-th" style={{ width: '25%' }}>核心语法与配套教学内容</th>
                 <th className="admin-th" style={{ width: '10%' }}>单元包含词汇</th>
-                <th className="admin-th" style={{ width: '15%' }}>课程与特训授权状态</th>
-                <th className="admin-th" style={{ width: '10%' }}>授权操作</th>
+                <th className="admin-th" style={{ width: '22%' }}>设定学习周 (周一为始)</th>
+                <th className="admin-th" style={{ width: '13%' }}>授权状态与操作</th>
               </tr>
             </thead>
             <tbody>
               {Object.entries(groupedUnits).map(([bookName, units]) => {
                 return Object.entries(units).map(([unitNumStr, words]) => {
                   const unitNum = parseInt(unitNumStr, 10);
-                  const isUnitActivated = words.every(w => isWordActive(w.id, activationDate, resolvedActivationDates));
-                  const activatedInUnitCount = words.filter(w => isWordActive(w.id, activationDate, resolvedActivationDates)).length;
+                  const studyDate = getUnitStudyDate(bookName, unitNum, unitStudyDates);
+                  const isLocked = (studyDate === 'LOCKED');
+                  const isUnitActivated = !isLocked && studyDate <= todayStr;
+                  const activatedInUnitCount = words.filter(w => isWordActive(w.id, todayStr, resolvedActivationDates)).length;
 
                   return (
                     <tr key={`${bookName}-${unitNum}`} className="hover-bg-gray">
@@ -544,60 +563,81 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       </td>
                       <td className="admin-td">{words.length} 词</td>
                       <td className="admin-td">
-                        {isUnitActivated ? (
-                          <span style={{ whiteSpace: 'nowrap', color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            已授权学习 (解锁) ({activatedInUnitCount}/{words.length})
-                          </span>
-                        ) : activatedInUnitCount > 0 ? (
-                          <span style={{ whiteSpace: 'nowrap', color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            部分授权 ({activatedInUnitCount}/{words.length})
-                          </span>
+                        {!isLocked ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <input 
+                              type="date" 
+                              value={studyDate} 
+                              onChange={e => handleUpdateUnitDate(bookName, unitNum, e.target.value)} 
+                              className="date-picker-input"
+                              style={{ width: '140px', padding: '4px 8px', fontSize: '13px' }}
+                            />
+                            <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 600 }}>
+                              📅 {getWeekRangeStr(studyDate)}
+                            </div>
+                          </div>
                         ) : (
-                          <span style={{ whiteSpace: 'nowrap', color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
-                            未授权 (锁定中)
+                          <span style={{ fontSize: '12px', color: '#86868B', fontStyle: 'italic' }}>
+                            🔒 单元已锁定 (未设定学习周)
                           </span>
                         )}
                       </td>
                       <td className="admin-td">
-                        {isUnitActivated ? (
-                          <button 
-                            onClick={() => handleDeactivateUnit(bookName, unitNum)}
-                            className="btn-premium"
-                            style={{ 
-                              whiteSpace: 'nowrap', 
-                              background: 'rgba(255,59,48,0.08)', 
-                              color: '#FF3B30', 
-                              padding: '6px 14px', 
-                              fontSize: '12px', 
-                              width: '120px', 
-                              minWidth: '120px', 
-                              marginTop: 0, 
-                              justifyContent: 'center', 
-                              display: 'inline-flex' 
-                            }}
-                          >
-                            锁定此单元
-                          </button>
-                        ) : (
-                          <button 
-                            onClick={() => handleActivateUnit(bookName, unitNum)}
-                            className="btn-premium"
-                            style={{ 
-                              whiteSpace: 'nowrap', 
-                              background: 'rgba(52,199,89,0.08)', 
-                              color: '#34C759', 
-                              padding: '6px 14px', 
-                              fontSize: '12px', 
-                              width: '120px', 
-                              minWidth: '120px', 
-                              marginTop: 0, 
-                              justifyContent: 'center', 
-                              display: 'inline-flex' 
-                            }}
-                          >
-                            授权解锁单元
-                          </button>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {isLocked ? (
+                            <span style={{ whiteSpace: 'nowrap', color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                              未授权 (锁定中)
+                            </span>
+                          ) : isUnitActivated ? (
+                            <span style={{ whiteSpace: 'nowrap', color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                              已激活 (已开始) ({activatedInUnitCount}/{words.length})
+                            </span>
+                          ) : (
+                            <span style={{ whiteSpace: 'nowrap', color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                              已计划 (未来周) ({activatedInUnitCount}/{words.length})
+                            </span>
+                          )}
+
+                          {!isLocked ? (
+                            <button 
+                              onClick={() => handleDeactivateUnit(bookName, unitNum)}
+                              className="btn-premium"
+                              style={{ 
+                                whiteSpace: 'nowrap', 
+                                background: 'rgba(255,59,48,0.08)', 
+                                color: '#FF3B30', 
+                                padding: '4px 10px', 
+                                fontSize: '12px', 
+                                width: '70px', 
+                                minWidth: '70px', 
+                                marginTop: 0, 
+                                justifyContent: 'center', 
+                                display: 'inline-flex' 
+                              }}
+                            >
+                              锁定
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => handleActivateUnit(bookName, unitNum)}
+                              className="btn-premium"
+                              style={{ 
+                                whiteSpace: 'nowrap', 
+                                background: 'rgba(52,199,89,0.08)', 
+                                color: '#34C759', 
+                                padding: '4px 10px', 
+                                fontSize: '12px', 
+                                width: '70px', 
+                                minWidth: '70px', 
+                                marginTop: 0, 
+                                justifyContent: 'center', 
+                                display: 'inline-flex' 
+                              }}
+                            >
+                              解锁
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
