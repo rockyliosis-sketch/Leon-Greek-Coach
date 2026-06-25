@@ -155,13 +155,46 @@ const getUnitSchedule = (unit: number): UnitSchedule => {
   return { startOffset: offset, duration: 14 };
 };
 
+const parseLocalDate = (dateStr: string): Date | null => {
+  if (!dateStr || dateStr === 'LOCKED') return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const d = new Date(year, month, day, 0, 0, 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const getGreeceDateString = () => {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Athens',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    return formatter.format(new Date());
+  } catch (e) {
+    const today = new Date();
+    const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
+    const greece = new Date(utc + (3600000 * 3));
+    const y = greece.getFullYear();
+    const m = String(greece.getMonth() + 1).padStart(2, '0');
+    const dd = String(greece.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  }
+};
+
 const getUnitFromDate = (dateStr: string): number => {
   try {
     let normalized = dateStr.replace(/[\/\u5e74\u6708]/g, '-').replace(/\u65e5/g, '');
-    const date = new Date(normalized);
-    if (isNaN(date.getTime())) return 1;
+    const date = parseLocalDate(normalized);
+    if (!date) return 1;
 
-    const baseDate = new Date(START_DATE);
+    const baseDate = parseLocalDate(START_DATE);
+    if (!baseDate) return 1;
+
     const diffTime = date.getTime() - baseDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
@@ -178,17 +211,22 @@ const getUnitFromDate = (dateStr: string): number => {
 };
 
 const getMondayDateStr = (dateStr: string): string => {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
+  if (!dateStr || dateStr === 'LOCKED') return 'LOCKED';
+  const d = parseLocalDate(dateStr);
+  if (!d) return dateStr;
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
   const monday = new Date(d.setDate(diff));
-  return monday.toISOString().split('T')[0];
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd = String(monday.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 };
 
 const getWeekRangeStr = (mondayStr: string): string => {
-  const d = new Date(mondayStr);
-  if (isNaN(d.getTime())) return '';
+  if (!mondayStr || mondayStr === 'LOCKED') return '';
+  const d = parseLocalDate(mondayStr);
+  if (!d) return '';
   const sunday = new Date(d);
   sunday.setDate(d.getDate() + 6);
   
@@ -211,9 +249,14 @@ const getUnitStudyDate = (
   // We compute their default calculated schedule date.
   if (bookId.toUpperCase() === 'A1-A' || bookId.toUpperCase() === 'A1-B' || unitNum <= 30) {
     const { startOffset } = getUnitSchedule(unitNum);
-    const d = new Date(START_DATE);
-    d.setDate(d.getDate() + startOffset);
-    return getMondayDateStr(d.toISOString().split('T')[0]);
+    const d = parseLocalDate(START_DATE);
+    if (d) {
+      d.setDate(d.getDate() + startOffset);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return getMondayDateStr(`${y}-${m}-${dd}`);
+    }
   }
   
   return 'LOCKED';
@@ -238,7 +281,6 @@ const migrateFromOldActivatedWords = (vocabList: Word[]): Record<string, string>
 
     Object.keys(unitWordsMap).forEach(key => {
       const words = unitWordsMap[key];
-      const lockedCount = words.filter(w => oldActivated[w.id] === 'LOCKED').length;
       const unlockedWords = words.filter(w => oldActivated[w.id] && oldActivated[w.id] !== 'LOCKED');
       
       const [bookId, unitNumStr] = key.split('_');
@@ -291,22 +333,32 @@ const getResolvedActivationDates = (
     
     const studyDateStr = getUnitStudyDate(bookId, unitNum, studyDatesMap);
     
-    if (studyDateStr === 'LOCKED') {
+    if (!studyDateStr || studyDateStr === 'LOCKED') {
       words.forEach(w => {
         finalDates[w.id] = 'LOCKED';
       });
-    } else {
-      // Distribute words over the unit's duration
-      const duration = (unitNum >= 31) ? 14 : 7;
-      const baseDate = new Date(studyDateStr);
-      
-      words.forEach((w, idx) => {
-        const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
-        const actDate = new Date(baseDate);
-        actDate.setDate(baseDate.getDate() + wordOffset);
-        finalDates[w.id] = actDate.toISOString().split('T')[0];
-      });
+      return;
     }
+
+    const baseDate = parseLocalDate(studyDateStr);
+    if (!baseDate) {
+      words.forEach(w => {
+        finalDates[w.id] = 'LOCKED';
+      });
+      return;
+    }
+
+    // Distribute words over the unit's duration
+    const duration = (unitNum >= 31) ? 14 : 7;
+    words.forEach((w, idx) => {
+      const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
+      const actDate = new Date(baseDate);
+      actDate.setDate(baseDate.getDate() + wordOffset);
+      const y = actDate.getFullYear();
+      const m = String(actDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(actDate.getDate()).padStart(2, '0');
+      finalDates[w.id] = `${y}-${m}-${dd}`;
+    });
   });
 
   return finalDates;
@@ -328,6 +380,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // Vocabulary & Activation states
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
+  const [editingDates, setEditingDates] = useState<Record<string, string>>({});
   
   // Upload states
   const [rawMD, setRawMD] = useState('');
@@ -368,7 +421,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Compute stats
   const totalWords = allVocab.length;
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getGreeceDateString();
   const activatedCount = allVocab.filter(w => isWordActive(w.id, todayStr, resolvedActivationDates)).length;
   const pendingCount = totalWords - activatedCount;
 
@@ -400,8 +453,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Handle unit date update
   const handleUpdateUnitDate = (bookId: string, unit: number, dateStr: string) => {
+    if (!dateStr) {
+      alert('请选择有效的日期！');
+      return;
+    }
     const key = `${bookId.toUpperCase()}_${unit}`;
     const normalizedDate = getMondayDateStr(dateStr);
+    if (normalizedDate === 'LOCKED') {
+      alert('日期无效！');
+      return;
+    }
     const newDates = { ...unitStudyDates, [key]: normalizedDate };
     setUnitStudyDates(newDates);
     localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
@@ -410,10 +471,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // Handle unit activation
   const handleActivateUnit = (bookId: string, unit: number) => {
     const key = `${bookId.toUpperCase()}_${unit}`;
-    const currentWeekMonday = getMondayDateStr(new Date().toISOString().split('T')[0]);
+    const todayStrGreece = getGreeceDateString();
+    const currentWeekMonday = getMondayDateStr(todayStrGreece);
     const newDates = { ...unitStudyDates, [key]: currentWeekMonday };
     setUnitStudyDates(newDates);
     localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+    // Clear any editing state for this key
+    setEditingDates(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
   };
 
   // Handle unit deactivation
@@ -422,6 +490,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const newDates = { ...unitStudyDates, [key]: 'LOCKED' };
     setUnitStudyDates(newDates);
     localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+    // Clear any editing state for this key
+    setEditingDates(prev => {
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
   };
 
   // Mock parse MD file and add words to custom vocab
@@ -565,13 +639,73 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <td className="admin-td">
                         {!isLocked ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <input 
-                              type="date" 
-                              value={studyDate} 
-                              onChange={e => handleUpdateUnitDate(bookName, unitNum, e.target.value)} 
-                              className="date-picker-input"
-                              style={{ width: '140px', padding: '4px 8px', fontSize: '13px' }}
-                            />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <input 
+                                type="date" 
+                                value={editingDates[`${bookName.toUpperCase()}_${unitNum}`] !== undefined ? editingDates[`${bookName.toUpperCase()}_${unitNum}`] : studyDate} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setEditingDates(prev => ({ ...prev, [`${bookName.toUpperCase()}_${unitNum}`]: val }));
+                                }} 
+                                className="date-picker-input"
+                                style={{ width: '140px', padding: '4px 8px', fontSize: '13px' }}
+                              />
+                              {editingDates[`${bookName.toUpperCase()}_${unitNum}`] !== undefined && editingDates[`${bookName.toUpperCase()}_${unitNum}`] !== studyDate && (
+                                <div style={{ display: 'flex', gap: '4px' }}>
+                                  <button
+                                    onClick={() => {
+                                      const key = `${bookName.toUpperCase()}_${unitNum}`;
+                                      const val = editingDates[key];
+                                      handleUpdateUnitDate(bookName, unitNum, val);
+                                      setEditingDates(prev => {
+                                        const copy = { ...prev };
+                                        delete copy[key];
+                                        return copy;
+                                      });
+                                    }}
+                                    className="btn-premium"
+                                    style={{
+                                      whiteSpace: 'nowrap',
+                                      background: '#34C759',
+                                      color: '#fff',
+                                      padding: '2px 8px',
+                                      fontSize: '11px',
+                                      width: 'auto',
+                                      marginTop: 0,
+                                      borderRadius: '4px',
+                                      fontWeight: 'bold',
+                                      minWidth: 'auto'
+                                    }}
+                                  >
+                                    确定
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const key = `${bookName.toUpperCase()}_${unitNum}`;
+                                      setEditingDates(prev => {
+                                        const copy = { ...prev };
+                                        delete copy[key];
+                                        return copy;
+                                      });
+                                    }}
+                                    className="btn-premium"
+                                    style={{
+                                      whiteSpace: 'nowrap',
+                                      background: 'rgba(0,0,0,0.05)',
+                                      color: '#1D1D1F',
+                                      padding: '2px 8px',
+                                      fontSize: '11px',
+                                      width: 'auto',
+                                      marginTop: 0,
+                                      borderRadius: '4px',
+                                      minWidth: 'auto'
+                                    }}
+                                  >
+                                    取消
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                             <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 600 }}>
                               📅 {getWeekRangeStr(studyDate)}
                             </div>
@@ -614,8 +748,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 justifyContent: 'center', 
                                 display: 'inline-flex' 
                               }}
+                              title="停用此单元将清除已设定的学习日期并对学生隐藏"
                             >
-                              锁定
+                              停用单元
                             </button>
                           ) : (
                             <button 
@@ -634,7 +769,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 display: 'inline-flex' 
                               }}
                             >
-                              解锁
+                              开启单元
                             </button>
                           )}
                         </div>

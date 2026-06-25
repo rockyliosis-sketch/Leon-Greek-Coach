@@ -258,18 +258,34 @@ const getUnitDateRange = (globalUnit: number): string => {
   return `${formatDate(uStart)} - ${formatDate(uEnd)}`;
 };
 
+const parseLocalDate = (dateStr: string): Date | null => {
+  if (!dateStr || dateStr === 'LOCKED') return null;
+  const parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const d = new Date(year, month, day, 0, 0, 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 const getMondayDateStr = (dateStr: string): string => {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
+  if (!dateStr || dateStr === 'LOCKED') return 'LOCKED';
+  const d = parseLocalDate(dateStr);
+  if (!d) return dateStr;
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is Sunday
   const monday = new Date(d.setDate(diff));
-  return monday.toISOString().split('T')[0];
+  const y = monday.getFullYear();
+  const m = String(monday.getMonth() + 1).padStart(2, '0');
+  const dd = String(monday.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 };
 
 const getWeekRangeStr = (mondayStr: string): string => {
-  const d = new Date(mondayStr);
-  if (isNaN(d.getTime())) return '';
+  if (!mondayStr || mondayStr === 'LOCKED') return '';
+  const d = parseLocalDate(mondayStr);
+  if (!d) return '';
   const sunday = new Date(d);
   sunday.setDate(d.getDate() + 6);
   
@@ -292,9 +308,14 @@ const getUnitStudyDate = (
   // We compute their default calculated schedule date.
   if (bookId.toUpperCase() === 'A1-A' || bookId.toUpperCase() === 'A1-B' || unitNum <= 30) {
     const { startOffset } = getUnitSchedule(unitNum);
-    const d = new Date(START_DATE);
-    d.setDate(d.getDate() + startOffset);
-    return getMondayDateStr(d.toISOString().split('T')[0]);
+    const d = parseLocalDate(START_DATE);
+    if (d) {
+      d.setDate(d.getDate() + startOffset);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return getMondayDateStr(`${y}-${m}-${dd}`);
+    }
   }
   
   return 'LOCKED';
@@ -319,7 +340,6 @@ const migrateFromOldActivatedWords = (vocabList: Word[]): Record<string, string>
 
     Object.keys(unitWordsMap).forEach(key => {
       const words = unitWordsMap[key];
-      const lockedCount = words.filter(w => oldActivated[w.id] === 'LOCKED').length;
       const unlockedWords = words.filter(w => oldActivated[w.id] && oldActivated[w.id] !== 'LOCKED');
       
       const [bookId, unitNumStr] = key.split('_');
@@ -372,22 +392,32 @@ const getResolvedActivationDates = (
     
     const studyDateStr = getUnitStudyDate(bookId, unitNum, studyDatesMap);
     
-    if (studyDateStr === 'LOCKED') {
+    if (!studyDateStr || studyDateStr === 'LOCKED') {
       words.forEach(w => {
         finalDates[w.id] = 'LOCKED';
       });
-    } else {
-      // Distribute words over the unit's duration
-      const duration = (unitNum >= 31) ? 14 : 7;
-      const baseDate = new Date(studyDateStr);
-      
-      words.forEach((w, idx) => {
-        const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
-        const actDate = new Date(baseDate);
-        actDate.setDate(baseDate.getDate() + wordOffset);
-        finalDates[w.id] = actDate.toISOString().split('T')[0];
-      });
+      return;
     }
+
+    const baseDate = parseLocalDate(studyDateStr);
+    if (!baseDate) {
+      words.forEach(w => {
+        finalDates[w.id] = 'LOCKED';
+      });
+      return;
+    }
+
+    // Distribute words over the unit's duration
+    const duration = (unitNum >= 31) ? 14 : 7;
+    words.forEach((w, idx) => {
+      const wordOffset = N > 0 ? Math.floor((idx / N) * duration) : 0;
+      const actDate = new Date(baseDate);
+      actDate.setDate(baseDate.getDate() + wordOffset);
+      const y = actDate.getFullYear();
+      const m = String(actDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(actDate.getDate()).padStart(2, '0');
+      finalDates[w.id] = `${y}-${m}-${dd}`;
+    });
   });
 
   return finalDates;
@@ -397,13 +427,16 @@ const isWordDueToday = (wordId: number, targetDateStr: string, activatedDatesMap
   const actDateStr = activatedDatesMap[wordId];
   if (!actDateStr || actDateStr === 'LOCKED') return false;
   
-  const activationDate = new Date(actDateStr);
-  activationDate.setHours(0, 0, 0, 0);
+  const partsAct = actDateStr.split('-');
+  const partsTgt = targetDateStr.split('-');
+  if (partsAct.length !== 3 || partsTgt.length !== 3) return false;
   
-  const targetDate = new Date(targetDateStr);
-  targetDate.setHours(0, 0, 0, 0);
+  const actD = new Date(parseInt(partsAct[0], 10), parseInt(partsAct[1], 10) - 1, parseInt(partsAct[2], 10), 0, 0, 0, 0);
+  const tgtD = new Date(parseInt(partsTgt[0], 10), parseInt(partsTgt[1], 10) - 1, parseInt(partsTgt[2], 10), 0, 0, 0, 0);
   
-  const diffTime = targetDate.getTime() - activationDate.getTime();
+  if (isNaN(actD.getTime()) || isNaN(tgtD.getTime())) return false;
+  
+  const diffTime = tgtD.getTime() - actD.getTime();
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
   
   return diffDays === 0 || EBBINGHAUS_INTERVALS.includes(diffDays);
