@@ -533,10 +533,22 @@ def main():
                 "match_type": mapped_to[3]
             })
         else:
-            # Word is not found in unit lessons. It is either an alphabet-only word or unmapped. We exclude it.
             a1_unmapped.append(item)
             
-    print(f"A1 textbook matched: {len(a1_mapped)}, unmapped (excluded): {len(a1_unmapped)}")
+    print(f"A1 textbook matched: {len(a1_mapped)}, unmapped: {len(a1_unmapped)}")
+    
+    # Distribute unmapped A1 words to the final review unit of A1-B (Unit 30) instead of excluding
+    for item in a1_unmapped:
+        book_id = "a1-b"
+        unit = 30
+        p_start = a1_b_ranges.get(unit, (169, 175))[0]
+        a1_mapped.append({
+            "item": item,
+            "book_id": book_id,
+            "unit": unit,
+            "page_number": p_start,
+            "match_type": "fallback_end_of_book"
+        })
     
     # ------------------
     # Step 2: Map A2 Words (Filter duplicates from A1)
@@ -590,7 +602,19 @@ def main():
         else:
             a2_unmapped.append(item)
             
-    print(f"A2 textbook matched: {len(a2_mapped)}, unmapped (excluded): {len(a2_unmapped)}")
+    print(f"A2 textbook matched: {len(a2_mapped)}, unmapped: {len(a2_unmapped)}")
+    
+    # Distribute unmapped A2 words to the final review unit of A2 (Unit 39) instead of excluding
+    for item in a2_unmapped:
+        unit = 39
+        p_start = a2_ranges.get(unit, (142, 148))[0]
+        a2_mapped.append({
+            "item": item,
+            "book_id": "a2",
+            "unit": unit,
+            "page_number": p_start,
+            "match_type": "fallback_end_of_book"
+        })
     
     # Add Unit 38 dummy word to prevent blank unit 38 display (1-word helper)
     # The user noted that Unit 38 review is 4-6. We can add a review helper word
