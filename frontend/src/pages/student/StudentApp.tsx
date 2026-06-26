@@ -24,6 +24,7 @@ import {
 // Import local static vocabulary compilation
 import staticVocabData from '../../data/vocabulary.json';
 import examQuestionsData from '../../data/exam_questions.json';
+import { subscribeToSharedState, saveSharedState } from '../../dbService';
 
 const speakGreek = (text: string) => {
   if ('speechSynthesis' in window) {
@@ -898,42 +899,26 @@ export default function StudentApp() {
   const [transZhGrWrongAttempt, setTransZhGrWrongAttempt] = useState(false);
   const [showTip, setShowTip] = useState(false);
 
-  // Load vocabulary and activation history
+  // Load vocabulary and activation history from Firestore
   useEffect(() => {
-    let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-    try {
-      const custom = JSON.parse(localStorage.getItem('leon_custom_vocab') || '[]');
-      mergedVocab = [...mergedVocab, ...custom];
-    } catch (e) {}
-    setAllVocab(mergedVocab);
-
-    let studyDates = {} as Record<string, string>;
-    try {
-      const stored = localStorage.getItem('leon_unit_study_dates');
-      if (stored) {
-        studyDates = JSON.parse(stored) || {};
-      } else {
-        // Run migration from old leon_activated_words if available
-        studyDates = migrateFromOldActivatedWords(mergedVocab);
-        localStorage.setItem('leon_unit_study_dates', JSON.stringify(studyDates));
+    const unsubscribe = subscribeToSharedState((state) => {
+      let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
+      if (state.custom_vocab) {
+        mergedVocab = [...mergedVocab, ...state.custom_vocab];
       }
-    } catch (e) {}
-    setUnitStudyDates(studyDates);
+      setAllVocab(mergedVocab);
+      setUnitStudyDates(state.unit_study_dates || {});
+      setScore(state.score || 0);
 
-    const finalActivated = getResolvedActivationDates(mergedVocab, studyDates);
-    setActivatedDates(finalActivated);
+      const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
+      setActivatedDates(finalActivated);
 
-    // Reset score to 0 for the new scoring rules (run once)
-    if (!localStorage.getItem('leon_score_reset_v3')) {
-      localStorage.setItem('leon_score', '0');
-      localStorage.setItem('leon_score_reset_v3', 'true');
-      setScore(0);
-    }
+      const dateStr = getGreeceDateString();
+      const currentCompleted = state.completed_date_modules || {};
+      setCompletedModulesForDate(currentCompleted[dateStr] || []);
+    });
 
-    // Load completed modules for the current Greece date
-    const dateStr = getGreeceDateString();
-    const currentCompleted = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}');
-    setCompletedModulesForDate(currentCompleted[dateStr] || []);
+    return () => unsubscribe();
   }, []);
 
   // Filter allVocab to only contain unlocked words as of selectedDateStr
@@ -1967,10 +1952,12 @@ export default function StudentApp() {
     const completedForToday = currentCompleted[dateStr] || [];
     
     let updated = completedForToday;
+    const updates: any = {};
+
     if (!completedForToday.includes(activeModule)) {
       updated = [...completedForToday, activeModule];
       currentCompleted[dateStr] = updated;
-      localStorage.setItem('leon_completed_date_modules', JSON.stringify(currentCompleted));
+      updates.completed_date_modules = currentCompleted;
       setCompletedModulesForDate(updated);
     }
 
@@ -1986,14 +1973,18 @@ export default function StudentApp() {
       // Award exactly 10 points
       const newScore = score + 10;
       setScore(newScore);
-      localStorage.setItem('leon_score', newScore.toString());
+      updates.score = newScore;
       
       dailyRewardsAwarded[dateStr] = true;
-      localStorage.setItem('leon_daily_rewards_awarded', JSON.stringify(dailyRewardsAwarded));
+      updates.daily_rewards_awarded = dailyRewardsAwarded;
       
       pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部六大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
     } else {
       pointsEarnedText = `\n今日已完成模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 6\n全部做完每天可积 10 分！\n当前总积分: ${score} XP`;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      saveSharedState(updates);
     }
 
     alert(`🎉 恭喜完成本模块练习！${pointsEarnedText}`);
@@ -4173,8 +4164,8 @@ export default function StudentApp() {
                           if (!completedForToday.includes('writing_speaking')) {
                             const updated = [...completedForToday, 'writing_speaking'];
                             currentCompleted[dateStr] = updated;
-                            localStorage.setItem('leon_completed_date_modules', JSON.stringify(currentCompleted));
                             setCompletedModulesForDate(updated);
+                            saveSharedState({ completed_date_modules: currentCompleted });
                           }
                           setActiveModule('dashboard');
                         }

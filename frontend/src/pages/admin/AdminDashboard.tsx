@@ -13,6 +13,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
+import { subscribeToSharedState, saveSharedState } from '../../dbService';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -391,27 +392,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [customBookId, setCustomBookId] = useState('');
   const [isCustomBook, setIsCustomBook] = useState(false);
 
-  // Load vocabulary & activation dates
+  // Load vocabulary & activation dates from Firestore
   useEffect(() => {
-    let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-    try {
-      const custom = JSON.parse(localStorage.getItem('leon_custom_vocab') || '[]');
-      mergedVocab = [...mergedVocab, ...custom];
-    } catch (e) {}
-    setAllVocab(mergedVocab);
-
-    let studyDates = {} as Record<string, string>;
-    try {
-      const stored = localStorage.getItem('leon_unit_study_dates');
-      if (stored) {
-        studyDates = JSON.parse(stored) || {};
-      } else {
-        // Run migration from old leon_activated_words if available
-        studyDates = migrateFromOldActivatedWords(mergedVocab);
-        localStorage.setItem('leon_unit_study_dates', JSON.stringify(studyDates));
+    const unsubscribe = subscribeToSharedState((state) => {
+      let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
+      if (state.custom_vocab) {
+        mergedVocab = [...mergedVocab, ...state.custom_vocab];
       }
-    } catch (e) {}
-    setUnitStudyDates(studyDates);
+      setAllVocab(mergedVocab);
+      setUnitStudyDates(state.unit_study_dates || {});
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Compute resolved activation dates
@@ -465,7 +457,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     }
     const newDates = { ...unitStudyDates, [key]: normalizedDate };
     setUnitStudyDates(newDates);
-    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+    saveSharedState({ unit_study_dates: newDates });
   };
 
   // Handle unit activation
@@ -475,7 +467,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const currentWeekMonday = getMondayDateStr(todayStrGreece);
     const newDates = { ...unitStudyDates, [key]: currentWeekMonday };
     setUnitStudyDates(newDates);
-    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+    saveSharedState({ unit_study_dates: newDates });
     // Clear any editing state for this key
     setEditingDates(prev => {
       const copy = { ...prev };
@@ -489,7 +481,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const key = `${bookId.toUpperCase()}_${unit}`;
     const newDates = { ...unitStudyDates, [key]: 'LOCKED' };
     setUnitStudyDates(newDates);
-    localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+    saveSharedState({ unit_study_dates: newDates });
     // Clear any editing state for this key
     setEditingDates(prev => {
       const copy = { ...prev };
@@ -548,7 +540,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (newWordsList.length > 0) {
       const existingCustom = JSON.parse(localStorage.getItem('leon_custom_vocab') || '[]');
       const updatedCustom = [...existingCustom, ...newWordsList];
-      localStorage.setItem('leon_custom_vocab', JSON.stringify(updatedCustom));
+      
+      const updates: any = { custom_vocab: updatedCustom };
       
       // Update study date for this custom unit if a date was found in MD
       if (uploadedUnitDate) {
@@ -556,8 +549,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         const normalizedDate = getMondayDateStr(uploadedUnitDate);
         const newDates = { ...unitStudyDates, [key]: normalizedDate };
         setUnitStudyDates(newDates);
-        localStorage.setItem('leon_unit_study_dates', JSON.stringify(newDates));
+        updates.unit_study_dates = newDates;
       }
+
+      saveSharedState(updates);
 
       // Update global list
       setAllVocab([...allVocab, ...newWordsList]);
