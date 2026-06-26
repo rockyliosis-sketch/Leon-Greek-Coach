@@ -498,21 +498,94 @@ const cleanGreekForComparison = (str: string): string => {
   // Remove punctuation
   cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
   
-  // Remove common articles from the beginning or end of the words
+  // Remove common articles and normalize demonstrative pronouns
   const words = cleaned.split(/\s+/);
   const articles = new Set(['ο', 'η', 'το', 'τα', 'οι', 'της', 'του', 'τον', 'την', 'μας', 'σας', 'μου', 'σου']);
-  const filteredWords = words.filter(w => !articles.has(w));
+  const filteredWords = words
+    .filter(w => !articles.has(w))
+    .map(w => {
+      if (w === 'αυτος' || w === 'αυτη' || w === 'αυτοι' || w === 'αυτες' || w === 'αυτα') {
+        return 'αυτο';
+      }
+      return w;
+    });
   
   return filteredWords.join('').trim();
 };
 
-const cleanChinese = (str: string): string => {
-  let cleaned = removeBracketContents(str);
-  return cleaned
+const normalizeChineseString = (str: string): string => {
+  let s = removeBracketContents(str)
     .toLowerCase()
     .trim()
     .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?，。？！；：]/g, "")
     .replace(/\s+/g, "");
+
+  // Remove common prefixes
+  const prefixes = ["这是", "那是", "它是", "这个是", "那个是", "一个", "是一只", "一个", "一些", "这", "那", "它"];
+  let changedPrefix = true;
+  while (changedPrefix) {
+    changedPrefix = false;
+    for (const prefix of prefixes) {
+      if (s.startsWith(prefix) && s.length > prefix.length) {
+        s = s.substring(prefix.length);
+        changedPrefix = true;
+      }
+    }
+  }
+
+  // Remove common suffixes
+  const suffixes = ["的", "了", "地", "吧", "呀", "啊", "呢"];
+  let changedSuffix = true;
+  while (changedSuffix) {
+    changedSuffix = false;
+    for (const suffix of suffixes) {
+      if (s.endsWith(suffix) && s.length > suffix.length) {
+        s = s.substring(0, s.length - suffix.length);
+        changedSuffix = true;
+      }
+    }
+  }
+
+  // Apply synonym replacements
+  const synonymGroups = [
+    ["确定", "肯定", "一定", "有把握", "确信"],
+    ["脸", "面孔", "面部", "人脸"],
+    ["人", "人类", "个人", "个体"],
+    ["面具", "面罩"],
+    ["公寓", "房屋", "房子", "住宅"],
+    ["旧", "老", "破旧"],
+    ["暖气", "供暖", "取暖"],
+    ["停车场", "车位", "停车位", "泊车場", "泊车"],
+    ["自行车", "单车", "脚踏车"],
+    ["强烈", "坚定", "坚决", "强力"],
+    ["保重", "身体健康", "健康"],
+    ["去世", "死", "死亡", "逝世"],
+    ["恭喜", "祝贺"],
+    ["早日康复", "快点好起来", "早日痊愈"],
+  ];
+
+  for (const group of synonymGroups) {
+    const primary = group[0];
+    for (const synonym of group) {
+      if (synonym !== primary) {
+        s = s.replaceAll(synonym, primary);
+      }
+    }
+  }
+
+  return s;
+};
+
+const cleanChinese = (str: string): string => {
+  return normalizeChineseString(str);
+};
+
+// Alternative translations mapping for specific Greek words to support multiple meanings
+const GREEK_ALTERNATIVE_TRANSLATIONS: Record<string, string[]> = {
+  "προσωπο": ["脸", "面孔", "人", "脸部"],
+  "γερα": ["强烈", "坚定", "坚固", "健康"],
+  "μασκα": ["面具", "口罩"],
+  "σιγουρος": ["一定", "确定", "肯定"],
 };
 
 const getCleanSpellingWord = (word: string): string => {
@@ -1799,9 +1872,25 @@ export default function StudentApp() {
   const handleCheckTransGrZh = () => {
     const cleanUser = cleanChinese(userTransGrZhInput);
     const cleanAnswer = cleanChinese(currentTransGrZh.chinese);
-    const correct = cleanUser === cleanAnswer || 
-                    (cleanUser.includes(cleanAnswer) && cleanAnswer.length >= 1) || 
-                    (cleanAnswer.includes(cleanUser) && cleanUser.length >= 1);
+    let correct = cleanUser === cleanAnswer || 
+                  (cleanUser.includes(cleanAnswer) && cleanAnswer.length >= 1) || 
+                  (cleanAnswer.includes(cleanUser) && cleanUser.length >= 1);
+    
+    // Check alternative translations based on the Greek word
+    if (!correct) {
+      const cleanGreekKey = cleanGreekForComparison(currentTransGrZh.greek);
+      const alternatives = GREEK_ALTERNATIVE_TRANSLATIONS[cleanGreekKey] || [];
+      for (const alt of alternatives) {
+        const cleanAlt = cleanChinese(alt);
+        if (cleanUser === cleanAlt || 
+            (cleanUser.includes(cleanAlt) && cleanAlt.length >= 1) || 
+            (cleanAlt.includes(cleanUser) && cleanUser.length >= 1)) {
+          correct = true;
+          break;
+        }
+      }
+    }
+
     if (correct) {
       setTransGrZhChecked(true);
       setIsCorrectTransGrZh(true);
@@ -3541,10 +3630,14 @@ export default function StudentApp() {
             <div className="game-container-card" style={{ padding: '40px 32px', textAlign: 'center' }}>
               <div style={{ marginBottom: '40px' }}>
                 <span style={{ fontSize: '14px', color: '#86868B', fontWeight: 'bold' }}>
-                  判断中文翻译是否与希腊语单词或句子匹配
+                  {currentTfWord.isExam 
+                    ? '根据真题背景，判断该希腊语句子的叙述是否正确（正确=符合背景，错误=不符）' 
+                    : '判断中文翻译是否与希腊语单词或句子匹配'}
                 </span>
                 <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 700, textTransform: 'uppercase', marginTop: '2px', marginBottom: '24px' }}>
-                  Κρίνετε εάν η κινεζική μετάφραση ταιριάζει με την ελληνική λέξη ή πρόταση
+                  {currentTfWord.isExam 
+                    ? 'Κρίνετε εάν η πρόταση είναι σωστή ή λάθος σύμφωνα με το κείμενο' 
+                    : 'Κρίνετε εάν η κινεζική μετάφραση ταιριάζει με την ελληνική λέξη ή πρόταση'}
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '12px', marginBottom: '16px' }}>
@@ -3691,8 +3784,19 @@ export default function StudentApp() {
                       </div>
                     )}
                     <div style={{ fontSize: '13.5px', fontWeight: 500, color: '#86868B', marginTop: '12px' }}>
-                      正确的中文释义是 / Η σωστή σημασία είναι: 
-                      <div style={{ color: '#1D1D1F', fontWeight: 700, fontSize: '16px', marginTop: '4px' }}>{currentTfWord.chinese}</div>
+                      {currentTfWord.isExam ? (
+                        <>
+                          本题叙述正确性是 / Η σωστή απάντηση είναι: 
+                          <div style={{ color: '#1D1D1F', fontWeight: 700, fontSize: '18px', marginTop: '4px' }}>
+                            {tfQuestionData.isCorrect ? '正确 (Σωστό)' : '错误 (Λάθος)'}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          正确的中文释义是 / Η σωστή σημασία είναι: 
+                          <div style={{ color: '#1D1D1F', fontWeight: 700, fontSize: '16px', marginTop: '4px' }}>{currentTfWord.chinese}</div>
+                        </>
+                      )}
                     </div>
                   </div>
 
