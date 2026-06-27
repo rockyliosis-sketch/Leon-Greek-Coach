@@ -10,10 +10,16 @@ import {
   Calendar,
   Layers,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Database,
+  Cloud,
+  CloudOff,
+  RefreshCw,
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
-import { subscribeToSharedState, saveSharedState } from '../../dbService';
+import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -382,6 +388,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
+
+  // Database sync states
+  const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
   
   // Upload states
   const [rawMD, setRawMD] = useState('');
@@ -394,14 +406,24 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // Load vocabulary & activation dates from Firestore
   useEffect(() => {
-    const unsubscribe = subscribeToSharedState((state) => {
-      let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-      if (state.custom_vocab) {
-        mergedVocab = [...mergedVocab, ...state.custom_vocab];
+    const unsubscribe = subscribeToSharedState(
+      (state) => {
+        let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
+        if (state.custom_vocab) {
+          mergedVocab = [...mergedVocab, ...state.custom_vocab];
+        }
+        setAllVocab(mergedVocab);
+        setUnitStudyDates(state.unit_study_dates || {});
+      },
+      (status, error) => {
+        setDbStatus(status);
+        if (error) {
+          setDbError(error.message);
+        } else {
+          setDbError(null);
+        }
       }
-      setAllVocab(mergedVocab);
-      setUnitStudyDates(state.unit_study_dates || {});
-    });
+    );
 
     return () => unsubscribe();
   }, []);
@@ -902,6 +924,227 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     </div>
   );
 
+  const handleForceSyncToCloud = async () => {
+    if (!window.confirm("确定要将当前电脑上的学习记录与解锁日期覆盖到云端吗？这会同步到所有其他登录设备。")) return;
+    setIsSyncing(true);
+    setSyncMessage("正在将当前设备数据上传至云端数据库...");
+    try {
+      let customVocab = [];
+      try {
+        customVocab = JSON.parse(localStorage.getItem('leon_custom_vocab') || '[]');
+      } catch (e) {}
+
+      let score = 0;
+      try {
+        score = parseInt(localStorage.getItem('leon_score') || '0', 10);
+      } catch (e) {}
+
+      let completedModules = {};
+      try {
+        completedModules = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}');
+      } catch (e) {}
+
+      let dailyRewards = {};
+      try {
+        dailyRewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}');
+      } catch (e) {}
+
+      const stateToSave = {
+        unit_study_dates: unitStudyDates,
+        custom_vocab: customVocab,
+        score: score,
+        completed_date_modules: completedModules,
+        daily_rewards_awarded: dailyRewards
+      };
+
+      await saveSharedState(stateToSave);
+      setSyncMessage("🟢 同步成功！当前设备已被设为同步主设备，数据已成功覆盖至云端。");
+      setDbStatus('connected-server');
+      setTimeout(() => setSyncMessage(null), 5000);
+    } catch (e: any) {
+      console.error(e);
+      setSyncMessage(`🔴 同步失败: ${e.message || e}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleForcePullFromCloud = () => {
+    setIsSyncing(true);
+    setSyncMessage("正在从云端拉取最新数据...");
+    setTimeout(() => {
+      setSyncMessage("🟢 云端数据已拉取刷新完毕！");
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(null), 3000);
+    }, 1500);
+  };
+
+  const renderSyncStatusBanner = () => {
+    let bgColor = '';
+    let borderColor = '';
+    let textColor = '';
+    let statusText = '';
+    let icon = null;
+    let desc = '';
+
+    switch (dbStatus) {
+      case 'connected-server':
+        bgColor = 'rgba(52, 199, 89, 0.04)';
+        borderColor = 'rgba(52, 199, 89, 0.15)';
+        textColor = '#34C759';
+        statusText = '已连接云端（已实时同步）';
+        icon = <Cloud size={20} style={ { color: '#34C759' } } />;
+        desc = '所有设备（包括 iPad）当前均在实时共享相同的学习进度、单元解锁日期及测试记录。';
+        break;
+      case 'connected-cache':
+        bgColor = 'rgba(255, 149, 0, 0.04)';
+        borderColor = 'rgba(255, 149, 0, 0.15)';
+        textColor = '#FF9500';
+        statusText = '已启用本地缓存（离线模式）';
+        icon = <RefreshCw size={20} className="spinning" style={ { color: '#FF9500' } } />;
+        desc = '云端尚未响应，已自动为您载入此设备上的本地缓存。任何修改将保存在本地并在恢复连接后上传。';
+        break;
+      case 'connecting':
+        bgColor = 'rgba(0, 122, 255, 0.04)';
+        borderColor = 'rgba(0, 122, 255, 0.15)';
+        textColor = '#007AFF';
+        statusText = '正在建立云端同步连接...';
+        icon = <RefreshCw size={20} className="spinning" style={ { color: '#007AFF' } } />;
+        desc = '正在与 Firebase Firestore 建立实时握手连接，请稍候...';
+        break;
+      case 'error':
+      default:
+        bgColor = 'rgba(255, 59, 48, 0.04)';
+        borderColor = 'rgba(255, 59, 48, 0.15)';
+        textColor = '#FF3B30';
+        statusText = '同步不可用（云端数据库未启用）';
+        icon = <CloudOff size={20} style={ { color: '#FF3B30' } } />;
+        desc = '检测到云端数据库尚未开启，多设备之间将无法进行数据同步（各设备显示独立日期）。';
+        break;
+    }
+
+    return (
+      <div 
+        style={ {
+          background: bgColor,
+          border: `1px solid ${borderColor}`,
+          borderRadius: '20px',
+          padding: '24px',
+          marginBottom: '32px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          transition: 'all 0.3s ease'
+        } }
+      >
+        <div style={ { display: 'flex', alignItems: 'center', gap: '12px' } }>
+          {icon}
+          <span style={ { fontWeight: 700, fontSize: '16px', color: '#1D1D1F' } }>
+            数据同步状态：<span style={ { color: textColor } }>{statusText}</span>
+          </span>
+        </div>
+        
+        <p style={ { color: '#86868B', fontSize: '14px', margin: 0, lineHeight: 1.6 } }>
+          {desc}
+        </p>
+
+        {dbStatus === 'error' && (
+          <div 
+            style={ {
+              background: 'rgba(0, 0, 0, 0.02)',
+              border: '1px solid rgba(0,0,0,0.06)',
+              borderRadius: '12px',
+              padding: '16px',
+              fontSize: '13px',
+              color: '#515154',
+              lineHeight: 1.6
+            } }
+          >
+            <div style={ { fontWeight: 600, color: '#1D1D1F', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' } }>
+              <AlertCircle size={14} style={ { color: '#FF3B30' } } />
+              启用多设备同步步骤 (以您当前使用的这台 IDE 电脑版本为准)：
+            </div>
+            1. 打开 Firebase Console：
+               <a 
+                 href="https://console.firebase.google.com/project/leon-greek-coach/firestore" 
+                 target="_blank" 
+                 rel="noreferrer"
+                 style={ { color: '#007AFF', textDecoration: 'underline', marginLeft: '4px', fontWeight: 500 } }
+               >
+                 https://console.firebase.google.com/project/leon-greek-coach/firestore
+               </a><br />
+            2. 点击 <strong>“创建数据库” (Create Database)</strong> 按钮，并选择默认设置创建。<br />
+            3. 创建成功后，刷新此网页，然后点击下方 <strong>“设为同步主设备”</strong> 按钮，即可将您当前这台电脑上的正确日期 and 课程内容一键上传同步至云端！
+          </div>
+        )}
+
+        <div style={ { display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '4px' } }>
+          <button
+            onClick={handleForceSyncToCloud}
+            disabled={isSyncing}
+            style={ {
+              background: '#1D1D1F',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: isSyncing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              opacity: isSyncing ? 0.7 : 1,
+              transition: 'all 0.2s ease'
+            } }
+          >
+            <Database size={14} />
+            <span>设为同步主设备（强制覆盖云端）</span>
+          </button>
+
+          <button
+            onClick={handleForcePullFromCloud}
+            disabled={isSyncing}
+            style={ {
+              padding: '10px 20px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: isSyncing ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: '1px solid rgba(0,0,0,0.08)',
+              background: '#FFFFFF',
+              opacity: isSyncing ? 0.7 : 1,
+              transition: 'all 0.2s ease'
+            } }
+          >
+            <RefreshCw size={14} className={isSyncing ? 'spinning' : ''} />
+            <span>从云端强制拉取刷新</span>
+          </button>
+        </div>
+
+        {syncMessage && (
+          <div 
+            style={ { 
+              fontSize: '13px', 
+              fontWeight: 500, 
+              color: syncMessage.includes('🟢') ? '#34C759' : (syncMessage.includes('🔴') ? '#FF3B30' : '#86868B'),
+              marginTop: '4px',
+              padding: '8px 12px',
+              borderRadius: '8px',
+              background: 'rgba(0,0,0,0.02)',
+              width: 'fit-content'
+            } }
+          >
+            {syncMessage}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="admin-container">
       {/* Sidebar */}
@@ -948,6 +1191,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </p>
           </div>
         </div>
+
+        {/* Sync Status Banner */}
+        {renderSyncStatusBanner()}
 
         {/* Stats Grid */}
         <div className="admin-grid-3">

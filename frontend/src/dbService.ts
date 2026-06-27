@@ -50,40 +50,60 @@ export const getInitialLocalState = (): SharedState => {
   };
 };
 
+export type DbConnectionStatus = 'connecting' | 'connected-server' | 'connected-cache' | 'error';
+
 export const subscribeToSharedState = (
-  onUpdate: (state: SharedState) => void
+  onUpdate: (state: SharedState) => void,
+  onStatusChange?: (status: DbConnectionStatus, error?: Error) => void
 ) => {
   const docRef = doc(db, "leon_greek_coach", "shared_state");
 
-  return onSnapshot(docRef, async (snapshot) => {
-    if (snapshot.exists()) {
-      const data = snapshot.data() as SharedState;
-      // Sync back to localStorage as a cache/backup
-      try {
-        localStorage.setItem("leon_unit_study_dates", JSON.stringify(data.unit_study_dates || {}));
-        localStorage.setItem("leon_custom_vocab", JSON.stringify(data.custom_vocab || []));
-        localStorage.setItem("leon_score", (data.score || 0).toString());
-        localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
-        localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(data.daily_rewards_awarded || {}));
-      } catch (e) {}
-      onUpdate({
-        unit_study_dates: data.unit_study_dates || {},
-        custom_vocab: data.custom_vocab || [],
-        score: data.score || 0,
-        completed_date_modules: data.completed_date_modules || {},
-        daily_rewards_awarded: data.daily_rewards_awarded || {},
-      });
-    } else {
-      // If Firestore is empty, initialize it with the local storage values (macbook migration)
-      const localState = getInitialLocalState();
-      try {
-        await setDoc(docRef, localState);
-      } catch (err) {
-        console.error("Error initializing Firestore document:", err);
+  // Call onUpdate immediately with local state to avoid blank/zero UI during connection
+  const localCache = getInitialLocalState();
+  onUpdate(localCache);
+  if (onStatusChange) onStatusChange('connecting');
+
+  return onSnapshot(
+    docRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as SharedState;
+        // Sync back to localStorage as a cache/backup
+        try {
+          localStorage.setItem("leon_unit_study_dates", JSON.stringify(data.unit_study_dates || {}));
+          localStorage.setItem("leon_custom_vocab", JSON.stringify(data.custom_vocab || []));
+          localStorage.setItem("leon_score", (data.score || 0).toString());
+          localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
+          localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(data.daily_rewards_awarded || {}));
+        } catch (e) {}
+        
+        onUpdate({
+          unit_study_dates: data.unit_study_dates || {},
+          custom_vocab: data.custom_vocab || [],
+          score: data.score || 0,
+          completed_date_modules: data.completed_date_modules || {},
+          daily_rewards_awarded: data.daily_rewards_awarded || {},
+        });
+
+        if (onStatusChange) {
+          onStatusChange(snapshot.metadata.fromCache ? 'connected-cache' : 'connected-server');
+        }
+      } else {
+        // If Firestore document doesn't exist, we don't automatically create it from the iPad 
+        // to avoid overwriting with empty/default state.
+        // Instead, we just notify that we are connected but the document is empty.
+        if (onStatusChange) {
+          onStatusChange(snapshot.metadata.fromCache ? 'connected-cache' : 'connected-server');
+        }
       }
-      onUpdate(localState);
+    },
+    (err) => {
+      console.error("Firestore subscription error:", err);
+      if (onStatusChange) {
+        onStatusChange('error', err);
+      }
     }
-  });
+  );
 };
 
 export const saveSharedState = async (updates: Partial<SharedState>) => {

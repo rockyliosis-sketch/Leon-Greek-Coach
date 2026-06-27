@@ -24,7 +24,7 @@ import {
 // Import local static vocabulary compilation
 import staticVocabData from '../../data/vocabulary.json';
 import examQuestionsData from '../../data/exam_questions.json';
-import { subscribeToSharedState, saveSharedState } from '../../dbService';
+import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 const speakGreek = (text: string) => {
   if ('speechSynthesis' in window) {
@@ -926,6 +926,7 @@ export default function StudentApp() {
   const [score, setScore] = useState<number>(() => {
     return parseInt(localStorage.getItem('leon_score') || '0', 10);
   });
+  const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
 
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({});
@@ -974,22 +975,27 @@ export default function StudentApp() {
 
   // Load vocabulary and activation history from Firestore
   useEffect(() => {
-    const unsubscribe = subscribeToSharedState((state) => {
-      let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-      if (state.custom_vocab) {
-        mergedVocab = [...mergedVocab, ...state.custom_vocab];
+    const unsubscribe = subscribeToSharedState(
+      (state) => {
+        let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
+        if (state.custom_vocab) {
+          mergedVocab = [...mergedVocab, ...state.custom_vocab];
+        }
+        setAllVocab(mergedVocab);
+        setUnitStudyDates(state.unit_study_dates || {});
+        setScore(state.score || 0);
+
+        const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
+        setActivatedDates(finalActivated);
+
+        const dateStr = getGreeceDateString();
+        const currentCompleted = state.completed_date_modules || {};
+        setCompletedModulesForDate(currentCompleted[dateStr] || []);
+      },
+      (status) => {
+        setDbStatus(status);
       }
-      setAllVocab(mergedVocab);
-      setUnitStudyDates(state.unit_study_dates || {});
-      setScore(state.score || 0);
-
-      const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
-      setActivatedDates(finalActivated);
-
-      const dateStr = getGreeceDateString();
-      const currentCompleted = state.completed_date_modules || {};
-      setCompletedModulesForDate(currentCompleted[dateStr] || []);
-    });
+    );
 
     return () => unsubscribe();
   }, []);
@@ -3233,6 +3239,49 @@ export default function StudentApp() {
               </button>
             )}
             <span className="navbar-brand">Leon Greek Coach</span>
+            {(() => {
+              let dotColor = '#007AFF';
+              let statusText = '连接中';
+              if (dbStatus === 'connected-server') {
+                dotColor = '#34C759';
+                statusText = '已同步';
+              } else if (dbStatus === 'connected-cache') {
+                dotColor = '#FF9500';
+                statusText = '本地模式';
+              } else if (dbStatus === 'error') {
+                dotColor = '#FF3B30';
+                statusText = '离线/未同步';
+              }
+              return (
+                <div 
+                  style={ {
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#86868B',
+                    background: 'rgba(0,0,0,0.03)',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    marginLeft: '8px',
+                    border: '1px solid rgba(0,0,0,0.03)'
+                  } }
+                  title={ dbStatus === 'error' ? '云端数据库未启用，数据保存在此电脑本地' : '学习进度实时云端同步状态' }
+                >
+                  <span 
+                    style={ {
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: dotColor,
+                      display: 'inline-block'
+                    } } 
+                  />
+                  <span>{statusText}</span>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="navbar-right">
