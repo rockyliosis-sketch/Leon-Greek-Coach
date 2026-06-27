@@ -546,6 +546,9 @@ const normalizeChineseString = (str: string): string => {
     }
   }
 
+  // Strip common structural/pronoun fillers to allow flexible syntax
+  s = s.replace(/[我在去你他她它们]/g, "");
+
   // Apply synonym replacements
   const synonymGroups = [
     ["确定", "肯定", "一定", "有把握", "确信"],
@@ -562,6 +565,12 @@ const normalizeChineseString = (str: string): string => {
     ["去世", "死", "死亡", "逝世"],
     ["恭喜", "祝贺"],
     ["早日康复", "快点好起来", "早日痊愈"],
+    ["旅行", "旅游", "出游"],
+    ["冷咖啡", "冰咖啡"],
+    ["冰淇淋", "冰激凌", "雪糕"],
+    ["散步", "逛街", "走走"],
+    ["游泳", "游水"],
+    ["干净", "爱干净"]
   ];
 
   for (const group of synonymGroups) {
@@ -3745,6 +3754,54 @@ export default function StudentApp() {
                     中文翻译: {tfQuestionData.translation}
                   </div>
                 </div>
+
+                {currentTfWord.isExam && (
+                  <div style={{ maxWidth: '480px', margin: '16px auto 0 auto' }}>
+                    <div style={{
+                      background: 'rgba(255, 59, 48, 0.06)',
+                      border: '1px solid rgba(255, 59, 48, 0.15)',
+                      color: '#FF3B30',
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      textAlign: 'center',
+                      lineHeight: '1.4'
+                    }}>
+                      ⚠️ 注意：請根據真題課文背景判斷敘述是否正確，而非判斷中文翻譯是否正確！
+                    </div>
+                    
+                    <details style={{
+                      marginTop: '12px',
+                      textAlign: 'left',
+                      background: '#FFF2E8',
+                      border: '1px solid #FFD591',
+                      borderRadius: '12px',
+                      padding: '12px 14px',
+                      cursor: 'pointer'
+                    }}>
+                      <summary style={{
+                        fontWeight: 700,
+                        color: '#D4380D',
+                        fontSize: '13.5px',
+                        outline: 'none',
+                        userSelect: 'none'
+                      }}>
+                        📖 查看課文背景與線索 / Δείτε το κείμενο
+                      </summary>
+                      <div style={{
+                        marginTop: '8px',
+                        fontSize: '12.5px',
+                        color: '#1D1D1F',
+                        lineHeight: '1.5',
+                        whiteSpace: 'pre-wrap',
+                        cursor: 'text'
+                      }}>
+                        {currentTfWord.detailed_tip || '本題無背景線索提示。'}
+                      </div>
+                    </details>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
