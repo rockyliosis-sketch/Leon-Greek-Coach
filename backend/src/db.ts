@@ -56,6 +56,7 @@ export interface Vocabulary {
   difficulty_score: number;
   last_reviewed_at?: string;
   next_review_at?: string;
+  note_date?: string;
 }
 
 // Initialise database schema
@@ -84,9 +85,17 @@ export async function initDb() {
       difficulty_score REAL DEFAULT 1.0,
       last_reviewed_at DATETIME,
       next_review_at DATETIME,
+      note_date TEXT,
       FOREIGN KEY(book_id) REFERENCES books(id)
     )
   `);
+
+  // Migration: Add note_date column if it does not exist
+  try {
+    await dbRun(`ALTER TABLE vocabulary ADD COLUMN note_date TEXT`);
+  } catch (e) {
+    // Column already exists, safe to ignore
+  }
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS progress (

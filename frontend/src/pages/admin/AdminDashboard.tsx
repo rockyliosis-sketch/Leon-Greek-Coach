@@ -34,6 +34,7 @@ interface Word {
   pronunciation?: string;
   example_greek?: string;
   example_chinese?: string;
+  note_date?: string;
 }
 
 const getUnitChineseName = (bookId: string, unitNum: number): string => {
@@ -518,28 +519,77 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     if (!rawMD.trim()) return;
 
     const targetBookId = (isCustomBook ? customBookId.trim() : uploadBookId) || 'NEW_UPLOAD';
-    const targetUnit = parseInt(uploadUnit, 10) || 1;
 
     // Simple markdown word extractor
     const lines = rawMD.split('\n');
     const newWordsList: Word[] = [];
     let currentId = allVocab.length > 0 ? Math.max(...allVocab.map(w => w.id)) + 1 : 1;
 
-    let currentUnit = targetUnit;
     let uploadedUnitDate: string | null = null;
 
-    lines.forEach(line => {
-      // Parse dates from the MD content. Looks for YYYY-MM-DD, YYYY/MM/DD, or YYYY年MM月DD日
+    // First scan: find the date in the MD content
+    for (let line of lines) {
       const dateMatch = line.match(/(\d{4})[-\/\u5e74](\d{1,2})[-\/\u6708](\d{1,2})\u65e5?/);
       if (dateMatch) {
         const year = dateMatch[1];
         const month = dateMatch[2].padStart(2, '0');
         const day = dateMatch[3].padStart(2, '0');
         uploadedUnitDate = `${year}-${month}-${day}`;
-        currentUnit = getUnitFromDate(uploadedUnitDate);
+        break; // found the date!
+      }
+    }
+
+    // Default to today's date in Greece timezone if no date is found
+    const finalNoteDate = uploadedUnitDate || getGreeceDateString();
+    const currentUnit = getUnitFromDate(finalNoteDate);
+
+    lines.forEach(line => {
+      // Check if it is a markdown table row (e.g. | 1 | δημόσια | 公共服务 | ...)
+      if (line.trim().startsWith('|')) {
+        const columns = line.split('|').map(c => c.trim()).filter(c => c !== '');
+        // A valid content row must have at least 2 columns (ignoring index and separators)
+        if (columns.length >= 2 && !columns[0].includes('---')) {
+          let greekPart = '';
+          let chinesePart = '';
+          let exampleGreek = '';
+          let exampleChinese = '';
+          
+          for (let col of columns) {
+            const cleaned = col.replace(/[\*\`]/g, '').trim();
+            if (!cleaned || /^\d+$/.test(cleaned) || cleaned === '序号' || cleaned === '校验状态' || cleaned.includes('校验通过') || cleaned.includes('Greek') || cleaned.includes('Chinese')) {
+              continue;
+            }
+            
+            const hasGreek = /[\u0370-\u03FF\u1F00-\u1FFF]/.test(cleaned);
+            const hasChinese = /[\u4e00-\u9fa5]/.test(cleaned);
+            
+            if (hasGreek && !hasChinese) {
+              if (!greekPart) greekPart = cleaned;
+              else if (!exampleGreek) exampleGreek = cleaned;
+            } else if (hasChinese) {
+              if (!chinesePart) chinesePart = cleaned;
+              else if (!exampleChinese) exampleChinese = cleaned;
+            }
+          }
+          
+          if (greekPart && chinesePart) {
+            newWordsList.push({
+              id: currentId++,
+              book_id: targetBookId,
+              unit: currentUnit,
+              word_greek: greekPart,
+              word_chinese: chinesePart,
+              pronunciation: 'new',
+              example_greek: exampleGreek,
+              example_chinese: exampleChinese,
+              note_date: finalNoteDate
+            });
+            return; // Skip standard hyphen parse for this line
+          }
+        }
       }
 
-      // Regex parsing Greek / Chinese pairs
+      // Regex parsing Greek / Chinese pairs (standard fallback)
       const match = line.match(/(?:[\u0370-\u03FF\u1F00-\u1FFF]+[,\s]*)+[^\s\-]*\s*-\s*.+/);
       if (match) {
         const parts = line.split('-');
@@ -554,7 +604,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           word_chinese: chinesePart,
           pronunciation: 'new',
           example_greek: '',
-          example_chinese: ''
+          example_chinese: '',
+          note_date: finalNoteDate
         });
       }
     });
@@ -565,14 +616,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       
       const updates: any = { custom_vocab: updatedCustom };
       
-      // Update study date for this custom unit if a date was found in MD
-      if (uploadedUnitDate) {
-        const key = `${targetBookId.toUpperCase()}_${targetUnit}`;
-        const normalizedDate = getMondayDateStr(uploadedUnitDate);
-        const newDates = { ...unitStudyDates, [key]: normalizedDate };
-        setUnitStudyDates(newDates);
-        updates.unit_study_dates = newDates;
-      }
+      // Update study date for this custom unit based on the parsed date
+      const key = `${targetBookId.toUpperCase()}_${currentUnit}`;
+      const normalizedDate = getMondayDateStr(finalNoteDate);
+      const newDates = { ...unitStudyDates, [key]: normalizedDate };
+      setUnitStudyDates(newDates);
+      updates.unit_study_dates = newDates;
 
       saveSharedState(updates);
 
@@ -583,7 +632,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setRawMD('');
       setTimeout(() => setUploadSuccess(false), 4000);
     } else {
-      alert('未能在文本中解析出希腊语单词。请使用 "希腊语单词 - 中文释义" 的格式，例如: "καλημέρα - 早上好"');
+      alert('未能在文本中解析出希腊语单词。请使用 "希腊语单词 - 中文释义" 的格式，或标准的 Markdown 表格形式。');
     }
   };
 
@@ -818,7 +867,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         )}
 
         <form onSubmit={handleMDUpload}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '20px' }}>
             <div className="admin-input-group" style={{ marginBottom: 0 }}>
               <label className="admin-label" style={{ fontWeight: 600 }}>归属教材 / 书籍 ID</label>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
@@ -870,23 +919,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   required
                 />
               )}
-            </div>
-
-            <div className="admin-input-group" style={{ marginBottom: 0 }}>
-              <label className="admin-label" style={{ fontWeight: 600 }}>导入单元编号 (1-99)</label>
-              <input
-                type="number"
-                min="1"
-                max="99"
-                value={uploadUnit}
-                onChange={e => setUploadUnit(e.target.value)}
-                className="admin-input"
-                style={{ padding: '8px 12px', height: '38px' }}
-                required
-              />
-              <span style={{ fontSize: '11px', color: '#86868B', marginTop: '4px', display: 'block' }}>
-                导入词汇将直接合并到该单元的授权表格行中，解锁后 Leon 即可学习。
-              </span>
             </div>
           </div>
 

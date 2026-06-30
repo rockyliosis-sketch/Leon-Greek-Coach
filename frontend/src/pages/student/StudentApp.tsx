@@ -161,9 +161,10 @@ interface Word {
   example_greek?: string;
   example_chinese?: string;
   page_number?: number;
+  note_date?: string;
 }
 
-const EBBINGHAUS_INTERVALS = [0, 1, 2, 4, 7, 15, 30];
+const EBBINGHAUS_INTERVALS = [0, 1, 2, 3, 4, 5, 7, 10, 15, 30, 60, 90];
 
 const START_DATE = "2025-09-06"; // Leon started classes on September 6, 2025
 
@@ -378,6 +379,10 @@ const getResolvedActivationDates = (
   // Group words by book and unit
   const unitWordsMap: Record<string, Word[]> = {};
   vocabList.forEach(w => {
+    if (w.note_date) {
+      finalDates[w.id] = w.note_date;
+      return;
+    }
     const key = `${w.book_id.toUpperCase()}_${w.unit}`;
     if (!unitWordsMap[key]) {
       unitWordsMap[key] = [];
@@ -439,6 +444,14 @@ const isWordDueToday = (wordId: number, targetDateStr: string, activatedDatesMap
   
   const diffTime = tgtD.getTime() - actD.getTime();
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  
+  // If it's a note-derived word, it is due EVERY DAY in its first week (0 to 7 days)
+  const word = staticVocabData.textbook_vocabulary?.find((w: any) => w.id === wordId);
+  if (word && word.note_date) {
+    if (diffDays >= 0 && diffDays <= 7) {
+      return true;
+    }
+  }
   
   return diffDays === 0 || EBBINGHAUS_INTERVALS.includes(diffDays);
 };
@@ -929,6 +942,25 @@ export default function StudentApp() {
   // Selected review date (defaults to today in Greece timezone, interactive)
   const [selectedDateStr, setSelectedDateStr] = useState<string>(getGreeceDateString);
 
+  const getDailyExams = (level: string, type: string, count: number = 1) => {
+    const examsList = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === type);
+    if (examsList.length <= count) return examsList;
+    
+    let hash = 0;
+    for (let i = 0; i < selectedDateStr.length; i++) {
+      hash = (hash << 5) - hash + selectedDateStr.charCodeAt(i);
+      hash = hash & hash;
+    }
+    hash = Math.abs(hash) + type.length * 13;
+    
+    const result = [];
+    for (let i = 0; i < count; i++) {
+       const index = (hash + i) % examsList.length;
+       result.push(examsList[index]);
+    }
+    return result;
+  };
+
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   const [activatedDates, setActivatedDates] = useState<Record<number, string>>({});
@@ -1133,6 +1165,26 @@ export default function StudentApp() {
       deck.push(...sortedUnitWords);
     });
 
+    // Unconditionally add recent note words (diffDays <= 7) to daily deck to guarantee review
+    const recentNoteWords = unlockedVocab.filter(w => {
+      if (!w.note_date) return false;
+      const partsAct = w.note_date.split('-');
+      const partsTgt = selectedDateStr.split('-');
+      if (partsAct.length !== 3 || partsTgt.length !== 3) return false;
+      const actD = new Date(parseInt(partsAct[0], 10), parseInt(partsAct[1], 10) - 1, parseInt(partsAct[2], 10), 0, 0, 0, 0);
+      const tgtD = new Date(parseInt(partsTgt[0], 10), parseInt(partsTgt[1], 10) - 1, parseInt(partsTgt[2], 10), 0, 0, 0, 0);
+      if (isNaN(actD.getTime()) || isNaN(tgtD.getTime())) return false;
+      const diffTime = tgtD.getTime() - actD.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays >= 0 && diffDays <= 7;
+    });
+
+    recentNoteWords.forEach(w => {
+      if (!deck.some(d => d.id === w.id)) {
+        deck.push(w);
+      }
+    });
+
     // Sort so that:
     // 1. Words due today are at the very beginning of the daily deck
     // 2. Then sort strictly by sequence: A1-A -> A1-B -> A2, then unit number, then ID
@@ -1209,10 +1261,11 @@ export default function StudentApp() {
     const targetDate = new Date(selectedDateStr);
     targetDate.setHours(0, 0, 0, 0);
 
-    const counts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 4: 0, 7: 0, 15: 0, 30: 0 };
+    const counts: Record<number, number> = {};
     const dates: Record<number, string> = {};
 
     EBBINGHAUS_INTERVALS.forEach(interval => {
+      counts[interval] = 0;
       const pastDate = new Date(targetDate);
       pastDate.setDate(targetDate.getDate() - interval);
       dates[interval] = pastDate.toISOString().split('T')[0];
@@ -1256,8 +1309,12 @@ export default function StudentApp() {
 
       if (diffDays === 0) {
         newW.push(word);
-      } else if (diffDays > 0 && EBBINGHAUS_INTERVALS.includes(diffDays)) {
-        revW.push(word);
+      } else if (diffDays > 0) {
+        if (word.note_date && diffDays <= 7) {
+          revW.push(word);
+        } else if (EBBINGHAUS_INTERVALS.includes(diffDays)) {
+          revW.push(word);
+        }
       }
     });
 
@@ -1455,7 +1512,7 @@ export default function StudentApp() {
     }));
 
     const level = activeExamLevel;
-    const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'spelling');
+    const exams = getDailyExams(level, 'spelling', 1);
     const examItems = exams.map((q: any) => ({
       id: q.id,
       isExam: true,
@@ -1583,7 +1640,7 @@ export default function StudentApp() {
     }));
 
     const level = activeExamLevel;
-    const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'quiz');
+    const exams = getDailyExams(level, 'quiz', 2);
     const examItems = exams.map((q: any) => ({
       id: q.id,
       isExam: true,
@@ -1709,7 +1766,7 @@ export default function StudentApp() {
     });
 
     const level = activeExamLevel;
-    const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'truefalse');
+    const exams = getDailyExams(level, 'truefalse', 1);
     const examItems = exams.map((q: any) => ({
       id: q.id,
       isExam: true,
@@ -1814,7 +1871,7 @@ export default function StudentApp() {
     });
 
     const level = activeExamLevel;
-    const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'translation_gr_zh');
+    const exams = getDailyExams(level, 'translation_gr_zh', 1);
     const examItems = exams.map((q: any) => ({
       id: q.id,
       isExam: true,
@@ -1862,7 +1919,7 @@ export default function StudentApp() {
     });
 
     const level = activeExamLevel;
-    const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'translation_zh_gr');
+    const exams = getDailyExams(level, 'translation_zh_gr', 1);
     const examItems = exams.map((q: any) => ({
       id: q.id,
       isExam: true,
@@ -1995,7 +2052,7 @@ export default function StudentApp() {
       }));
 
       const level = activeExamLevel;
-      const exams = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === 'matching');
+      const exams = getDailyExams(level, 'matching', 1);
       const examItems = exams.map((q: any) => ({
         id: q.id,
         book_id: 'exam',
