@@ -1019,8 +1019,26 @@ export default function StudentApp() {
     const unsubscribe = subscribeToSharedState(
       (state) => {
         let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-        if (state.custom_vocab) {
-          mergedVocab = [...mergedVocab, ...state.custom_vocab];
+        let customVocab = state.custom_vocab || [];
+        
+        // --- DATA MIGRATION FIX ---
+        // Automatically migrate dirty data: notes mistakenly assigned to A2_36 go to A2_35
+        let needSave = false;
+        customVocab = customVocab.map((w: Word) => {
+          if (w.book_id && w.book_id.toUpperCase() === 'A2' && w.unit === 36 && w.note_date) {
+            needSave = true;
+            return { ...w, unit: 35 };
+          }
+          return w;
+        });
+
+        if (needSave) {
+          saveSharedState({ custom_vocab: customVocab });
+        }
+        // --------------------------
+
+        if (customVocab.length > 0) {
+          mergedVocab = [...mergedVocab, ...customVocab];
         }
         setAllVocab(mergedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
@@ -1059,7 +1077,11 @@ export default function StudentApp() {
     // A unit key is represented as "BOOK_UNIT", e.g. "A1-A_1", "A2_31"
     const availableUnitKeys = Array.from(
       new Set(unlockedVocab.map(w => `${w.book_id.toUpperCase()}_${w.unit}`))
-    );
+    ).filter(key => {
+      const [book, unitStr] = key.split('_');
+      const studyDate = getUnitStudyDate(book, parseInt(unitStr, 10), unitStudyDates);
+      return studyDate !== 'LOCKED' && studyDate !== '';
+    });
 
     if (availableUnitKeys.length === 0) {
       return ["A1-A_1"];
