@@ -1101,21 +1101,14 @@ export default function StudentApp() {
       // 1. Most Recent (最近): the last element in chronological order
       addUnitKey(availableUnitKeys[N - 1]);
       
-      // 2. Earliest (最早): the first element in chronological order
+      // 2. Recent (较近): the second to last element in chronological order (ensuring it's also recent A2 content)
+      addUnitKey(availableUnitKeys[N - 2]);
+      
+      // 3. Earliest (最早): the first element in chronological order
       addUnitKey(availableUnitKeys[0]);
       
-      // 3. Recent (较近): around 70% of chronological distance
-      let targetRecent = Math.floor(N * 0.7);
-      while (targetRecent < N - 1 && selected.includes(availableUnitKeys[targetRecent])) {
-        targetRecent++;
-      }
-      while (targetRecent > 0 && selected.includes(availableUnitKeys[targetRecent])) {
-        targetRecent--;
-      }
-      addUnitKey(availableUnitKeys[targetRecent]);
-      
-      // 4. Earlier (较早): around 30% of chronological distance
-      let targetEarlier = Math.floor(N * 0.3);
+      // 4. Earlier (较早): around 40% of chronological distance (representing older A1 content)
+      let targetEarlier = Math.floor(N * 0.4);
       while (targetEarlier > 0 && selected.includes(availableUnitKeys[targetEarlier])) {
         targetEarlier--;
       }
