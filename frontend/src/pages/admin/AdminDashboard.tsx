@@ -410,9 +410,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const unsubscribe = subscribeToSharedState(
       (state) => {
         let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
-        if (state.custom_vocab) {
-          mergedVocab = [...mergedVocab, ...state.custom_vocab];
+        let customVocab = state.custom_vocab || [];
+        
+        // --- DATA MIGRATION FIX ---
+        // If there are any custom notes incorrectly assigned to A2_36, move them to A2_35
+        let needSave = false;
+        customVocab = customVocab.map((w: Word) => {
+          if (w.book_id && w.book_id.toUpperCase() === 'A2' && w.unit === 36 && w.note_date) {
+            needSave = true;
+            return { ...w, unit: 35 };
+          }
+          return w;
+        });
+
+        if (needSave) {
+          saveSharedState({ custom_vocab: customVocab });
         }
+        // --------------------------
+
+        if (customVocab.length > 0) {
+          mergedVocab = [...mergedVocab, ...customVocab];
+        }
+        
         setAllVocab(mergedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
       },

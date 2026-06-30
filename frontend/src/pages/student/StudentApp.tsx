@@ -1071,11 +1071,13 @@ export default function StudentApp() {
     availableUnitKeys.sort((keyA, keyB) => {
       const [bookA, unitNumStrA] = keyA.split('_');
       const unitNumA = parseInt(unitNumStrA, 10);
-      const dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      if (dateA === 'LOCKED') dateA = '0000-00-00';
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
-      const dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      if (dateB === 'LOCKED') dateB = '0000-00-00';
       
       if (dateA !== dateB) {
         return dateA.localeCompare(dateB);
@@ -1126,11 +1128,13 @@ export default function StudentApp() {
     return selected.sort((keyA, keyB) => {
       const [bookA, unitNumStrA] = keyA.split('_');
       const unitNumA = parseInt(unitNumStrA, 10);
-      const dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      if (dateA === 'LOCKED') dateA = '0000-00-00';
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
-      const dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      if (dateB === 'LOCKED') dateB = '0000-00-00';
       
       if (dateA !== dateB) {
         return dateB.localeCompare(dateA); // Descending chronological order
