@@ -1122,24 +1122,45 @@ export default function StudentApp() {
     };
 
     if (N >= 4) {
-      // 1. Most Recent (最近): the last element in chronological order
+      // Calculate day offset from selectedDateStr to drive dynamic daily rotation
+      const parts = selectedDateStr.split('-');
+      const y = parseInt(parts[0], 10) || 2026;
+      const m = parseInt(parts[1], 10) || 7;
+      const d = parseInt(parts[2], 10) || 5;
+      const dayCount = Math.floor(new Date(y, m - 1, d).getTime() / (1000 * 60 * 60 * 24));
+
+      // 1. Most Recent (最近): ALWAYS the last element in chronological order (N - 1)
+      // This guarantees that the latest learned unit appears continuously every day!
       addUnitKey(availableUnitKeys[N - 1]);
       
-      // 2. Recent (较近): the second to last element in chronological order (ensuring it's also recent A2 content)
-      addUnitKey(availableUnitKeys[N - 2]);
-      
-      // 3. Earliest (最早): the first element in chronological order
-      addUnitKey(availableUnitKeys[0]);
-      
-      // 4. Earlier (较早): around 40% of chronological distance (representing older A1 content)
-      let targetEarlier = Math.floor(N * 0.4);
-      while (targetEarlier > 0 && selected.includes(availableUnitKeys[targetEarlier])) {
-        targetEarlier--;
+      // 2. Recent (较近): rotate among recent content (e.g., the 5 units before N-1)
+      const recentPoolSize = Math.min(5, N - 1);
+      if (recentPoolSize > 0) {
+        const recentIdx = (N - 2) - (dayCount % recentPoolSize);
+        addUnitKey(availableUnitKeys[recentIdx]);
+      } else {
+        addUnitKey(availableUnitKeys[N - 2]);
       }
-      while (targetEarlier < N - 1 && selected.includes(availableUnitKeys[targetEarlier])) {
-        targetEarlier++;
+
+      // 3. Distant (稍远): rotate among middle-timeline units (e.g., 25% to 75% of timeline)
+      const distantStart = Math.floor(N * 0.25);
+      const distantEnd = Math.max(distantStart, Math.floor(N * 0.75));
+      const distantPoolSize = (distantEnd - distantStart) + 1;
+      const distantIdx = distantStart + ((dayCount * 2) % distantPoolSize);
+      addUnitKey(availableUnitKeys[distantIdx]);
+
+      // 4. Earliest (最远): rotate among oldest units (e.g., 0 to 25% of timeline)
+      const earliestEnd = Math.max(0, Math.floor(N * 0.25) - 1);
+      const earliestPoolSize = earliestEnd + 1;
+      const earliestIdx = (dayCount * 3) % earliestPoolSize;
+      addUnitKey(availableUnitKeys[earliestIdx]);
+
+      // Safety fallback: if duplicates occurred and we have less than 4 selected, fill from recent downwards
+      let fillIdx = N - 2;
+      while (selected.length < 4 && fillIdx >= 0) {
+        addUnitKey(availableUnitKeys[fillIdx]);
+        fillIdx--;
       }
-      addUnitKey(availableUnitKeys[targetEarlier]);
     } else {
       // Less than 4 unit keys available: add all of them
       availableUnitKeys.forEach(key => addUnitKey(key));
@@ -1163,7 +1184,7 @@ export default function StudentApp() {
       }
       return keyB.localeCompare(keyA);
     });
-  }, [unlockedVocab, unitStudyDates]);
+  }, [unlockedVocab, unitStudyDates, selectedDateStr]);
 
   // Compute daily deck based on selected date (integrating early review rotation)
   const dailyDeck = useMemo(() => {
