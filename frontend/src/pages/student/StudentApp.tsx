@@ -622,6 +622,47 @@ const isGreekProperNoun = (word: string): boolean => {
   return firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase();
 };
 
+const hasGreekCharacters = (text: string): boolean => {
+  return /[\u0370-\u03ff\u1f00-\u1fff]/.test(text);
+};
+
+const hasChineseCharacters = (text: string): boolean => {
+  return /[\u4e00-\u9fa5]/.test(text);
+};
+
+// Check if a word item is clean and suitable for daily exercise modules
+const isValidExerciseWord = (
+  w: { word_greek: string; word_chinese: string }
+): boolean => {
+  const gr = (w.word_greek || '').trim();
+  const zh = (w.word_chinese || '').trim();
+
+  // Rule 1: No empty/placeholder values
+  if (!gr || !zh || gr === '--' || zh === '--' || gr === 'undefined' || zh === 'undefined') {
+    return false;
+  }
+
+  // Rule 2: Cannot contain raw grammar markers, parenthesis flags, or English placeholders in translation
+  if (gr.includes('结尾的动词') || gr.includes('变位') || gr.includes('（可能有') || gr.includes('(') || gr.includes(')')) {
+    return false;
+  }
+
+  // Rule 3: Greek-to-Chinese alignment check
+  // - The Greek field must contain Greek characters and must NOT contain Chinese characters
+  // - The Chinese field must NOT contain Greek characters
+  if (hasChineseCharacters(gr)) {
+    return false;
+  }
+  if (hasGreekCharacters(zh)) {
+    return false; // Prevents "Greek translating Greek"
+  }
+  if (!hasGreekCharacters(gr)) {
+    return false; // Greek field must have actual Greek
+  }
+
+  return true;
+};
+
 const filterDuplicateTranslations = <T extends { word_greek: string; word_chinese: string }>(list: T[]): T[] => {
   const seenChinese = new Set<string>();
   const seenGreek = new Set<string>();
@@ -1040,7 +1081,8 @@ export default function StudentApp() {
         if (customVocab.length > 0) {
           mergedVocab = [...mergedVocab, ...customVocab];
         }
-        setAllVocab(mergedVocab);
+        const validatedVocab = mergedVocab.filter(w => isValidExerciseWord(w));
+        setAllVocab(validatedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
         setScore(state.score || 0);
 
@@ -1606,7 +1648,8 @@ export default function StudentApp() {
   };
 
   const spellingPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 40, 1);
+    const spellingDeck = dailyDeck.filter(w => !w.word_greek.includes(' ') && w.word_greek.length <= 15);
+    const pool = getRotatedModulePool(spellingDeck, 40, 1);
     const spellingItems = pool.map(w => ({
       ...w,
       isExam: false,
@@ -2106,7 +2149,8 @@ export default function StudentApp() {
       setSelectedChineseId(null);
       setMatchErrors({});
       
-      const pool = getRotatedModulePool(dailyDeck, 40, 6);
+      const matchingDeck = dailyDeck.filter(w => w.word_greek.length <= 25);
+      const pool = getRotatedModulePool(matchingDeck, 40, 6);
       const matchingItems = pool.map(w => ({
         ...w,
         isExam: false,

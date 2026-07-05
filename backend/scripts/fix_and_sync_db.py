@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 import re
+from db_cleaner import clean_database
 
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUTPUT_DIR = os.path.join(PROJECT_DIR, "frontend", "src", "data")
@@ -9,6 +10,9 @@ OUTPUT_PATH = os.path.join(OUTPUT_DIR, "vocabulary.json")
 DB_PATH = os.path.join(PROJECT_DIR, "backend", "greek_coach.db")
 
 def main():
+    # Run the comprehensive database cleaner first
+    clean_database()
+
     print("Connecting to SQLite Database...")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
