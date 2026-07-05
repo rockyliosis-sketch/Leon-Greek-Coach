@@ -1121,7 +1121,7 @@ export default function StudentApp() {
       }
     };
 
-    if (N >= 4) {
+    if (N >= 6) {
       // Calculate day offset from selectedDateStr to drive dynamic daily rotation
       const parts = selectedDateStr.split('-');
       const y = parseInt(parts[0], 10) || 2026;
@@ -1130,7 +1130,6 @@ export default function StudentApp() {
       const dayCount = Math.floor(new Date(y, m - 1, d).getTime() / (1000 * 60 * 60 * 24));
 
       // 1. Most Recent (最近): ALWAYS the last element in chronological order (N - 1)
-      // This guarantees that the latest learned unit appears continuously every day!
       addUnitKey(availableUnitKeys[N - 1]);
       
       // 2. Recent (较近): rotate among recent content (e.g., the 5 units before N-1)
@@ -1142,20 +1141,63 @@ export default function StudentApp() {
         addUnitKey(availableUnitKeys[N - 2]);
       }
 
-      // 3. Distant (稍远): rotate among middle-timeline units (e.g., 25% to 75% of timeline)
+      // 3. Distant (稍远): rotate among middle-timeline units (e.g., 25% to 75% of timeline), selecting 2 units
+      const distantStart = Math.floor(N * 0.25);
+      const distantEnd = Math.max(distantStart, Math.floor(N * 0.75));
+      const distantPoolSize = (distantEnd - distantStart) + 1;
+      const dist1 = distantStart + ((dayCount * 2) % distantPoolSize);
+      addUnitKey(availableUnitKeys[dist1]);
+      if (distantPoolSize > 1) {
+        const dist2 = distantStart + ((dayCount * 2 + 1) % distantPoolSize);
+        addUnitKey(availableUnitKeys[dist2]);
+      }
+
+      // 4. Earliest (最远): rotate among oldest units (e.g., 0 to 25% of timeline), selecting 2 units
+      // Fulfills requirement: "最远的是包含两个单元"
+      const earliestEnd = Math.max(0, Math.floor(N * 0.25) - 1);
+      const earliestPoolSize = earliestEnd + 1;
+      const earl1 = (dayCount * 2) % earliestPoolSize;
+      addUnitKey(availableUnitKeys[earl1]);
+      if (earliestPoolSize > 1) {
+        const earl2 = (dayCount * 2 + 1) % earliestPoolSize;
+        addUnitKey(availableUnitKeys[earl2]);
+      }
+
+      // Safety fallback: fill from recent downwards up to 6 units
+      let fillIdx = N - 2;
+      while (selected.length < 6 && fillIdx >= 0) {
+        addUnitKey(availableUnitKeys[fillIdx]);
+        fillIdx--;
+      }
+    } else if (N >= 4) {
+      // Calculate day offset from selectedDateStr to drive dynamic daily rotation
+      const parts = selectedDateStr.split('-');
+      const y = parseInt(parts[0], 10) || 2026;
+      const m = parseInt(parts[1], 10) || 7;
+      const d = parseInt(parts[2], 10) || 5;
+      const dayCount = Math.floor(new Date(y, m - 1, d).getTime() / (1000 * 60 * 60 * 24));
+
+      addUnitKey(availableUnitKeys[N - 1]);
+      
+      const recentPoolSize = Math.min(5, N - 1);
+      if (recentPoolSize > 0) {
+        const recentIdx = (N - 2) - (dayCount % recentPoolSize);
+        addUnitKey(availableUnitKeys[recentIdx]);
+      } else {
+        addUnitKey(availableUnitKeys[N - 2]);
+      }
+
       const distantStart = Math.floor(N * 0.25);
       const distantEnd = Math.max(distantStart, Math.floor(N * 0.75));
       const distantPoolSize = (distantEnd - distantStart) + 1;
       const distantIdx = distantStart + ((dayCount * 2) % distantPoolSize);
       addUnitKey(availableUnitKeys[distantIdx]);
 
-      // 4. Earliest (最远): rotate among oldest units (e.g., 0 to 25% of timeline)
       const earliestEnd = Math.max(0, Math.floor(N * 0.25) - 1);
       const earliestPoolSize = earliestEnd + 1;
       const earliestIdx = (dayCount * 3) % earliestPoolSize;
       addUnitKey(availableUnitKeys[earliestIdx]);
 
-      // Safety fallback: if duplicates occurred and we have less than 4 selected, fill from recent downwards
       let fillIdx = N - 2;
       while (selected.length < 4 && fillIdx >= 0) {
         addUnitKey(availableUnitKeys[fillIdx]);
@@ -1411,12 +1453,15 @@ export default function StudentApp() {
       if (i === 0) {
         labelCn = "最近的复习";
         labelGr = "Νεότερη Επανάληψη";
+      } else if (i === 1) {
+        labelCn = "稍近的复习";
+        labelGr = "Πρόσφατη Επανάληψη";
+      } else if (i >= N - 2 && N >= 5) {
+        labelCn = "最遥远的复习";
+        labelGr = "Αρχική Επανάληψη";
       } else if (i === N - 1) {
         labelCn = "最遥远的复习";
         labelGr = "Αρχική Επανάληψη";
-      } else if (i < N / 2) {
-        labelCn = "稍近的复习";
-        labelGr = "Πρόσφατη Επανάληψη";
       } else {
         labelCn = "稍远的复习";
         labelGr = "Παλαιότερη Επανάληψη";
@@ -1535,17 +1580,34 @@ export default function StudentApp() {
   const [scrambledLetters, setScrambledLetters] = useState<string[]>([]);
   const [spellingCompleted, setSpellingCompleted] = useState(false);
 
-  const spellingPool = useMemo(() => {
-    let pool = [...dailyDeck];
+  // Helper to shuffle and rotate word pools deterministically by date and module seed
+  // This guarantees that every day, different words and question types are selected for each practice module!
+  const getRotatedModulePool = (deck: Word[], limit: number, moduleSeed: number) => {
+    let pool = [...deck];
     pool = filterDuplicateTranslations(pool);
-    if (pool.length < 40) {
-      const extraNeeded = 40 - pool.length;
+    if (pool.length < limit) {
+      const extraNeeded = limit - pool.length;
       const fallbackList = filterDuplicateTranslations(
         unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
       );
       pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
     }
-    const spellingItems = pool.slice(0, 40).map(w => ({
+    const parts = selectedDateStr.split('-');
+    const y = parseInt(parts[0], 10) || 2026;
+    const m = parseInt(parts[1], 10) || 7;
+    const d = parseInt(parts[2], 10) || 5;
+    const daySeed = (y * 372 + m * 31 + d) * 101 + moduleSeed * 37;
+
+    return pool.sort((a, b) => {
+      const hashA = ((a.id * 137 + daySeed) ^ (moduleSeed * 19)) % 10000;
+      const hashB = ((b.id * 137 + daySeed) ^ (moduleSeed * 19)) % 10000;
+      return hashA - hashB;
+    }).slice(0, limit);
+  };
+
+  const spellingPool = useMemo(() => {
+    const pool = getRotatedModulePool(dailyDeck, 40, 1);
+    const spellingItems = pool.map(w => ({
       ...w,
       isExam: false,
       detailed_tip: ''
@@ -1564,7 +1626,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...spellingItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, unlockedVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
@@ -1664,16 +1726,8 @@ export default function StudentApp() {
   const [answerChecked, setAnswerChecked] = useState(false);
 
   const quizPool = useMemo(() => {
-    let pool = [...dailyDeck];
-    pool = filterDuplicateTranslations(pool);
-    if (pool.length < 30) {
-      const extraNeeded = 30 - pool.length;
-      const fallbackList = filterDuplicateTranslations(
-        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
-      );
-      pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
-    }
-    const quizItems = pool.slice(0, 30).map(w => ({
+    const pool = getRotatedModulePool(dailyDeck, 30, 2);
+    const quizItems = pool.map(w => ({
       ...w,
       isExam: false,
       detailed_tip: ''
@@ -1692,7 +1746,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...quizItems];
     return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [dailyDeck, unlockedVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
@@ -1778,16 +1832,8 @@ export default function StudentApp() {
   const [tfIsCorrect, setTfIsCorrect] = useState(false);
 
   const tfPool = useMemo(() => {
-    let pool = [...dailyDeck];
-    pool = filterDuplicateTranslations(pool);
-    if (pool.length < 40) {
-      const extraNeeded = 40 - pool.length;
-      const fallbackList = filterDuplicateTranslations(
-        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
-      );
-      pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
-    }
-    const tfItems = pool.slice(0, 40).map((word, idx) => {
+    const pool = getRotatedModulePool(dailyDeck, 40, 3);
+    const tfItems = pool.map((word, idx) => {
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
       const testSentence = hasSentence && (idx % 2 === 1);
       return {
@@ -1824,7 +1870,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...tfItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, unlockedVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentTfWord = tfPool[tfIndex] || null;
 
@@ -1883,16 +1929,8 @@ export default function StudentApp() {
   const [transZhGrScore, setTransZhGrScore] = useState(0);
 
   const translationGrZhPool = useMemo(() => {
-    let pool = [...dailyDeck];
-    pool = filterDuplicateTranslations(pool);
-    if (pool.length < 20) {
-      const extraNeeded = 20 - pool.length;
-      const fallbackList = filterDuplicateTranslations(
-        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
-      );
-      pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
-    }
-    const transItems = pool.slice(0, 20).map((word, idx) => {
+    const pool = getRotatedModulePool(dailyDeck, 20, 4);
+    const transItems = pool.map((word, idx) => {
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
       const testSentence = hasSentence && (idx % 2 === 1);
       return {
@@ -1928,19 +1966,11 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const translationZhGrPool = useMemo(() => {
-    let pool = [...dailyDeck];
-    pool = filterDuplicateTranslations(pool);
-    if (pool.length < 20) {
-      const extraNeeded = 20 - pool.length;
-      const fallbackList = filterDuplicateTranslations(
-        unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
-      );
-      pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
-    }
-    const transItems = pool.slice(0, 20).map((word, idx) => {
+    const pool = getRotatedModulePool(dailyDeck, 20, 5);
+    const transItems = pool.map((word, idx) => {
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
       const testSentence = hasSentence && (idx % 2 === 1);
       return {
@@ -1976,7 +2006,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel]);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
@@ -2076,16 +2106,8 @@ export default function StudentApp() {
       setSelectedChineseId(null);
       setMatchErrors({});
       
-      let pool = [...dailyDeck].sort(() => Math.random() - 0.5);
-      pool = filterDuplicateTranslations(pool);
-      if (pool.length < 40) {
-        const extraNeeded = 40 - pool.length;
-        const fallbackList = filterDuplicateTranslations(
-          unlockedVocab.filter(w => !pool.some(p => p.id === w.id))
-        );
-        pool = [...pool, ...fallbackList.slice(0, extraNeeded)];
-      }
-      const matchingItems = pool.slice(0, 40).map(w => ({
+      const pool = getRotatedModulePool(dailyDeck, 40, 6);
+      const matchingItems = pool.map(w => ({
         ...w,
         isExam: false,
         detailed_tip: ''
