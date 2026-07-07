@@ -1800,20 +1800,46 @@ export default function StudentApp() {
     const correct = currentQuizWord.word_chinese;
     const targetIsProper = isGreekProperNoun(currentQuizWord.word_greek);
     
+    const correctLen = correct.length;
     let candidates = unlockedVocab.filter(w => {
       if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
       if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
       
       const isCandProper = isGreekProperNoun(w.word_greek);
-      return isCandProper === targetIsProper;
+      if (isCandProper !== targetIsProper) return false;
+
+      // Distractor length matching logic:
+      const candLen = w.word_chinese.length;
+      if (correctLen <= 8) {
+        return candLen <= 12; // Keep distractors short if correct is short
+      } else if (correctLen <= 18) {
+        return candLen > 4 && candLen <= 25;
+      } else {
+        return candLen >= 12; // Keep distractors longer if correct is a sentence
+      }
     });
 
     if (candidates.length < 3) {
       candidates = unlockedVocab.filter(w => {
         if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
         if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
-        return true;
+        
+        const candLen = w.word_chinese.length;
+        if (correctLen <= 8) {
+          return candLen <= 12;
+        } else if (correctLen <= 18) {
+          return candLen > 4 && candLen <= 25;
+        } else {
+          return candLen >= 12;
+        }
       });
+      if (candidates.length < 3) {
+        candidates = unlockedVocab.filter(w => {
+          if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
+          if (removeGreekAccents(w.word_greek) === removeGreekAccents(currentQuizWord.word_greek)) return false;
+          return true;
+        });
+      }
       if (candidates.length < 3) {
         candidates = allVocab.filter(w => {
           if (cleanChinese(w.word_chinese) === cleanChinese(correct)) return false;
@@ -3860,6 +3886,25 @@ export default function StudentApp() {
                     ? 'Κρίνετε εάν η πρόταση είναι σωστή ή λάθος σύμφωνα με το κείμενο' 
                     : 'Κρίνετε εάν η κινεζική μετάφραση ταιριάζει με την ελληνική λέξη ή πρόταση'}
                 </div>
+
+                {currentTfWord.isExam && (currentTfWord as any).context && (
+                  <div style={{
+                    background: 'rgba(0,113,227,0.04)',
+                    border: '1px solid rgba(0,113,227,0.12)',
+                    borderRadius: '16px',
+                    padding: '16px',
+                    fontSize: '14.5px',
+                    color: '#1D1D1F',
+                    textAlign: 'left',
+                    margin: '0 auto 24px auto',
+                    maxWidth: '480px',
+                    lineHeight: '1.6',
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
+                    <strong style={{ color: '#0071E3', display: 'block', marginBottom: '6px', fontSize: '15px' }}>📖 閱讀背景 / Κείμενο:</strong>
+                    {(currentTfWord as any).context}
+                  </div>
+                )}
                 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '12px', marginBottom: '16px' }}>
                   <h3 style={{ 
@@ -3914,25 +3959,12 @@ export default function StudentApp() {
                     marginTop: '4px',
                     lineHeight: '1.4'
                   }}>
-                    中文翻译: {tfQuestionData.translation}
+                    {currentTfWord.isExam ? '叙述内容' : '中文翻译'}: {tfQuestionData.translation}
                   </div>
                 </div>
 
                 {currentTfWord.isExam && (
                   <div style={{ maxWidth: '480px', margin: '16px auto 0 auto' }}>
-                    <div style={{
-                      background: 'rgba(255, 59, 48, 0.06)',
-                      border: '1px solid rgba(255, 59, 48, 0.15)',
-                      color: '#FF3B30',
-                      padding: '10px 14px',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      textAlign: 'center',
-                      lineHeight: '1.4'
-                    }}>
-                      ⚠️ 注意：請根據真題課文背景判斷敘述是否正確，而非判斷中文翻譯是否正確！
-                    </div>
                     
                     <details style={{
                       marginTop: '12px',
