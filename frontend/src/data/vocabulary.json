@@ -815,7 +815,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 56,
@@ -1007,7 +1007,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 68,
@@ -1279,7 +1279,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 86,
@@ -1903,7 +1903,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 126,
@@ -2095,7 +2095,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 138,
@@ -2271,7 +2271,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 149,
@@ -2303,7 +2303,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 151,
@@ -3407,7 +3407,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 229,
@@ -3639,7 +3639,7 @@
       "unit": 34,
       "page_number": 84,
       "word_greek": "γάμος",
-      "word_chinese": "婚礼 / 婚姻",
+      "word_chinese": "婚礼",
       "pronunciation": "gamos",
       "example_greek": "Αυτό είναι γάμος.",
       "example_chinese": "这是 婚礼 / 婚姻。",
@@ -3647,7 +3647,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-16"
+      "note_date": "2026-07-18"
     },
     {
       "id": 245,
@@ -4271,7 +4271,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 284,
@@ -4927,7 +4927,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 328,
@@ -5103,7 +5103,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 340,
@@ -5111,7 +5111,7 @@
       "unit": 31,
       "page_number": 4,
       "word_greek": "δηλώνω",
-      "word_chinese": "声明 / 申报 / 注册",
+      "word_chinese": "申报 / 声明",
       "pronunciation": "dilono",
       "example_greek": "Αυτό είναι δηλώνω.",
       "example_chinese": "这是 声明 / 申报 / 注册。",
@@ -5119,7 +5119,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-04-10"
+      "note_date": "2026-07-18"
     },
     {
       "id": 341,
@@ -5551,7 +5551,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 371,
@@ -5951,7 +5951,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 396,
@@ -6167,7 +6167,7 @@
       "unit": 36,
       "page_number": 102,
       "word_greek": "εγκαίνια",
-      "word_chinese": "开幕式 / 开业典礼",
+      "word_chinese": "开业剪彩 / 开幕式",
       "pronunciation": "egainia",
       "example_greek": "Αυτό είναι εγκαίνια.",
       "example_chinese": "这是 开幕式 / 开业典礼。",
@@ -6175,7 +6175,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 411,
@@ -6559,7 +6559,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 439,
@@ -7247,7 +7247,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 484,
@@ -7343,7 +7343,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 490,
@@ -7359,7 +7359,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 491,
@@ -7407,7 +7407,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 494,
@@ -8623,7 +8623,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 576,
@@ -8639,7 +8639,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 577,
@@ -9231,7 +9231,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 617,
@@ -9295,7 +9295,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 621,
@@ -9919,7 +9919,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 661,
@@ -10055,7 +10055,7 @@
       "unit": 36,
       "page_number": 102,
       "word_greek": "θυμίζω",
-      "word_chinese": "提醒 / 使想起",
+      "word_chinese": "提醒",
       "pronunciation": "thimizo",
       "example_greek": "Αυτό είναι θυμίζω.",
       "example_chinese": "这是 提醒 / 使想起。",
@@ -10063,7 +10063,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 670,
@@ -10223,7 +10223,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 680,
@@ -10383,7 +10383,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 692,
@@ -10567,7 +10567,7 @@
       "unit": 36,
       "page_number": 102,
       "word_greek": "κάλαντα",
-      "word_chinese": "圣诞颂歌",
+      "word_chinese": "圣诞赞美诗 / 颂歌",
       "pronunciation": "kalada",
       "example_greek": "Αυτό είναι κάλαντα.",
       "example_chinese": "这是 圣诞颂歌。",
@@ -10575,7 +10575,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 704,
@@ -10943,7 +10943,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 728,
@@ -10975,7 +10975,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 730,
@@ -11215,7 +11215,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 746,
@@ -11263,7 +11263,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 749,
@@ -11455,7 +11455,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 761,
@@ -11503,7 +11503,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 764,
@@ -11583,7 +11583,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 769,
@@ -11807,7 +11807,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 783,
@@ -12111,7 +12111,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-10"
+      "note_date": "2026-07-18"
     },
     {
       "id": 802,
@@ -13375,7 +13375,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 886,
@@ -13439,7 +13439,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 890,
@@ -14287,7 +14287,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 944,
@@ -14623,7 +14623,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 965,
@@ -15215,7 +15215,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1003,
@@ -16271,7 +16271,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1075,
@@ -16623,7 +16623,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1097,
@@ -17343,7 +17343,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1146,
@@ -17615,7 +17615,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1163,
@@ -17631,7 +17631,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1164,
@@ -18911,7 +18911,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1247,
@@ -19311,7 +19311,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1273,
@@ -19471,7 +19471,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1283,
@@ -19679,7 +19679,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1301,
@@ -20895,7 +20895,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1383,
@@ -21183,7 +21183,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1401,
@@ -22679,7 +22679,7 @@
       "unit": 36,
       "page_number": 102,
       "word_greek": "συγχαρητήρια",
-      "word_chinese": "恭喜 / 祝贺",
+      "word_chinese": "祝贺 / 恭喜",
       "pronunciation": "sigcharitiria",
       "example_greek": "Αυτό είναι συγχαρητήρια.",
       "example_chinese": "这是 恭喜 / 祝贺。",
@@ -22687,7 +22687,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1499,
@@ -22719,7 +22719,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-25"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1501,
@@ -22767,7 +22767,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1504,
@@ -22863,7 +22863,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1510,
@@ -23023,7 +23023,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1520,
@@ -24543,7 +24543,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1627,
@@ -24559,7 +24559,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1628,
@@ -24655,7 +24655,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1634,
@@ -24815,7 +24815,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1644,
@@ -24863,7 +24863,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1647,
@@ -24879,7 +24879,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1648,
@@ -24991,7 +24991,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1655,
@@ -25039,7 +25039,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1658,
@@ -25119,7 +25119,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1664,
@@ -25183,7 +25183,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1668,
@@ -25215,7 +25215,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-06-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1670,
@@ -25327,7 +25327,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1678,
@@ -26047,7 +26047,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1724,
@@ -26271,7 +26271,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": null
+      "note_date": "2026-07-18"
     },
     {
       "id": 1738,
@@ -27215,7 +27215,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1799,
@@ -28079,7 +28079,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-05-30"
+      "note_date": "2026-07-18"
     },
     {
       "id": 1856,
@@ -28223,7 +28223,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3763,
@@ -28239,7 +28239,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3764,
@@ -28255,7 +28255,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3765,
@@ -28271,7 +28271,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3766,
@@ -28287,7 +28287,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3767,
@@ -28303,7 +28303,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3768,
@@ -28319,7 +28319,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3769,
@@ -28335,7 +28335,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3770,
@@ -28351,7 +28351,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3771,
@@ -28367,7 +28367,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-03"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3772,
@@ -28383,7 +28383,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3773,
@@ -28399,7 +28399,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3774,
@@ -28415,7 +28415,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3775,
@@ -28431,7 +28431,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3776,
@@ -28447,7 +28447,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3777,
@@ -28463,7 +28463,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3778,
@@ -28479,7 +28479,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3779,
@@ -28495,7 +28495,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3780,
@@ -28511,7 +28511,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3781,
@@ -28527,7 +28527,7 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
     },
     {
       "id": 3782,
@@ -28543,7 +28543,167 @@
       "difficulty_score": 1.0,
       "last_reviewed_at": null,
       "next_review_at": null,
-      "note_date": "2026-07-06"
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3783,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "βάφτιση",
+      "word_chinese": "洗礼",
+      "pronunciation": "vaftisi",
+      "example_greek": "Αυτό είναι βάφτιση.",
+      "example_chinese": "这是 洗礼。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3784,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "δημόσια υπηρεσία",
+      "word_chinese": "公共服务部门",
+      "pronunciation": "dimosiaypiresia",
+      "example_greek": "Αυτό είναι δημόσια υπηρεσία.",
+      "example_chinese": "这是 公共服务部门。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3785,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "αστυνομική ταυτότητα",
+      "word_chinese": "身份证",
+      "pronunciation": "astynomikitaytotita",
+      "example_greek": "Αυτό είναι αστυνομική ταυτότητα.",
+      "example_chinese": "这是 身份证。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3786,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "επίσημο έγγραφο",
+      "word_chinese": "官方文件 / 正式文档",
+      "pronunciation": "episimoeggrafo",
+      "example_greek": "Αυτό είναι επίσημο έγγραφο.",
+      "example_chinese": "这是 官方文件 / 正式文档。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3787,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "διαβατήριο",
+      "word_chinese": "护照",
+      "pronunciation": "diavatirio",
+      "example_greek": "Αυτό είναι διαβατήριο.",
+      "example_chinese": "这是 护照。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3788,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "εξυπηρετώ",
+      "word_chinese": "服务 / 协助",
+      "pronunciation": "exypireto",
+      "example_greek": "Αυτό είναι εξυπηρετώ.",
+      "example_chinese": "这是 服务 / 协助。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3789,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "διάστημα",
+      "word_chinese": "时间段 / 间隔",
+      "pronunciation": "diastima",
+      "example_greek": "Αυτό είναι διάστημα.",
+      "example_chinese": "这是 时间段 / 间隔。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3791,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "λογαριασμός τηλεφώνου",
+      "word_chinese": "电话账单",
+      "pronunciation": "logariasmostilefonoy",
+      "example_greek": "Αυτό είναι λογαριασμός τηλεφώνου.",
+      "example_chinese": "这是 电话账单。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3792,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "προσωπικά στοιχεία",
+      "word_chinese": "个人信息 / 个人资料",
+      "pronunciation": "prosopikastoicheia",
+      "example_greek": "Αυτό είναι προσωπικά στοιχεία.",
+      "example_chinese": "这是 个人信息 / 个人资料。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
+    },
+    {
+      "id": 3793,
+      "book_id": "a2",
+      "unit": 35,
+      "page_number": 0,
+      "word_greek": "θυμάμαι",
+      "word_chinese": "记得 / 记住",
+      "pronunciation": "thymamai",
+      "example_greek": "Αυτό είναι θυμάμαι.",
+      "example_chinese": "这是 记得 / 记住。",
+      "error_count": 0,
+      "difficulty_score": 1.0,
+      "last_reviewed_at": null,
+      "next_review_at": null,
+      "note_date": "2026-07-18"
     }
   ]
 }
