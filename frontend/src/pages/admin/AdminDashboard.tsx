@@ -608,24 +608,46 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         }
       }
 
-      // Regex parsing Greek / Chinese pairs (standard fallback)
-      const match = line.match(/(?:[\u0370-\u03FF\u1F00-\u1FFF]+[,\s]*)+[^\s\-]*\s*-\s*.+/);
-      if (match) {
-        const parts = line.split('-');
-        const greekPart = parts[0].replace(/[\*\`]/g, '').trim();
-        const chinesePart = parts[1].replace(/[\*\`]/g, '').trim();
+      // Robust fallback segment parser for plain text copied/scanned notes
+      const hasGreekLine = /[\u0370-\u03FF\u1F00-\u1FFF]/.test(line);
+      const hasChineseLine = /[\u4e00-\u9fa5]/.test(line);
 
-        newWordsList.push({
-          id: currentId++,
-          book_id: targetBookId,
-          unit: currentUnit,
-          word_greek: greekPart,
-          word_chinese: chinesePart,
-          pronunciation: 'new',
-          example_greek: '',
-          example_chinese: '',
-          note_date: finalNoteDate
-        });
+      if (hasGreekLine && hasChineseLine) {
+        // Split line by 2+ spaces or tabs to handle multi-column rows side-by-side
+        const segments = line.split(/\s{2,}|\t/);
+        for (const segment of segments) {
+          const cleaned = segment.replace(/[\*\`]/g, '').trim();
+          if (!cleaned) continue;
+
+          const hasGreekSeg = /[\u0370-\u03FF\u1F00-\u1FFF]/.test(cleaned);
+          const hasChineseSeg = /[\u4e00-\u9fa5]/.test(cleaned);
+
+          if (hasGreekSeg && hasChineseSeg) {
+            // Find first index of Chinese character to split Greek and Chinese parts
+            const firstChineseIdx = cleaned.search(/[\u4e00-\u9fa5]/);
+            if (firstChineseIdx > 0) {
+              let gr = cleaned.slice(0, firstChineseIdx).trim();
+              const zh = cleaned.slice(firstChineseIdx).trim();
+              
+              // Clean index numbers or trailing punctuation in Greek part (e.g. "1. ληξιαρχείο:", "2. ")
+              gr = gr.replace(/^\d+[\.\s、]+/, '').replace(/[-—–:~：\s\/\\→>]+$/, '').trim();
+
+              if (gr && zh) {
+                newWordsList.push({
+                  id: currentId++,
+                  book_id: targetBookId,
+                  unit: currentUnit,
+                  word_greek: gr,
+                  word_chinese: zh,
+                  pronunciation: 'new',
+                  example_greek: '',
+                  example_chinese: '',
+                  note_date: finalNoteDate
+                });
+              }
+            }
+          }
+        }
       }
     });
 
