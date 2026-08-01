@@ -24,6 +24,7 @@ import {
 // Import local static vocabulary compilation
 import staticVocabData from '../../data/vocabulary.json';
 import examQuestionsData from '../../data/exam_questions.json';
+import localAlternatives from '../../data/alternative_translations.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 const speakGreek = (text: string) => {
@@ -533,6 +534,15 @@ const normalizeChineseString = (str: string): string => {
     .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?，。？！；：]/g, "")
     .replace(/\s+/g, "");
 
+  // Normalize Chinese number characters to digits for comparison (e.g. 一 -> 1, 二/两 -> 2...)
+  const zhNumMap: Record<string, string> = {
+    "零": "0", "一": "1", "二": "2", "两": "2", "三": "3", "四": "4", 
+    "五": "5", "六": "6", "七": "7", "八": "8", "九": "9", "十": "10"
+  };
+  Object.keys(zhNumMap).forEach(key => {
+    s = s.replaceAll(key, zhNumMap[key]);
+  });
+
   // Remove common prefixes
   const prefixes = ["这是", "那是", "它是", "这个是", "那个是", "一个", "是一只", "一个", "一些", "这", "那", "它"];
   let changedPrefix = true;
@@ -1009,6 +1019,9 @@ export default function StudentApp() {
     return parseInt(localStorage.getItem('leon_score') || '0', 10);
   });
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
+  const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
+  const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
 
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({});
@@ -1085,6 +1098,12 @@ export default function StudentApp() {
         setAllVocab(validatedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
         setScore(state.score || 0);
+        const mergedAlts = {
+          ...localAlternatives,
+          ...(state.alternative_translations || {})
+        };
+        setAlternativeTranslations(mergedAlts);
+        setUserFeedbackList(state.user_feedback || []);
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
         setActivatedDates(finalActivated);
@@ -2090,7 +2109,10 @@ export default function StudentApp() {
     // Check alternative translations based on the Greek word
     if (!correct) {
       const cleanGreekKey = cleanGreekForComparison(currentTransGrZh.greek);
-      const alternatives = GREEK_ALTERNATIVE_TRANSLATIONS[cleanGreekKey] || [];
+      const alternatives = [
+        ...(GREEK_ALTERNATIVE_TRANSLATIONS[cleanGreekKey] || []),
+        ...(alternativeTranslations[cleanGreekKey] || [])
+      ];
       for (const alt of alternatives) {
         const cleanAlt = cleanChinese(alt);
         if (cleanUser === cleanAlt || 
@@ -2118,6 +2140,7 @@ export default function StudentApp() {
   };
 
   const handleNextTransGrZh = () => {
+    setFeedbackSubmitted(false);
     if (transGrZhIndex < translationGrZhPool.length - 1) {
       setTransGrZhIndex(prev => prev + 1);
       setUserTransGrZhInput('');
@@ -2128,6 +2151,24 @@ export default function StudentApp() {
     } else {
       handleGameComplete(transGrZhScore);
     }
+  };
+
+  const handleReportFeedback = async () => {
+    if (!currentTransGrZh) return;
+    const newFeedbackItem = {
+      id: Date.now().toString(),
+      questionId: currentTransGrZh.id,
+      greek: currentTransGrZh.greek,
+      expected: currentTransGrZh.chinese,
+      userTyped: userTransGrZhInput,
+      date: getGreeceDateString(),
+      status: 'pending' as const
+    };
+    const updatedFeedback = [...userFeedbackList, newFeedbackItem];
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({ user_feedback: updatedFeedback });
+    setFeedbackSubmitted(true);
+    alert("您的翻译反馈已提交给家长！可以在家长后台进行审核，一键添加为备选翻译或纠正，Leon Coach 会自我成长哦！");
   };
 
   const handleCheckTransZhGr = () => {
@@ -4216,6 +4257,27 @@ export default function StudentApp() {
                     <p style={{ color: '#86868B', fontSize: '12.5px', marginTop: '4px', fontWeight: 500 }}>
                       单词释义 / Λεξιλόγιο: {currentTransGrZh.wordGreek} → {currentTransGrZh.wordChinese}
                     </p>
+                  )}
+                  {!isCorrectTransGrZh && (
+                    <button
+                      onClick={handleReportFeedback}
+                      disabled={feedbackSubmitted}
+                      className="btn-premium"
+                      style={{
+                        marginTop: '12px',
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        width: 'auto',
+                        border: '1px solid #FF9500',
+                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                    </button>
                   )}
                 </div>
               )}

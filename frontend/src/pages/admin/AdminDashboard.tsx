@@ -19,6 +19,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
+import localAlternatives from '../../data/alternative_translations.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 interface AdminDashboardProps {
@@ -36,6 +37,37 @@ interface Word {
   example_chinese?: string;
   note_date?: string;
 }
+
+const removeBracketContents = (str: string): string => {
+  return str
+    .replace(/\(.*?\)/g, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/（.*?）/g, '')
+    .replace(/【.*?】/g, '');
+};
+
+const cleanGreekForComparison = (str: string): string => {
+  let cleaned = removeBracketContents(str);
+  cleaned = cleaned
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents
+    .toLowerCase();
+  
+  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
+  
+  const words = cleaned.split(/\s+/);
+  const articles = new Set(['ο', 'η', 'το', 'τα', 'οι', 'της', 'του', 'τον', 'την', 'μας', 'σας', 'μου', 'σου']);
+  const filteredWords = words
+    .filter(w => !articles.has(w))
+    .map(w => {
+      if (w === 'αυτος' || w === 'αυτη' || w === 'αυτοι' || w === 'αυτες' || w === 'αυτα') {
+        return 'αυτο';
+      }
+      return w;
+    });
+  
+  return filteredWords.join('').trim();
+};
 
 const getUnitChineseName = (bookId: string, unitNum: number): string => {
   const bookKey = bookId.toUpperCase();
@@ -383,12 +415,14 @@ const isWordActive = (
 };
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'activation' | 'upload' | 'settings'>('activation');
+  const [activeTab, setActiveTab] = useState<'activation' | 'upload' | 'feedback' | 'settings'>('activation');
   
   // Vocabulary & Activation states
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
+  const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
+  const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
 
   // Database sync states
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
@@ -434,6 +468,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         
         setAllVocab(mergedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
+        const mergedAlts = {
+          ...localAlternatives,
+          ...(state.alternative_translations || {})
+        };
+        setAlternativeTranslations(mergedAlts);
+        setUserFeedbackList(state.user_feedback || []);
       },
       (status, error) => {
         setDbStatus(status);
@@ -997,6 +1037,225 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     </div>
   );
 
+  const handleApproveFeedback = async (feedbackItem: any) => {
+    const cleanGreekKey = cleanGreekForComparison(feedbackItem.greek);
+    const existingAlts = alternativeTranslations[cleanGreekKey] || [];
+    if (!existingAlts.includes(feedbackItem.userTyped.trim())) {
+      existingAlts.push(feedbackItem.userTyped.trim());
+    }
+    const updatedAlts = {
+      ...alternativeTranslations,
+      [cleanGreekKey]: existingAlts
+    };
+    const updatedFeedback = userFeedbackList.map(item => {
+      if (item.id === feedbackItem.id) {
+        return { ...item, status: 'approved' as const };
+      }
+      return item;
+    });
+    setAlternativeTranslations(updatedAlts);
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({
+      alternative_translations: updatedAlts,
+      user_feedback: updatedFeedback
+    });
+    alert(`已将 “${feedbackItem.userTyped}” 批准为 “${feedbackItem.greek}” 的备选翻译！`);
+  };
+
+  const handleRejectFeedback = async (feedbackItem: any) => {
+    const updatedFeedback = userFeedbackList.map(item => {
+      if (item.id === feedbackItem.id) {
+        return { ...item, status: 'rejected' as const };
+      }
+      return item;
+    });
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({
+      user_feedback: updatedFeedback
+    });
+  };
+
+  const handleDeleteFeedback = async (feedbackId: string) => {
+    const updatedFeedback = userFeedbackList.filter(item => item.id !== feedbackId);
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({
+      user_feedback: updatedFeedback
+    });
+  };
+
+  const handleDeleteAlternative = async (greekKey: string, indexToDelete: number) => {
+    const existingAlts = alternativeTranslations[greekKey] || [];
+    const updatedAltsList = existingAlts.filter((_, idx) => idx !== indexToDelete);
+    let updatedAlts = { ...alternativeTranslations };
+    if (updatedAltsList.length === 0) {
+      delete updatedAlts[greekKey];
+    } else {
+      updatedAlts[greekKey] = updatedAltsList;
+    }
+    setAlternativeTranslations(updatedAlts);
+    await saveSharedState({
+      alternative_translations: updatedAlts
+    });
+  };
+
+  const renderFeedbackTab = () => {
+    const pendingFeedback = userFeedbackList.filter(item => item.status === 'pending');
+    const processedFeedback = userFeedbackList.filter(item => item.status !== 'pending');
+    
+    return (
+      <div className="animate-fade-in">
+        <div className="admin-panel mb-8">
+          <h3 className="admin-panel-title">Leon 答题纠偏与系统成长中心</h3>
+          <p style={{ fontSize: '14px', color: '#86868B', marginBottom: '24px', lineHeight: '1.6' }}>
+            当 Leon 在做翻译练习时，如果他的翻译正确但因为格式与标准答案不同（如“四个”与“4个”），他可以通过点击“我写的对，反馈报错”向您提交审核。您在此批准后，系统会实时记录该词条作为备选标准答案，Leon 再次答题时便能顺利通过，实现系统自适应自我成长。
+          </p>
+
+          <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1D1D1F', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <AlertTriangle size={18} style={{ color: '#FF9500' }} />
+            待处理纠偏反馈 ({pendingFeedback.length})
+          </h4>
+
+          {pendingFeedback.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#86868B', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', marginBottom: '32px' }}>
+              🎉 暂无待处理反馈，系统运行状态优良！
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '32px' }}>
+              {pendingFeedback.map(item => (
+                <div key={item.id} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: '12px', padding: '16px', background: '#fff' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '12px', color: '#86868B' }}>
+                    <span>反馈日期: {item.date}</span>
+                    <span>问题 ID: {item.questionId}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px' }}>
+                    <div>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 'bold', color: '#0071E3' }}>希腊语: {item.greek}</p>
+                      <p style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#1D1D1F' }}>标准答案: <span style={{ fontWeight: 600 }}>{item.expected}</span></p>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#FF9500' }}>Leon 翻译: <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{item.userTyped}</span></p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignSelf: 'center', justifyContent: 'flex-end' }}>
+                      <button 
+                        onClick={() => handleApproveFeedback(item)}
+                        className="btn-premium btn-blue-filled"
+                        style={{ padding: '6px 12px', fontSize: '12px', width: 'auto' }}
+                      >
+                        批准为备选
+                      </button>
+                      <button 
+                        onClick={() => handleRejectFeedback(item)}
+                        className="btn-premium"
+                        style={{ padding: '6px 12px', fontSize: '12px', width: 'auto', border: '1px solid #FF3B30', color: '#FF3B30', background: 'rgba(255,59,48,0.05)' }}
+                      >
+                        忽略
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1D1D1F', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileText size={18} style={{ color: '#86868B' }} />
+            已处理反馈记录 ({processedFeedback.length})
+          </h4>
+
+          {processedFeedback.length === 0 ? (
+            <div style={{ padding: '16px', textAlign: 'center', color: '#86868B', fontSize: '13px' }}>
+              暂无已处理历史记录。
+            </div>
+          ) : (
+            <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px', padding: '12px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.08)', textAlign: 'left', color: '#86868B' }}>
+                    <th style={{ padding: '8px' }}>希腊语</th>
+                    <th style={{ padding: '8px' }}>标准答案</th>
+                    <th style={{ padding: '8px' }}>Leon 翻译</th>
+                    <th style={{ padding: '8px' }}>状态</th>
+                    <th style={{ padding: '8px', textAlign: 'right' }}>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {processedFeedback.map(item => (
+                    <tr key={item.id} style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+                      <td style={{ padding: '8px', fontWeight: 500 }}>{item.greek}</td>
+                      <td style={{ padding: '8px' }}>{item.expected}</td>
+                      <td style={{ padding: '8px' }}>{item.userTyped}</td>
+                      <td style={{ padding: '8px', color: item.status === 'approved' ? '#34C759' : '#86868B', fontWeight: 600 }}>
+                        {item.status === 'approved' ? '已批准' : '已忽略'}
+                      </td>
+                      <td style={{ padding: '8px', textAlign: 'right' }}>
+                        <button 
+                          onClick={() => handleDeleteFeedback(item.id)}
+                          style={{ background: 'none', border: 'none', color: '#FF3B30', cursor: 'pointer', fontSize: '12px' }}
+                        >
+                          删除记录
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="admin-panel">
+          <h3 className="admin-panel-title" style={{ fontSize: '17px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={18} style={{ color: '#0071E3' }} />
+            系统已习得的备选翻译列表
+          </h3>
+          <p style={{ fontSize: '13px', color: '#86868B', marginBottom: '16px' }}>
+            以下是系统当前存储的所有备选翻译。Leon 在答题时只要输入以下任何一项，系统都会判定为正确。
+          </p>
+
+          {Object.keys(alternativeTranslations).length === 0 ? (
+            <div style={{ padding: '16px', textAlign: 'center', color: '#86868B', fontSize: '13px' }}>
+              暂无习得的备选翻译。
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+              {Object.keys(alternativeTranslations).map(greekKey => (
+                <div key={greekKey} style={{ border: '1px solid rgba(0,0,0,0.05)', borderRadius: '10px', padding: '12px', background: 'rgba(0,0,0,0.01)' }}>
+                  <p style={{ margin: '0 0 8px 0', fontWeight: 'bold', fontSize: '14px', color: '#1D1D1F' }}>
+                    希腊语 Key: <code style={{ background: '#f5f5f7', padding: '2px 6px', borderRadius: '4px' }}>{greekKey}</code>
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {(alternativeTranslations[greekKey] || []).map((alt, idx) => (
+                      <span 
+                        key={idx} 
+                        style={{ 
+                          background: '#fff', 
+                          border: '1px solid rgba(0,0,0,0.08)', 
+                          padding: '4px 8px', 
+                          borderRadius: '6px', 
+                          fontSize: '12px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        {alt}
+                        <button 
+                          onClick={() => handleDeleteAlternative(greekKey, idx)}
+                          style={{ border: 'none', background: 'none', color: '#FF3B30', cursor: 'pointer', padding: 0, fontWeight: 'bold' }}
+                          title="删除备选"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const handleForceSyncToCloud = async () => {
     if (!window.confirm("确定要将当前电脑上的学习记录与解锁日期覆盖到云端吗？这会同步到所有其他登录设备。")) return;
     setIsSyncing(true);
@@ -1242,6 +1501,26 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             <FolderPlus size={18} />
             <span>课外与零散内容导入</span>
           </button>
+          <button 
+            onClick={() => setActiveTab('feedback')} 
+            className={`admin-nav-item ${activeTab === 'feedback' ? 'active' : ''}`}
+          >
+            <Sparkles size={18} />
+            <span>错题纠偏与系统成长</span>
+            {userFeedbackList.filter(item => item.status === 'pending').length > 0 && (
+              <span style={{ 
+                background: '#FF3B30', 
+                color: '#fff', 
+                fontSize: '11px', 
+                padding: '2px 6px', 
+                borderRadius: '10px', 
+                fontWeight: 'bold', 
+                marginLeft: 'auto' 
+              }}>
+                {userFeedbackList.filter(item => item.status === 'pending').length}
+              </span>
+            )}
+          </button>
         </nav>
 
         <button 
@@ -1287,6 +1566,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {/* Main Content Body */}
         {activeTab === 'activation' && renderActivationTab()}
         {activeTab === 'upload' && renderUploadTab()}
+        {activeTab === 'feedback' && renderFeedbackTab()}
       </main>
     </div>
   );

@@ -7,6 +7,16 @@ export interface SharedState {
   score: number;
   completed_date_modules: Record<string, string[]>;
   daily_rewards_awarded: Record<string, boolean>;
+  alternative_translations?: Record<string, string[]>;
+  user_feedback?: Array<{
+    id: string;
+    questionId: number;
+    greek: string;
+    expected: string;
+    userTyped: string;
+    date: string;
+    status: 'pending' | 'approved' | 'rejected';
+  }>;
 }
 
 export const getInitialLocalState = (): SharedState => {
@@ -15,6 +25,8 @@ export const getInitialLocalState = (): SharedState => {
   let score = 0;
   let completed_date_modules = {};
   let daily_rewards_awarded = {};
+  let alternative_translations = {};
+  let user_feedback = [];
 
   try {
     const dates = localStorage.getItem("leon_unit_study_dates");
@@ -41,12 +53,24 @@ export const getInitialLocalState = (): SharedState => {
     if (rewards) daily_rewards_awarded = JSON.parse(rewards);
   } catch (e) {}
 
+  try {
+    const alts = localStorage.getItem("leon_alternative_translations");
+    if (alts) alternative_translations = JSON.parse(alts);
+  } catch (e) {}
+
+  try {
+    const feed = localStorage.getItem("leon_user_feedback");
+    if (feed) user_feedback = JSON.parse(feed);
+  } catch (e) {}
+
   return {
     unit_study_dates,
     custom_vocab,
     score,
     completed_date_modules,
     daily_rewards_awarded,
+    alternative_translations,
+    user_feedback,
   };
 };
 
@@ -75,6 +99,8 @@ export const subscribeToSharedState = (
           localStorage.setItem("leon_score", (data.score || 0).toString());
           localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
           localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(data.daily_rewards_awarded || {}));
+          localStorage.setItem("leon_alternative_translations", JSON.stringify(data.alternative_translations || {}));
+          localStorage.setItem("leon_user_feedback", JSON.stringify(data.user_feedback || []));
         } catch (e) {}
         
         onUpdate({
@@ -83,6 +109,8 @@ export const subscribeToSharedState = (
           score: data.score || 0,
           completed_date_modules: data.completed_date_modules || {},
           daily_rewards_awarded: data.daily_rewards_awarded || {},
+          alternative_translations: data.alternative_translations || {},
+          user_feedback: data.user_feedback || [],
         });
 
         if (onStatusChange) {
@@ -134,6 +162,12 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
       }
       if (updates.daily_rewards_awarded) {
         localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(updates.daily_rewards_awarded));
+      }
+      if (updates.alternative_translations) {
+        localStorage.setItem("leon_alternative_translations", JSON.stringify(updates.alternative_translations));
+      }
+      if (updates.user_feedback) {
+        localStorage.setItem("leon_user_feedback", JSON.stringify(updates.user_feedback));
       }
     } catch (e) {}
   }

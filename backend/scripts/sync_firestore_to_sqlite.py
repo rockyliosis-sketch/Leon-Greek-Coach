@@ -114,10 +114,27 @@ def export_db_to_json():
     print(f"Successfully exported {len(all_vocab)} words to {OUTPUT_PATH}")
     conn.close()
 
+def sync_alternative_translations(firestore_data):
+    print("Syncing alternative translations from Firestore...")
+    fields = firestore_data.get("fields", {})
+    alts_val = fields.get("alternative_translations", {}).get("mapValue", {}).get("fields", {})
+    
+    alts_dict = {}
+    if alts_val:
+        for greek_key, val_obj in alts_val.items():
+            arr_vals = val_obj.get("arrayValue", {}).get("values", [])
+            alts_dict[greek_key] = [v.get("stringValue", "").strip() for v in arr_vals if v.get("stringValue")]
+            
+    alts_path = "frontend/src/data/alternative_translations.json"
+    with open(alts_path, "w", encoding="utf-8") as f:
+        json.dump(alts_dict, f, ensure_ascii=False, indent=2)
+    print(f"Successfully synced {len(alts_dict)} alternative translations to {alts_path}")
+
 def main():
     try:
         firestore_data = fetch_firestore_state()
         sync_to_sqlite(firestore_data)
+        sync_alternative_translations(firestore_data)
         export_db_to_json()
     except Exception as e:
         print(f"Error during sync: {e}")
