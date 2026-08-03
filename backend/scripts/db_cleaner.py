@@ -23,6 +23,20 @@ def clean_database():
         WHERE word_greek = 'βgázw fwtografía';
     """)
     
+    # Fix Φωτιά (ID 1789 or any entry with word_chinese = '禁止生火')
+    cursor.execute("""
+        UPDATE vocabulary 
+        SET word_chinese = '火 / 火灾', example_chinese = '这是火 / 火灾。' 
+        WHERE word_greek = 'Φωτιά' OR (word_greek = 'φωτιά' AND word_chinese = '禁止生火');
+    """)
+
+    # Fix σπυράκι (ID 3824)
+    cursor.execute("""
+        UPDATE vocabulary 
+        SET word_chinese = '粉刺 / 痘痘 / 小脓疱', example_chinese = '这是粉刺 / 痘痘。' 
+        WHERE word_greek = 'σπυράκι';
+    """)
+    
     # Clean up suffix " -> xánw ->" in word_chinese for χάνω
     cursor.execute("""
         UPDATE vocabulary 

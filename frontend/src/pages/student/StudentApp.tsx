@@ -1745,6 +1745,110 @@ export default function StudentApp() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModule, currentSpellingWord, spellInput, spellingCompleted]);
 
+  const translationGrZhPool = useMemo(() => {
+    const pool = getRotatedModulePool(dailyDeck, 20, 4);
+    const transItems = pool.map((word, idx) => {
+      const isCleanExChinese = word.example_chinese && 
+                              !/[\u0370-\u03ff\u1f00-\u1fff]/.test(word.example_chinese) &&
+                              !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
+      const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
+      const testSentence = hasSentence && (idx % 2 === 1);
+      return {
+        id: word.id,
+        isExam: false,
+        type: testSentence ? 'sentence' : 'word',
+        greek: testSentence ? word.example_greek! : word.word_greek,
+        chinese: testSentence ? word.example_chinese! : word.word_chinese,
+        wordGreek: word.word_greek,
+        wordChinese: word.word_chinese,
+        word_greek: word.word_greek,
+        word_chinese: word.word_chinese,
+        pronunciation: word.pronunciation || '',
+        detailed_tip: ''
+      };
+    });
+
+    const level = activeExamLevel;
+    const exams = getDailyExams(level, 'translation_gr_zh', 1);
+    const examItems = exams.map((q: any) => ({
+      id: q.id,
+      isExam: true,
+      type: 'exam',
+      greek: q.greek,
+      chinese: q.chinese,
+      wordGreek: '',
+      wordChinese: '',
+      word_greek: q.greek,
+      word_chinese: q.chinese,
+      pronunciation: '',
+      detailed_tip: q.detailed_tip
+    }));
+
+    const combined = [...examItems, ...transItems];
+    return filterDuplicateTranslations(combined).slice(0, 20);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+
+  const translationZhGrPool = useMemo(() => {
+    const pool = getRotatedModulePool(dailyDeck, 20, 5);
+    const transItems = pool.map((word, idx) => {
+      const isCleanExChinese = word.example_chinese && 
+                              !/[\u0370-\u03ff\u1f00-\u1fff]/.test(word.example_chinese) &&
+                              !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
+      const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
+      const testSentence = hasSentence && (idx % 2 === 1);
+      return {
+        id: word.id,
+        isExam: false,
+        type: testSentence ? 'sentence' : 'word',
+        greek: testSentence ? word.example_greek! : word.word_greek,
+        chinese: testSentence ? word.example_chinese! : word.word_chinese,
+        wordGreek: word.word_greek,
+        wordChinese: word.word_chinese,
+        word_greek: word.word_greek,
+        word_chinese: word.word_chinese,
+        pronunciation: word.pronunciation || '',
+        detailed_tip: ''
+      };
+    });
+
+    const level = activeExamLevel;
+    const exams = getDailyExams(level, 'translation_zh_gr', 1);
+    const examItems = exams.map((q: any) => ({
+      id: q.id,
+      isExam: true,
+      type: 'exam',
+      greek: q.greek,
+      chinese: q.chinese,
+      wordGreek: '',
+      wordChinese: '',
+      word_greek: q.greek,
+      word_chinese: q.chinese,
+      pronunciation: '',
+      detailed_tip: q.detailed_tip
+    }));
+
+    const combined = [...examItems, ...transItems];
+    return filterDuplicateTranslations(combined).slice(0, 20);
+  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+
+  const handleReportFeedback = async (questionId: any, greek: string, expected: string, userTyped: string) => {
+    if (!greek || !expected) return;
+    const newFeedbackItem = {
+      id: Date.now().toString(),
+      questionId: questionId || Date.now().toString(),
+      greek: greek,
+      expected: expected,
+      userTyped: userTyped ? userTyped.trim() : '(查看提示/报错纠偏)',
+      date: getGreeceDateString(),
+      status: 'pending' as const
+    };
+    const updatedFeedback = [...userFeedbackList, newFeedbackItem];
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({ user_feedback: updatedFeedback });
+    setFeedbackSubmitted(true);
+    alert("您的报错与纠偏反馈已提交给家长！可以在家长控制中心进行审核，一键添加为备选翻译或纠正，Leon Coach 会自我成长哦！");
+  };
+
   const handleLetterClick = (letter: string, idx: number) => {
     if (spellingCompleted) return;
     const target = getCleanSpellingWord(currentSpellingWord.word_greek);
@@ -2016,89 +2120,8 @@ export default function StudentApp() {
   const [isCorrectTransZhGrInput, setIsCorrectTransZhGrInput] = useState(false);
   const [transZhGrScore, setTransZhGrScore] = useState(0);
 
-  const translationGrZhPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 20, 4);
-    const transItems = pool.map((word, idx) => {
-      const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
-      const testSentence = hasSentence && (idx % 2 === 1);
-      return {
-        id: word.id,
-        isExam: false,
-        type: testSentence ? 'sentence' : 'word',
-        greek: testSentence ? word.example_greek! : word.word_greek,
-        chinese: testSentence ? word.example_chinese! : word.word_chinese,
-        wordGreek: word.word_greek,
-        wordChinese: word.word_chinese,
-        word_greek: word.word_greek,
-        word_chinese: word.word_chinese,
-        pronunciation: word.pronunciation || '',
-        detailed_tip: ''
-      };
-    });
-
-    const level = activeExamLevel;
-    const exams = getDailyExams(level, 'translation_gr_zh', 1);
-    const examItems = exams.map((q: any) => ({
-      id: q.id,
-      isExam: true,
-      type: 'exam',
-      greek: q.greek,
-      chinese: q.chinese,
-      wordGreek: '',
-      wordChinese: '',
-      word_greek: q.greek,
-      word_chinese: q.chinese,
-      pronunciation: '',
-      detailed_tip: q.detailed_tip
-    }));
-
-    const combined = [...examItems, ...transItems];
-    return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
-
-  const translationZhGrPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 20, 5);
-    const transItems = pool.map((word, idx) => {
-      const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
-      const testSentence = hasSentence && (idx % 2 === 1);
-      return {
-        id: word.id,
-        isExam: false,
-        type: testSentence ? 'sentence' : 'word',
-        greek: testSentence ? word.example_greek! : word.word_greek,
-        chinese: testSentence ? word.example_chinese! : word.word_chinese,
-        wordGreek: word.word_greek,
-        wordChinese: word.word_chinese,
-        word_greek: word.word_greek,
-        word_chinese: word.word_chinese,
-        pronunciation: word.pronunciation || '',
-        detailed_tip: ''
-      };
-    });
-
-    const level = activeExamLevel;
-    const exams = getDailyExams(level, 'translation_zh_gr', 1);
-    const examItems = exams.map((q: any) => ({
-      id: q.id,
-      isExam: true,
-      type: 'exam',
-      greek: q.greek,
-      chinese: q.chinese,
-      wordGreek: '',
-      wordChinese: '',
-      word_greek: q.greek,
-      word_chinese: q.chinese,
-      pronunciation: '',
-      detailed_tip: q.detailed_tip
-    }));
-
-    const combined = [...examItems, ...transItems];
-    return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
-
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
-
   const handleCheckTransGrZh = () => {
     const cleanUser = cleanChinese(userTransGrZhInput);
     const cleanAnswer = cleanChinese(currentTransGrZh.chinese);
@@ -2153,23 +2176,7 @@ export default function StudentApp() {
     }
   };
 
-  const handleReportFeedback = async () => {
-    if (!currentTransGrZh) return;
-    const newFeedbackItem = {
-      id: Date.now().toString(),
-      questionId: currentTransGrZh.id,
-      greek: currentTransGrZh.greek,
-      expected: currentTransGrZh.chinese,
-      userTyped: userTransGrZhInput,
-      date: getGreeceDateString(),
-      status: 'pending' as const
-    };
-    const updatedFeedback = [...userFeedbackList, newFeedbackItem];
-    setUserFeedbackList(updatedFeedback);
-    await saveSharedState({ user_feedback: updatedFeedback });
-    setFeedbackSubmitted(true);
-    alert("您的翻译反馈已提交给家长！可以在家长后台进行审核，一键添加为备选翻译或纠正，Leon Coach 会自我成长哦！");
-  };
+
 
   const handleCheckTransZhGr = () => {
     const cleanUser = cleanGreekForComparison(userTransZhGrInput);
@@ -4260,7 +4267,12 @@ export default function StudentApp() {
                   )}
                   {!isCorrectTransGrZh && (
                     <button
-                      onClick={handleReportFeedback}
+                      onClick={() => handleReportFeedback(
+                        currentTransGrZh.id,
+                        currentTransGrZh.greek,
+                        currentTransGrZh.chinese,
+                        userTransGrZhInput
+                      )}
                       disabled={feedbackSubmitted}
                       className="btn-premium"
                       style={{
@@ -4413,6 +4425,32 @@ export default function StudentApp() {
                     <p style={{ color: '#86868B', fontSize: '12.5px', marginTop: '4px', fontWeight: 500 }}>
                       单词释义 / Λεξιλόγιο: {currentTransZhGr.wordChinese} → {currentTransZhGr.wordGreek}
                     </p>
+                  )}
+                  {!isCorrectTransZhGrInput && (
+                    <button
+                      onClick={() => handleReportFeedback(
+                        currentTransZhGr.id,
+                        currentTransZhGr.greek,
+                        currentTransZhGr.type === 'word' ? currentTransZhGr.wordChinese : currentTransZhGr.chinese,
+                        userTransZhGrInput
+                      )}
+                      disabled={feedbackSubmitted}
+                      className="btn-premium"
+                      style={{
+                        marginTop: '12px',
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        width: 'auto',
+                        border: '1px solid #FF9500',
+                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                    </button>
                   )}
                 </div>
               )}
