@@ -1745,6 +1745,14 @@ export default function StudentApp() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModule, currentSpellingWord, spellInput, spellingCompleted]);
 
+  const isSentenceItem = (item: any) => {
+    if (!item) return false;
+    if (item.type === 'sentence') return true;
+    const g = (item.greek || item.word_greek || '').trim();
+    const c = (item.chinese || item.word_chinese || '').trim();
+    return g.includes(' ') || g.length > 15 || c.length > 12;
+  };
+
   const translationGrZhPool = useMemo(() => {
     const pool = getRotatedModulePool(dailyDeck, 20, 4);
     const transItems = pool.map((word, idx) => {
@@ -1753,10 +1761,12 @@ export default function StudentApp() {
                               !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
       const testSentence = hasSentence && (idx % 2 === 1);
+      const isWordSentence = (word.word_greek && word.word_greek.trim().includes(' ')) || (word.word_chinese && word.word_chinese.trim().length > 12);
+      const isSentence = testSentence || isWordSentence;
       return {
         id: word.id,
         isExam: false,
-        type: testSentence ? 'sentence' : 'word',
+        type: isSentence ? 'sentence' : 'word',
         greek: testSentence ? word.example_greek! : word.word_greek,
         chinese: testSentence ? word.example_chinese! : word.word_chinese,
         wordGreek: word.word_greek,
@@ -1770,19 +1780,22 @@ export default function StudentApp() {
 
     const level = activeExamLevel;
     const exams = getDailyExams(level, 'translation_gr_zh', 1);
-    const examItems = exams.map((q: any) => ({
-      id: q.id,
-      isExam: true,
-      type: 'exam',
-      greek: q.greek,
-      chinese: q.chinese,
-      wordGreek: '',
-      wordChinese: '',
-      word_greek: q.greek,
-      word_chinese: q.chinese,
-      pronunciation: '',
-      detailed_tip: q.detailed_tip
-    }));
+    const examItems = exams.map((q: any) => {
+      const isExamSentence = (q.greek && q.greek.trim().includes(' ')) || (q.chinese && q.chinese.trim().length > 10);
+      return {
+        id: q.id,
+        isExam: true,
+        type: isExamSentence ? 'sentence' : 'exam',
+        greek: q.greek,
+        chinese: q.chinese,
+        wordGreek: '',
+        wordChinese: '',
+        word_greek: q.greek,
+        word_chinese: q.chinese,
+        pronunciation: '',
+        detailed_tip: q.detailed_tip
+      };
+    });
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
@@ -1796,10 +1809,12 @@ export default function StudentApp() {
                               !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
       const testSentence = hasSentence && (idx % 2 === 1);
+      const isWordSentence = (word.word_greek && word.word_greek.trim().includes(' ')) || (word.word_chinese && word.word_chinese.trim().length > 12);
+      const isSentence = testSentence || isWordSentence;
       return {
         id: word.id,
         isExam: false,
-        type: testSentence ? 'sentence' : 'word',
+        type: isSentence ? 'sentence' : 'word',
         greek: testSentence ? word.example_greek! : word.word_greek,
         chinese: testSentence ? word.example_chinese! : word.word_chinese,
         wordGreek: word.word_greek,
@@ -1813,19 +1828,22 @@ export default function StudentApp() {
 
     const level = activeExamLevel;
     const exams = getDailyExams(level, 'translation_zh_gr', 1);
-    const examItems = exams.map((q: any) => ({
-      id: q.id,
-      isExam: true,
-      type: 'exam',
-      greek: q.greek,
-      chinese: q.chinese,
-      wordGreek: '',
-      wordChinese: '',
-      word_greek: q.greek,
-      word_chinese: q.chinese,
-      pronunciation: '',
-      detailed_tip: q.detailed_tip
-    }));
+    const examItems = exams.map((q: any) => {
+      const isExamSentence = (q.greek && q.greek.trim().includes(' ')) || (q.chinese && q.chinese.trim().length > 10);
+      return {
+        id: q.id,
+        isExam: true,
+        type: isExamSentence ? 'sentence' : 'exam',
+        greek: q.greek,
+        chinese: q.chinese,
+        wordGreek: '',
+        wordChinese: '',
+        word_greek: q.greek,
+        word_chinese: q.chinese,
+        pronunciation: '',
+        detailed_tip: q.detailed_tip
+      };
+    });
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
@@ -4183,18 +4201,18 @@ export default function StudentApp() {
                 <span style={{ 
                   fontSize: '12px', 
                   fontWeight: 700, 
-                  background: currentTransGrZh.type === 'sentence' ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)',
-                  color: currentTransGrZh.type === 'sentence' ? '#FF9500' : '#0071E3',
+                  background: isSentenceItem(currentTransGrZh) ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)',
+                  color: isSentenceItem(currentTransGrZh) ? '#FF9500' : '#0071E3',
                   padding: '4px 10px',
                   borderRadius: '6px',
                   textTransform: 'uppercase'
                 }}>
-                  {currentTransGrZh.type === 'sentence' ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)'}
+                  {isSentenceItem(currentTransGrZh) ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)'}
                 </span>
                 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '16px' }}>
                   <h3 style={{ 
-                    fontSize: currentTransGrZh.type === 'sentence' ? '28px' : '40px', 
+                    fontSize: isSentenceItem(currentTransGrZh) ? '28px' : '40px', 
                     fontWeight: 800, 
                     color: '#1D1D1F', 
                     margin: 0,
@@ -4208,11 +4226,11 @@ export default function StudentApp() {
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0071E3', display: 'inline-flex', alignItems: 'center', padding: '4px' }}
                     title="播放读音"
                   >
-                    <Volume2 size={currentTransGrZh.type === 'sentence' ? 22 : 26} />
+                    <Volume2 size={isSentenceItem(currentTransGrZh) ? 22 : 26} />
                   </button>
                 </div>
 
-                {currentTransGrZh.type === 'word' && currentTransGrZh.pronunciation && (
+                {!isSentenceItem(currentTransGrZh) && currentTransGrZh.pronunciation && (
                   <p style={{ color: '#86868B', fontStyle: 'italic', marginTop: '4px' }}>/{currentTransGrZh.pronunciation}/</p>
                 )}
               </div>
@@ -4260,7 +4278,7 @@ export default function StudentApp() {
                   <p style={{ color: '#1D1D1F', fontSize: '14.5px', marginTop: '6px', fontWeight: 600 }}>
                     标准答案 / Σωστή Απάντηση: {currentTransGrZh.chinese}
                   </p>
-                  {currentTransGrZh.type === 'sentence' && (
+                  {isSentenceItem(currentTransGrZh) && (
                     <p style={{ color: '#86868B', fontSize: '12.5px', marginTop: '4px', fontWeight: 500 }}>
                       单词释义 / Λεξιλόγιο: {currentTransGrZh.wordGreek} → {currentTransGrZh.wordChinese}
                     </p>
@@ -4294,7 +4312,7 @@ export default function StudentApp() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 {!transGrZhChecked ? (
                   <>
                     <button 
@@ -4303,6 +4321,29 @@ export default function StudentApp() {
                       style={{ width: 'auto', padding: '12px 24px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500' }}
                     >
                       {showTip ? '收起提示 / Απόκρυψη' : '查看提示 / Συμβουλή'}
+                    </button>
+                    <button
+                      onClick={() => handleReportFeedback(
+                        currentTransGrZh.id,
+                        currentTransGrZh.greek,
+                        currentTransGrZh.chinese,
+                        userTransGrZhInput.trim() || '(题目类型报错/格式异常)'
+                      )}
+                      disabled={feedbackSubmitted}
+                      className="btn-premium"
+                      style={{
+                        width: 'auto',
+                        padding: '12px 18px',
+                        border: '1px solid #FF9500',
+                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      title="任何题目问题均可一键反馈给家长后台"
+                    >
+                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                     </button>
                     <button 
                       disabled={!userTransGrZhInput.trim()} 
@@ -4348,13 +4389,13 @@ export default function StudentApp() {
                 <span style={{ 
                   fontSize: '12px', 
                   fontWeight: 700, 
-                  background: currentTransZhGr.type === 'sentence' ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)',
-                  color: currentTransZhGr.type === 'sentence' ? '#FF9500' : '#0071E3',
+                  background: isSentenceItem(currentTransZhGr) ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)',
+                  color: isSentenceItem(currentTransZhGr) ? '#FF9500' : '#0071E3',
                   padding: '4px 10px',
                   borderRadius: '6px',
                   textTransform: 'uppercase'
                 }}>
-                  {currentTransZhGr.type === 'sentence' ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)'}
+                  {isSentenceItem(currentTransZhGr) ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)'}
                 </span>
                 
                 <h3 style={{ 
@@ -4421,7 +4462,7 @@ export default function StudentApp() {
                       <Volume2 size={18} />
                     </button>
                   </p>
-                  {currentTransZhGr.type === 'sentence' && (
+                  {isSentenceItem(currentTransZhGr) && (
                     <p style={{ color: '#86868B', fontSize: '12.5px', marginTop: '4px', fontWeight: 500 }}>
                       单词释义 / Λεξιλόγιο: {currentTransZhGr.wordChinese} → {currentTransZhGr.wordGreek}
                     </p>
@@ -4455,7 +4496,7 @@ export default function StudentApp() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
                 {!transZhGrChecked ? (
                   <>
                     <button 
@@ -4464,6 +4505,29 @@ export default function StudentApp() {
                       style={{ width: 'auto', padding: '12px 24px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500' }}
                     >
                       {showTip ? '收起提示 / Απόκρυψη' : '查看提示 / Συμβουλή'}
+                    </button>
+                    <button
+                      onClick={() => handleReportFeedback(
+                        currentTransZhGr.id,
+                        currentTransZhGr.greek,
+                        currentTransZhGr.type === 'word' ? currentTransZhGr.wordChinese : currentTransZhGr.chinese,
+                        userTransZhGrInput.trim() || '(题目类型报错/格式异常)'
+                      )}
+                      disabled={feedbackSubmitted}
+                      className="btn-premium"
+                      style={{
+                        width: 'auto',
+                        padding: '12px 18px',
+                        border: '1px solid #FF9500',
+                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      title="任何题目问题均可一键反馈给家长后台"
+                    >
+                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                     </button>
                     <button 
                       disabled={!userTransZhGrInput.trim()} 
