@@ -2407,7 +2407,7 @@ export default function StudentApp() {
       dailyRewardsAwarded[dateStr] = true;
       updates.daily_rewards_awarded = dailyRewardsAwarded;
       
-      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部六大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
+      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部七大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
     } else {
       pointsEarnedText = `\n今日已完成模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 7\n全部做完每天可积 10 分！\n当前总积分: ${score} XP`;
     }
