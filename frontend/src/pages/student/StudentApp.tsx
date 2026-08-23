@@ -1717,20 +1717,14 @@ export default function StudentApp() {
 
   const translationGrZhPool = useMemo(() => {
     const pool = getRotatedModulePool(dailyDeck, 20, 4);
-    const transItems = pool.map((word, idx) => {
-      const isCleanExChinese = word.example_chinese && 
-                              !/[\u0370-\u03ff\u1f00-\u1fff]/.test(word.example_chinese) &&
-                              !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
-      const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
-      const testSentence = hasSentence && (idx % 2 === 1);
-      const isWordSentence = (word.word_greek && word.word_greek.trim().includes(' ')) || (word.word_chinese && word.word_chinese.trim().length > 12);
-      const isSentence = testSentence || isWordSentence;
+    const transItems = pool.map(word => {
+      const isSentence = isSentenceItem(word);
       return {
         id: word.id,
         isExam: false,
         type: isSentence ? 'sentence' : 'word',
-        greek: testSentence ? word.example_greek! : word.word_greek,
-        chinese: testSentence ? word.example_chinese! : word.word_chinese,
+        greek: word.word_greek,
+        chinese: word.word_chinese,
         wordGreek: word.word_greek,
         wordChinese: word.word_chinese,
         word_greek: word.word_greek,
@@ -1765,20 +1759,14 @@ export default function StudentApp() {
 
   const translationZhGrPool = useMemo(() => {
     const pool = getRotatedModulePool(dailyDeck, 20, 5);
-    const transItems = pool.map((word, idx) => {
-      const isCleanExChinese = word.example_chinese && 
-                              !/[\u0370-\u03ff\u1f00-\u1fff]/.test(word.example_chinese) &&
-                              !/^(中性|阴性|阳性|动词|名词|形容词|副词)/.test(word.example_chinese);
-      const hasSentence = word.example_greek && word.example_greek.trim().length > 0 && isCleanExChinese;
-      const testSentence = hasSentence && (idx % 2 === 1);
-      const isWordSentence = (word.word_greek && word.word_greek.trim().includes(' ')) || (word.word_chinese && word.word_chinese.trim().length > 12);
-      const isSentence = testSentence || isWordSentence;
+    const transItems = pool.map(word => {
+      const isSentence = isSentenceItem(word);
       return {
         id: word.id,
         isExam: false,
         type: isSentence ? 'sentence' : 'word',
-        greek: testSentence ? word.example_greek! : word.word_greek,
-        chinese: testSentence ? word.example_chinese! : word.word_chinese,
+        greek: word.word_greek,
+        chinese: word.word_chinese,
         wordGreek: word.word_greek,
         wordChinese: word.word_chinese,
         word_greek: word.word_greek,
