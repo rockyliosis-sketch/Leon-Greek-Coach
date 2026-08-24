@@ -19,3 +19,9 @@ dist-ssr/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Binary / Huge assets (protect GitHub limit)
+*.pdf
+*.docx
+*.zip
+*.tar.gz
