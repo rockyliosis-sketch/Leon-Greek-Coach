@@ -206,6 +206,57 @@ class CurriculumQAVerifier:
             if not q_text or not ans:
                 self.errors.append(f"[Exam #{q_id}] Missing question text or answer")
 
+    def audit_master_unit_banks(self):
+        """Gate 4: Audit 39-unit 7-type master reserve question bank (1,700+ questions)."""
+        master_path = os.path.join(self.data_dir, "unit_master_question_banks.json")
+        if not os.path.exists(master_path):
+            self.warnings.append(f"Master unit reserve bank not found at {master_path}")
+            return
+
+        with open(master_path, "r", encoding="utf-8") as f:
+            banks = json.load(f)
+
+        self.stats["total_master_units"] = len(banks)
+        total_q = 0
+        type_breakdown = {}
+
+        for b in banks:
+            b_code = b.get("book_code")
+            u_num = b.get("unit")
+            q_by_type = b.get("questions_by_type", {})
+            
+            # Check 7 question types
+            for qtype in ["matching", "spelling", "quiz", "truefalse", "translation_gr_zh", "translation_zh_gr", "grammar_dialogue_drills"]:
+                items = q_by_type.get(qtype, [])
+                total_q += len(items)
+                type_breakdown[qtype] = type_breakdown.get(qtype, 0) + len(items)
+                
+                # Check items
+                for item in items:
+                    if qtype == "matching":
+                        if not item.get("greek") or not item.get("chinese"):
+                            self.errors.append(f"[{b_code} U{u_num} Match] Missing greek or chinese: {item}")
+                    elif qtype == "spelling":
+                        if not item.get("prompt_chinese") or not item.get("answer_greek"):
+                            self.errors.append(f"[{b_code} U{u_num} Spell] Missing prompt or answer: {item}")
+                    elif qtype == "quiz":
+                        if len(item.get("options", [])) != 4:
+                            self.errors.append(f"[{b_code} U{u_num} Quiz] Options != 4: {item}")
+                        if item.get("answer") not in item.get("options", []):
+                            self.errors.append(f"[{b_code} U{u_num} Quiz] Answer not in options: {item}")
+                    elif qtype == "truefalse":
+                        if not item.get("greek") or not item.get("displayed_chinese"):
+                            self.errors.append(f"[{b_code} U{u_num} TF] Missing greek or displayed_chinese: {item}")
+                    elif qtype == "translation_gr_zh":
+                        if not item.get("source_greek") or not item.get("standard_chinese"):
+                            self.errors.append(f"[{b_code} U{u_num} T_GZ] Missing source or target: {item}")
+                    elif qtype == "translation_zh_gr":
+                        if not item.get("source_chinese") or not item.get("standard_greek"):
+                            self.errors.append(f"[{b_code} U{u_num} T_ZG] Missing source or target: {item}")
+
+        self.stats["total_master_reserve_questions"] = total_q
+        self.stats["master_reserve_type_breakdown"] = type_breakdown
+
     def run_all_checks(self) -> bool:
         """Run all verification gates."""
         print("🏛️ =====================================================================")
@@ -214,13 +265,15 @@ class CurriculumQAVerifier:
         
         self.audit_vocabulary()
         self.audit_knowledge_drills()
+        self.audit_master_unit_banks()
         self.audit_exams()
 
-        print(f"📊 Total Vocabulary Items Audited : {self.stats.get('total_vocabulary', 0)}")
-        print(f"📊 Total Curriculum Units Audited  : {self.stats.get('total_units', 0)}")
-        print(f"📊 Total Multi-Type Drills Audited : {self.stats.get('total_drills', 0)}")
-        print(f"📊 Breakdown of Drill Types        : {self.stats.get('drill_type_counts', {})}")
-        print(f"📊 Choice Answer Distributions     : {self.stats.get('choice_position_distribution', {})}")
+        print(f"📊 Total Vocabulary Items Audited     : {self.stats.get('total_vocabulary', 0)}")
+        print(f"📊 Total Curriculum Units Audited      : {self.stats.get('total_units', 0)}")
+        print(f"📊 Total Multi-Type Drills Audited     : {self.stats.get('total_drills', 0)}")
+        print(f"📊 Total Master Reserve Questions      : {self.stats.get('total_master_reserve_questions', 0)}")
+        print(f"📊 7-Type Reserve Question Breakdown   : {self.stats.get('master_reserve_type_breakdown', {})}")
+        print(f"📊 Choice Answer Distributions         : {self.stats.get('choice_position_distribution', {})}")
 
         if self.warnings:
             print(f"\n⚠️ WARNINGS ({len(self.warnings)}):")
