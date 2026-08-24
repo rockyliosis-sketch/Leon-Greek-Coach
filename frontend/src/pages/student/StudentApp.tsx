@@ -476,8 +476,10 @@ const removeGreekAccents = (str: string): string => {
 };
 
 const getSpellingTargetWord = (word: string): string => {
-  // If there's a parenthesis, remove it (e.g. "άντρας, ο (σύζυγος)" -> "άντρας, ο")
-  let cleaned = word.replace(/\s*\(.*?\)/g, '');
+  // Strip parentheses, quotes, periods and punctuation
+  let cleaned = word.replace(/\s*\(.*?\)/g, '')
+                    .replace(/[“”"'.。!?,;·]/g, '')
+                    .trim();
   
   // If there's a comma, take only the first part (e.g. "αβγό, το" -> "αβγό")
   if (cleaned.includes(',')) {
@@ -3950,6 +3952,30 @@ export default function StudentApp() {
                   <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
                     {getDynamicTip(currentSpellingWord)}
                   </div>
+                  <button
+                    onClick={() => handleReportFeedback(
+                      currentSpellingWord.id,
+                      currentSpellingWord.word_greek,
+                      currentSpellingWord.word_chinese,
+                      spellInput.join('')
+                    )}
+                    disabled={feedbackSubmitted}
+                    className="btn-premium"
+                    style={{
+                      marginTop: '12px',
+                      padding: '6px 12px',
+                      fontSize: '13px',
+                      width: 'auto',
+                      border: '1px solid #FF9500',
+                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -4067,6 +4093,30 @@ export default function StudentApp() {
                   <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
                     {getDynamicTip(currentQuizWord)}
                   </div>
+                  <button
+                    onClick={() => handleReportFeedback(
+                      currentQuizWord.id,
+                      currentQuizWord.word_greek,
+                      currentQuizWord.word_chinese,
+                      selectedOption || ''
+                    )}
+                    disabled={feedbackSubmitted}
+                    className="btn-premium"
+                    style={{
+                      marginTop: '12px',
+                      padding: '6px 12px',
+                      fontSize: '13px',
+                      width: 'auto',
+                      border: '1px solid #FF9500',
+                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -4323,6 +4373,30 @@ export default function StudentApp() {
                   <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
                     {getDynamicTip(currentTfWord)}
                   </div>
+                  <button
+                    onClick={() => handleReportFeedback(
+                      currentTfWord.id,
+                      currentTfWord.greek,
+                      currentTfWord.chinese,
+                      tfChecked ? (tfIsCorrect ? '正确' : '错误') : '(查看提示)'
+                    )}
+                    disabled={feedbackSubmitted}
+                    className="btn-premium"
+                    style={{
+                      marginTop: '12px',
+                      padding: '6px 12px',
+                      fontSize: '13px',
+                      width: 'auto',
+                      border: '1px solid #FF9500',
+                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                  </button>
                 </div>
               )}
             </div>
