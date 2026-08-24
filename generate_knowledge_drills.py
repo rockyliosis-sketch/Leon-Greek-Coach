@@ -37,7 +37,7 @@ units_data = [
                 "skill_type": "conjugation",
                 "question": "Πώς ______; — Με λένε Ελένη.",
                 "translation": "你叫什么名字？—— 我叫埃莱妮。",
-                "options": ["σε λένε", "με λένε", "τον λένε", "σας λένε"],
+                "options": ["σε λένε", "με λένε", "τον λένε", "μας λένε"],
                 "answer": "σε λένε",
                 "detailed_tip": "【变位解析】问对方名字（单数熟人）用 'Πώς σε λένε;'（你叫什么？），回答用 'Με λένε...'（我叫...）。"
             },
@@ -640,7 +640,7 @@ units_data = [
                 "skill_type": "syntax",
                 "question": "______ τα μάτια μου από το πολύ διάβασμα.",
                 "translation": "因为看太多书，我的眼睛很疼。",
-                "options": ["Πονούν", "Πονάει", "Πονάω", "Πονάνε"],
+                "options": ["Πονούν", "Πονάει", "Πονάω", "Πονάτε"],
                 "answer": "Πονούν",
                 "detailed_tip": "【身体疼痛动词配合】主语 'τα μάτια' 是复数，动词使用第三人称复数 'Πονούν' (或 Πονάνε)。"
             },
@@ -932,7 +932,7 @@ units_data = [
         "grammar_points": "祈使式/命令语气入门 (Πες μου 告诉我, Δείξε μου 指给我看, Έλα 过来, Κοίτα 看)、礼貌求助 (Μπορείτε να με βοηθήσετε;)。",
         "core_formulas": [
             "Πες μου πού είναι ο σταθμός (告诉我车站在哪里)",
-            "Δείξε μου στον χάρτη, παρακαλώ (请在地毯/地图上指给我看)",
+            "Δείξε μου στον χάρτη, παρακαλώ (请在地图上指给我看)",
             "Μπορείτε να με βοηθήσετε; (您能帮帮我吗？)",
             "Βοήθεια! (救命/帮助！)"
         ],
@@ -1200,7 +1200,7 @@ units_data = [
                 "skill_type": "syntax",
                 "question": "Σε παρακαλώ, ______ λες ψέματα!",
                 "translation": "请你不要撒谎！",
-                "options": ["μην", "δεν", "όχι", "μη"],
+                "options": ["μην", "δεν", "όχι", "ποτέ"],
                 "answer": "μην",
                 "detailed_tip": "【虚拟式与命令否定】在虚拟式、祈使句中表达否定用 'μη / μην'，不用 'δεν'。"
             }
@@ -1343,6 +1343,70 @@ units_data = [
     }
 ]
 
+# Pre-Flight QA Verification Gate
+import re
+
+def remove_accents(text: str) -> str:
+    accents_map = {
+        'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω',
+        'Ά': 'Α', 'Έ': 'Ε', 'Ή': 'Η', 'Ί': 'Ι', 'Ό': 'Ο', 'Ύ': 'Υ', 'Ώ': 'Ω',
+        'ΐ': 'ι', 'ΰ': 'υ', 'ϊ': 'ι', 'ϋ': 'υ'
+    }
+    for k, v in accents_map.items():
+        text = text.replace(k, v)
+    return text
+
+print("🔍 Executing Pre-Flight Quality Assurance Gate...")
+validation_errors = []
+total_drills = 0
+
+for u in units_data:
+    b_id = u.get("book_id", "")
+    u_num = u.get("unit", 0)
+    u_title = u.get("unit_title", "")
+    drills = u.get("drills", [])
+    total_drills += len(drills)
+
+    for dia in u.get("golden_dialogues", []):
+        if not dia.get("greek") or not dia.get("chinese"):
+            validation_errors.append(f"[{b_id} U{u_num}] Dialogue missing greek/chinese: {dia}")
+
+    for d in drills:
+        d_id = d.get("id")
+        q = d.get("question", "").strip()
+        ans = d.get("answer", "").strip()
+        opts = d.get("options", [])
+        trans = d.get("translation", "").strip()
+        tip = d.get("detailed_tip", "").strip()
+        stype = d.get("skill_type", "").strip()
+
+        if not q or not ans or not trans or not tip:
+            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Missing required field(s)")
+        if len(opts) != 4:
+            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Must have exactly 4 options, got {len(opts)}")
+        if len(opts) != len(set(opts)):
+            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Duplicate options found: {opts}")
+        if ans not in opts:
+            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Answer '{ans}' not in options {opts}")
+        if "______" in q:
+            reconstructed = q.replace("______", ans)
+            if not re.search(r'[\u0370-\u03ff\u1f00-\u1fff]', reconstructed):
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Reconstructed sentence missing Greek: {reconstructed}")
+        if stype in ["syntax", "conjugation"]:
+            opts_cleaned = [remove_accents(o.lower()) for o in opts]
+            if "πονουν" in opts_cleaned and "πονανε" in opts_cleaned:
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Dual-correct options: 'Πονούν' and 'Πονάνε'")
+            if "μη" in opts and "μην" in opts:
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Dual-correct options: 'μη' and 'μην'")
+
+if validation_errors:
+    print(f"❌ FATAL: {len(validation_errors)} QA validation error(s) detected. Generation ABORTED:")
+    for err in validation_errors:
+        print(f"  • {err}")
+    exit(1)
+
+print(f"✅ QA Gate Passed: All {len(units_data)} units and {total_drills} drills verified with 100% integrity!")
+
 # Write JSON
 frontend_json_path = 'frontend/src/data/unit_knowledge_drills.json'
 with open(frontend_json_path, 'w', encoding='utf-8') as f:
@@ -1375,3 +1439,4 @@ with open(md_path, 'w', encoding='utf-8') as f:
         f.write("\n---\n\n")
 
 print(f"Generated Markdown skills matrix at {md_path}")
+
