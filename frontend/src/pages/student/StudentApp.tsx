@@ -1848,7 +1848,7 @@ export default function StudentApp() {
           status: item.scheduled_date === selectedDateStr ? 'upcoming' : 'mastered',
           scheduled_date: item.scheduled_date
         });
-        if (uniquePool.length >= 25) break;
+        if (uniquePool.length >= 40) break;
       }
     }
 
