@@ -1799,49 +1799,73 @@ export default function StudentApp() {
     return filterDuplicateTranslations(combined).slice(0, 20);
   }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
-    // Glossary Review Pool (针对 A1/A2 词汇表知识库的每日必做特训池)
+  // Glossary Review Pool (针对全库 A1/A2 词汇表知识库的每日必做特训池)
   const glossaryReviewPool = useMemo(() => {
-    const allMaster: any[] = (staticVocabData as any).master_glossary || [];
-    if (allMaster.length === 0) return [];
+    // 优先使用 allVocab (包含全量 1864 个单词与手写笔记词汇)
+    const baseList: any[] = allVocab && allVocab.length > 0 ? allVocab : (dailyDeck || []);
+    if (baseList.length === 0) return [];
 
-    const scheduledToday = allMaster.filter((w: any) => w.scheduled_date === selectedDateStr);
-    
-    // Ebbinghaus review intervals: 1, 2, 4, 7, 15, 30 days prior
-    const ebbinghausReviews: any[] = [];
-    const intervals = [1, 2, 4, 7, 15, 30];
+    // 为每个词条计算分类标签与元数据
+    const formatGlossaryItem = (w: any) => {
+      const gr = (w.word_greek || '').trim().toLowerCase();
+      let tag = '词';
+      if (gr.endsWith('ω') || gr.endsWith('ώ')) tag = '动';
+      else if (gr.endsWith('ος') || gr.endsWith('ης') || gr.startsWith('ο ')) tag = '阳';
+      else if (gr.endsWith('α') || gr.endsWith('η') || gr.startsWith('η ')) tag = '阴';
+      else if (gr.endsWith('ο') || gr.endsWith('ι') || gr.endsWith('μα') || gr.startsWith('το ')) tag = '中';
+      else if (gr.endsWith('ες') || gr.endsWith('ους') || gr.endsWith('α') || gr.startsWith('τα ')) tag = '复';
+
+      return {
+        id: w.id,
+        word_greek: w.word_greek,
+        word_chinese: w.word_chinese,
+        word_english: w.word_english || '',
+        pronunciation: w.pronunciation || '',
+        book_id: w.book_id || 'a1',
+        unit: w.unit || 1,
+        level: w.book_id ? w.book_id.toUpperCase() : 'A1',
+        letter: w.note_date ? `笔记 · ${w.note_date.slice(5)}` : `Unit ${w.unit || 1}`,
+        tag: tag,
+        status: w.note_date === selectedDateStr ? 'upcoming' : 'mastered',
+        scheduled_date: w.note_date || selectedDateStr
+      };
+    };
+
+    // 1. 艾宾浩斯复习与当日笔记新词
+    const dueReviews: any[] = [];
     const parts = selectedDateStr.split('-');
     if (parts.length === 3) {
       const selD = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-      intervals.forEach(inv => {
+      EBBINGHAUS_INTERVALS.forEach(inv => {
         const prevD = new Date(selD);
         prevD.setDate(prevD.getDate() - inv);
         const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth() + 1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
-        const prevWords = allMaster.filter((w: any) => w.scheduled_date === prevStr);
-        ebbinghausReviews.push(...prevWords);
+        const matchingWords = baseList.filter((w: any) => w.note_date === prevStr || activatedDates[w.id] === prevStr);
+        dueReviews.push(...matchingWords);
       });
     }
 
-    let pool = [...scheduledToday, ...ebbinghausReviews];
+    // 2. 当日卡包核心词 (dailyDeck)
+    const dailyDeckItems = dailyDeck || [];
 
-    if (pool.length < 40) {
-      const fallbackWords = allMaster.filter((w: any) => w.status === 'mastered' || (w.day_assigned && w.day_assigned <= 5));
-      const seed = selectedDateStr.split('-').reduce((acc, v) => acc + (parseInt(v, 10) || 0), 0);
-      const shuffled = [...fallbackWords].sort((a: any, b: any) => ((a.id * 31 + seed) % 97) - ((b.id * 31 + seed) % 97));
-      pool = [...pool, ...shuffled];
-    }
+    // 3. 轮换补充池 (保证每天有 25-30 个词汇特训)
+    const seed = selectedDateStr.split('-').reduce((acc, v) => acc + (parseInt(v, 10) || 0), 0);
+    const shuffledFallback = [...baseList].sort((a: any, b: any) => ((a.id * 37 + seed) % 101) - ((b.id * 37 + seed) % 101));
 
+    const combined = [...dueReviews, ...dailyDeckItems, ...shuffledFallback];
     const seen = new Set<number>();
     const uniquePool: any[] = [];
-    for (const item of pool) {
+
+    for (const item of combined) {
       if (!seen.has(item.id)) {
         seen.add(item.id);
-        uniquePool.push(item);
-        if (uniquePool.length >= 40) break;
+        uniquePool.push(formatGlossaryItem(item));
+        if (uniquePool.length >= 25) break;
       }
     }
 
     return uniquePool;
-  }, [selectedDateStr]);
+  }, [allVocab, dailyDeck, activatedDates, selectedDateStr]);
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
 
@@ -5173,6 +5197,32 @@ export default function StudentApp() {
                       <Volume2 size={20} />
                     </button>
                   </div>
+                  {!isCorrectGlossaryInput && (
+                    <button
+                      onClick={() => handleReportFeedback(
+                        currentGlossaryWord.id,
+                        currentGlossaryWord.word_greek,
+                        currentGlossaryWord.word_chinese,
+                        userGlossaryInput
+                      )}
+                      disabled={feedbackSubmitted}
+                      className="btn-premium"
+                      style={{
+                        marginTop: '12px',
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        width: 'auto',
+                        border: '1px solid #FF9500',
+                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -5232,6 +5282,28 @@ export default function StudentApp() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 8.1 Fallback Screen if glossary review pool is empty */}
+        {activeModule === 'glossary_review' && !currentGlossaryWord && (
+          <div className="game-module animate-fade-in" style={{ maxWidth: '680px', width: '100%', textAlign: 'center', padding: '40px 20px' }}>
+            <div className="game-container-card" style={{ padding: '40px 24px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#1D1D1F', marginBottom: '8px' }}>
+                今日词汇表特训已全部完成！
+              </h3>
+              <p style={{ color: '#86868B', fontSize: '15px', marginBottom: '24px' }}>
+                你已熟练掌握所有已解锁的词汇，可以前往其他练习模块或者返回主页。
+              </p>
+              <button 
+                onClick={() => setActiveModule('dashboard')}
+                className="btn-premium btn-blue-filled"
+                style={{ padding: '12px 32px', fontSize: '16px' }}
+              >
+                返回主面板 / Επιστροφή
+              </button>
             </div>
           </div>
         )}
