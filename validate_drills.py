@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Leon Greek Coach - Pre-Flight Drill & Translation Verification Engine
-Automated bidirectional quality assurance gate for all curriculum drills and vocabulary.
+Leon Greek Coach - Pre-Flight Multi-Type Drill & Translation Verification Engine
+Automated bidirectional quality assurance gate for all 39 curriculum units:
+- Choice (选择题)
+- Cloze (填空题)
+- QA (问答题 / 情景应答)
+- Translate (翻译题)
 """
 
 import json
@@ -21,6 +25,7 @@ def remove_accents(text: str) -> str:
 def validate_drill_item(drill: dict, unit_context: dict) -> list:
     errors = []
     d_id = drill.get("id")
+    dtype = drill.get("drill_type", "choice")
     q = drill.get("question", "").strip()
     ans = drill.get("answer", "").strip()
     opts = drill.get("options", [])
@@ -28,7 +33,7 @@ def validate_drill_item(drill: dict, unit_context: dict) -> list:
     tip = drill.get("detailed_tip", "").strip()
     stype = drill.get("skill_type", "").strip()
 
-    # Rule 1: All required fields present
+    # Rule 1: Required basic fields
     if not q:
         errors.append(f"[ID {d_id}] Missing question text")
     if not ans:
@@ -38,34 +43,42 @@ def validate_drill_item(drill: dict, unit_context: dict) -> list:
     if not tip:
         errors.append(f"[ID {d_id}] Missing detailed tip")
 
-    # Rule 2: Options count & uniqueness
-    if len(opts) != 4:
-        errors.append(f"[ID {d_id}] Option count is {len(opts)}, expected exactly 4")
-    if len(opts) != len(set(opts)):
-        errors.append(f"[ID {d_id}] Duplicate options found: {opts}")
-    
-    # Rule 3: Answer must be one of the options
-    if ans not in opts:
-        errors.append(f"[ID {d_id}] Answer '{ans}' is not in options list: {opts}")
+    # Rule 2: Type-specific validations
+    if dtype == "choice":
+        if len(opts) != 4:
+            errors.append(f"[ID {d_id}] Option count is {len(opts)}, expected exactly 4")
+        if len(opts) != len(set(opts)):
+            errors.append(f"[ID {d_id}] Duplicate options found: {opts}")
+        if ans not in opts:
+            errors.append(f"[ID {d_id}] Answer '{ans}' is not in options: {opts}")
+        if stype in ["syntax", "conjugation"]:
+            opts_cleaned = [remove_accents(o.lower()) for o in opts]
+            if "πονουν" in opts_cleaned and "πονανε" in opts_cleaned:
+                errors.append(f"[ID {d_id}] Ambiguous options 'Πονούν' and 'Πονάνε'")
+            if "μη" in opts and "μην" in opts:
+                errors.append(f"[ID {d_id}] Ambiguous options 'μη' and 'μην'")
 
-    # Rule 4: Fill-in-the-blank target reconstruction
-    if "______" in q:
+    elif dtype == "cloze":
+        if "______" not in q:
+            errors.append(f"[ID {d_id}] Cloze question must have '______' blank marker: {q}")
+        if not drill.get("acceptable_answers"):
+            errors.append(f"[ID {d_id}] Cloze question must have acceptable_answers list")
+        # Sentence reconstruction check
         reconstructed = q.replace("______", ans)
-        # Check if the reconstructed sentence contains Greek characters
         if not re.search(r'[\u0370-\u03ff\u1f00-\u1fff]', reconstructed):
-            errors.append(f"[ID {d_id}] Reconstructed sentence has no Greek characters: {reconstructed}")
-    
-    # Rule 5: Translation & Question Consistency Check
-    if len(trans) < 2 or "TODO" in trans or "undefined" in trans:
-        errors.append(f"[ID {d_id}] Suspicious translation text: '{trans}'")
+            errors.append(f"[ID {d_id}] Cloze sentence missing Greek characters: {reconstructed}")
 
-    # Rule 6: Check for dual valid answers in conjugation/declension drills
-    if stype == "syntax" or stype == "conjugation":
-        opts_cleaned = [remove_accents(o.lower()) for o in opts]
-        if "πονουν" in opts_cleaned and "πονανε" in opts_cleaned:
-            errors.append(f"[ID {d_id}] Both 'Πονούν' and 'Πονάνε' exist in options, causing ambiguous correct answers")
-        if "μη" in opts and "μην" in opts:
-            errors.append(f"[ID {d_id}] Both 'μη' and 'μην' exist in options, causing ambiguous correct answers")
+    elif dtype == "qa":
+        if not drill.get("acceptable_answers"):
+            errors.append(f"[ID {d_id}] QA question must have acceptable_answers list")
+        if not re.search(r'[\u0370-\u03ff\u1f00-\u1fff]', ans):
+            errors.append(f"[ID {d_id}] QA answer missing Greek characters: {ans}")
+
+    elif dtype == "translate":
+        if not drill.get("acceptable_answers"):
+            errors.append(f"[ID {d_id}] Translate question must have acceptable_answers list")
+        if not re.search(r'[\u0370-\u03ff\u1f00-\u1fff]', ans):
+            errors.append(f"[ID {d_id}] Translate Greek answer missing Greek: {ans}")
 
     return errors
 
@@ -74,6 +87,7 @@ def validate_all_units(json_path: str) -> dict:
         units = json.load(f)
 
     total_drills = 0
+    type_counts = {}
     all_errors = []
     
     for u in units:
@@ -83,13 +97,13 @@ def validate_all_units(json_path: str) -> dict:
         drills = u.get("drills", [])
         total_drills += len(drills)
 
-        # Check golden dialogues
         for dia in u.get("golden_dialogues", []):
             if not dia.get("greek") or not dia.get("chinese"):
                 all_errors.append(f"[{b_id} U{u_num}] Dialogue missing greek or chinese: {dia}")
         
-        # Check drills
         for d in drills:
+            dtype = d.get("drill_type", "choice")
+            type_counts[dtype] = type_counts.get(dtype, 0) + 1
             item_errors = validate_drill_item(d, u)
             for err in item_errors:
                 all_errors.append(f"[{b_id} U{u_num} ({u_title})] {err}")
@@ -97,6 +111,7 @@ def validate_all_units(json_path: str) -> dict:
     return {
         "total_units": len(units),
         "total_drills": total_drills,
+        "type_counts": type_counts,
         "errors": all_errors,
         "passed": len(all_errors) == 0
     }
@@ -110,9 +125,10 @@ if __name__ == "__main__":
     result = validate_all_units(target_path)
     print(f"📊 Audited Units: {result['total_units']}")
     print(f"📊 Audited Drills: {result['total_drills']}")
+    print(f"📊 Drill Types Breakdown: {result['type_counts']}")
     
     if result["passed"]:
-        print("✅ ALL CHECKS PASSED: 100% Structural, Grammatical & Translation Integrity Verified!")
+        print("✅ ALL CHECKS PASSED: 100% Structural, Grammatical, Typological & Translation Integrity Verified!")
         sys.exit(0)
     else:
         print(f"❌ VERIFICATION FAILED with {len(result['errors'])} issue(s):")

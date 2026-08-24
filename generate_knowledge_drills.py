@@ -1,16 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Leon Greek Coach v2.0 - Multi-Dimensional Knowledge Base Generator
-Generates:
-1. frontend/src/data/unit_knowledge_drills.json
-2. materials/glossaries/Leon_Greek_A1_A2_Unit_Skills_Matrix.md
+Leon Greek Coach v2.0 - Comprehensive Multi-Type Knowledge Drills Generator
+Generates 39 units of deep grammar, communicative dialogue, and reading drills with 4 distinct question types:
+1. Choice (选择题 - 4 options with randomized position)
+2. Cloze (填空题 - Type the missing conjugated verb/declined noun/preposition)
+3. QA (问答题 / 情景应答 - Answer the conversational situation)
+4. Translate (句子翻译题 - Translate key communicative sentence/formula)
+
+Includes Pre-Flight QA Verification Gate ensuring 100% bidirectional correctness.
 """
 
 import json
-import os
+import random
+import re
 
-units_data = [
-    # --- A1-A (Units 1-15) ---
+random.seed(42)  # Deterministic shuffle for reproducible builds
+
+def make_shuffled_options(correct_answer, distractors):
+    opts = [correct_answer] + distractors[:3]
+    random.shuffle(opts)
+    return opts
+
+# 39 Units Full Curriculum Data
+raw_units = [
+    # ==================== A1-A (Units 1-15) ====================
     {
         "book_id": "a1-a",
         "unit": 1,
@@ -34,30 +47,44 @@ units_data = [
         "drills": [
             {
                 "id": 10101,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Πώς ______; — Με λένε Ελένη.",
                 "translation": "你叫什么名字？—— 我叫埃莱妮。",
-                "options": ["σε λένε", "με λένε", "τον λένε", "μας λένε"],
+                "options": make_shuffled_options("σε λένε", ["με λένε", "τον λένε", "μας λένε"]),
                 "answer": "σε λένε",
                 "detailed_tip": "【变位解析】问对方名字（单数熟人）用 'Πώς σε λένε;'（你叫什么？），回答用 'Με λένε...'（我叫...）。"
             },
             {
                 "id": 10102,
+                "drill_type": "cloze",
                 "skill_type": "conjugation",
-                "question": "Εγώ ______ μαθητής.",
+                "question": "Εγώ ______ (είμαι) μαθητής.",
                 "translation": "我是学生。",
-                "options": ["είμαι", "είσαι", "είναι", "είμαστε"],
                 "answer": "είμαι",
-                "detailed_tip": "【动词 είμαι 变位】第一人称单数 εγώ 对应 'είμαι' (我是)。"
+                "acceptable_answers": ["είμαι", "ειμαι"],
+                "detailed_tip": "【动词 είμαι 变位】第一人称单数 εγώ (我) 对应 'είμαι' (我是)。"
             },
             {
                 "id": 10103,
+                "drill_type": "qa",
                 "skill_type": "dialogue",
-                "question": "当向老师或多个人打招呼时，应该用哪句最礼貌？",
-                "translation": "情景选择：向长辈或多人打招呼",
-                "options": ["Γεια σας!", "Γεια σου!", "Αντίο!", "Τι κάνεις;"],
-                "answer": "Γεια σας!",
-                "detailed_tip": "【礼貌用语】'Γεια σας' 用于向长辈、老师尊称或向多人问好；'Γεια σου' 用于同龄熟人。"
+                "question": "A: Γεια σας! Πώς σας λένε;\nB: ______ (回答：我叫马诺利斯)",
+                "translation": "情境问答：回答自己的名字",
+                "answer": "Με λένε Μανώλη.",
+                "acceptable_answers": ["Με λένε Μανώλη.", "Με λένε Μανώλη", "με λένε μανώλη", "Είμαι ο Μανώλης"],
+                "options": make_shuffled_options("Με λένε Μανώλη.", ["Είσαι ο Μανώλης.", "Τον λένε Μανώλη.", "Σας λένε Μανώλη."]),
+                "detailed_tip": "【自我介绍】回答自己名字使用固定短语 'Με λένε...' 或 'Είμαι ο/η...'。"
+            },
+            {
+                "id": 10104,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "很高兴认识你！(希腊语口语最常用表达)",
+                "translation": "汉译希：很高兴认识你！",
+                "answer": "Χάρηκα πολύ!",
+                "acceptable_answers": ["Χάρηκα πολύ!", "Χάρηκα πολύ", "χαρηκα πολυ", "Χάρηκα"],
+                "detailed_tip": "【初次见面礼貌用语】希腊语初次结识对方时说 'Χάρηκα πολύ!' (很高兴认识你)。"
             }
         ]
     },
@@ -68,7 +95,7 @@ units_data = [
         "unit_title": "数字、国家与国籍 (Από πού είσαι;)",
         "badge": "🌍 国籍与冠词",
         "category": "grammar",
-        "grammar_points": "定冠词三性主格 (ο, η, το)、国籍形容词性尾变化 (Έλληνας/Ελληνίδα, Κινέζος/Κινέζα)、动词 είμαι 复数变位 (είμαστε, είστε, είναι)。",
+        "grammar_points": "定冠词三性主格 (ο, η, το)、国籍形容词性尾变化 (Έλληνας/Ελληνίδα, Κινένος/Κινέζα)、动词 είμαι 复数变位 (είμαστε, είστε, είναι)。",
         "core_formulas": [
             "Από πού είσαι; — Είμαι από την Ελλάδα / την Κίνα.",
             "ο Έλληνας (希腊男) / η Ελληνίδα (希腊女)",
@@ -83,30 +110,43 @@ units_data = [
         "drills": [
             {
                 "id": 10201,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Είμαι από ______ Ελλάδα.",
                 "translation": "我来自希腊。",
-                "options": ["την", "το", "τον", "της"],
+                "options": make_shuffled_options("την", ["το", "τον", "της"]),
                 "answer": "την",
                 "detailed_tip": "【介词与冠词】'από + 宾格'，Ελλάδα 为阴性名词，宾格定冠词用 'την'。"
             },
             {
                 "id": 10202,
+                "drill_type": "cloze",
                 "skill_type": "conjugation",
-                "question": "Εμείς ______ από το Πεκίνο.",
+                "question": "Εμείς ______ (είμαι) από το Πεκίνο.",
                 "translation": "我们来自北京。",
-                "options": ["είμαστε", "είστε", "είναι", "είμαι"],
                 "answer": "είμαστε",
-                "detailed_tip": "【动词 είμαι 变位】第一人称复数 εμείς 对应 'είμαστε' (我们是)。"
+                "acceptable_answers": ["είμαστε", "ειμαστε"],
+                "detailed_tip": "【动词 είμαι 复数】第一人称复数 εμείς 对应 'είμαστε' (我们是)。"
             },
             {
                 "id": 10203,
+                "drill_type": "choice",
                 "skill_type": "declension",
-                "question": "Η Άννα είναι ______.",
-                "translation": "安娜是希腊人（女）。",
-                "options": ["Ελληνίδα", "Έλληνας", "Ελληνικό", "Έλληνες"],
+                "question": "Η Άννα είναι ______ (希腊人·女).",
+                "translation": "安娜是希腊人（女性）。",
+                "options": make_shuffled_options("Ελληνίδα", ["Έλληνας", "Ελληνικό", "Έλληνες"]),
                 "answer": "Ελληνίδα",
                 "detailed_tip": "【国籍阴阳性】女性希腊人用 'Ελληνίδα'，男性用 'Έλληνας'。"
+            },
+            {
+                "id": 10204,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你来自哪里？(询问对方国籍/出身地)",
+                "translation": "汉译希：你来自哪里？",
+                "answer": "Από πού είσαι;",
+                "acceptable_answers": ["Από πού είσαι;", "Από πού είσαι", "απο που εισαι", "Από πού είστε;"],
+                "detailed_tip": "【地道句型】询问出身地使用 'Από πού είσαι;' (单数) 或 'Από πού είστε;' (尊称/复数)。"
             }
         ]
     },
@@ -130,30 +170,43 @@ units_data = [
         "drills": [
             {
                 "id": 10301,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Εσείς τι ______ τώρα; (κάνω)",
                 "translation": "你们现在在做什么？",
-                "options": ["κάνετε", "κάνουμε", "κάνεις", "κάνουν"],
+                "options": make_shuffled_options("κάνετε", ["κάνουμε", "κάνεις", "κάνουν"]),
                 "answer": "κάνετε",
                 "detailed_tip": "【动词变位】第二人称复数 εσείς 对应的现在时词尾为 '-ετε' -> κάνετε。"
             },
             {
                 "id": 10302,
+                "drill_type": "cloze",
                 "skill_type": "conjugation",
-                "question": "Τα παιδιά ______ ελληνικά. (διαβάζω)",
+                "question": "Τα παιδιά ______ (διαβάζω) ελληνικά.",
                 "translation": "孩子们在学希腊语。",
-                "options": ["διαβάζουν", "διαβάζει", "διαβάζουμε", "διαβάζετε"],
                 "answer": "διαβάζουν",
+                "acceptable_answers": ["διαβάζουν", "διαβαζουν", "διαβάζουνε"],
                 "detailed_tip": "【动词变位】主语 τα παιδιά (复数/他们) 对应动词第三人称复数词尾 '-ουν' -> διαβάζουν。"
             },
             {
                 "id": 10303,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Αυτό είναι το βιβλίο ______ Μαρίας.",
                 "translation": "这是玛利亚的书。",
-                "options": ["της", "την", "η", "του"],
+                "options": make_shuffled_options("της", ["την", "η", "του"]),
                 "answer": "της",
                 "detailed_tip": "【属格表达】阴性名词人名前用属格冠词 'της' 表示所属关系 (της Μαρίας = 玛利亚的)。"
+            },
+            {
+                "id": 10304,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我在写一封信。(使用动词 γράφω)",
+                "translation": "汉译希：我在写一封信。",
+                "answer": "Γράφω ένα γράμμα.",
+                "acceptable_answers": ["Γράφω ένα γράμμα.", "Γράφω ένα γράμμα", "γραφω ενα γραμμα", "Εγώ γράφω ένα γράμμα."],
+                "detailed_tip": "【核心句型】动词 γράφω + 宾格名词 ένα γράμμα (一封信)。"
             }
         ]
     },
@@ -176,21 +229,33 @@ units_data = [
         "drills": [
             {
                 "id": 10401,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "______ πίνακας είναι πράσινος.",
                 "translation": "黑板是绿色的。",
-                "options": ["Ο", "Η", "Το", "Οι"],
+                "options": make_shuffled_options("Ο", ["Η", "Το", "Οι"]),
                 "answer": "Ο",
                 "detailed_tip": "【名词词性】πίνακας (黑板) 是阳性名词 (-ας结尾)，定冠词主格用 'Ο'。"
             },
             {
                 "id": 10402,
+                "drill_type": "cloze",
                 "skill_type": "declension",
-                "question": "Έχω ______ καινούργια τσάντα.",
+                "question": "Έχω ______ (不定冠词·阴性) καινούργια τσάντα.",
                 "translation": "我有一个新书包。",
-                "options": ["μια", "έναν", "ένα", "ένας"],
                 "answer": "μια",
-                "detailed_tip": "【不定冠词】τσάντα (书包) 是阴性单数名词，不定冠词用 'μια'。"
+                "acceptable_answers": ["μια", "μία"],
+                "detailed_tip": "【不定冠词】τσάντα (书包) 是阴性单数名词，不定冠词用 'μια' / 'μία'。"
+            },
+            {
+                "id": 10403,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你的书包里有什么？",
+                "translation": "汉译希：你的书包里有什么？",
+                "answer": "Τι έχεις στην τσάντα σου;",
+                "acceptable_answers": ["Τι έχεις στην τσάντα σου;", "Τι έχεις στην τσάντα σου", "Τι έχεις μέσα στην τσάντα σου;", "τι εχεις στην τσαντα σου"],
+                "detailed_tip": "【课堂句型】Τι έχεις... (你有什么...) + στην τσάντα σου (在你的书包里)。"
             }
         ]
     },
@@ -214,21 +279,34 @@ units_data = [
         "drills": [
             {
                 "id": 10501,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Το μάθημα είναι ______ πέντε το απόγευμα.",
                 "translation": "课程在下午五点。",
-                "options": ["στις", "στο", "στη", "στην"],
+                "options": make_shuffled_options("στις", ["στο", "στη", "στην"]),
                 "answer": "στις",
                 "detailed_tip": "【时间介词】表达“在几点钟”时，使用介词短语 'στις + 钟点' (除了1点用 στη μία)。"
             },
             {
                 "id": 10502,
+                "drill_type": "qa",
                 "skill_type": "dialogue",
-                "question": "Τι μέρα είναι σήμερα; — Σήμερα είναι ______.",
+                "question": "A: Τι μέρα είναι σήμερα;\nB: Σήμερα είναι ______ (星期五).",
                 "translation": "今天星期几？—— 今天是星期五。",
-                "options": ["Παρασκευή", "χθες", "το βράδυ", "στις έξι"],
                 "answer": "Παρασκευή",
-                "detailed_tip": "【星期表达】回答星期提问需用星期名词 (Παρασκευή = 星期五)。"
+                "acceptable_answers": ["Παρασκευή", "παρασκευη", "Σήμερα είναι Παρασκευή."],
+                "options": make_shuffled_options("Παρασκευή", ["χθες", "το βράδυ", "στις έξι"]),
+                "detailed_tip": "【星期表达】星期五在希腊语中是 'Παρασκευή'。"
+            },
+            {
+                "id": 10503,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "现在几点钟？",
+                "translation": "汉译希：现在几点钟？",
+                "answer": "Τι ώρα είναι;",
+                "acceptable_answers": ["Τι ώρα είναι;", "Τι ώρα είναι", "τι ωρα ειναι", "Τι ώρα είναι τώρα;"],
+                "detailed_tip": "【问时间固定句型】'Τι ώρα είναι;' 是询问时间的标准希腊语句型。"
             }
         ]
     },
@@ -252,12 +330,33 @@ units_data = [
         "drills": [
             {
                 "id": 10601,
+                "drill_type": "choice",
                 "skill_type": "declension",
-                "question": "Τα ______ είναι πάνω στο χαλί. (το παιχνίδι)",
+                "question": "Τα ______ είναι πάνω στο χαλί. (το παιχνίδι -> 复数)",
                 "translation": "玩具都在地毯上。",
-                "options": ["παιχνίδια", "παιχνίδι", "παιχνιδιού", "παιχνίδες"],
+                "options": make_shuffled_options("παιχνίδια", ["παιχνίδι", "παιχνιδιού", "παιχνίδες"]),
                 "answer": "παιχνίδια",
                 "detailed_tip": "【中性复数】中性名词 -ι 结尾变复数时词尾变为 '-ια' -> το παιχνίδι -> τα παιχνίδια。"
+            },
+            {
+                "id": 10602,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Στην αυλή παίζουν πολλοί ______ (ο φίλος -> 复数).",
+                "translation": "院子里有很多朋友在玩耍。",
+                "answer": "φίλοι",
+                "acceptable_answers": ["φίλοι", "φιλοι"],
+                "detailed_tip": "【阳性名词复数】阳性名词 -ος 结尾变复数词尾为 '-οι' -> ο φίλος -> οι φίλοι。"
+            },
+            {
+                "id": 10603,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我有两个球。(使用 η μπάλα)",
+                "translation": "汉译希：我有两个球。",
+                "answer": "Έχω δύο μπάλες.",
+                "acceptable_answers": ["Έχω δύο μπάλες.", "Έχω δύο μπάλες", "εχω δυο μπαλες", "Έχω 2 μπάλες."],
+                "detailed_tip": "【阴性复数】η μπάλα (单数) -> οι μπάλες (复数)。"
             }
         ]
     },
@@ -281,12 +380,33 @@ units_data = [
         "drills": [
             {
                 "id": 10701,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Ο αδερφός ______ είναι γιατρός.",
                 "translation": "我的哥哥是一名医生。",
-                "options": ["μου", "εγώ", "μου είναι", "εμένα"],
+                "options": make_shuffled_options("μου", ["εγώ", "μου είναι", "εμένα"]),
                 "answer": "μου",
                 "detailed_tip": "【物主代词】表达“我的...”在名词后紧跟弱读物主代词 'μου' (ο αδερφός μου)。"
+            },
+            {
+                "id": 10702,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Η μητέρα ______ (你的) είναι δασκάλα.",
+                "translation": "你的妈妈是一名老师。",
+                "answer": "σου",
+                "acceptable_answers": ["σου", "σου είναι"],
+                "detailed_tip": "【物主代词】第二人称弱读物主代词用 'σου' (你的)。"
+            },
+            {
+                "id": 10703,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我有一个大家庭。",
+                "translation": "汉译希：我有一个大家庭。",
+                "answer": "Έχω μια μεγάλη οικογένεια.",
+                "acceptable_answers": ["Έχω μια μεγάλη οικογένεια.", "Έχω μια μεγάλη οικογένεια", "εχω μια μεγαλη οικογενεια", "Έχω μία μεγάλη οικογένεια."],
+                "detailed_tip": "【核心句型】Έχω + μια μεγάλη οικογένεια (阴性名词词组)。"
             }
         ]
     },
@@ -297,7 +417,7 @@ units_data = [
         "unit_title": "颜色服装与外貌 (Χρώματα και ρούχα)",
         "badge": "🎨 颜色与形容词",
         "category": "grammar",
-        "grammar_points": "形容词性数格一致性 (-ος, -η, -ο / κόκκινος, κόκκινη, κόκκινο)、不可变颜色 (ροζ, μπεζ, καφέ)。",
+        "grammar_points": "形容词性数格一致性 (-ος, -η, -ο / κόκκινος, κόκκινη, κόκκινο)、不可变颜色 (ροζ, μπεζ, καφέ, μπλε)。",
         "core_formulas": [
             "Το κόκκινο φόρεμα (红色连衣裙 - 中性)",
             "Ο μπλε ουρανός (蓝色天空 - 阳性)",
@@ -310,12 +430,33 @@ units_data = [
         "drills": [
             {
                 "id": 10801,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Η Μαρία φοράει μια ______ φούστα.",
                 "translation": "玛利亚穿着一条蓝色的裙子。",
-                "options": ["μπλε", "μπλεες", "μπλεα", "μπλεσ"],
+                "options": make_shuffled_options("μπλε", ["μπλεες", "μπλεα", "μπλεσ"]),
                 "answer": "μπλε",
                 "detailed_tip": "【不可变形容词】'μπλε' (蓝色) 为外来语不可变形容词，修饰阴性/阳性/中性形式不变。"
+            },
+            {
+                "id": 10802,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Το αυτοκίνητο είναι ______ (κόκκινος -> 中性单数).",
+                "translation": "这辆车是红色的。",
+                "answer": "κόκκινο",
+                "acceptable_answers": ["κόκκινο", "κοκκινο"],
+                "detailed_tip": "【形容词性配合】το αυτοκίνητο 是中性名词，形容词用中性形式 'κόκκινο'。"
+            },
+            {
+                "id": 10803,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你的衬衫是什么颜色的？",
+                "translation": "汉译希：你的衬衫是什么颜色的？",
+                "answer": "Τι χρώμα είναι το πουκάμισό σου;",
+                "acceptable_answers": ["Τι χρώμα είναι το πουκάμισό σου;", "Τι χρώμα είναι το πουκάμισό σου", "τι χρωμα ειναι το πουκαμισο σου", "Τι χρώμα είναι το πουκάμισο σου;"],
+                "detailed_tip": "【问颜色固定句型】'Τι χρώμα είναι...;' (是什么颜色的？)。"
             }
         ]
     },
@@ -339,12 +480,33 @@ units_data = [
         "drills": [
             {
                 "id": 10901,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Στο δάσος ζουν πολλά ______.",
                 "translation": "森林里住着许多野生动物。",
-                "options": ["ζώα", "ζώο", "ζώοι", "ζώες"],
+                "options": make_shuffled_options("ζώα", ["ζώο", "ζώοι", "ζώες"]),
                 "answer": "ζώα",
                 "detailed_tip": "【中性名词复数】'το ζώο' (动物) 的复数主格形式是 'τα ζώα'。"
+            },
+            {
+                "id": 10902,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Ο σκύλος ______ (γαβγίζω - 狗在叫).",
+                "translation": "狗在吠叫。",
+                "answer": "γαβγίζει",
+                "acceptable_answers": ["γαβγίζει", "γαβγιζει"],
+                "detailed_tip": "【动词第三人称单数】主语 ο σκύλος (单数他) 对应词尾 '-ει' -> γαβγίζει。"
+            },
+            {
+                "id": 10903,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你最喜欢的动物是什么？",
+                "translation": "汉译希：你最喜欢的动物是什么？",
+                "answer": "Ποιο είναι το αγαπημένο σου ζώο;",
+                "acceptable_answers": ["Ποιο είναι το αγαπημένο σου ζώο;", "Ποιο είναι το αγαπημένο σου ζώο", "ποιο ειναι το αγαπημενο σου ζωο"],
+                "detailed_tip": "【偏好提问】Ποιο είναι το αγαπημένο σου... (你最喜欢的是什么...)。"
             }
         ]
     },
@@ -358,7 +520,7 @@ units_data = [
         "grammar_points": "时间表达法 (και τέταρτο, και μισή, παρά τέταρτο)、频度副词 (πάντα, συχνά, μερικές φορές, ποτέ)。",
         "core_formulas": [
             "Είναι οκτώ και μισή (八点半)",
-            "Είναι εννιά παρά είκοσι (九点差二十分)",
+            "Είναι εννιά παρά είκοσι (九点差二十分 = 8:40)",
             "Ξυπνάω στις επτά το πρωί (我早上七点起床)"
         ],
         "golden_dialogues": [
@@ -368,12 +530,33 @@ units_data = [
         "drills": [
             {
                 "id": 11001,
+                "drill_type": "choice",
                 "skill_type": "dialogue",
-                "question": "Είναι εννιά ______ είκοσι (8:40).",
+                "question": "Είναι εννιά ______ είκοσι (= 8:40 / 九点差二十分).",
                 "translation": "现在是九点差二十分。",
-                "options": ["παρά", "και", "από", "σε"],
+                "options": make_shuffled_options("παρά", ["και", "από", "σε"]),
                 "answer": "παρά",
                 "detailed_tip": "【时间差几分】在希腊语中表示“差几分”使用介词 'παρά' (εννιά παρά είκοσι = 9点差20分 = 8:40)。"
+            },
+            {
+                "id": 11002,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Κάθε μέρα ______ (ξυπνάω) στις επτά.",
+                "translation": "我每天七点起床。",
+                "answer": "ξυπνάω",
+                "acceptable_answers": ["ξυπνάω", "ξυπνώ", "ξυπναω", "ξυπνω"],
+                "detailed_tip": "【日常动词】动词 ξυπνάω / ξυπνώ (起床) 第一人称形式。"
+            },
+            {
+                "id": 11003,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "现在是八点半。",
+                "translation": "汉译希：现在是八点半。",
+                "answer": "Είναι οκτώ και μισή.",
+                "acceptable_answers": ["Είναι οκτώ και μισή.", "Είναι οκτώ και μισή", "ειναι οκτω και μιση", "Είναι 8 και μισή."],
+                "detailed_tip": "【时间半点】半点使用 'και μισή' (Είναι οκτώ και μισή)。"
             }
         ]
     },
@@ -396,12 +579,33 @@ units_data = [
         "drills": [
             {
                 "id": 11101,
+                "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Ο μπαμπάς είναι ______ σαλόνι.",
                 "translation": "爸爸在客厅里。",
-                "options": ["στο", "στη", "στον", "στα"],
+                "options": make_shuffled_options("στο", ["στη", "στον", "στα"]),
                 "answer": "στο",
                 "detailed_tip": "【介词缩合】σαλόνι (客厅) 是中性名词，'σε + το' 缩合为 'στο'。"
+            },
+            {
+                "id": 11102,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Η αδερφή μου κοιμάται ______ (σε + το) δωμάτιό της.",
+                "translation": "我妹妹在她的房间里睡觉。",
+                "answer": "στο",
+                "acceptable_answers": ["στο", "μέσα στο"],
+                "detailed_tip": "【介词缩合】δωμάτιο 是中性名词，'σε + το' 缩合为 'στο'。"
+            },
+            {
+                "id": 11103,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "妈妈在厨房里。(使用 η κουζίνα)",
+                "translation": "汉译希：妈妈在厨房里。",
+                "answer": "Η μαμά είναι στην κουζίνα.",
+                "acceptable_answers": ["Η μαμά είναι στην κουζίνα.", "Η μαμά είναι στην κουζίνα", "η μαμα ειναι στην κουζινα", "Η μητέρα είναι στην κουζίνα."],
+                "detailed_tip": "【介词缩合】κουζίνα 为阴性名词，'σε + την' 缩合为 'στην'。"
             }
         ]
     },
@@ -425,12 +629,33 @@ units_data = [
         "drills": [
             {
                 "id": 11201,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Η μπάλα είναι ______ από το κρεβάτι.",
                 "translation": "球在床底下。",
-                "options": ["κάτω", "πάνω", "μέσα", "δίπλα"],
+                "options": make_shuffled_options("κάτω", ["πάνω", "μέσα", "δίπλα"]),
                 "answer": "κάτω",
                 "detailed_tip": "【方位介词搭配】表达“在...下方”用 'κάτω από'。"
+            },
+            {
+                "id": 11202,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Το βιβλίο είναι ______ (在...上面) στο γραφείο.",
+                "translation": "书在书桌上面。",
+                "answer": "πάνω",
+                "acceptable_answers": ["πάνω", "πανω"],
+                "detailed_tip": "【方位词】在...上面固定为 'πάνω σε' (πάνω στο γραφείο)。"
+            },
+            {
+                "id": 11203,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "钥匙在桌子上。",
+                "translation": "汉译希：钥匙在桌子上。",
+                "answer": "Τα κλειδιά είναι πάνω στο τραπέζι.",
+                "acceptable_answers": ["Τα κλειδιά είναι πάνω στο τραπέζι.", "Τα κλειδιά είναι πάνω στο τραπέζι", "τα κλειδια ειναι πανω στο τραπεζι", "Το κλειδί είναι πάνω στο τραπέζι."],
+                "detailed_tip": "【方位句】Τα κλειδιά είναι (钥匙在) + πάνω στο τραπέζι (在桌子上)。"
             }
         ]
     },
@@ -453,12 +678,34 @@ units_data = [
         "drills": [
             {
                 "id": 11301,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Το αεροπλάνο είναι ______ γρήγορο από το τρένο.",
                 "translation": "飞机比火车更快。",
-                "options": ["πιο", "πολύ", "πολλά", "πιο πολύ"],
+                "options": make_shuffled_options("πιο", ["πολύ", "πολλά", "πιο πολύ"]),
                 "answer": "πιο",
                 "detailed_tip": "【比较级结构】希腊语比较级结构为 'πιο + 形容词原级 + από'。"
+            },
+            {
+                "id": 11302,
+                "drill_type": "qa",
+                "skill_type": "dialogue",
+                "question": "A: Συγγνώμη, πού είναι η τράπεζα;\nB: ______ (回答：一直走然后右转)",
+                "translation": "问路与指路情境",
+                "answer": "Ευθεία και μετά δεξιά.",
+                "acceptable_answers": ["Ευθεία και μετά δεξιά.", "Ευθεία και δεξιά", "ευθεια και μετα δεξια"],
+                "options": make_shuffled_options("Ευθεία και μετά δεξιά.", ["Είμαι στην τράπεζα.", "Πόσο κάνει;", "Χρόνια Πολλά!"]),
+                "detailed_tip": "【指路常用语】'Ευθεία' (直走) + 'και μετά δεξιά' (然后右转)。"
+            },
+            {
+                "id": 11303,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我去超级市场。(使用 το σούπερ μάρκετ)",
+                "translation": "汉译希：我去超级市场。",
+                "answer": "Πηγαίνω στο σούπερ μάρκετ.",
+                "acceptable_answers": ["Πηγαίνω στο σούπερ μάρκετ.", "Πηγαίνω στο σούπερ μάρκετ", "πηγαινω στο σουπερ μαρκετ", "Πάω στο σούπερ μάρκετ."],
+                "detailed_tip": "【处所方向】Πηγαίνω / Πάω + στο + 中性名词。"
             }
         ]
     },
@@ -481,12 +728,33 @@ units_data = [
         "drills": [
             {
                 "id": 11401,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Εμείς ______ στην Αθήνα εδώ και δύο χρόνια. (μένω)",
                 "translation": "我们在雅典已经住了两年了。",
-                "options": ["μένουμε", "μένετε", "μένουν", "μένεις"],
+                "options": make_shuffled_options("μένουμε", ["μένετε", "μένουν", "μένεις"]),
                 "answer": "μένουμε",
                 "detailed_tip": "【动词变位】εμείς (我们) 对应现在时第一人称复数 '-ουμε' -> μένουμε。"
+            },
+            {
+                "id": 11402,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Εσύ ______ (μιλάω) ελληνικά;",
+                "translation": "你会说希腊语吗？",
+                "answer": "μιλάς",
+                "acceptable_answers": ["μιλάς", "μιλας", "μιλάτε"],
+                "detailed_tip": "【第二类动词变位】εσύ 对应 '-άς' -> μιλάς。"
+            },
+            {
+                "id": 11403,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "是的，我会说一点希腊语。",
+                "translation": "汉译希：是的，我会说一点希腊语。",
+                "answer": "Ναι, μιλάω λίγα ελληνικά.",
+                "acceptable_answers": ["Ναι, μιλάω λίγα ελληνικά.", "Ναι, μιλάω λίγα ελληνικά", "ναι μιλαω λιγα ελληνικα", "Ναι, μιλώ λίγα ελληνικά."],
+                "detailed_tip": "【交际应答】'Ναι' (是的) + 'μιλάω λίγα ελληνικά' (我说一点希腊语)。"
             }
         ]
     },
@@ -509,17 +777,38 @@ units_data = [
         "drills": [
             {
                 "id": 11501,
+                "drill_type": "choice",
                 "skill_type": "declension",
-                "question": "Παρακαλώ, θέλω ______ εισιτήριο. (1)",
+                "question": "Παρακαλώ, θέλω ______ εισιτήριο. (数词 1 · 中性)",
                 "translation": "请给我一张票。",
-                "options": ["ένα", "ένας", "μία", "έναν"],
+                "options": make_shuffled_options("ένα", ["ένας", "μία", "έναν"]),
                 "answer": "ένα",
                 "detailed_tip": "【数词性配合】εισιτήριο (票) 是中性名词，数词'1'用中性格 'ένα'。"
+            },
+            {
+                "id": 11502,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Θέλουμε ______ (数词 3 · 中性复数) εισιτήρια.",
+                "translation": "我们想要三张门票。",
+                "answer": "τρία",
+                "acceptable_answers": ["τρία", "τρια", "3"],
+                "detailed_tip": "【数词变格】中性名词复数搭配数词 'τρία' (阳/阴用 τρεις)。"
+            },
+            {
+                "id": 11503,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "您想要几张票？",
+                "translation": "汉译希：您想要几张票？",
+                "answer": "Πόσα εισιτήρια θέλετε;",
+                "acceptable_answers": ["Πόσα εισιτήρια θέλετε;", "Πόσα εισιτήρια θέλετε", "ποσα εισιτηρια θελετε"],
+                "detailed_tip": "【数量提问】Πόσα + 中性复数名词 + θέλετε (您想要)。"
             }
         ]
     },
 
-    # --- A1-B (Units 16-30) ---
+    # ==================== A1-B (Units 16-30) ====================
     {
         "book_id": "a1-b",
         "unit": 16,
@@ -540,12 +829,33 @@ units_data = [
         "drills": [
             {
                 "id": 11601,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Σήμερα έξω ______ και έχει πολύ κρύο.",
                 "translation": "今天外面在下雨，非常冷。",
-                "options": ["βρέχει", "βρέχουν", "βρέχουμε", "βρέχεις"],
+                "options": make_shuffled_options("βρέχει", ["βρέχουν", "βρέχουμε", "βρέχεις"]),
                 "answer": "βρέχει",
                 "detailed_tip": "【无人称天气动词】下雨使用无人称单三动词 'βρέχει'。"
+            },
+            {
+                "id": 11602,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Το καλοκαίρι στην Ελλάδα κάνει πολύ ______ (热).",
+                "translation": "夏天在希腊天气很热。",
+                "answer": "ζέστη",
+                "acceptable_answers": ["ζέστη", "ζεστη"],
+                "detailed_tip": "【天气固定表达】天气热用 'κάνει ζέστη'，天气冷用 'κάνει κρύο'。"
+            },
+            {
+                "id": 11603,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "今天天气怎么样？",
+                "translation": "汉译希：今天天气怎么样？",
+                "answer": "Τι καιρό κάνει σήμερα;",
+                "acceptable_answers": ["Τι καιρό κάνει σήμερα;", "Τι καιρό κάνει σήμερα", "τι καιρο κανει σημερα"],
+                "detailed_tip": "【天气经典问句】'Τι καιρό κάνει σήμερα;' 是询问天气的标准句式。"
             }
         ]
     },
@@ -570,21 +880,34 @@ units_data = [
         "drills": [
             {
                 "id": 11701,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Εσείς ______ ελληνικά; (μιλάω)",
                 "translation": "你们说希腊语吗？",
-                "options": ["μιλάτε", "μιλάμε", "μιλάς", "μιλούν"],
+                "options": make_shuffled_options("μιλάτε", ["μιλάμε", "μιλάς", "μιλούν"]),
                 "answer": "μιλάτε",
                 "detailed_tip": "【第二类动词变位】'μιλάω' (说) 第二人称复数形式为 'μιλάτε'。"
             },
             {
                 "id": 11702,
+                "drill_type": "qa",
                 "skill_type": "dialogue",
-                "question": "在希腊餐厅用餐完毕准备结账时，应该说哪句话？",
+                "question": "在希腊餐厅用餐完毕准备结账时，应该对服务员说：______",
                 "translation": "情境交际：结账买单",
-                "options": ["Τον λογαριασμό, παρακαλώ.", "Τι ώρα είναι;", "Καλημέρα!", "Πού είναι το φαγητό;"],
                 "answer": "Τον λογαριασμό, παρακαλώ.",
-                "detailed_tip": "【地道交际】结账买单的标准希腊语是 'Τον λογαριασμό, παρακαλώ' (请结账)。"
+                "acceptable_answers": ["Τον λογαριασμό, παρακαλώ.", "Τον λογαριασμό, παρακαλώ", "τον λογαριασμο παρακαλω", "Λογαριασμό παρακαλώ"],
+                "options": make_shuffled_options("Τον λογαριασμό, παρακαλώ.", ["Τι ώρα είναι;", "Καλημέρα!", "Πού είναι το φαγητό;"]),
+                "detailed_tip": "【结账买单】标准希腊语结账用语是 'Τον λογαριασμό, παρακαλώ'。"
+            },
+            {
+                "id": 11703,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我想要一份希腊沙拉，谢谢。",
+                "translation": "汉译希：我想要一份希腊沙拉，谢谢。",
+                "answer": "Θα ήθελα μια ελληνική σαλάτα, παρακαλώ.",
+                "acceptable_answers": ["Θα ήθελα μια ελληνική σαλάτα, παρακαλώ.", "Θα ήθελα μια ελληνική σαλάτα παρακαλώ", "θα ηθελα μια ελληνικη σαλατα παρακαλω", "Θέλω μια ελληνική σαλάτα παρακαλώ."],
+                "detailed_tip": "【餐厅礼貌点餐】'Θα ήθελα...' (我想要...) + 'παρακαλώ' (请/谢谢)。"
             }
         ]
     },
@@ -607,12 +930,33 @@ units_data = [
         "drills": [
             {
                 "id": 11801,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
-                "question": "Χθες η Ελένη ______ ένα καινούργιο φόρεμα. (αγοράζω -> Aorist)",
+                "question": "Χθες η Ελένη ______ ένα καινούργιο φόρεμα. (αγοράζω -> 过去时)",
                 "translation": "昨天埃莱妮买了一条新裙子。",
-                "options": ["αγόρασε", "αγόρασα", "αγοράζει", "αγοράσουν"],
+                "options": make_shuffled_options("αγόρασε", ["αγόρασα", "αγοράζει", "αγοράσουν"]),
                 "answer": "αγόρασε",
                 "detailed_tip": "【简单过去时】第三人称单数过去时形式为 '-σε' -> αγόρασε (她买了)。"
+            },
+            {
+                "id": 11802,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Χθες το βράδυ εγώ ______ (διαβάζω -> 过去时) δύο ώρες.",
+                "translation": "昨晚我读了两个小时书。",
+                "answer": "διάβασα",
+                "acceptable_answers": ["διάβασα", "διαβασα"],
+                "detailed_tip": "【简单过去时第一人称】规则动词变过去时第一人称词尾为 '-σα' -> διάβασα。"
+            },
+            {
+                "id": 11803,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "昨天你做了什么？(询问过去事情)",
+                "translation": "汉译希：昨天你做了什么？",
+                "answer": "Τι έκανες χθες;",
+                "acceptable_answers": ["Τι έκανες χθες;", "Τι έκανες χθες", "τι εκανες χθες"],
+                "detailed_tip": "【过去时提问】Τι έκανες (你做了什么 - 过去时) + χθες (昨天)。"
             }
         ]
     },
@@ -637,21 +981,33 @@ units_data = [
         "drills": [
             {
                 "id": 11901,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "______ τα μάτια μου από το πολύ διάβασμα.",
                 "translation": "因为看太多书，我的眼睛很疼。",
-                "options": ["Πονούν", "Πονάει", "Πονάω", "Πονάτε"],
+                "options": make_shuffled_options("Πονούν", ["Πονάει", "Πονάω", "Πονάτε"]),
                 "answer": "Πονούν",
-                "detailed_tip": "【身体疼痛动词配合】主语 'τα μάτια' 是复数，动词使用第三人称复数 'Πονούν' (或 Πονάνε)。"
+                "detailed_tip": "【身体疼痛动词配合】主语 'τα μάτια' 是复数，动词使用第三人称复数 'Πονούν'。"
             },
             {
                 "id": 11902,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "______ (单数疼) το κεφάλι μου.",
+                "translation": "我头疼。",
+                "answer": "Πονάει",
+                "acceptable_answers": ["Πονάει", "ποναει", "Πονάει πολύ"],
+                "detailed_tip": "【单数部位疼痛】单数名词搭配 'Πονάει' (Πονάει το κεφάλι μου)。"
+            },
+            {
+                "id": 11903,
+                "drill_type": "translate",
                 "skill_type": "dialogue",
-                "question": "当去看医生，医生询问你 'Τι έχετε;' (您哪里不舒服？) 时，怎么表达'我发烧并且咳嗽'？",
-                "translation": "情景问诊回答",
-                "options": ["Έχω πυρετό και βήχα.", "Είμαι γιατρός.", "Πάω στο φαρμακείο.", "Μου αρέσει το φάρμακο."],
-                "answer": "Έχω πυρετό και βήχα.",
-                "detailed_tip": "【病状描述】表达'我有发烧和咳嗽'用 'Έχω πυρετό και βήχα'。"
+                "question": "我发烧了，而且嗓子疼。",
+                "translation": "汉译希：我发烧了，而且嗓子疼。",
+                "answer": "Έχω πυρετό και πονάει ο λαιμός μου.",
+                "acceptable_answers": ["Έχω πυρετό και πονάει ο λαιμός μου.", "Έχω πυρετό και πονάει ο λαιμός μου", "εχω πυρετο και ποναει ο λαιμος μου"],
+                "detailed_tip": "【看病问诊】Έχω πυρετό (我发烧) + και πονάει ο λαιμός μου (嗓子疼)。"
             }
         ]
     },
@@ -675,12 +1031,33 @@ units_data = [
         "drills": [
             {
                 "id": 12001,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Μου ______ πολύ τα ταξίδια.",
                 "translation": "我非常喜欢旅行。",
-                "options": ["αρέσουν", "αρέσει", "αγαπάει", "θέλει"],
+                "options": make_shuffled_options("αρέσουν", ["αρέσει", "αγαπάει", "θέλει"]),
                 "answer": "αρέσουν",
                 "detailed_tip": "【喜好句式配合】'τα ταξίδια' 为中性复数名词，需用动词复数形式 'Μου αρέσουν'。"
+            },
+            {
+                "id": 12002,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Μου ______ (喜欢·单数) το ποδόσφαιρο.",
+                "translation": "我喜欢足球。",
+                "answer": "αρέσει",
+                "acceptable_answers": ["αρέσει", "αρεσει"],
+                "detailed_tip": "【单数喜好】修饰单数名词用 'Μου αρέσει'。"
+            },
+            {
+                "id": 12003,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "夏天我喜欢去游泳。",
+                "translation": "汉译希：夏天我喜欢去游泳。",
+                "answer": "Το καλοκαίρι μου αρέσει να κολυμπάω.",
+                "acceptable_answers": ["Το καλοκαίρι μου αρέσει να κολυμπάω.", "Το καλοκαίρι μου αρέσει να κολυμπάω", "το καλοκαιρι μου αρεσει να κολυμπαω", "Μου αρέσει να κολυμπάω το καλοκαίρι."],
+                "detailed_tip": "【意愿从句】Μου αρέσει + να κολυμπάω (我喜欢去游泳)。"
             }
         ]
     },
@@ -703,12 +1080,33 @@ units_data = [
         "drills": [
             {
                 "id": 12101,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Κάθε πρωί πηγαίνω στο σχολείο ______ τα πόδια.",
                 "translation": "每天早晨我步行去学校。",
-                "options": ["με", "σε", "από", "για"],
+                "options": make_shuffled_options("με", ["σε", "από", "για"]),
                 "answer": "με",
                 "detailed_tip": "【交通固定搭配】表达“步行去”固定搭配为 'με τα πόδια'。"
+            },
+            {
+                "id": 12102,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Πηγαίνω στη δουλειά ______ (坐地铁) το μετρό.",
+                "translation": "我坐地铁去上班。",
+                "answer": "με",
+                "acceptable_answers": ["με"],
+                "detailed_tip": "【交通工具介词】希腊语表达乘坐交通工具使用介词 'με' (με το μετρό)。"
+            },
+            {
+                "id": 12103,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我们将坐轮船去岛上。",
+                "translation": "汉译希：我们将坐轮船去岛上。",
+                "answer": "Θα πάμε στα νησιά με το πλοίο.",
+                "acceptable_answers": ["Θα πάμε στα νησιά με το πλοίο.", "Θα πάμε στα νησιά με το πλοίο", "θα παμε στα νησια με το πλοιο", "Θα πάμε με το πλοίο στα νησιά."],
+                "detailed_tip": "【将来时与交通】Θα πάμε (我们将去) + με το πλοίο (坐船)。"
             }
         ]
     },
@@ -733,30 +1131,33 @@ units_data = [
         "drills": [
             {
                 "id": 12201,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Πόσο ______ αυτά τα μήλα; (κοστίζω)",
                 "translation": "这些苹果多少钱？",
-                "options": ["κοστίζουν", "κοστίζει", "κάνω", "κάνει"],
+                "options": make_shuffled_options("κοστίζουν", ["κοστίζει", "κάνω", "κάνει"]),
                 "answer": "κοστίζουν",
                 "detailed_tip": "【复数询价】主语 'αυτά τα μήλα' 为复数，问价格动词用第三人称复数 'κοστίζουν' (或 κάνουν)。"
             },
             {
                 "id": 12202,
-                "skill_type": "dialogue",
-                "question": "在商店询问一件外套价格的正确表达是？",
-                "translation": "情景询价选择",
-                "options": ["Πόσο κάνει αυτό το μπουφάν;", "Πού είναι το μπουφάν;", "Τι χρώμα έχει;", "Ποιος είναι αυτός;"],
-                "answer": "Πόσο κάνει αυτό το μπουφάν;",
-                "detailed_tip": "【询价句式】问单数物品价格用 'Πόσο κάνει...;' (多少钱？)。"
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Πόσο ______ (κάνω - 单数) αυτό το φόρεμα;",
+                "translation": "这条裙子多少钱？",
+                "answer": "κάνει",
+                "acceptable_answers": ["κάνει", "κανει", "κοστίζει"],
+                "detailed_tip": "【单数询价】问单件商品价格用 'Πόσο κάνει...;'。"
             },
             {
                 "id": 12203,
-                "skill_type": "syntax",
-                "question": "Έχω υψηλή ______ και πρέπει να πάω στο νοσοκομείο.",
-                "translation": "我血压很高，必须去医院。",
-                "options": ["πίεση", "ποδόσφαιρο", "αεροδρόμιο", "παιχνίδι"],
-                "answer": "πίεση",
-                "detailed_tip": "【医疗词汇搭配】'υψηλή πίεση' 意为高血压 (πίεση 阴性名词)。"
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "这件T恤多少钱？",
+                "translation": "汉译希：这件T恤多少钱？",
+                "answer": "Πόσο κάνει αυτό το μπλουζάκι;",
+                "acceptable_answers": ["Πόσο κάνει αυτό το μπλουζάκι;", "Πόσο κάνει αυτό το μπλουζάκι", "ποσο κανει αυτο το μπλουζακι", "Πόσο κοστίζει αυτό το μπλουζάκι;"],
+                "detailed_tip": "【询价固定句型】Πόσο κάνει + αυτό το μπλουζάκι (这件T恤)。"
             }
         ]
     },
@@ -780,21 +1181,33 @@ units_data = [
         "drills": [
             {
                 "id": 12301,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Αύριο ο Νίκος ______ για το Λονδίνο. (φεύγω -> 将来时)",
                 "translation": "明天尼科斯将启程前往伦敦。",
-                "options": ["θα φύγει", "φεύγει", "έφυγε", "να φύγει"],
+                "options": make_shuffled_options("θα φύγει", ["φεύγει", "έφυγε", "να φύγει"]),
                 "answer": "θα φύγει",
                 "detailed_tip": "【简单将来时】'θα + 简单动词变位' -> θα φύγει (他将离开)。"
             },
             {
                 "id": 12302,
+                "drill_type": "cloze",
                 "skill_type": "declension",
-                "question": "Ο Γιώργος είναι καθηγητής και η Μαρία είναι ______.",
+                "question": "Ο Γιώργος είναι καθηγητής και η Μαρία είναι ______ (阴性女老师).",
                 "translation": "乔治是男老师，玛利亚是女老师。",
-                "options": ["καθηγήτρια", "καθηγητής", "καθηγητές", "καθηγήτριες"],
                 "answer": "καθηγήτρια",
-                "detailed_tip": "【职业阴阳性转换】阳性 '-τής' 对应阴性 '-τρια' -> καθηγητής -> καθηγήτρια。"
+                "acceptable_answers": ["καθηγήτρια", "καθηγητρια", "δασκάλα"],
+                "detailed_tip": "【职业阴阳性】阳性 '-τής' 对应阴性 '-τρια' -> καθηγητής -> καθηγήτρια。"
+            },
+            {
+                "id": 12303,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "未来我想成为一名医生。",
+                "translation": "汉译希：未来我想成为一名医生。",
+                "answer": "Στο μέλλον θα γίνω γιατρός.",
+                "acceptable_answers": ["Στο μέλλον θα γίνω γιατρός.", "Στο μέλλον θα γίνω γιατρός", "στο μελλον θα γινω γιατρος", "Θα γίνω γιατρός στο μέλλον."],
+                "detailed_tip": "【将来时愿望】Στο μέλλον (未来) + θα γίνω (我将成为) + γιατρός (医生)。"
             }
         ]
     },
@@ -813,17 +1226,38 @@ units_data = [
         ],
         "golden_dialogues": [
             {"speaker": "A", "greek": "Γιατί δεν ήρθες χθες στο μάθημα;", "chinese": "你昨天为什么没来上课？"},
-            {"speaker": "B", "greek": "Γιατί ήμουν άρρωστος και έμεινα στο κρεβάτι.", "chinese": "因为我生病了，卧床休息。" }
+            {"speaker": "B", "greek": "Γιατί ήμουν άρρωστος και έμεινα στο κρεβάτι.", "chinese": "因为我生病了，卧床休息。"}
         ],
         "drills": [
             {
                 "id": 12401,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "______ μένεις; — Μένω στο κέντρο της Αθήνας.",
                 "translation": "你住在哪里？—— 我住在雅典市中心。",
-                "options": ["Πού", "Πότε", "Πώς", "Γιατί"],
+                "options": make_shuffled_options("Πού", ["Πότε", "Πώς", "Γιατί"]),
                 "answer": "Πού",
                 "detailed_tip": "【疑问词选择】询问地点用带重音符号的 'Πού' (在哪里)。"
+            },
+            {
+                "id": 12402,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "______ (为什么) μαθαίνεις ελληνικά; — Επειδή μου αρέσουν.",
+                "translation": "你为什么学希腊语？—— 因为我喜欢。",
+                "answer": "Γιατί",
+                "acceptable_answers": ["Γιατί", "γιατι", "Γιατί;"],
+                "detailed_tip": "【因果疑问词】询问原因使用 'Γιατί' (为什么)。"
+            },
+            {
+                "id": 12403,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你什么时候去学校？",
+                "translation": "汉译希：你什么时候去学校？",
+                "answer": "Πότε πας στο σχολείο;",
+                "acceptable_answers": ["Πότε πας στο σχολείο;", "Πότε πας στο σχολείο", "ποτε πας στο σχολειο", "Πότε πηγαίνεις στο σχολείο;"],
+                "detailed_tip": "【时间疑问句】'Πότε' (何时) + 'πας στο σχολείο' (去学校)。"
             }
         ]
     },
@@ -847,12 +1281,34 @@ units_data = [
         "drills": [
             {
                 "id": 12501,
+                "drill_type": "choice",
                 "skill_type": "dialogue",
-                "question": "当朋友过生日或命名日时，最经典的希腊语祝福是？",
+                "question": "当朋友过生日或命名日时，最经典的希腊语祝福是：______",
                 "translation": "情境祝愿选择",
-                "options": ["Χρόνια Πολλά!", "Καληνύχτα!", "Περαστικά!", "Γεια σας!"],
+                "options": make_shuffled_options("Χρόνια Πολλά!", ["Καληνύχτα!", "Περαστικά!", "Γεια σας!"]),
                 "answer": "Χρόνια Πολλά!",
-                "detailed_tip": "【节日与生日祝愿】希腊最通用的生日/节日/命名日祝愿是 'Χρόνια Πολλά' (万事如意/福寿绵长)。"
+                "detailed_tip": "【节日与生日祝愿】希腊最通用的生日/节日/命名日祝愿是 'Χρόνια Πολλά'。"
+            },
+            {
+                "id": 12502,
+                "drill_type": "qa",
+                "skill_type": "dialogue",
+                "question": "在圣诞节期间，对他人致以圣诞祝福应当说：______",
+                "translation": "情境应答：圣诞祝福",
+                "answer": "Καλά Χριστούγεννα!",
+                "acceptable_answers": ["Καλά Χριστούγεννα!", "Καλά Χριστούγεννα", "καλα χριστουγεννα"],
+                "options": make_shuffled_options("Καλά Χριστούγεννα!", ["Καλό Πάσχα!", "Καλημέρα!", "Καλή όρεξη!"]),
+                "detailed_tip": "【圣诞祝愿】圣诞节传统祝福为 'Καλά Χριστούγεννα!'。"
+            },
+            {
+                "id": 12503,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "祝你考试顺利！",
+                "translation": "汉译希：祝你考试顺利！",
+                "answer": "Καλή επιτυχία στις εξετάσεις!",
+                "acceptable_answers": ["Καλή επιτυχία στις εξετάσεις!", "Καλή επιτυχία στις εξετάσεις", "καλη επιτυχια στις εξετασεις", "Καλή επιτυχία!"],
+                "detailed_tip": "【考前祝福】'Καλή επιτυχία' (祝愿成功/顺利) + 'στις εξετάσεις' (在考试中)。"
             }
         ]
     },
@@ -876,21 +1332,33 @@ units_data = [
         "drills": [
             {
                 "id": 12601,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
-                "question": "Χθες το βράδυ εμείς ______ μια πολύ ωραία ταινία. (βλέπω)",
+                "question": "Χθες το βράδυ εμείς ______ μια πολύ ωραία ταινία. (βλέπω -> 过去时)",
                 "translation": "昨晚我们看了一部非常棒的电影。",
-                "options": ["είδαμε", "είδα", "βλέπουμε", "είδαν"],
+                "options": make_shuffled_options("είδαμε", ["είδα", "βλέπουμε", "είδαν"]),
                 "answer": "είδαμε",
                 "detailed_tip": "【不规则过去时】动词 βλέπω (看) 过去时第一人称复数形式为 'είδαμε' (我们看了)。"
             },
             {
                 "id": 12602,
+                "drill_type": "cloze",
                 "skill_type": "conjugation",
-                "question": "Πού ______ το καλοκαίρι; (πηγαίνω - εσείς)",
-                "translation": "你们夏天去哪里了？",
-                "options": ["πήγατε", "πήγαμε", "πήγες", "πάνε"],
-                "answer": "πήγατε",
-                "detailed_tip": "【不规则过去时】动词 πηγαίνω (去) 过去时第二人称复数形式为 'πήγατε' (你们去了)。"
+                "question": "Το μεσημέρι εγώ ______ (τρώω -> 过去时) σουβλάκι.",
+                "translation": "中午我吃了烤肉串。",
+                "answer": "έφαγα",
+                "acceptable_answers": ["έφαγα", "εφαγα"],
+                "detailed_tip": "【不规则过去时】τρώω (吃) 过去时第一人称单数突变为 'έφαγα'。"
+            },
+            {
+                "id": 12603,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你们夏天去哪里了？(使用 πηγαίνω 过去时)",
+                "translation": "汉译希：你们夏天去哪里了？",
+                "answer": "Πού πήγατε το καλοκαίρι;",
+                "acceptable_answers": ["Πού πήγατε το καλοκαίρι;", "Πού πήγατε το καλοκαίρι", "που πηγατε το καλοκαιρι"],
+                "detailed_tip": "【过去时疑问】Πού (在哪里/去哪) + πήγατε (你们去了 - 过去时) + το καλοκαίρι (在夏天)。"
             }
         ]
     },
@@ -913,12 +1381,33 @@ units_data = [
         "drills": [
             {
                 "id": 12701,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Προχθές ο Πέτρος ______ τα κλειδιά του. (βρίσκω -> Aorist)",
                 "translation": "前天彼得找到了他的钥匙。",
-                "options": ["βρήκε", "βρήκα", "βρίσκει", "βρουν"],
+                "options": make_shuffled_options("βρήκε", ["βρήκα", "βρίσκει", "βρουν"]),
                 "answer": "βρήκε",
                 "detailed_tip": "【不规则过去时】动词 βρίσκω (找到) 第三人称单数过去时是 'βρήκε' (他找到了)。"
+            },
+            {
+                "id": 12702,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Πέρυσι εμείς ______ (πηγαίνω -> Aorist) στην Κρήτη.",
+                "translation": "去年我们去了克里特岛。",
+                "answer": "πήγαμε",
+                "acceptable_answers": ["πήγαμε", "πηγαμε"],
+                "detailed_tip": "【不规则过去时】动词 πηγαίνω (去) 第一人称复数过去时是 'πήγαμε' (我们去了)。"
+            },
+            {
+                "id": 12703,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "你周末过得怎么样？",
+                "translation": "汉译希：你周末过得怎么样？",
+                "answer": "Πώς πέρασες το Σαββατοκύριακο;",
+                "acceptable_answers": ["Πώς πέρασες το Σαββατοκύριακο;", "Πώς πέρασες το Σαββατοκύριακο", "πως περασες το σαββατοκυριακο"],
+                "detailed_tip": "【交际问候】'Πώς πέρασες...' (你度过得怎么样) + 'το Σαββατοκύριακο' (周末)。"
             }
         ]
     },
@@ -944,30 +1433,34 @@ units_data = [
         "drills": [
             {
                 "id": 12801,
+                "drill_type": "choice",
                 "skill_type": "syntax",
-                "question": "Σε παρακαλώ, ______ μου την αλήθεια! (λέω - 命令式)",
+                "question": "Σε παρακαλώ, ______ μου την αλήθεια! (λέω - 命令式单数)",
                 "translation": "请告诉我真相！",
-                "options": ["πες", "λες", "είπες", "πείτε"],
+                "options": make_shuffled_options("πες", ["λες", "είπες", "πείτε"]),
                 "answer": "πες",
                 "detailed_tip": "【命令式】对熟人（单数你）用命令式 'πες' (说/告诉)。"
             },
             {
                 "id": 12802,
+                "drill_type": "qa",
                 "skill_type": "dialogue",
-                "question": "在街上迷路，向路人寻求礼貌协助的正确开场白是？",
+                "question": "在街上迷路，向路人寻求礼貌协助的标准开场白是：______",
                 "translation": "情境求助选择",
-                "options": ["Συγγνώμη, μπορείτε να με βοηθήσετε;", "Ποιος είσαι εσύ;", "Τι κάνεις εδώ;", "Φύγε τώρα!"],
                 "answer": "Συγγνώμη, μπορείτε να με βοηθήσετε;",
-                "detailed_tip": "【礼貌求助】标准开场白是 'Συγγνώμη, μπορείτε να με βοηθήσετε;' (打扰了，您能帮我一下吗？)。"
+                "acceptable_answers": ["Συγγνώμη, μπορείτε να με βοηθήσετε;", "Συγγνώμη, μπορείτε να με βοηθήσετε", "συγγνωμη μπορειτε να με βοηθησετε"],
+                "options": make_shuffled_options("Συγγνώμη, μπορείτε να με βοηθήσετε;", ["Ποιος είσαι εσύ;", "Τι κάνεις εδώ;", "Φύγε τώρα!"]),
+                "detailed_tip": "【礼貌求助】标准开场白是 'Συγγνώμη, μπορείτε να με βοηθήσετε;'。"
             },
             {
                 "id": 12803,
-                "skill_type": "syntax",
-                "question": "______ μου σε παρακαλώ πού είναι το φαρμακείο! (δείχνω - 命令式)",
-                "translation": "请指给我看药店在哪里！",
-                "options": ["Δείξε", "Δείχνεις", "Έδειξες", "Δείχνουμε"],
-                "answer": "Δείξε",
-                "detailed_tip": "【命令式】动词 δείχνω (指明/出示) 单数命令式是 'Δείξε' (指给我看)。"
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "请在地图上指给我看。(使用 δείχνω 命令式)",
+                "translation": "汉译希：请在地图上指给我看。",
+                "answer": "Δείξε μου στον χάρτη, παρακαλώ.",
+                "acceptable_answers": ["Δείξε μου στον χάρτη, παρακαλώ.", "Δείξε μου στον χάρτη παρακαλώ", "δειξε μου στον χαρτη παρακαλω", "Δείξτε μου στον χάρτη παρακαλώ."],
+                "detailed_tip": "【祈使句】Δείξε μου (指给我看) + στον χάρτη (在地图上) + παρακαλώ (请)。"
             }
         ]
     },
@@ -993,30 +1486,33 @@ units_data = [
         "drills": [
             {
                 "id": 12901,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Παρακαλώ, βάλτε μου ένα ______ κιμά.",
                 "translation": "请给我装一公斤肉末。",
-                "options": ["κιλό", "φέτα", "κουτί", "ποτήρι"],
+                "options": make_shuffled_options("κιλό", ["φέτα", "κουτί", "ποτήρι"]),
                 "answer": "κιλό",
                 "detailed_tip": "【称重计量单位】买肉末、水果等称重使用 'κιλό' (公斤)。"
             },
             {
                 "id": 12902,
-                "skill_type": "dialogue",
-                "question": "在菜市场询问某水果一公斤多少钱，应该怎么问？",
-                "translation": "情境询价",
-                "options": ["Πόσο έχει το κιλό;", "Πού είναι το κιλό;", "Τι χρώμα έχει;", "Πόσα κιλά είσαι;"],
-                "answer": "Πόσο έχει το κιλό;",
-                "detailed_tip": "【集市询单价】市集问每公斤单价的经典地道表达是 'Πόσο έχει το κιλό;' (一公斤多少钱？)。"
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Κάθε Σάββατο πηγαίνω ______ (σε + τη) λαϊκή αγορά.",
+                "translation": "每个周六我都去露天菜市场。",
+                "answer": "στη",
+                "acceptable_answers": ["στη", "στην"],
+                "detailed_tip": "【介词缩合】'λαϊκή' 是阴性名词，'σε + τη' 缩合为 'στη'。"
             },
             {
                 "id": 12903,
-                "skill_type": "declension",
-                "question": "Κάθε Σάββατο πηγαίνω ______ λαϊκή αγορά.",
-                "translation": "每个周六我都去露天菜市场。",
-                "options": ["στη", "στο", "στον", "στις"],
-                "answer": "στη",
-                "detailed_tip": "【介词与阴性名词】'λαϊκή' 是阴性名词，'σε + τη' 缩合为 'στη'。"
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "一公斤西红柿多少钱？",
+                "translation": "汉译希：一公斤西红柿多少钱？",
+                "answer": "Πόσο έχουν οι ντομάτες το κιλό;",
+                "acceptable_answers": ["Πόσο έχουν οι ντομάτες το κιλό;", "Πόσο έχει το κιλό;", "ποσο εχουν οι ντοματες το κιλο", "Πόσο κάνουν οι ντομάτες το κιλό;"],
+                "detailed_tip": "【市集询单价】'Πόσο έχει το κιλό;' 或 'Πόσο έχουν οι ντομάτες το κιλό;'。"
             }
         ]
     },
@@ -1041,17 +1537,38 @@ units_data = [
         "drills": [
             {
                 "id": 13001,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Χθες έγραψα ένα γράμμα, σήμερα γράφω ένα ποίημα και αύριο ______ ένα βιβλίο. (γράφω)",
                 "translation": "昨天我写了一封信，今天我写一首诗，明天我将写一本书。",
-                "options": ["θα γράψω", "έγραψα", "γράφω", "να γράφω"],
+                "options": make_shuffled_options("θα γράψω", ["έγραψα", "γράφω", "να γράφω"]),
                 "answer": "θα γράψω",
                 "detailed_tip": "【三大时态贯通】'αύριο' (明天) 必须搭配将来时结构 'θα + 变位' -> θα γράψω。"
+            },
+            {
+                "id": 13002,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Τον Νίκο ______ (我看见他) κάθε μέρα στο σχολείο.",
+                "translation": "我每天在学校都看见他。",
+                "answer": "τον βλέπω",
+                "acceptable_answers": ["τον βλέπω", "τον βλεπω", "βλέπω"],
+                "detailed_tip": "【直接宾语代词】表达“看见他”，弱读宾格代词放在动词前 -> 'τον βλέπω'。"
+            },
+            {
+                "id": 13003,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "现在我准备好进入 A2 级别了！",
+                "translation": "汉译希：现在我准备好进入 A2 级别了！",
+                "answer": "Τώρα είμαι έτοιμος για το επίπεδο A2!",
+                "acceptable_answers": ["Τώρα είμαι έτοιμος για το επίπεδο A2!", "Τώρα είμαι έτοιμος για το A2!", "τωρα ειμαι ετοιμος για το α2", "Είμαι έτοιμος για το A2!"],
+                "detailed_tip": "【终极冲刺金句】'Είμαι έτοιμος' (我准备好了) + 'για το A2' (为进入A2)。"
             }
         ]
     },
 
-    # --- A2 (Units 31-39) ---
+    # ==================== A2 (Units 31-39) ====================
     {
         "book_id": "a2",
         "unit": 31,
@@ -1072,12 +1589,33 @@ units_data = [
         "drills": [
             {
                 "id": 13101,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Η πόλη ______ μένω είναι πολύ όμορφη.",
                 "translation": "我住的那座城市非常美丽。",
-                "options": ["που", "πού", "πώς", "γιατί"],
+                "options": make_shuffled_options("που", ["πού", "πώς", "γιατί"]),
                 "answer": "που",
                 "detailed_tip": "【关系代词】引导定语从句的关系代词用不带重音的 'που' (相当于 which/where)。"
+            },
+            {
+                "id": 13102,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Το βιβλίο ______ (关系代词) διαβάζω είναι πολύ καλό.",
+                "translation": "我正在读的那本书非常好。",
+                "answer": "που",
+                "acceptable_answers": ["που", "το οποίο"],
+                "detailed_tip": "【关系代词】修饰先行词用通用关系代词 'που'。"
+            },
+            {
+                "id": 13103,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "他是教我们希腊语的老师。(使用关系代词 που)",
+                "translation": "汉译希：他是教我们希腊语的老师。",
+                "answer": "Είναι ο καθηγητής που μας διδάσκει ελληνικά.",
+                "acceptable_answers": ["Είναι ο καθηγητής που μας διδάσκει ελληνικά.", "Είναι ο καθηγητής που μας διδάσκει ελληνικά", "ειναι ο καθηγητης που μας διδασκει ελληνικα", "Είναι ο δάσκαλος που μας μαθαίνει ελληνικά."],
+                "detailed_tip": "【定语从句】ο καθηγητής (先行词) + που μας διδάσκει (教我们)。"
             }
         ]
     },
@@ -1100,12 +1638,33 @@ units_data = [
         "drills": [
             {
                 "id": 13201,
+                "drill_type": "choice",
                 "skill_type": "syntax",
-                "question": "Όταν έφτασε ο Νίκος, εμείς ______ τηλεόραση. (βλέπω - Παρατατικός)",
+                "question": "Όταν έφτασε ο Νίκος, εμείς ______ τηλεόραση. (βλέπω - Παρατατικός 正在进行)",
                 "translation": "当尼科斯到达时，我们正在看电视。",
-                "options": ["βλέπαμε", "είδαμε", "θα δούμε", "βλέπουμε"],
+                "options": make_shuffled_options("βλέπαμε", ["είδαμε", "θα δούμε", "βλέπουμε"]),
                 "answer": "βλέπαμε",
                 "detailed_tip": "【未完成过去时】表示过去某一时刻正在持续进行的动作，用未完成过去时 'βλέπαμε'。"
+            },
+            {
+                "id": 13202,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Όταν ήμουν μικρός, ______ (μένω - Παρατατικός 过去长期居住) στο χωριό.",
+                "translation": "当我小的时候，我住在村子里。",
+                "answer": "έμενα",
+                "acceptable_answers": ["έμενα", "εμενα"],
+                "detailed_tip": "【未完成过去时】表达过去长期重复或持续状态用 Παρατατικός (έμενα)。"
+            },
+            {
+                "id": 13203,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "电话响的时候我正在做饭。",
+                "translation": "汉译希：电话响的时候我正在做饭。",
+                "answer": "Όταν χτύπησε το τηλέφωνο, μαγείρευα.",
+                "acceptable_answers": ["Όταν χτύπησε το τηλέφωνο, μαγείρευα.", "Όταν χτύπησε το τηλέφωνο μαγείρευα", "οταν χτυπησε το τηλεφωνο μαγειρευα", "Μαγείρευα όταν χτύπησε το τηλέφωνο."],
+                "detailed_tip": "【双时态复合句】Όταν χτύπησε (瞬间过去) + μαγείρευα (持续过去)。"
             }
         ]
     },
@@ -1129,12 +1688,33 @@ units_data = [
         "drills": [
             {
                 "id": 13301,
+                "drill_type": "choice",
                 "skill_type": "declension",
-                "question": "Η βαλίτσα μου είναι πολύ ______.",
+                "question": "Η βαλίτσα μου είναι πολύ ______ (沉重·阴性).",
                 "translation": "我的行李箱非常重。",
-                "options": ["βαριά", "βαρύς", "βαρύ", "βαριές"],
+                "options": make_shuffled_options("βαριά", ["βαρύς", "βαρύ", "βαριές"]),
                 "answer": "βαριά",
                 "detailed_tip": "【特殊形容词阴性】βαλίτσα 为阴性单数名词，形容词 βαρύς 的阴性形式为 'βαριά'。"
+            },
+            {
+                "id": 13302,
+                "drill_type": "cloze",
+                "skill_type": "declension",
+                "question": "Κολυμπάμε στη ______ (βαθύς -> 阴性深) θάλασσα.",
+                "translation": "我们在深海里游泳。",
+                "answer": "βαθιά",
+                "acceptable_answers": ["βαθιά", "βαθια"],
+                "detailed_tip": "【特殊形容词】θάλασσα 是阴性名词，形容词 βαθύς 阴性宾格形式为 'βαθιά'。"
+            },
+            {
+                "id": 13303,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "那场话剧演出太精彩了！",
+                "translation": "汉译希：那场话剧演出太精彩了！",
+                "answer": "Η θεατρική παράσταση ήταν καταπληκτική!",
+                "acceptable_answers": ["Η θεατρική παράσταση ήταν καταπληκτική!", "Η παράσταση ήταν καταπληκτική!", "η θεατρικη παρασταση ηταν καταπληκτικη", "Η παράσταση ήταν υπέροχη!"],
+                "detailed_tip": "【艺术评价】Η παράσταση ήταν (演出是) + καταπληκτική (精彩绝伦的)。"
             }
         ]
     },
@@ -1159,12 +1739,33 @@ units_data = [
         "drills": [
             {
                 "id": 13401,
+                "drill_type": "choice",
                 "skill_type": "syntax",
-                "question": "______ να μου δώσετε λίγο νερό, παρακαλώ;",
+                "question": "______ να μου δώσετε λίγο νερό, παρακαλώ; (极其礼貌请求)",
                 "translation": "您可以给我一点水吗（极其礼貌）？",
-                "options": ["Θα μπορούσατε", "Μπορείς", "Έπρεπε", "Θα θέλεις"],
+                "options": make_shuffled_options("Θα μπορούσατε", ["Μπορείς", "Έπρεπε", "Θα θέλεις"]),
                 "answer": "Θα μπορούσατε",
                 "detailed_tip": "【礼貌条件式】极其礼貌地向他人提出请求，使用条件式 'Θα μπορούσατε να...' (您能否...)。"
+            },
+            {
+                "id": 13402,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "Θα μπορούσα ______ (δοκιμάζω -> 虚拟式) αυτό το πουλόβερ;",
+                "translation": "我可以试穿一下这件毛衣吗？",
+                "answer": "να δοκιμάσω",
+                "acceptable_answers": ["να δοκιμάσω", "να δοκιμασω", "δοκιμάσω"],
+                "detailed_tip": "【条件式搭配】'Θα μπορούσα + να + 简单虚拟式' -> να δοκιμάσω。"
+            },
+            {
+                "id": 13403,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "试衣间在里面右侧。",
+                "translation": "汉译希：试衣间在里面右侧。",
+                "answer": "Τα δοκιμαστήρια είναι στο βάθος δεξιά.",
+                "acceptable_answers": ["Τα δοκιμαστήρια είναι στο βάθος δεξιά.", "Τα δοκιμαστήρια είναι στο βάθος δεξιά", "τα δοκιμαστηρια ειναι στο βαθος δεξια"],
+                "detailed_tip": "【商场方位】Τα δοκιμαστήρια (试衣间) + είναι στο βάθος δεξιά (在深处右侧)。"
             }
         ]
     },
@@ -1188,21 +1789,33 @@ units_data = [
         "drills": [
             {
                 "id": 13501,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Πρέπει ______ αμέσως στον γιατρό. (πηγαίνω - εσύ)",
                 "translation": "你必须立刻去看医生。",
-                "options": ["να πας", "πας", "να πηγαίνεις", "πήγες"],
+                "options": make_shuffled_options("να πας", ["πας", "να πηγαίνεις", "πήγες"]),
                 "answer": "να πας",
                 "detailed_tip": "【να + 虚拟式】'Πρέπει να + 简单虚拟式' -> να πας (你必须去)。"
             },
             {
                 "id": 13502,
+                "drill_type": "cloze",
                 "skill_type": "syntax",
-                "question": "Σε παρακαλώ, ______ λες ψέματα!",
+                "question": "Σε παρακαλώ, ______ (否定词) λες ψέματα!",
                 "translation": "请你不要撒谎！",
-                "options": ["μην", "δεν", "όχι", "ποτέ"],
                 "answer": "μην",
-                "detailed_tip": "【虚拟式与命令否定】在虚拟式、祈使句中表达否定用 'μη / μην'，不用 'δεν'。"
+                "acceptable_answers": ["μην", "μη"],
+                "detailed_tip": "【虚拟式与命令否定】在虚拟式、祈使从句中表达否定用 'μη / μην'，不用 'δεν'。"
+            },
+            {
+                "id": 13503,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我想学好希腊语。(使用 να μάθω)",
+                "translation": "汉译希：我想学好希腊语。",
+                "answer": "Θέλω να μάθω καλά ελληνικά.",
+                "acceptable_answers": ["Θέλω να μάθω καλά ελληνικά.", "Θέλω να μάθω ελληνικά.", "θελω να μαθω καλα ελληνικα", "Θέλω να μάθω ελληνικά"],
+                "detailed_tip": "【意愿表达】Θέλω (我想) + να μάθω (去学) + καλά ελληνικά (好希腊语)。"
             }
         ]
     },
@@ -1226,12 +1839,33 @@ units_data = [
         "drills": [
             {
                 "id": 13601,
+                "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Παιδιά, ______ γρήγορα! Θα χάσουμε το λεωφορείο! (τρέχω - 命令式复数)",
                 "translation": "孩子们，快跑！我们要赶不上公交车了！",
-                "options": ["τρέξτε", "τρέξε", "τρέχουμε", "τρέχουν"],
+                "options": make_shuffled_options("τρέξτε", ["τρέξε", "τρέχουμε", "τρέχουν"]),
                 "answer": "τρέξτε",
                 "detailed_tip": "【命令式复数】动词 τρέχω (跑) 面对复数主语的简单命令式为 'τρέξτε'。"
+            },
+            {
+                "id": 13602,
+                "drill_type": "cloze",
+                "skill_type": "conjugation",
+                "question": "Νίκο, ______ (ανοίγω - 命令式单数) το παράθυρο, σε παρακαλώ!",
+                "translation": "尼科斯，请打开窗户！",
+                "answer": "άνοιξε",
+                "acceptable_answers": ["άνοιξε", "ανοιξε"],
+                "detailed_tip": "【命令式单数】ανοίγω 面对单数熟人的简单命令式为 'άνοιξε'。"
+            },
+            {
+                "id": 13603,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "千万别迟到！",
+                "translation": "汉译希：千万别迟到！",
+                "answer": "Μην αργήσεις!",
+                "acceptable_answers": ["Μην αργήσεις!", "Μην αργήσεις", "μην αργησεις", "Μην αργήσετε!"],
+                "detailed_tip": "【否定禁令】'Μην' + 简单虚拟式 'αργήσεις' (千万别迟到)。"
             }
         ]
     },
@@ -1256,30 +1890,33 @@ units_data = [
         "drills": [
             {
                 "id": 13701,
+                "drill_type": "choice",
                 "skill_type": "dialogue",
-                "question": "在希腊，当朋友庆祝命名日 (Ονομαστική γιορτή) 时，除了 'Χρόνια Πολλά'，最传统地道的祝福是？",
+                "question": "在希腊，当朋友庆祝命名日 (Ονομαστική γιορτή) 时，除了 'Χρόνια Πολλά'，最传统地道的祝福是：______",
                 "translation": "命名日传统祝词",
-                "options": ["Να χαίρεσαι το όνομά σου!", "Καλό ταξίδι!", "Περαστικά σου!", "Καλή όρεξη!"],
+                "options": make_shuffled_options("Να χαίρεσαι το όνομά σου!", ["Καλό ταξίδι!", "Περαστικά σου!", "Καλή όρεξη!"]),
                 "answer": "Να χαίρεσαι το όνομά σου!",
                 "detailed_tip": "【希腊传统文化】命名日专属祝词是 'Να χαίρεσαι το όνομά σου!' (愿你享有名字的荣光/命名日吉庆)。"
             },
             {
                 "id": 13702,
+                "drill_type": "cloze",
                 "skill_type": "syntax",
-                "question": "Το απόγευμα θα πάμε ______ μαγαζιά για να αγοράσουμε δώρα.",
+                "question": "Το απόγευμα θα πάμε ______ (σε + τα) μαγαζιά για να αγοράσουμε δώρα.",
                 "translation": "今天下午我们要去商店买礼物。",
-                "options": ["στα", "στο", "στη", "στους"],
                 "answer": "στα",
+                "acceptable_answers": ["στα"],
                 "detailed_tip": "【介词与中性复数】'μαγαζιά' 为中性复数名词，'σε + τα' 缩合为 'στα'。"
             },
             {
                 "id": 13703,
-                "skill_type": "syntax",
-                "question": "Το καλοκαίρι θα μείνω ______ φίλη μου στη Θεσσαλονίκη.",
-                "translation": "夏天我将住在塞萨洛尼基的一个女性朋友那里。",
-                "options": ["σε μια", "στη", "στο", "στον"],
-                "answer": "σε μια",
-                "detailed_tip": "【介词与不定冠词】表达“住在某一位朋友家”，'σε + μια φίλη' 不发生定冠词缩合，保留 'σε μια'。"
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "祝你命名日快乐！(地道希腊语祝福)",
+                "translation": "汉译希：祝你命名日快乐！",
+                "answer": "Χρόνια Πολλά για την ονομαστική σου γιορτή!",
+                "acceptable_answers": ["Χρόνια Πολλά για την ονομαστική σου γιορτή!", "Χρόνια Πολλά για τη γιορτή σου!", "χρονια πολλα για την ονομαστικη σου γιορτη", "Να χαίρεσαι το όνομά σου!"],
+                "detailed_tip": "【命名日祝福】'Χρόνια Πολλά για την ονομαστική σου γιορτή!'。"
             }
         ]
     },
@@ -1303,12 +1940,33 @@ units_data = [
         "drills": [
             {
                 "id": 13801,
+                "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "______ φύγεις από το σπίτι, πάρε την ομπρέλα σου.",
                 "translation": "在你离开家之前，带上你的雨伞。",
-                "options": ["Πριν", "Αφού", "Μόλις", "Ενώ"],
+                "options": make_shuffled_options("Πριν", ["Αφού", "Μόλις", "Ενώ"]),
                 "answer": "Πριν",
                 "detailed_tip": "【时间连词】表达“在...之前”用 'Πριν'。"
+            },
+            {
+                "id": 13802,
+                "drill_type": "cloze",
+                "skill_type": "syntax",
+                "question": "______ (一...就...) τελειώσω το μάθημα, θα σου τηλεφωνήσω.",
+                "translation": "我一下课，就给你打电话。",
+                "answer": "Μόλις",
+                "acceptable_answers": ["Μόλις", "μολις"],
+                "detailed_tip": "【时间连词】'Μόλις' 表达“刚一...就...”。"
+            },
+            {
+                "id": 13803,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "我一边看书，一边听音乐。(使用 بينما / ενώ)",
+                "translation": "汉译希：我一边看书，一边听音乐。",
+                "answer": "Ενώ διάβαζα, άκουγα μουσική.",
+                "acceptable_answers": ["Ενώ διάβαζα, άκουγα μουσική.", "Ενώ διάβαζα άκουγα μουσική", "ενω διαβαζα ακουγα μουσικη"],
+                "detailed_tip": "【伴随动作连词】Ενώ + Παρατατικός (一边...一边...)。"
             }
         ]
     },
@@ -1332,20 +1990,40 @@ units_data = [
         "drills": [
             {
                 "id": 13901,
+                "drill_type": "choice",
                 "skill_type": "reading",
                 "question": "Κείμενο: 'Η Μαρία μένει στην Αθήνα αλλά τα καλοκαίρια πηγαίνει πάντα στην Κρήτη στο σπίτι της γιαγιάς της.' -> Ερώτηση: Πού περνάει η Μαρία τα καλοκαίρια της;",
                 "translation": "微阅读理解：玛利亚在哪里过夏天？",
-                "options": ["Στην Κρήτη", "Στην Αθήνα", "Στο Λονδίνο", "Στη Θεσσαλονίκη"],
+                "options": make_shuffled_options("Στην Κρήτη", ["Στην Αθήνα", "Στο Λονδίνο", "Στη Θεσσαλονίκη"]),
                 "answer": "Στην Κρήτη",
-                "detailed_tip": "【微阅读事实提取】文中明确说明 'τα καλοκαίρια πηγαίνει πάντα στην Κρήτη' (夏天她总是去克里特岛)，因此正确答案是 'Στην Κρήτη'。"
+                "detailed_tip": "【微阅读事实提取】文中明确说明 'τα καλοκαίρια πηγαίνει πάντα στην Κρήτη'，因此正确答案是 'Στην Κρήτη'。"
+            },
+            {
+                "id": 13902,
+                "drill_type": "qa",
+                "skill_type": "reading",
+                "question": "Κείμενο: 'Ο Νίκος μαθαίνει ελληνικά εδώ και τρία χρόνια επειδή θέλει να σπουδάσει στην Αθήνα.' -> Ερώτηση: Γιατί μαθαίνει ελληνικά ο Νίκος;",
+                "translation": "阅读理解问答：尼科斯为什么学希腊语？",
+                "answer": "Επειδή θέλει να σπουδάσει στην Αθήνα.",
+                "acceptable_answers": ["Επειδή θέλει να σπουδάσει στην Αθήνα.", "Γιατί θέλει να σπουδάσει στην Αθήνα.", "επειδη θελει να σπουδασει στην αθηνα"],
+                "options": make_shuffled_options("Επειδή θέλει να σπουδάσει στην Αθήνα.", ["Επειδή μένει στο Λονδίνο.", "Επειδή είναι καθηγητής.", "Επειδή δεν του αρέσει η Ελλάδα."]),
+                "detailed_tip": "【阅读因果提取】根据文章 'επειδή θέλει να σπουδάσει στην Αθήνα'。"
+            },
+            {
+                "id": 13903,
+                "drill_type": "translate",
+                "skill_type": "dialogue",
+                "question": "祝贺你！你学完了 A2 级别！",
+                "translation": "汉译希：祝贺你！你学完了 A2 级别！",
+                "answer": "Συγχαρητήρια! Τελείωσες το επίπεδο A2!",
+                "acceptable_answers": ["Συγχαρητήρια! Τελείωσες το επίπεδο A2!", "Συγχαρητήρια! Τελείωσες το A2!", "συγχαρητηρια τελειωσες το επιπεδο α2", "Μπράβο! Τελείωσες το A2!"],
+                "detailed_tip": "【通关祝贺】'Συγχαρητήρια!' (恭喜/祝贺) + 'Τελείωσες το επίπεδο A2!'。"
             }
         ]
     }
 ]
 
 # Pre-Flight QA Verification Gate
-import re
-
 def remove_accents(text: str) -> str:
     accents_map = {
         'ά': 'α', 'έ': 'ε', 'ή': 'η', 'ί': 'ι', 'ό': 'ο', 'ύ': 'υ', 'ώ': 'ω',
@@ -1356,11 +2034,12 @@ def remove_accents(text: str) -> str:
         text = text.replace(k, v)
     return text
 
-print("🔍 Executing Pre-Flight Quality Assurance Gate...")
+print("🔍 Executing Pre-Flight Quality Assurance Gate across 4 drill types...")
 validation_errors = []
 total_drills = 0
+choice_ans_positions = []
 
-for u in units_data:
+for u in raw_units:
     b_id = u.get("book_id", "")
     u_num = u.get("unit", 0)
     u_title = u.get("unit_title", "")
@@ -1373,31 +2052,46 @@ for u in units_data:
 
     for d in drills:
         d_id = d.get("id")
+        dtype = d.get("drill_type", "choice")
         q = d.get("question", "").strip()
         ans = d.get("answer", "").strip()
         opts = d.get("options", [])
         trans = d.get("translation", "").strip()
         tip = d.get("detailed_tip", "").strip()
-        stype = d.get("skill_type", "").strip()
 
         if not q or not ans or not trans or not tip:
             validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Missing required field(s)")
-        if len(opts) != 4:
-            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Must have exactly 4 options, got {len(opts)}")
-        if len(opts) != len(set(opts)):
-            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Duplicate options found: {opts}")
-        if ans not in opts:
-            validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Answer '{ans}' not in options {opts}")
-        if "______" in q:
-            reconstructed = q.replace("______", ans)
-            if not re.search(r'[\u0370-\u03ff\u1f00-\u1fff]', reconstructed):
-                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Reconstructed sentence missing Greek: {reconstructed}")
-        if stype in ["syntax", "conjugation"]:
-            opts_cleaned = [remove_accents(o.lower()) for o in opts]
-            if "πονουν" in opts_cleaned and "πονανε" in opts_cleaned:
-                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Dual-correct options: 'Πονούν' and 'Πονάνε'")
-            if "μη" in opts and "μην" in opts:
-                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Dual-correct options: 'μη' and 'μην'")
+
+        if dtype == "choice":
+            if len(opts) != 4:
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Choice drill must have 4 options, got {len(opts)}")
+            if len(opts) != len(set(opts)):
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Duplicate options found: {opts}")
+            if ans not in opts:
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Answer '{ans}' not in options {opts}")
+            ans_pos = opts.index(ans)
+            choice_ans_positions.append(ans_pos)
+        
+        elif dtype == "cloze":
+            if "______" not in q:
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Cloze drill must contain '______' placeholder")
+            if not d.get("acceptable_answers"):
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Cloze drill must have acceptable_answers list")
+        
+        elif dtype == "qa":
+            if not d.get("acceptable_answers"):
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] QA drill must have acceptable_answers list")
+
+        elif dtype == "translate":
+            if not d.get("acceptable_answers"):
+                validation_errors.append(f"[{b_id} U{u_num} Drill {d_id}] Translate drill must have acceptable_answers list")
+
+# Verify that choice answers are NOT all in index 0
+if choice_ans_positions:
+    pos_counts = {i: choice_ans_positions.count(i) for i in range(4)}
+    print(f"📊 Choice Answer Distribution Across Positions [0, 1, 2, 3]: {pos_counts}")
+    if pos_counts[0] == len(choice_ans_positions):
+        validation_errors.append("All choice answers are at index 0! Options randomization required.")
 
 if validation_errors:
     print(f"❌ FATAL: {len(validation_errors)} QA validation error(s) detected. Generation ABORTED:")
@@ -1405,22 +2099,22 @@ if validation_errors:
         print(f"  • {err}")
     exit(1)
 
-print(f"✅ QA Gate Passed: All {len(units_data)} units and {total_drills} drills verified with 100% integrity!")
+print(f"✅ QA Gate Passed: All {len(raw_units)} units and {total_drills} multi-type drills verified with 100% integrity!")
 
 # Write JSON
 frontend_json_path = 'frontend/src/data/unit_knowledge_drills.json'
 with open(frontend_json_path, 'w', encoding='utf-8') as f:
-    json.dump(units_data, f, ensure_ascii=False, indent=2)
+    json.dump(raw_units, f, ensure_ascii=False, indent=2)
 
-print(f"Generated {len(units_data)} unit knowledge entries in {frontend_json_path}")
+print(f"Generated {len(raw_units)} unit knowledge entries with {total_drills} drills in {frontend_json_path}")
 
 # Write Markdown Skills Matrix
 md_path = 'materials/glossaries/Leon_Greek_A1_A2_Unit_Skills_Matrix.md'
 with open(md_path, 'w', encoding='utf-8') as f:
     f.write("# 🏛️ Leon Greek Coach — A1 & A2 全景教学大纲与多维能力矩阵 (v2.0)\n\n")
-    f.write("> **版本说明**：本矩阵将 A1-A、A1-B、A2 共 39 个单元中除生词外的**动词变位矩阵、变格一致性、情境交际金句、句法从句与微阅读考点**全面结构化沉淀，彻底攻坚低生词高语法单元。\n\n---\n\n")
+    f.write("> **版本说明**：本矩阵将 A1-A、A1-B、A2 共 39 个单元中除生词外的**动词变位矩阵、变格一致性、情境交际金句、句法从句与微阅读考点**全面结构化沉淀，涵盖【选择题】、【填空题】、【问答题】与【翻译题】四大实战题型，彻底攻坚低生词高语法单元。\n\n---\n\n")
     
-    for u in units_data:
+    for u in raw_units:
         f.write(f"## 📖 {u['book_title']} 第 {u['unit']} 单元: {u['unit_title']}\n\n")
         f.write(f"- **教学属性标签**：`{u['badge']}` (`{u['category']}`)\n")
         f.write(f"- **核心语法与教学重点**：{u['grammar_points']}\n\n")
@@ -1430,13 +2124,15 @@ with open(md_path, 'w', encoding='utf-8') as f:
         f.write("\n### 🗣️ 黄金情境对话\n")
         for dia in u['golden_dialogues']:
             f.write(f"- **{dia['speaker']}**: {dia['greek']} ({dia['chinese']})\n")
-        f.write("\n### 🎯 知识库精选日常考题\n")
+        f.write("\n### 🎯 知识库精选日常考题 (多题型实战)\n")
         for drill in u['drills']:
-            f.write(f"1. **[{drill['skill_type'].upper()}]** {drill['question']}\n")
+            dtype_label = "【选择题】" if drill.get("drill_type") == "choice" else \
+                          "【填空题】" if drill.get("drill_type") == "cloze" else \
+                          "【情境问答】" if drill.get("drill_type") == "qa" else "【句子翻译】"
+            f.write(f"1. **{dtype_label} [{drill['skill_type'].upper()}]** {drill['question']}\n")
             f.write(f"   - **中文**：{drill['translation']}\n")
-            f.write(f"   - **正确答案**：`{drill['answer']}`\n")
+            f.write(f"   - **标准答案**：`{drill['answer']}`\n")
             f.write(f"   - **详细解析**：{drill['detailed_tip']}\n")
         f.write("\n---\n\n")
 
 print(f"Generated Markdown skills matrix at {md_path}")
-

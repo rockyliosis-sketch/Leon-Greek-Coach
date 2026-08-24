@@ -939,9 +939,10 @@ const WRITING_SPEAKING_CHALLENGES: WritingSpeakingChallenge[] = [
 export default function StudentApp() {
   const [activeModule, setActiveModule] = useState<'dashboard' | 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'writing_speaking' | 'glossary_review' | 'grammar_drill'>('dashboard');
   
-  // Grammar & Dialogue Drill States (v2.0 单元核心技能与语法/情景日常特训)
+  // Grammar & Dialogue Drill States (v2.0 单元核心技能与语法/情景日常特训 - 4大题型)
   const [grammarDrillIndex, setGrammarDrillIndex] = useState(0);
   const [selectedGrammarOption, setSelectedGrammarOption] = useState<string | null>(null);
+  const [userGrammarInput, setUserGrammarInput] = useState('');
   const [isGrammarChecked, setIsGrammarChecked] = useState(false);
   const [isGrammarCorrect, setIsGrammarCorrect] = useState(false);
   const [showGrammarTip, setShowGrammarTip] = useState(false);
@@ -2098,7 +2099,7 @@ export default function StudentApp() {
     return filterDuplicateTranslations(combined).slice(0, 40);
   }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
-  // v2.0 Grammar & Communicative Dialogue Daily Pool
+  // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
   const grammarDrillPool = useMemo(() => {
     const activeUnits = (unitKnowledgeData as any[]).filter(k => {
       const sDate = getUnitStudyDate(k.book_id, k.unit, unitStudyDates);
@@ -2129,20 +2130,40 @@ export default function StudentApp() {
       }
     });
 
-    if (allDrills.length <= 10) return allDrills;
+    const targetCount = 30;
+    if (allDrills.length === 0) return [];
+    if (allDrills.length <= targetCount) return allDrills;
 
     const selected: any[] = [];
-    const step = Math.max(1, Math.floor(allDrills.length / 10));
-    for (let i = 0; i < 10; i++) {
+    const step = Math.max(1, Math.floor(allDrills.length / targetCount));
+    for (let i = 0; i < targetCount; i++) {
       const idx = (hash + i * step) % allDrills.length;
       if (!selected.some(s => s.id === allDrills[idx].id)) {
         selected.push(allDrills[idx]);
+      }
+    }
+    for (let i = 0; i < allDrills.length && selected.length < targetCount; i++) {
+      const item = allDrills[(hash + i) % allDrills.length];
+      if (!selected.some(s => s.id === item.id)) {
+        selected.push(item);
       }
     }
     return selected;
   }, [selectedDateStr, unitStudyDates]);
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
+
+  // Randomized Options for choice questions (guarantees option 0 is NEVER predictable)
+  const currentGrammarOptions = useMemo(() => {
+    if (!currentGrammarDrill || !currentGrammarDrill.options) return [];
+    const opts = [...currentGrammarDrill.options];
+    const seed = currentGrammarDrill.id * 37 + grammarDrillIndex * 13;
+    for (let i = opts.length - 1; i > 0; i--) {
+      const j = (seed + i * 7) % (i + 1);
+      [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
+    return opts;
+  }, [currentGrammarDrill, grammarDrillIndex]);
 
   const currentTfWord = tfPool[tfIndex] || null;
 
@@ -2430,6 +2451,7 @@ export default function StudentApp() {
     else if (module === 'grammar_drill') {
       setGrammarDrillIndex(0);
       setSelectedGrammarOption(null);
+      setUserGrammarInput('');
       setIsGrammarChecked(false);
       setIsGrammarCorrect(false);
       setShowGrammarTip(false);
@@ -5491,7 +5513,7 @@ export default function StudentApp() {
           </div>
         )}
 
-        {/* 9. Daily Grammar & Communicative Drills Screen (v2.0 单元语法与情景特训) */}
+        {/* 9. Daily Grammar & Communicative Drills Screen (v2.0 单元多题型语法与情景特训) */}
         {activeModule === 'grammar_drill' && currentGrammarDrill && (
           <div className="game-module animate-fade-in" style={{ maxWidth: '680px', width: '100%' }}>
             <h2 className="module-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -5504,7 +5526,7 @@ export default function StudentApp() {
                   color: '#FFFFFF',
                   padding: '2px 8px',
                   borderRadius: '6px'
-                }}>v2.0 核心突破</span>
+                }}>v2.0 核心突破 (30题)</span>
               </span>
               <span style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>
                 当前进度: {grammarDrillIndex + 1} / {grammarDrillPool.length}
@@ -5516,7 +5538,7 @@ export default function StudentApp() {
 
             <div className="game-container-card" style={{ padding: '32px' }}>
               {/* Drill Header with Badges */}
-              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
                   <span style={{
                     fontSize: '11.5px',
@@ -5540,6 +5562,18 @@ export default function StudentApp() {
                   </span>
                   <span style={{
                     fontSize: '11.5px',
+                    fontWeight: 800,
+                    background: 'rgba(88,86,214,0.1)',
+                    color: '#5856D6',
+                    padding: '4px 10px',
+                    borderRadius: '6px'
+                  }}>
+                    {currentGrammarDrill.drill_type === 'choice' ? '📝 【选择题】' :
+                     currentGrammarDrill.drill_type === 'cloze' ? '✏️ 【填空题】' :
+                     currentGrammarDrill.drill_type === 'qa' ? '💬 【情景问答】' : '🌐 【句子翻译】'}
+                  </span>
+                  <span style={{
+                    fontSize: '11.5px',
                     fontWeight: 750,
                     background: 'rgba(255,149,0,0.1)',
                     color: '#D97706',
@@ -5553,7 +5587,14 @@ export default function StudentApp() {
                   </span>
                 </div>
 
-                <div style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', lineHeight: '1.4', marginBottom: '10px' }}>
+                <div style={{
+                  fontSize: '22px',
+                  fontWeight: 800,
+                  color: '#1D1D1F',
+                  lineHeight: '1.45',
+                  marginBottom: '10px',
+                  whiteSpace: 'pre-line'
+                }}>
                   {currentGrammarDrill.question}
                 </div>
                 <div style={{ fontSize: '14.5px', color: '#86868B', fontWeight: 550 }}>
@@ -5561,70 +5602,246 @@ export default function StudentApp() {
                 </div>
               </div>
 
-              {/* Multiple Choice Options */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-                {currentGrammarDrill.options?.map((opt: string, idx: number) => {
-                  const isSelected = selectedGrammarOption === opt;
-                  const isCorrect = opt === currentGrammarDrill.answer;
-                  
-                  let btnBg = '#F2F2F7';
-                  let btnColor = '#1D1D1F';
-                  let btnBorder = '1.5px solid transparent';
+              {/* Multi-Type Interaction Area */}
+              {/* Type 1: Choice Question */}
+              {currentGrammarDrill.drill_type === 'choice' && currentGrammarOptions.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                  {currentGrammarOptions.map((opt: string, idx: number) => {
+                    const isSelected = selectedGrammarOption === opt;
+                    const isCorrect = opt === currentGrammarDrill.answer;
+                    
+                    let btnBg = '#F2F2F7';
+                    let btnColor = '#1D1D1F';
+                    let btnBorder = '1.5px solid transparent';
 
-                  if (isGrammarChecked) {
-                    if (isCorrect) {
-                      btnBg = 'rgba(52,199,89,0.15)';
-                      btnColor = '#248A3D';
-                      btnBorder = '1.5px solid #34C759';
-                    } else if (isSelected && !isCorrect) {
-                      btnBg = 'rgba(255,59,48,0.15)';
-                      btnColor = '#FF3B30';
-                      btnBorder = '1.5px solid #FF3B30';
+                    if (isGrammarChecked) {
+                      if (isCorrect) {
+                        btnBg = 'rgba(52,199,89,0.15)';
+                        btnColor = '#248A3D';
+                        btnBorder = '1.5px solid #34C759';
+                      } else if (isSelected && !isCorrect) {
+                        btnBg = 'rgba(255,59,48,0.15)';
+                        btnColor = '#FF3B30';
+                        btnBorder = '1.5px solid #FF3B30';
+                      }
+                    } else if (isSelected) {
+                      btnBg = 'rgba(0,113,227,0.1)';
+                      btnColor = '#0071E3';
+                      btnBorder = '1.5px solid #0071E3';
                     }
-                  } else if (isSelected) {
-                    btnBg = 'rgba(0,113,227,0.1)';
-                    btnColor = '#0071E3';
-                    btnBorder = '1.5px solid #0071E3';
-                  }
 
-                  return (
-                    <button
-                      key={idx}
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isGrammarChecked}
+                        onClick={() => setSelectedGrammarOption(opt)}
+                        style={{
+                          padding: '16px',
+                          borderRadius: '14px',
+                          background: btnBg,
+                          color: btnColor,
+                          border: btnBorder,
+                          fontSize: '16px',
+                          fontWeight: 750,
+                          cursor: isGrammarChecked ? 'default' : 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          boxShadow: isSelected && !isGrammarChecked ? '0 4px 12px rgba(0,113,227,0.15)' : 'none'
+                        }}
+                      >
+                        <span>{opt}</span>
+                        {isGrammarChecked && isCorrect && <Check size={18} color="#34C759" />}
+                        {isGrammarChecked && isSelected && !isCorrect && <X size={18} color="#FF3B30" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Type 2: QA with Options */}
+              {currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', marginBottom: '24px' }}>
+                  {currentGrammarOptions.map((opt: string, idx: number) => {
+                    const isSelected = selectedGrammarOption === opt;
+                    const isCorrect = opt === currentGrammarDrill.answer;
+                    
+                    let btnBg = '#F2F2F7';
+                    let btnColor = '#1D1D1F';
+                    let btnBorder = '1.5px solid transparent';
+
+                    if (isGrammarChecked) {
+                      if (isCorrect) {
+                        btnBg = 'rgba(52,199,89,0.15)';
+                        btnColor = '#248A3D';
+                        btnBorder = '1.5px solid #34C759';
+                      } else if (isSelected && !isCorrect) {
+                        btnBg = 'rgba(255,59,48,0.15)';
+                        btnColor = '#FF3B30';
+                        btnBorder = '1.5px solid #FF3B30';
+                      }
+                    } else if (isSelected) {
+                      btnBg = 'rgba(0,113,227,0.1)';
+                      btnColor = '#0071E3';
+                      btnBorder = '1.5px solid #0071E3';
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isGrammarChecked}
+                        onClick={() => setSelectedGrammarOption(opt)}
+                        style={{
+                          padding: '14px 20px',
+                          borderRadius: '12px',
+                          background: btnBg,
+                          color: btnColor,
+                          border: btnBorder,
+                          fontSize: '15.5px',
+                          fontWeight: 700,
+                          textAlign: 'left',
+                          cursor: isGrammarChecked ? 'default' : 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px'
+                        }}
+                      >
+                        <span>{opt}</span>
+                        {isGrammarChecked && isCorrect && <Check size={18} color="#34C759" />}
+                        {isGrammarChecked && isSelected && !isCorrect && <X size={18} color="#FF3B30" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Type 3 & 4: Text Input for Cloze, Translate, or open QA */}
+              {(currentGrammarDrill.drill_type === 'cloze' || currentGrammarDrill.drill_type === 'translate' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length === 0)) && (
+                <div style={{ marginBottom: '24px' }}>
+                  <div className="admin-input-group" style={{ marginBottom: '12px' }}>
+                    <input
+                      type="text"
+                      placeholder={currentGrammarDrill.drill_type === 'cloze' ? '在此输入缺失的希腊语词汇/变位形式...' : '在此输入希腊语回答或翻译...'}
+                      value={userGrammarInput}
+                      onChange={e => setUserGrammarInput(e.target.value)}
+                      className="admin-input"
                       disabled={isGrammarChecked}
-                      onClick={() => setSelectedGrammarOption(opt)}
-                      style={{
-                        padding: '16px',
-                        borderRadius: '14px',
-                        background: btnBg,
-                        color: btnColor,
-                        border: btnBorder,
-                        fontSize: '16px',
-                        fontWeight: 750,
-                        cursor: isGrammarChecked ? 'default' : 'pointer',
-                        transition: 'all 0.15s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        boxShadow: isSelected && !isGrammarChecked ? '0 4px 12px rgba(0,113,227,0.15)' : 'none'
+                      style={{ width: '100%', padding: '16px', fontSize: '18px', fontWeight: 650, borderRadius: '12px' }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && userGrammarInput.trim() && !isGrammarChecked) {
+                          // Trigger check
+                          const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                          const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                          let correct = (normUser === normAns && normUser.length > 0);
+                          if (!correct && currentGrammarDrill.acceptable_answers) {
+                            for (const alt of currentGrammarDrill.acceptable_answers) {
+                              const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                              if (normUser === normAlt && normUser.length > 0) {
+                                correct = true;
+                                break;
+                              }
+                            }
+                          }
+                          setIsGrammarChecked(true);
+                          setIsGrammarCorrect(correct);
+                          if (correct) {
+                            setScore(prev => {
+                              const newScore = prev + 15;
+                              localStorage.setItem('leon_score', newScore.toString());
+                              saveSharedState({ score: newScore });
+                              return newScore;
+                            });
+                            setGrammarDrillScore(prev => prev + 1);
+                          } else {
+                            setShowGrammarTip(true);
+                          }
+                        }
                       }}
-                    >
-                      <span>{opt}</span>
-                      {isGrammarChecked && isCorrect && <Check size={18} color="#34C759" />}
-                      {isGrammarChecked && isSelected && !isCorrect && <X size={18} color="#FF3B30" />}
-                    </button>
-                  );
-                })}
-              </div>
+                    />
+                  </div>
+
+                  {/* Greek Accents Virtual Toolbar */}
+                  {!isGrammarChecked && (
+                    <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '12px', color: '#86868B', fontWeight: 600, display: 'flex', alignItems: 'center', marginRight: '4px' }}>
+                        重音快捷输入：
+                      </span>
+                      {['ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ', 'ς'].map(char => (
+                        <button
+                          key={char}
+                          type="button"
+                          onClick={() => setUserGrammarInput(prev => prev + char)}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            background: '#F2F2F7',
+                            border: '1px solid #E5E5EA',
+                            fontSize: '14px',
+                            fontWeight: 700,
+                            color: '#0071E3',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {char}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Checked Feedback Banner */}
+              {isGrammarChecked && (
+                <div style={{
+                  background: isGrammarCorrect ? 'rgba(52,199,89,0.1)' : 'rgba(255,59,48,0.1)',
+                  color: isGrammarCorrect ? '#34C759' : '#FF3B30',
+                  padding: '16px 20px',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  fontWeight: 'bold',
+                  border: isGrammarCorrect ? '1px solid rgba(52,199,89,0.25)' : '1px solid rgba(255,59,48,0.25)'
+                }}>
+                  <p style={{ margin: 0, fontSize: '16px' }}>
+                    {isGrammarCorrect ? '🎉 回答正确！+15 XP' : '❌ 回答错误'}
+                  </p>
+                  <p style={{ color: '#1D1D1F', fontSize: '14.5px', marginTop: '6px', fontWeight: 650 }}>
+                    标准答案 / Σωστή Απάντηση: <span style={{ color: '#0071E3' }}>{currentGrammarDrill.answer}</span>
+                  </p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '16px' }}>
                 {!isGrammarChecked ? (
                   <button
-                    disabled={!selectedGrammarOption}
+                    disabled={
+                      (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0))
+                        ? !selectedGrammarOption
+                        : !userGrammarInput.trim()
+                    }
                     onClick={() => {
-                      if (!selectedGrammarOption) return;
-                      const correct = (selectedGrammarOption === currentGrammarDrill.answer);
+                      let correct = false;
+                      if (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0)) {
+                        correct = (selectedGrammarOption === currentGrammarDrill.answer);
+                      } else {
+                        const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                        const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                        correct = (normUser === normAns && normUser.length > 0);
+                        if (!correct && currentGrammarDrill.acceptable_answers) {
+                          for (const alt of currentGrammarDrill.acceptable_answers) {
+                            const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                            if (normUser === normAlt && normUser.length > 0) {
+                              correct = true;
+                              break;
+                            }
+                          }
+                        }
+                      }
+
                       setIsGrammarChecked(true);
                       setIsGrammarCorrect(correct);
                       if (correct) {
@@ -5643,8 +5860,16 @@ export default function StudentApp() {
                     style={{
                       padding: '12px 36px',
                       fontSize: '16px',
-                      opacity: selectedGrammarOption ? 1 : 0.5,
-                      cursor: selectedGrammarOption ? 'pointer' : 'not-allowed'
+                      opacity: (
+                        (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0))
+                          ? selectedGrammarOption
+                          : userGrammarInput.trim()
+                      ) ? 1 : 0.5,
+                      cursor: (
+                        (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0))
+                          ? selectedGrammarOption
+                          : userGrammarInput.trim()
+                      ) ? 'pointer' : 'not-allowed'
                     }}
                   >
                     确认提交 / Έλεγχος
@@ -5655,6 +5880,7 @@ export default function StudentApp() {
                       if (grammarDrillIndex + 1 < grammarDrillPool.length) {
                         setGrammarDrillIndex(prev => prev + 1);
                         setSelectedGrammarOption(null);
+                        setUserGrammarInput('');
                         setIsGrammarChecked(false);
                         setIsGrammarCorrect(false);
                         setShowGrammarTip(false);
@@ -5700,7 +5926,7 @@ export default function StudentApp() {
                     currentGrammarDrill.id,
                     currentGrammarDrill.question,
                     currentGrammarDrill.answer,
-                    selectedGrammarOption || '未选择'
+                    selectedGrammarOption || userGrammarInput || '未作答'
                   )}
                   style={{
                     background: 'rgba(255,149,0,0.08)',
