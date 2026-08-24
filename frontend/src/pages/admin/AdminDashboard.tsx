@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
 import localAlternatives from '../../data/alternative_translations.json';
+import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 interface AdminDashboardProps {
@@ -423,6 +424,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
+  const [selectedUnitKnowledge, setSelectedUnitKnowledge] = useState<any | null>(null);
 
   // Database sync states
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
@@ -746,19 +748,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           color: '#1D1D1F',
           lineHeight: '1.5'
         }}>
-          💡 <strong>词汇统计提示：</strong> 此处显示的“单元包含词汇”数量是根据教材附录索引爬取/导入的全部词汇总量（包含核心生词、常用关联词、姓名/代词及课文复习词），并非全部是未学过的全新生词。授权解锁后，系统将自动结合遗忘曲线和特训模块对 Leon 进行智能追踪与针对性训练。
+          💡 <strong>v2.0 全维知识库与词汇统计提示：</strong> 本系统现已全面升级为<strong>多维能力知识库</strong>（涵盖单词、动词变位矩阵、名词变格、常用从句及情境对话金句）。对于生词较少的单元（如 A1-B 购物/看病、A2 命名日/命令式），系统已自动配备专项语法与情境考题，确保 Leon 获得最完整的语言能力训练。点击“🔍 重点与金句”可随时查阅。
         </div>
 
         <div className="overflow-x-auto">
           <table className="admin-table">
             <thead>
               <tr>
-                <th className="admin-th" style={{ width: '12%' }}>课本章节 / 书籍 ID</th>
-                <th className="admin-th" style={{ width: '18%' }}>单元课程</th>
-                <th className="admin-th" style={{ width: '25%' }}>核心语法与配套教学内容</th>
-                <th className="admin-th" style={{ width: '10%' }}>单元包含词汇</th>
-                <th className="admin-th" style={{ width: '22%' }}>设定学习周 (周一为始)</th>
-                <th className="admin-th" style={{ width: '13%' }}>授权状态与操作</th>
+                <th className="admin-th" style={{ width: '11%' }}>课本章节</th>
+                <th className="admin-th" style={{ width: '19%' }}>单元课程与属性标签</th>
+                <th className="admin-th" style={{ width: '24%' }}>核心语法与配套教学内容</th>
+                <th className="admin-th" style={{ width: '13%' }}>全维知识库储备</th>
+                <th className="admin-th" style={{ width: '18%' }}>设定学习周 (周一为始)</th>
+                <th className="admin-th" style={{ width: '15%' }}>授权状态与操作</th>
               </tr>
             </thead>
             <tbody>
@@ -769,6 +771,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   const isLocked = (studyDate === 'LOCKED');
                   const isUnitActivated = !isLocked && studyDate <= todayStr;
                   const activatedInUnitCount = words.filter(w => isWordActive(w.id, todayStr, resolvedActivationDates)).length;
+                  const knowledgeEntry = (unitKnowledgeData as any[]).find(
+                    k => k.book_id.toLowerCase() === bookName.toLowerCase() && k.unit === unitNum
+                  );
 
                   return (
                     <tr key={`${bookName}-${unitNum}`} className="hover-bg-gray">
@@ -778,11 +783,53 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         <div style={{ fontSize: '12px', color: '#86868B', marginTop: '2px', fontWeight: 500 }}>
                           {getUnitChineseName(bookName, unitNum)}
                         </div>
+                        {knowledgeEntry?.badge && (
+                          <div style={{ 
+                            fontSize: '10.5px', 
+                            fontWeight: 750, 
+                            color: '#0071E3', 
+                            background: 'rgba(0,113,227,0.08)', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px', 
+                            display: 'inline-block', 
+                            marginTop: '4px',
+                            border: '1px solid rgba(0,113,227,0.15)'
+                          }}>
+                            {knowledgeEntry.badge}
+                          </div>
+                        )}
                       </td>
                       <td className="admin-td" style={{ fontSize: '13px', lineHeight: '1.5', color: '#515154', fontWeight: 500 }}>
-                        {getUnitGrammarPoints(bookName, unitNum)}
+                        <div>{getUnitGrammarPoints(bookName, unitNum)}</div>
+                        {knowledgeEntry && (
+                          <button
+                            onClick={() => setSelectedUnitKnowledge(knowledgeEntry)}
+                            style={{
+                              marginTop: '6px',
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#0071E3',
+                              fontSize: '11.5px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              padding: 0,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            🔍 查看教学重点、变位与黄金句型 →
+                          </button>
+                        )}
                       </td>
-                      <td className="admin-td">{words.length} 词</td>
+                      <td className="admin-td">
+                        <div style={{ fontWeight: 700, color: '#1D1D1F' }}>{words.length} 词汇</div>
+                        {knowledgeEntry?.drills && (
+                          <div style={{ fontSize: '11px', color: '#34C759', fontWeight: 700, marginTop: '2px' }}>
+                            + {knowledgeEntry.drills.length} 道语法/情境考题
+                          </div>
+                        )}
+                      </td>
                       <td className="admin-td">
                         {!isLocked ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -795,7 +842,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                   setEditingDates(prev => ({ ...prev, [`${bookName.toUpperCase()}_${unitNum}`]: val }));
                                 }} 
                                 className="date-picker-input"
-                                style={{ width: '140px', padding: '4px 8px', fontSize: '13px' }}
+                                style={{ width: '130px', padding: '4px 6px', fontSize: '12px' }}
                               />
                               {editingDates[`${bookName.toUpperCase()}_${unitNum}`] !== undefined && editingDates[`${bookName.toUpperCase()}_${unitNum}`] !== studyDate && (
                                 <div style={{ display: 'flex', gap: '4px' }}>
@@ -864,17 +911,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         )}
                       </td>
                       <td className="admin-td">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           {isLocked ? (
-                            <span style={{ whiteSpace: 'nowrap', color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                            <span style={{ whiteSpace: 'nowrap', color: '#86868B', background: 'rgba(0,0,0,0.04)', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
                               未授权 (锁定中)
                             </span>
                           ) : isUnitActivated ? (
-                            <span style={{ whiteSpace: 'nowrap', color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                            <span style={{ whiteSpace: 'nowrap', color: '#34C759', background: 'rgba(52,199,89,0.08)', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
                               已激活 (已开始) ({activatedInUnitCount}/{words.length})
                             </span>
                           ) : (
-                            <span style={{ whiteSpace: 'nowrap', color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold' }}>
+                            <span style={{ whiteSpace: 'nowrap', color: '#FF9500', background: 'rgba(255,149,0,0.08)', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' }}>
                               已计划 (未来周) ({activatedInUnitCount}/{words.length})
                             </span>
                           )}
@@ -887,8 +934,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 whiteSpace: 'nowrap', 
                                 background: 'rgba(255,59,48,0.08)', 
                                 color: '#FF3B30', 
-                                padding: '4px 10px', 
-                                fontSize: '12px', 
+                                padding: '3px 8px', 
+                                fontSize: '11px', 
                                 width: '70px', 
                                 minWidth: '70px', 
                                 marginTop: 0, 
@@ -907,8 +954,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                                 whiteSpace: 'nowrap', 
                                 background: 'rgba(52,199,89,0.08)', 
                                 color: '#34C759', 
-                                padding: '4px 10px', 
-                                fontSize: '12px', 
+                                padding: '3px 8px', 
+                                fontSize: '11px', 
                                 width: '70px', 
                                 minWidth: '70px', 
                                 marginTop: 0, 
@@ -1567,6 +1614,193 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         {activeTab === 'activation' && renderActivationTab()}
         {activeTab === 'upload' && renderUploadTab()}
         {activeTab === 'feedback' && renderFeedbackTab()}
+
+        {/* v2.0 Multi-Dimensional Unit Knowledge Modal */}
+        {selectedUnitKnowledge && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px'
+          }}>
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              maxWidth: '750px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+              padding: '32px',
+              position: 'relative',
+              animation: 'fadeIn 0.2s ease-out'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', borderBottom: '1px solid #E5E5EA', paddingBottom: '16px' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{
+                      background: 'rgba(0,113,227,0.1)',
+                      color: '#0071E3',
+                      fontSize: '12px',
+                      fontWeight: 750,
+                      padding: '3px 8px',
+                      borderRadius: '6px'
+                    }}>
+                      {selectedUnitKnowledge.book_title} · 第 {selectedUnitKnowledge.unit} 单元
+                    </span>
+                    <span style={{
+                      background: 'rgba(52,199,89,0.1)',
+                      color: '#34C759',
+                      fontSize: '12px',
+                      fontWeight: 750,
+                      padding: '3px 8px',
+                      borderRadius: '6px'
+                    }}>
+                      {selectedUnitKnowledge.badge}
+                    </span>
+                  </div>
+                  <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', margin: 0 }}>
+                    {selectedUnitKnowledge.unit_title}
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedUnitKnowledge(null)}
+                  style={{
+                    background: '#F2F2F7',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#86868B',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* 1. Grammar Points */}
+              <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 750, color: '#0071E3', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📌 核心语法与教学重点
+                </h4>
+                <div style={{ background: '#F8F9FA', padding: '12px 16px', borderRadius: '10px', fontSize: '13.5px', lineHeight: '1.6', color: '#1D1D1F' }}>
+                  {selectedUnitKnowledge.grammar_points}
+                </div>
+              </div>
+
+              {/* 2. Core Formulas */}
+              <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 750, color: '#34C759', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  📐 核心公式与变位句型矩阵
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {selectedUnitKnowledge.core_formulas?.map((formula: string, idx: number) => (
+                    <div key={idx} style={{
+                      background: 'rgba(52,199,89,0.06)',
+                      borderLeft: '4px solid #34C759',
+                      padding: '10px 14px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: '#1D1D1F',
+                      fontFamily: 'SF Pro Text, -apple-system, sans-serif'
+                    }}>
+                      {formula}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Golden Dialogues */}
+              <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 750, color: '#9333EA', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🗣️ 黄金情境对话 (实战交际)
+                </h4>
+                <div style={{ background: '#FAF5FF', border: '1px solid rgba(147,51,234,0.15)', borderRadius: '12px', padding: '14px' }}>
+                  {selectedUnitKnowledge.golden_dialogues?.map((dia: any, idx: number) => (
+                    <div key={idx} style={{ marginBottom: idx !== selectedUnitKnowledge.golden_dialogues.length - 1 ? '10px' : '0', fontSize: '13.5px' }}>
+                      <span style={{ fontWeight: 750, color: '#9333EA', marginRight: '6px' }}>{dia.speaker}:</span>
+                      <strong style={{ color: '#1D1D1F' }}>{dia.greek}</strong>
+                      <div style={{ fontSize: '12px', color: '#86868B', marginTop: '2px', marginLeft: '22px' }}>
+                        {dia.chinese}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Knowledge Base Drills */}
+              <div>
+                <h4 style={{ fontSize: '14px', fontWeight: 750, color: '#FF9500', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🎯 知识库精选日常考题 ({selectedUnitKnowledge.drills?.length || 0} 题)
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {selectedUnitKnowledge.drills?.map((drill: any, idx: number) => (
+                    <div key={idx} style={{ background: '#FFFDF9', border: '1px solid rgba(255,149,0,0.2)', borderRadius: '10px', padding: '12px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{
+                          fontSize: '11px',
+                          fontWeight: 750,
+                          background: 'rgba(255,149,0,0.1)',
+                          color: '#D97706',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          textTransform: 'uppercase'
+                        }}>
+                          {drill.skill_type}
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#34C759' }}>
+                          正确答案: {drill.answer}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#1D1D1F', marginBottom: '4px' }}>
+                        {drill.question}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '8px' }}>
+                        中文：{drill.translation}
+                      </div>
+                      <div style={{ fontSize: '12px', background: '#F2F2F7', padding: '8px 12px', borderRadius: '6px', color: '#515154', lineHeight: '1.4' }}>
+                        {drill.detailed_tip}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginTop: '28px', textAlign: 'right' }}>
+                <button
+                  onClick={() => setSelectedUnitKnowledge(null)}
+                  className="btn-premium"
+                  style={{
+                    background: '#0071E3',
+                    color: '#FFFFFF',
+                    padding: '8px 24px',
+                    fontSize: '13px',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    width: 'auto'
+                  }}
+                >
+                  关闭
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

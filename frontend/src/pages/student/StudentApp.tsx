@@ -21,10 +21,10 @@ import {
   Settings
 } from 'lucide-react';
 
-// Import local static vocabulary compilation
 import staticVocabData from '../../data/vocabulary.json';
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
+import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 const speakGreek = (text: string) => {
@@ -937,8 +937,16 @@ const WRITING_SPEAKING_CHALLENGES: WritingSpeakingChallenge[] = [
 
 
 export default function StudentApp() {
-  const [activeModule, setActiveModule] = useState<'dashboard' | 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'writing_speaking' | 'glossary_review'>('dashboard');
+  const [activeModule, setActiveModule] = useState<'dashboard' | 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'writing_speaking' | 'glossary_review' | 'grammar_drill'>('dashboard');
   
+  // Grammar & Dialogue Drill States (v2.0 单元核心技能与语法/情景日常特训)
+  const [grammarDrillIndex, setGrammarDrillIndex] = useState(0);
+  const [selectedGrammarOption, setSelectedGrammarOption] = useState<string | null>(null);
+  const [isGrammarChecked, setIsGrammarChecked] = useState(false);
+  const [isGrammarCorrect, setIsGrammarCorrect] = useState(false);
+  const [showGrammarTip, setShowGrammarTip] = useState(false);
+  const [grammarDrillScore, setGrammarDrillScore] = useState(0);
+
   // Glossary Review States (单词表每日必做复习)
   const [glossaryIndex, setGlossaryIndex] = useState(0);
   const [userGlossaryInput, setUserGlossaryInput] = useState('');
@@ -2090,6 +2098,52 @@ export default function StudentApp() {
     return filterDuplicateTranslations(combined).slice(0, 40);
   }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
+  // v2.0 Grammar & Communicative Dialogue Daily Pool
+  const grammarDrillPool = useMemo(() => {
+    const activeUnits = (unitKnowledgeData as any[]).filter(k => {
+      const sDate = getUnitStudyDate(k.book_id, k.unit, unitStudyDates);
+      return sDate !== 'LOCKED' && sDate <= selectedDateStr;
+    });
+
+    const candidateUnits = activeUnits.length > 0 ? activeUnits : (unitKnowledgeData as any[]);
+
+    let hash = 0;
+    for (let i = 0; i < selectedDateStr.length; i++) {
+      hash = (hash << 5) - hash + selectedDateStr.charCodeAt(i);
+      hash = hash & hash;
+    }
+    hash = Math.abs(hash) + 42;
+
+    const allDrills: any[] = [];
+    candidateUnits.forEach(u => {
+      if (u.drills && u.drills.length > 0) {
+        u.drills.forEach((d: any) => {
+          allDrills.push({
+            ...d,
+            book_title: u.book_title,
+            unit: u.unit,
+            unit_title: u.unit_title,
+            badge: u.badge
+          });
+        });
+      }
+    });
+
+    if (allDrills.length <= 10) return allDrills;
+
+    const selected: any[] = [];
+    const step = Math.max(1, Math.floor(allDrills.length / 10));
+    for (let i = 0; i < 10; i++) {
+      const idx = (hash + i * step) % allDrills.length;
+      if (!selected.some(s => s.id === allDrills[idx].id)) {
+        selected.push(allDrills[idx]);
+      }
+    }
+    return selected;
+  }, [selectedDateStr, unitStudyDates]);
+
+  const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
+
   const currentTfWord = tfPool[tfIndex] || null;
 
   const tfQuestionData = useMemo(() => {
@@ -2290,7 +2344,7 @@ export default function StudentApp() {
   };
 
   // Switch Module handler
-  const startModule = (module: 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'glossary_review') => {
+  const startModule = (module: 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'glossary_review' | 'grammar_drill') => {
     setActiveModule(module);
     setShowTip(false);
     
@@ -2372,6 +2426,14 @@ export default function StudentApp() {
       setGlossaryMistakes(0);
       setGlossaryWrongAttempt(false);
       setShowGlossaryTip(false);
+    }
+    else if (module === 'grammar_drill') {
+      setGrammarDrillIndex(0);
+      setSelectedGrammarOption(null);
+      setIsGrammarChecked(false);
+      setIsGrammarCorrect(false);
+      setShowGrammarTip(false);
+      setGrammarDrillScore(0);
     }
   };
 
@@ -3609,6 +3671,67 @@ export default function StudentApp() {
                 style={{ background: 'linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)', borderColor: '#7E22CE' }}
               >
                 开始复习 <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* 9. Daily Grammar & Communicative Drills (v2.0 单元语法与情景特训) */}
+            <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
+              {completedModulesForDate.includes('grammar_drill') && (
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: '#34C759',
+                  color: '#FFFFFF',
+                  borderRadius: '50%',
+                  width: '24px',
+                  height: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                  zIndex: 3
+                }} title="今日已完成">
+                  ✓
+                </div>
+              )}
+              <img 
+                src="/poseidon.png" 
+                alt="Poseidon" 
+                className="game-character-img"
+              />
+              <h3 className="game-title" style={{ marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                单元语法与情景特训
+                <span style={{
+                  fontSize: '9.5px',
+                  fontWeight: 850,
+                  background: 'linear-gradient(135deg, #0071E3 0%, #00C7BE 100%)',
+                  color: '#FFFFFF',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase'
+                }}>v2.0 核心突破</span>
+              </h3>
+              <div style={{ fontSize: '11px', color: '#0071E3', fontWeight: 700, marginBottom: '8px' }}>
+                ΓΡΑΜΜΑΤΙΚΗ & ΕΠΙΚΟΙΝΩΝΙΑ
+              </div>
+              <p className="game-description" style={{ marginBottom: '16px' }}>
+                针对 A1/A2 各单元核心动词变位、名词变格、常用从句与生活情境对话进行专项突破，特别是针对低生词高语法单元的黄金句型实战演练！
+                <span style={{ display: 'block', fontSize: '12px', color: '#86868B', marginTop: '4px' }}>
+                  Ειδικές ασκήσεις γραμματικής, κλίσης ρημάτων/ουσιαστικών και καθημερινής επικοινωνίας.
+                </span>
+              </p>
+              <div style={{ fontSize: '13px', color: '#1D1D1F', marginBottom: '16px', fontWeight: 650 }}>
+                题量：{grammarDrillPool.length} 道多维核心能力特训题
+              </div>
+              <button 
+                onClick={() => startModule('grammar_drill')} 
+                className="btn-premium btn-blue-filled"
+                style={{ background: 'linear-gradient(135deg, #0071E3 0%, #00C7BE 100%)', borderColor: '#0071E3' }}
+              >
+                开始特训 <ChevronRight size={16} />
               </button>
             </div>
           </div>
@@ -5356,6 +5479,272 @@ export default function StudentApp() {
               </h3>
               <p style={{ color: '#86868B', fontSize: '15px', marginBottom: '24px' }}>
                 你已熟练掌握所有已解锁的词汇，可以前往其他练习模块或者返回主页。
+              </p>
+              <button 
+                onClick={() => setActiveModule('dashboard')}
+                className="btn-premium btn-blue-filled"
+                style={{ padding: '12px 32px', fontSize: '16px' }}
+              >
+                返回主面板 / Επιστροφή
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 9. Daily Grammar & Communicative Drills Screen (v2.0 单元语法与情景特训) */}
+        {activeModule === 'grammar_drill' && currentGrammarDrill && (
+          <div className="game-module animate-fade-in" style={{ maxWidth: '680px', width: '100%' }}>
+            <h2 className="module-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>单元语法与情景特训</span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 850,
+                  background: 'linear-gradient(135deg, #0071E3 0%, #00C7BE 100%)',
+                  color: '#FFFFFF',
+                  padding: '2px 8px',
+                  borderRadius: '6px'
+                }}>v2.0 核心突破</span>
+              </span>
+              <span style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>
+                当前进度: {grammarDrillIndex + 1} / {grammarDrillPool.length}
+              </span>
+            </h2>
+            <div style={{ textAlign: 'right', fontSize: '11px', color: '#86868B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '24px', marginRight: '4px' }}>
+              ΓΡΑΜΜΑΤΙΚΗ & ΕΠΙΚΟΙΝΩΝΙΑ: {grammarDrillIndex + 1} / {grammarDrillPool.length}
+            </div>
+
+            <div className="game-container-card" style={{ padding: '32px' }}>
+              {/* Drill Header with Badges */}
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  <span style={{
+                    fontSize: '11.5px',
+                    fontWeight: 750,
+                    background: 'rgba(0,113,227,0.1)',
+                    color: '#0071E3',
+                    padding: '4px 10px',
+                    borderRadius: '6px'
+                  }}>
+                    {currentGrammarDrill.book_title} · 第 {currentGrammarDrill.unit} 单元
+                  </span>
+                  <span style={{
+                    fontSize: '11.5px',
+                    fontWeight: 750,
+                    background: 'rgba(52,199,89,0.1)',
+                    color: '#34C759',
+                    padding: '4px 10px',
+                    borderRadius: '6px'
+                  }}>
+                    {currentGrammarDrill.badge}
+                  </span>
+                  <span style={{
+                    fontSize: '11.5px',
+                    fontWeight: 750,
+                    background: 'rgba(255,149,0,0.1)',
+                    color: '#D97706',
+                    padding: '4px 10px',
+                    borderRadius: '6px'
+                  }}>
+                    {currentGrammarDrill.skill_type === 'conjugation' ? '动词变位与时态' :
+                     currentGrammarDrill.skill_type === 'declension' ? '名词/形容词变格' :
+                     currentGrammarDrill.skill_type === 'dialogue' ? '情境交际金句' :
+                     currentGrammarDrill.skill_type === 'syntax' ? '句式从句结构' : '微阅读理解'}
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '22px', fontWeight: 800, color: '#1D1D1F', lineHeight: '1.4', marginBottom: '10px' }}>
+                  {currentGrammarDrill.question}
+                </div>
+                <div style={{ fontSize: '14.5px', color: '#86868B', fontWeight: 550 }}>
+                  中文：{currentGrammarDrill.translation}
+                </div>
+              </div>
+
+              {/* Multiple Choice Options */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+                {currentGrammarDrill.options?.map((opt: string, idx: number) => {
+                  const isSelected = selectedGrammarOption === opt;
+                  const isCorrect = opt === currentGrammarDrill.answer;
+                  
+                  let btnBg = '#F2F2F7';
+                  let btnColor = '#1D1D1F';
+                  let btnBorder = '1.5px solid transparent';
+
+                  if (isGrammarChecked) {
+                    if (isCorrect) {
+                      btnBg = 'rgba(52,199,89,0.15)';
+                      btnColor = '#248A3D';
+                      btnBorder = '1.5px solid #34C759';
+                    } else if (isSelected && !isCorrect) {
+                      btnBg = 'rgba(255,59,48,0.15)';
+                      btnColor = '#FF3B30';
+                      btnBorder = '1.5px solid #FF3B30';
+                    }
+                  } else if (isSelected) {
+                    btnBg = 'rgba(0,113,227,0.1)';
+                    btnColor = '#0071E3';
+                    btnBorder = '1.5px solid #0071E3';
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      disabled={isGrammarChecked}
+                      onClick={() => setSelectedGrammarOption(opt)}
+                      style={{
+                        padding: '16px',
+                        borderRadius: '14px',
+                        background: btnBg,
+                        color: btnColor,
+                        border: btnBorder,
+                        fontSize: '16px',
+                        fontWeight: 750,
+                        cursor: isGrammarChecked ? 'default' : 'pointer',
+                        transition: 'all 0.15s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: isSelected && !isGrammarChecked ? '0 4px 12px rgba(0,113,227,0.15)' : 'none'
+                      }}
+                    >
+                      <span>{opt}</span>
+                      {isGrammarChecked && isCorrect && <Check size={18} color="#34C759" />}
+                      {isGrammarChecked && isSelected && !isCorrect && <X size={18} color="#FF3B30" />}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '16px' }}>
+                {!isGrammarChecked ? (
+                  <button
+                    disabled={!selectedGrammarOption}
+                    onClick={() => {
+                      if (!selectedGrammarOption) return;
+                      const correct = (selectedGrammarOption === currentGrammarDrill.answer);
+                      setIsGrammarChecked(true);
+                      setIsGrammarCorrect(correct);
+                      if (correct) {
+                        setScore(prev => {
+                          const newScore = prev + 15;
+                          localStorage.setItem('leon_score', newScore.toString());
+                          saveSharedState({ score: newScore });
+                          return newScore;
+                        });
+                        setGrammarDrillScore(prev => prev + 1);
+                      } else {
+                        setShowGrammarTip(true);
+                      }
+                    }}
+                    className="btn-premium btn-blue-filled"
+                    style={{
+                      padding: '12px 36px',
+                      fontSize: '16px',
+                      opacity: selectedGrammarOption ? 1 : 0.5,
+                      cursor: selectedGrammarOption ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    确认提交 / Έλεγχος
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (grammarDrillIndex + 1 < grammarDrillPool.length) {
+                        setGrammarDrillIndex(prev => prev + 1);
+                        setSelectedGrammarOption(null);
+                        setIsGrammarChecked(false);
+                        setIsGrammarCorrect(false);
+                        setShowGrammarTip(false);
+                      } else {
+                        handleGameComplete(grammarDrillScore * 15);
+                        setActiveModule('dashboard');
+                      }
+                    }}
+                    className="btn-premium btn-blue-filled"
+                    style={{
+                      background: isGrammarCorrect ? '#34C759' : '#0071E3',
+                      borderColor: isGrammarCorrect ? '#34C759' : '#0071E3',
+                      padding: '12px 36px',
+                      fontSize: '16px'
+                    }}
+                  >
+                    {grammarDrillIndex + 1 < grammarDrillPool.length ? '下一题 / Επόμενο →' : '完成特训 / Τέλος 🎉'}
+                  </button>
+                )}
+              </div>
+
+              {/* Detailed Grammar Tip & Error Report */}
+              <div style={{ marginTop: '20px', borderTop: '1px solid #E5E5EA', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <button
+                  onClick={() => setShowGrammarTip(prev => !prev)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#0071E3',
+                    fontSize: '13px',
+                    fontWeight: 650,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  💡 {showGrammarTip ? '收起解析' : '查看深度语法解析 / Detailed Tip'}
+                </button>
+
+                <button
+                  onClick={() => handleReportFeedback(
+                    currentGrammarDrill.id,
+                    currentGrammarDrill.question,
+                    currentGrammarDrill.answer,
+                    selectedGrammarOption || '未选择'
+                  )}
+                  style={{
+                    background: 'rgba(255,149,0,0.08)',
+                    border: '1px solid rgba(255,149,0,0.2)',
+                    color: '#D97706',
+                    fontSize: '12px',
+                    fontWeight: 650,
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {feedbackSubmitted ? '✓ 已上报' : '💡 错题反馈 / 报错'}
+                </button>
+              </div>
+
+              {showGrammarTip && (
+                <div className="animate-fade-in" style={{
+                  marginTop: '12px',
+                  background: '#F8F9FA',
+                  borderLeft: '4px solid #0071E3',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  fontSize: '13px',
+                  lineHeight: '1.5',
+                  color: '#1D1D1F'
+                }}>
+                  {currentGrammarDrill.detailed_tip}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 9.1 Fallback / Completion Screen for Grammar Drills */}
+        {activeModule === 'grammar_drill' && (!currentGrammarDrill || grammarDrillIndex >= grammarDrillPool.length) && (
+          <div className="game-module animate-fade-in" style={{ maxWidth: '680px', width: '100%', textAlign: 'center', padding: '40px 20px' }}>
+            <div className="game-container-card" style={{ padding: '40px 24px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏛️</div>
+              <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#1D1D1F', marginBottom: '8px' }}>
+                今日单元语法与情景特训已全部完成！
+              </h3>
+              <p style={{ color: '#86868B', fontSize: '15px', marginBottom: '24px' }}>
+                你已成功攻坚今日所有核心变位、名词变格与生活情境金句，语言能力持续飞跃！
               </p>
               <button 
                 onClick={() => setActiveModule('dashboard')}

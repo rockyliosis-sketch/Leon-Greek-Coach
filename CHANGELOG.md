@@ -4,6 +4,36 @@
 
 ---
 
+## 📌 [v2.0.0] - 2026-08-24
+
+### 🌟 重大版本演进：多维能力知识库与低生词单元专项特训 (Multi-dimensional Knowledge Base & Drill Engine)
+
+#### 1. 🧠 多维知识库全面构建 (39 单元全景覆盖)
+- **多维架构**：在单一单词库基础上，全面扩展出包含 `badge`（教学性质标签）、`grammar_points`（核心语法体系）、`core_formulas`（动词变位与名词变格公式）、`golden_dialogues`（情境交际黄金句型）与 `drills`（多维考题）的深度知识库体系。
+- **全书 39 单元全覆盖**：
+  - A1-A（第 1~15 单元，基础语音、问候、学校、家庭、日常动词）；
+  - A1-B（第 16~30 单元，过去时 Aorist、方向指引、买菜砍价、看病问诊、祈使命令）；
+  - A2（第 31~39 单元，命名日礼仪、中动被动态、未完成过去时、假定从句 `να`、天气与交通）。
+- **知识库物理文件**：构建 [`frontend/src/data/unit_knowledge_drills.json`](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/frontend/src/data/unit_knowledge_drills.json) 与 [`materials/glossaries/Leon_Greek_A1_A2_Unit_Skills_Matrix.md`](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/glossaries/Leon_Greek_A1_A2_Unit_Skills_Matrix.md)。
+
+#### 2. 🎯 低生词高语法/交际单元专项攻坚与权重自适应
+- **痛点解决**：针对教材中“生词极少但语法或交际极其关键”（如 A1-B Unit 22 仅 3 词、Unit 28 仅 10 词、Unit 29 仅 9 词、A2 Unit 37 仅 4 词）的单元，彻底摆脱“单靠词汇量衡量单元”的局限。
+- **智能适配**：系统自动将这些单元的教学重心转向过去时态变位、`να` 虚拟从句、变格规则与真实生活交际，将其完整融入每日训练中。
+
+#### 3. 🏛️ 学生端新增「单元语法与情景特训」实战模块 (Daily Grammar & Communicative Drills)
+- **第 9 大常驻练习模块**：每日自适应从当前已解锁单元中精选 10 道核心特训题（覆盖动词变位、名词变格、常用从句、生活情境金句、微阅读）。
+- **交互设计与激励**：
+  - 醒目单元来源与技能标签（如 `[A2 第 37 单元 · 🎯 语法攻坚·命名日礼仪与介词]`、`[动词变位与时态]`）；
+  - 即时对错判分与 +15 XP 积分奖励；
+  - 💡 **深度语法解析抽屉**：每道题均配备清晰的希腊语语法原理拆解；
+  - 💡 **1-Click 一键纠错反馈**：支持学生即时向家长后台上报存疑题目。
+
+#### 4. 🔍 家长后台 (Admin Dashboard) 课程透视与教学重点穿透预览
+- **课程列表全面升级**：为每个单元配置直观的教学性质徽章（`🎯 语法攻坚`、`🗣️ 情境交际`、`📚 核心词汇`），并实时显示多维题量（如 `3 词汇 + 5 道语法/情境考题`）。
+- **教学重点深度预览弹窗**：家长可随时点击 `🔍 查看教学重点、变位与黄金句型 →`，一键查阅该单元的语法要点、变位公式矩阵、双语生活对话和全套考题。
+
+---
+
 ## 📌 [v1.1.0] - 2026-08-24
 
 ### 🌟 重大更新与系统加固 (Major Highlights)
