@@ -1801,73 +1801,59 @@ export default function StudentApp() {
     return filterDuplicateTranslations(combined).slice(0, 20);
   }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
 
-  // Glossary Review Pool (针对全库 A1/A2 词汇表知识库的每日必做特训池)
+  // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
   const glossaryReviewPool = useMemo(() => {
-    // 优先使用 allVocab (包含全量 1864 个单词与手写笔记词汇)
-    const baseList: any[] = allVocab && allVocab.length > 0 ? allVocab : (dailyDeck || []);
-    if (baseList.length === 0) return [];
-
-    // 为每个词条计算分类标签与元数据
-    const formatGlossaryItem = (w: any) => {
-      const gr = (w.word_greek || '').trim().toLowerCase();
-      let tag = '词';
-      if (gr.endsWith('ω') || gr.endsWith('ώ')) tag = '动';
-      else if (gr.endsWith('ος') || gr.endsWith('ης') || gr.startsWith('ο ')) tag = '阳';
-      else if (gr.endsWith('α') || gr.endsWith('η') || gr.startsWith('η ')) tag = '阴';
-      else if (gr.endsWith('ο') || gr.endsWith('ι') || gr.endsWith('μα') || gr.startsWith('το ')) tag = '中';
-      else if (gr.endsWith('ες') || gr.endsWith('ους') || gr.endsWith('α') || gr.startsWith('τα ')) tag = '复';
-
-      return {
-        id: w.id,
-        word_greek: w.word_greek,
-        word_chinese: w.word_chinese,
-        word_english: w.word_english || '',
-        pronunciation: w.pronunciation || '',
-        book_id: w.book_id || 'a1',
-        unit: w.unit || 1,
-        level: w.book_id ? w.book_id.toUpperCase() : 'A1',
-        letter: w.note_date ? `笔记 · ${w.note_date.slice(5)}` : `Unit ${w.unit || 1}`,
-        tag: tag,
-        status: w.note_date === selectedDateStr ? 'upcoming' : 'mastered',
-        scheduled_date: w.note_date || selectedDateStr
-      };
-    };
-
-    // 1. 艾宾浩斯复习与当日笔记新词
-    const dueReviews: any[] = [];
+    const masterList: any[] = (staticVocabData as any).master_glossary || [];
+    
+    // 1. 获取当天排期的 20 个主攻新词 (8月24日命中 #930 ~ #949，包含 #948 Ραπουνζέλ)
+    const scheduledToday = masterList.filter((w: any) => w.scheduled_date === selectedDateStr);
+    
+    // 2. 艾宾浩斯复习：调度 1, 2, 4, 7, 15, 30 天前已学过的词包
+    const ebbinghausReviews: any[] = [];
     const parts = selectedDateStr.split('-');
     if (parts.length === 3) {
       const selD = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-      EBBINGHAUS_INTERVALS.forEach(inv => {
+      const intervals = [1, 2, 4, 7, 15, 30];
+      intervals.forEach(inv => {
         const prevD = new Date(selD);
         prevD.setDate(prevD.getDate() - inv);
         const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth() + 1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
-        const matchingWords = baseList.filter((w: any) => w.note_date === prevStr || activatedDates[w.id] === prevStr);
-        dueReviews.push(...matchingWords);
+        const prevWords = masterList.filter((w: any) => w.scheduled_date === prevStr);
+        ebbinghausReviews.push(...prevWords);
       });
     }
 
-    // 2. 当日卡包核心词 (dailyDeck)
-    const dailyDeckItems = dailyDeck || [];
-
-    // 3. 轮换补充池 (保证每天有 25-30 个词汇特训)
+    // 3. 补充池：当排期不足时，由已掌握词库按种子轮转补足
+    const fallbackList = masterList.filter((w: any) => w.status === 'mastered' || (w.day_assigned && w.day_assigned < 7));
     const seed = selectedDateStr.split('-').reduce((acc, v) => acc + (parseInt(v, 10) || 0), 0);
-    const shuffledFallback = [...baseList].sort((a: any, b: any) => ((a.id * 37 + seed) % 101) - ((b.id * 37 + seed) % 101));
+    const shuffledFallback = [...fallbackList].sort((a: any, b: any) => ((a.id * 31 + seed) % 97) - ((b.id * 31 + seed) % 97));
 
-    const combined = [...dueReviews, ...dailyDeckItems, ...shuffledFallback];
+    // 合并并去重
+    const combined = [...scheduledToday, ...ebbinghausReviews, ...shuffledFallback];
     const seen = new Set<number>();
     const uniquePool: any[] = [];
 
     for (const item of combined) {
       if (!seen.has(item.id)) {
         seen.add(item.id);
-        uniquePool.push(formatGlossaryItem(item));
+        uniquePool.push({
+          id: item.id,
+          word_greek: item.word_greek,
+          word_chinese: item.word_chinese,
+          word_english: item.word_english || '',
+          pronunciation: item.pronunciation || '',
+          level: item.level || 'A1',
+          letter: item.letter || '核心词',
+          tag: item.tag || '词',
+          status: item.scheduled_date === selectedDateStr ? 'upcoming' : 'mastered',
+          scheduled_date: item.scheduled_date
+        });
         if (uniquePool.length >= 25) break;
       }
     }
 
     return uniquePool;
-  }, [allVocab, dailyDeck, activatedDates, selectedDateStr]);
+  }, [selectedDateStr]);
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
 
