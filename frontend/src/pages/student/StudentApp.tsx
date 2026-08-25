@@ -4465,7 +4465,7 @@ export default function StudentApp() {
                   }}>
                     {tfIsCorrect ? (
                       <div>
-                        <span>🎉 回答正确！+5 XP</span>
+                        <span>🎉 回答正确！</span>
                         <div style={{ fontSize: '11.5px', color: '#34C759', fontWeight: 650, marginTop: '2px' }}>ΣΩΣΤΗ ΑΠΑΝΤΗΣΗ!</div>
                       </div>
                     ) : (
@@ -4618,7 +4618,7 @@ export default function StudentApp() {
                   border: isCorrectTransGrZh ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,59,48,0.2)'
                 }}>
                   <p style={{ margin: 0, fontSize: '16px' }}>
-                    {isCorrectTransGrZh ? '🎉 回答正确！+5 XP' : '❌ 回答错误'}
+                    {isCorrectTransGrZh ? '🎉 回答正确！' : '❌ 回答错误'}
                   </p>
                   <p style={{ fontSize: '11px', textTransform: 'uppercase', margin: '2px 0 6px 0', opacity: 0.9 }}>
                     {isCorrectTransGrZh ? 'ΣΩΣΤΗ ΑΠΑΝΤΗΣΗ!' : 'ΛΑΘΟΣ ΑΠΑΝΤΗΣΗ'}
@@ -4795,7 +4795,7 @@ export default function StudentApp() {
                   border: isCorrectTransZhGrInput ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(255,59,48,0.2)'
                 }}>
                   <p style={{ margin: 0, fontSize: '16px' }}>
-                    {isCorrectTransZhGrInput ? '🎉 回答正确！+5 XP' : '❌ 回答错误'}
+                    {isCorrectTransZhGrInput ? '🎉 回答正确！' : '❌ 回答错误'}
                   </p>
                   <p style={{ fontSize: '11px', textTransform: 'uppercase', margin: '2px 0 6px 0', opacity: 0.9 }}>
                     {isCorrectTransZhGrInput ? 'ΣΩΣΤΗ ΑΠΑΝΤΗΣΗ!' : 'ΛΑΘΟΣ ΑΠΑΝΤΗΣΗ'}
@@ -5387,7 +5387,7 @@ export default function StudentApp() {
                   border: isCorrectGlossaryInput ? '1.5px solid rgba(52,199,89,0.25)' : '1.5px solid rgba(255,59,48,0.25)'
                 }}>
                   <p style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
-                    {isCorrectGlossaryInput ? '🎉 回答正确！+5 XP' : '❌ 拼写有误，请注意标准写法'}
+                    {isCorrectGlossaryInput ? '🎉 回答正确！' : '❌ 拼写有误，请注意标准写法'}
                   </p>
                   <p style={{ fontSize: '11px', textTransform: 'uppercase', margin: '3px 0 8px 0', opacity: 0.9 }}>
                     {isCorrectGlossaryInput ? 'ΣΩΣΤΗ ΑΠΑΝΤΗΣΗ!' : 'ΛΑΘΟΣ ΑΠΑΝΤΗΣΗ'}
@@ -5749,12 +5749,6 @@ export default function StudentApp() {
                           setIsGrammarChecked(true);
                           setIsGrammarCorrect(correct);
                           if (correct) {
-                            setScore(prev => {
-                              const newScore = prev + 15;
-                              localStorage.setItem('leon_score', newScore.toString());
-                              saveSharedState({ score: newScore });
-                              return newScore;
-                            });
                             setGrammarDrillScore(prev => prev + 1);
                           } else {
                             setShowGrammarTip(true);
@@ -5806,7 +5800,7 @@ export default function StudentApp() {
                   border: isGrammarCorrect ? '1px solid rgba(52,199,89,0.25)' : '1px solid rgba(255,59,48,0.25)'
                 }}>
                   <p style={{ margin: 0, fontSize: '16px' }}>
-                    {isGrammarCorrect ? '🎉 回答正确！+15 XP' : '❌ 回答错误'}
+                    {isGrammarCorrect ? '🎉 回答正确！' : '❌ 回答错误'}
                   </p>
                   <p style={{ color: '#1D1D1F', fontSize: '14.5px', marginTop: '6px', fontWeight: 650 }}>
                     标准答案 / Σωστή Απάντηση: <span style={{ color: '#0071E3' }}>{currentGrammarDrill.answer}</span>
@@ -5845,12 +5839,6 @@ export default function StudentApp() {
                       setIsGrammarChecked(true);
                       setIsGrammarCorrect(correct);
                       if (correct) {
-                        setScore(prev => {
-                          const newScore = prev + 15;
-                          localStorage.setItem('leon_score', newScore.toString());
-                          saveSharedState({ score: newScore });
-                          return newScore;
-                        });
                         setGrammarDrillScore(prev => prev + 1);
                       } else {
                         setShowGrammarTip(true);
