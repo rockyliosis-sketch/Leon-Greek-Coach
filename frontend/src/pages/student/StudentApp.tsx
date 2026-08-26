@@ -994,7 +994,12 @@ export default function StudentApp() {
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [submittedFeedbackIds, setSubmittedFeedbackIds] = useState<Record<string, boolean>>({});
+
+  const isFeedbackSubmitted = (key: string | number | undefined | null): boolean => {
+    if (key === undefined || key === null || key === '') return false;
+    return !!submittedFeedbackIds[String(key)];
+  };
 
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [expandedUnits, setExpandedUnits] = useState<Record<string, boolean>>({});
@@ -1868,9 +1873,10 @@ export default function StudentApp() {
 
   const handleReportFeedback = async (questionId: any, greek: string, expected: string, userTyped: string) => {
     if (!greek || !expected) return;
+    const qKey = String(questionId || Date.now());
     const newFeedbackItem = {
       id: Date.now().toString(),
-      questionId: questionId || Date.now().toString(),
+      questionId: qKey,
       greek: greek,
       expected: expected,
       userTyped: userTyped ? userTyped.trim() : '(查看提示/报错纠偏)',
@@ -1880,7 +1886,7 @@ export default function StudentApp() {
     const updatedFeedback = [...userFeedbackList, newFeedbackItem];
     setUserFeedbackList(updatedFeedback);
     await saveSharedState({ user_feedback: updatedFeedback });
-    setFeedbackSubmitted(true);
+    setSubmittedFeedbackIds(prev => ({ ...prev, [qKey]: true }));
     alert("您的报错与纠偏反馈已提交给家长！可以在家长控制中心进行审核，一键添加为备选翻译或纠正，Leon Coach 会自我成长哦！");
   };
 
@@ -2264,7 +2270,6 @@ export default function StudentApp() {
   };
 
   const handleNextTransGrZh = () => {
-    setFeedbackSubmitted(false);
     if (transGrZhIndex < translationGrZhPool.length - 1) {
       setTransGrZhIndex(prev => prev + 1);
       setUserTransGrZhInput('');
@@ -4090,7 +4095,7 @@ export default function StudentApp() {
                       currentSpellingWord.word_chinese,
                       spellInput.join('')
                     )}
-                    disabled={feedbackSubmitted}
+                    disabled={isFeedbackSubmitted(currentSpellingWord?.id)}
                     className="btn-premium"
                     style={{
                       marginTop: '12px',
@@ -4098,14 +4103,14 @@ export default function StudentApp() {
                       fontSize: '13px',
                       width: 'auto',
                       border: '1px solid #FF9500',
-                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      background: isFeedbackSubmitted(currentSpellingWord?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: isFeedbackSubmitted(currentSpellingWord?.id) ? '#86868B' : '#FF9500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px'
                     }}
                   >
-                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                    <span>💡 {isFeedbackSubmitted(currentSpellingWord?.id) ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                   </button>
                 </div>
               )}
@@ -4231,7 +4236,7 @@ export default function StudentApp() {
                       currentQuizWord.word_chinese,
                       selectedOption || ''
                     )}
-                    disabled={feedbackSubmitted}
+                    disabled={isFeedbackSubmitted(currentQuizWord?.id)}
                     className="btn-premium"
                     style={{
                       marginTop: '12px',
@@ -4239,14 +4244,14 @@ export default function StudentApp() {
                       fontSize: '13px',
                       width: 'auto',
                       border: '1px solid #FF9500',
-                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      background: isFeedbackSubmitted(currentQuizWord?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: isFeedbackSubmitted(currentQuizWord?.id) ? '#86868B' : '#FF9500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px'
                     }}
                   >
-                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                    <span>💡 {isFeedbackSubmitted(currentQuizWord?.id) ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                   </button>
                 </div>
               )}
@@ -4511,7 +4516,7 @@ export default function StudentApp() {
                       currentTfWord.chinese,
                       tfChecked ? (tfIsCorrect ? '正确' : '错误') : '(查看提示)'
                     )}
-                    disabled={feedbackSubmitted}
+                    disabled={isFeedbackSubmitted(currentTfWord?.id)}
                     className="btn-premium"
                     style={{
                       marginTop: '12px',
@@ -4519,14 +4524,14 @@ export default function StudentApp() {
                       fontSize: '13px',
                       width: 'auto',
                       border: '1px solid #FF9500',
-                      background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                      color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                      background: isFeedbackSubmitted(currentTfWord?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                      color: isFeedbackSubmitted(currentTfWord?.id) ? '#86868B' : '#FF9500',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px'
                     }}
                   >
-                    <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                    <span>💡 {isFeedbackSubmitted(currentTfWord?.id) ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                   </button>
                 </div>
               )}
@@ -4639,7 +4644,7 @@ export default function StudentApp() {
                         currentTransGrZh.chinese,
                         userTransGrZhInput
                       )}
-                      disabled={feedbackSubmitted}
+                      disabled={isFeedbackSubmitted(currentTransGrZh?.id)}
                       className="btn-premium"
                       style={{
                         marginTop: '12px',
@@ -4647,14 +4652,14 @@ export default function StudentApp() {
                         fontSize: '13px',
                         width: 'auto',
                         border: '1px solid #FF9500',
-                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        background: isFeedbackSubmitted(currentTransGrZh?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: isFeedbackSubmitted(currentTransGrZh?.id) ? '#86868B' : '#FF9500',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                     >
-                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                      <span>💡 {isFeedbackSubmitted(currentTransGrZh?.id) ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
                     </button>
                   )}
                 </div>
@@ -4677,21 +4682,21 @@ export default function StudentApp() {
                         currentTransGrZh.chinese,
                         userTransGrZhInput.trim() || '(题目类型报错/格式异常)'
                       )}
-                      disabled={feedbackSubmitted}
+                      disabled={isFeedbackSubmitted(currentTransGrZh?.id)}
                       className="btn-premium"
                       style={{
                         width: 'auto',
                         padding: '12px 18px',
                         border: '1px solid #FF9500',
-                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        background: isFeedbackSubmitted(currentTransGrZh?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: isFeedbackSubmitted(currentTransGrZh?.id) ? '#86868B' : '#FF9500',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                       title="任何题目问题均可一键反馈给家长后台"
                     >
-                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                      <span>💡 {isFeedbackSubmitted(currentTransGrZh?.id) ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                     </button>
                     <button 
                       disabled={!userTransGrZhInput.trim()} 
@@ -4823,7 +4828,7 @@ export default function StudentApp() {
                         currentTransZhGr.type === 'word' ? currentTransZhGr.wordChinese : currentTransZhGr.chinese,
                         userTransZhGrInput
                       )}
-                      disabled={feedbackSubmitted}
+                      disabled={isFeedbackSubmitted(currentTransZhGr?.id)}
                       className="btn-premium"
                       style={{
                         marginTop: '12px',
@@ -4831,14 +4836,14 @@ export default function StudentApp() {
                         fontSize: '13px',
                         width: 'auto',
                         border: '1px solid #FF9500',
-                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        background: isFeedbackSubmitted(currentTransZhGr?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: isFeedbackSubmitted(currentTransZhGr?.id) ? '#86868B' : '#FF9500',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                     >
-                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                      <span>💡 {isFeedbackSubmitted(currentTransZhGr?.id) ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
                     </button>
                   )}
                 </div>
@@ -4861,21 +4866,21 @@ export default function StudentApp() {
                         currentTransZhGr.type === 'word' ? currentTransZhGr.wordChinese : currentTransZhGr.chinese,
                         userTransZhGrInput.trim() || '(题目类型报错/格式异常)'
                       )}
-                      disabled={feedbackSubmitted}
+                      disabled={isFeedbackSubmitted(currentTransZhGr?.id)}
                       className="btn-premium"
                       style={{
                         width: 'auto',
                         padding: '12px 18px',
                         border: '1px solid #FF9500',
-                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        background: isFeedbackSubmitted(currentTransZhGr?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: isFeedbackSubmitted(currentTransZhGr?.id) ? '#86868B' : '#FF9500',
                         display: 'inline-flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                       title="任何题目问题均可一键反馈给家长后台"
                     >
-                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
+                      <span>💡 {isFeedbackSubmitted(currentTransZhGr?.id) ? '反馈已提交' : '一键反馈 / 题目报错'}</span>
                     </button>
                     <button 
                       disabled={!userTransZhGrInput.trim()} 
@@ -5410,7 +5415,7 @@ export default function StudentApp() {
                         currentGlossaryWord.word_chinese,
                         userGlossaryInput
                       )}
-                      disabled={feedbackSubmitted}
+                      disabled={isFeedbackSubmitted(currentGlossaryWord?.id)}
                       className="btn-premium"
                       style={{
                         marginTop: '12px',
@@ -5418,14 +5423,14 @@ export default function StudentApp() {
                         fontSize: '13px',
                         width: 'auto',
                         border: '1px solid #FF9500',
-                        background: feedbackSubmitted ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
-                        color: feedbackSubmitted ? '#86868B' : '#FF9500',
+                        background: isFeedbackSubmitted(currentGlossaryWord?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                        color: isFeedbackSubmitted(currentGlossaryWord?.id) ? '#86868B' : '#FF9500',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
                     >
-                      <span>💡 {feedbackSubmitted ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
+                      <span>💡 {isFeedbackSubmitted(currentGlossaryWord?.id) ? '反馈已提交' : '我写的对，提交家长审核纠错'}</span>
                     </button>
                   )}
                 </div>
@@ -5916,18 +5921,19 @@ export default function StudentApp() {
                     currentGrammarDrill.answer,
                     selectedGrammarOption || userGrammarInput || '未作答'
                   )}
+                  disabled={isFeedbackSubmitted(currentGrammarDrill?.id)}
                   style={{
-                    background: 'rgba(255,149,0,0.08)',
+                    background: isFeedbackSubmitted(currentGrammarDrill?.id) ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
                     border: '1px solid rgba(255,149,0,0.2)',
-                    color: '#D97706',
+                    color: isFeedbackSubmitted(currentGrammarDrill?.id) ? '#86868B' : '#D97706',
                     fontSize: '12px',
                     fontWeight: 650,
                     padding: '4px 10px',
                     borderRadius: '6px',
-                    cursor: 'pointer'
+                    cursor: isFeedbackSubmitted(currentGrammarDrill?.id) ? 'default' : 'pointer'
                   }}
                 >
-                  {feedbackSubmitted ? '✓ 已上报' : '💡 错题反馈 / 报错'}
+                  {isFeedbackSubmitted(currentGrammarDrill?.id) ? '✓ 已上报' : '💡 错题反馈 / 报错'}
                 </button>
               </div>
 

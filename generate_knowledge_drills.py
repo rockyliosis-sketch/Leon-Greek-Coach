@@ -40,8 +40,8 @@ raw_units = [
         ],
         "golden_dialogues": [
             {"speaker": "A", "greek": "Γεια σας! Πώς σας λένε;", "chinese": "您好！请问您叫什么名字？"},
-            {"speaker": "B", "greek": "Γεια σας! Με λένε Νίκο. Εσάς;", "chinese": "您好！我叫尼科斯。您呢？"},
-            {"speaker": "A", "greek": "Με λένε Μαρία. Χάρηκα πολύ!", "chinese": "我叫玛利亚。很高兴认识你！"},
+            {"speaker": "B", "greek": "Γεια σας! Με λένε Νίκο. Εσάς;", "chinese": "您好！我叫Nikos。您呢？"},
+            {"speaker": "A", "greek": "Με λένε Μαρία. Χάρηκα πολύ!", "chinese": "我叫Maria。很高兴认识你！"},
             {"speaker": "B", "greek": "Κι εγώ χάρηκα!", "chinese": "我也很高兴！"}
         ],
         "drills": [
@@ -50,7 +50,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Πώς ______; — Με λένε Ελένη.",
-                "translation": "你叫什么名字？—— 我叫埃莱妮。",
+                "translation": "你叫什么名字？—— 我叫Eleni。",
                 "options": make_shuffled_options("σε λένε", ["με λένε", "τον λένε", "μας λένε"]),
                 "answer": "σε λένε",
                 "detailed_tip": "【变位解析】问对方名字（单数熟人）用 'Πώς σε λένε;'（你叫什么？），回答用 'Με λένε...'（我叫...）。"
@@ -133,7 +133,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Η Άννα είναι ______ (希腊人·女).",
-                "translation": "安娜是希腊人（女性）。",
+                "translation": "Anna是希腊人（女性）。",
                 "options": make_shuffled_options("Ελληνίδα", ["Έλληνας", "Ελληνικό", "Έλληνες"]),
                 "answer": "Ελληνίδα",
                 "detailed_tip": "【国籍阴阳性】女性希腊人用 'Ελληνίδα'，男性用 'Έλληνας'。"
@@ -160,7 +160,7 @@ raw_units = [
         "grammar_points": "第一类规则动词现在时陈述式变位 (Group A: -ω, -εις, -ει, -ουμε, -ετε, -ουν: κάνω, διαβάζω, γράφω, μένω)、名词属格表示所有权 (του Leo, της Μαρίας)。",
         "core_formulas": [
             "动词词尾公式: εγώ -ω, εσύ -εις, αυτός -ει, εμείς -ουμε, εσείς -ετε, αυτοί -ουν",
-            "属格所有权: το βιβλίο της Μαρίας (玛利亚的书), το μολύβι του Leo (Leo的铅笔)"
+            "属格所有权: το βιβλίο της Μαρίας (Maria的书), το μολύβι του Leo (Leo的铅笔)"
         ],
         "golden_dialogues": [
             {"speaker": "A", "greek": "Τι κάνεις τώρα;", "chinese": "你现在在做什么？"},
@@ -193,10 +193,10 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Αυτό είναι το βιβλίο ______ Μαρίας.",
-                "translation": "这是玛利亚的书。",
+                "translation": "这是Maria的书。",
                 "options": make_shuffled_options("της", ["την", "η", "του"]),
                 "answer": "της",
-                "detailed_tip": "【属格表达】阴性名词人名前用属格冠词 'της' 表示所属关系 (της Μαρίας = 玛利亚的)。"
+                "detailed_tip": "【属格表达】阴性名词人名前用属格冠词 'της' 表示所属关系 (της Μαρίας = Maria的)。"
             },
             {
                 "id": 10304,
@@ -433,7 +433,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "declension",
                 "question": "Η Μαρία φοράει μια ______ φούστα.",
-                "translation": "玛利亚穿着一条蓝色的裙子。",
+                "translation": "Maria穿着一条蓝色的裙子。",
                 "options": make_shuffled_options("μπλε", ["μπλεες", "μπλεα", "μπλεσ"]),
                 "answer": "μπλε",
                 "detailed_tip": "【不可变形容词】'μπλε' (蓝色) 为外来语不可变形容词，修饰阴性/阳性/中性形式不变。"
@@ -933,7 +933,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Χθες η Ελένη ______ ένα καινούργιο φόρεμα. (αγοράζω -> 过去时)",
-                "translation": "昨天埃莱妮买了一条新裙子。",
+                "translation": "昨天Eleni买了一条新裙子。",
                 "options": make_shuffled_options("αγόρασε", ["αγόρασα", "αγοράζει", "αγοράσουν"]),
                 "answer": "αγόρασε",
                 "detailed_tip": "【简单过去时】第三人称单数过去时形式为 '-σε' -> αγόρασε (她买了)。"
@@ -1184,7 +1184,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "conjugation",
                 "question": "Αύριο ο Νίκος ______ για το Λονδίνο. (φεύγω -> 将来时)",
-                "translation": "明天尼科斯将启程前往伦敦。",
+                "translation": "明天Nikos将启程前往伦敦。",
                 "options": make_shuffled_options("θα φύγει", ["φεύγει", "έφυγε", "να φύγει"]),
                 "answer": "θα φύγει",
                 "detailed_tip": "【简单将来时】'θα + 简单动词变位' -> θα φύγει (他将离开)。"
@@ -1194,7 +1194,7 @@ raw_units = [
                 "drill_type": "cloze",
                 "skill_type": "declension",
                 "question": "Ο Γιώργος είναι καθηγητής και η Μαρία είναι ______ (阴性女老师).",
-                "translation": "乔治是男老师，玛利亚是女老师。",
+                "translation": "Giorgos是男老师，Maria是女老师。",
                 "answer": "καθηγήτρια",
                 "acceptable_answers": ["καθηγήτρια", "καθηγητρια", "δασκάλα"],
                 "detailed_tip": "【职业阴阳性】阳性 '-τής' 对应阴性 '-τρια' -> καθηγητής -> καθηγήτρια。"
@@ -1276,7 +1276,7 @@ raw_units = [
         ],
         "golden_dialogues": [
             {"speaker": "A", "greek": "Σήμερα είναι η γιορτή μου!", "chinese": "今天是我的命名日！"},
-            {"speaker": "B", "greek": "Χρόνια Πολλά, Νίκο! Να τα εκατοστήσεις!", "chinese": "祝你长命百岁，节日快乐，尼科斯！"}
+            {"speaker": "B", "greek": "Χρόνια Πολλά, Νίκο! Να τα εκατοστήσεις!", "chinese": "祝你长命百岁，节日快乐，Nikos！"}
         ],
         "drills": [
             {
@@ -1641,7 +1641,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "syntax",
                 "question": "Όταν έφτασε ο Νίκος, εμείς ______ τηλεόραση. (βλέπω - Παρατατικός 正在进行)",
-                "translation": "当尼科斯到达时，我们正在看电视。",
+                "translation": "当Nikos到达时，我们正在看电视。",
                 "options": make_shuffled_options("βλέπαμε", ["είδαμε", "θα δούμε", "βλέπουμε"]),
                 "answer": "βλέπαμε",
                 "detailed_tip": "【未完成过去时】表示过去某一时刻正在持续进行的动作，用未完成过去时 'βλέπαμε'。"
@@ -1852,7 +1852,7 @@ raw_units = [
                 "drill_type": "cloze",
                 "skill_type": "conjugation",
                 "question": "Νίκο, ______ (ανοίγω - 命令式单数) το παράθυρο, σε παρακαλώ!",
-                "translation": "尼科斯，请打开窗户！",
+                "translation": "Nikos，请打开窗户！",
                 "answer": "άνοιξε",
                 "acceptable_answers": ["άνοιξε", "ανοιξε"],
                 "detailed_tip": "【命令式单数】ανοίγω 面对单数熟人的简单命令式为 'άνοιξε'。"
@@ -1993,7 +1993,7 @@ raw_units = [
                 "drill_type": "choice",
                 "skill_type": "reading",
                 "question": "Κείμενο: 'Η Μαρία μένει στην Αθήνα αλλά τα καλοκαίρια πηγαίνει πάντα στην Κρήτη στο σπίτι της γιαγιάς της.' -> Ερώτηση: Πού περνάει η Μαρία τα καλοκαίρια της;",
-                "translation": "微阅读理解：玛利亚在哪里过夏天？",
+                "translation": "微阅读理解：Maria在哪里过夏天？",
                 "options": make_shuffled_options("Στην Κρήτη", ["Στην Αθήνα", "Στο Λονδίνο", "Στη Θεσσαλονίκη"]),
                 "answer": "Στην Κρήτη",
                 "detailed_tip": "【微阅读事实提取】文中明确说明 'τα καλοκαίρια πηγαίνει πάντα στην Κρήτη'，因此正确答案是 'Στην Κρήτη'。"
@@ -2003,7 +2003,7 @@ raw_units = [
                 "drill_type": "qa",
                 "skill_type": "reading",
                 "question": "Κείμενο: 'Ο Νίκος μαθαίνει ελληνικά εδώ και τρία χρόνια επειδή θέλει να σπουδάσει στην Αθήνα.' -> Ερώτηση: Γιατί μαθαίνει ελληνικά ο Νίκος;",
-                "translation": "阅读理解问答：尼科斯为什么学希腊语？",
+                "translation": "阅读理解问答：Nikos为什么学希腊语？",
                 "answer": "Επειδή θέλει να σπουδάσει στην Αθήνα.",
                 "acceptable_answers": ["Επειδή θέλει να σπουδάσει στην Αθήνα.", "Γιατί θέλει να σπουδάσει στην Αθήνα.", "επειδη θελει να σπουδασει στην αθηνα"],
                 "options": make_shuffled_options("Επειδή θέλει να σπουδάσει στην Αθήνα.", ["Επειδή μένει στο Λονδίνο.", "Επειδή είναι καθηγητής.", "Επειδή δεν του αρέσει η Ελλάδα."]),

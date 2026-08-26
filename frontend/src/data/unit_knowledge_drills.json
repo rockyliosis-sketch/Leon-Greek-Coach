@@ -22,12 +22,12 @@
       {
         "speaker": "B",
         "greek": "Γεια σας! Με λένε Νίκο. Εσάς;",
-        "chinese": "您好！我叫尼科斯。您呢？"
+        "chinese": "您好！我叫Nikos。您呢？"
       },
       {
         "speaker": "A",
         "greek": "Με λένε Μαρία. Χάρηκα πολύ!",
-        "chinese": "我叫玛利亚。很高兴认识你！"
+        "chinese": "我叫Maria。很高兴认识你！"
       },
       {
         "speaker": "B",
@@ -41,7 +41,7 @@
         "drill_type": "choice",
         "skill_type": "conjugation",
         "question": "Πώς ______; — Με λένε Ελένη.",
-        "translation": "你叫什么名字？—— 我叫埃莱妮。",
+        "translation": "你叫什么名字？—— 我叫Eleni。",
         "options": [
           "τον λένε",
           "με λένε",
@@ -167,7 +167,7 @@
         "drill_type": "choice",
         "skill_type": "declension",
         "question": "Η Άννα είναι ______ (希腊人·女).",
-        "translation": "安娜是希腊人（女性）。",
+        "translation": "Anna是希腊人（女性）。",
         "options": [
           "Έλληνας",
           "Ελληνικό",
@@ -204,7 +204,7 @@
     "grammar_points": "第一类规则动词现在时陈述式变位 (Group A: -ω, -εις, -ει, -ουμε, -ετε, -ουν: κάνω, διαβάζω, γράφω, μένω)、名词属格表示所有权 (του Leo, της Μαρίας)。",
     "core_formulas": [
       "动词词尾公式: εγώ -ω, εσύ -εις, αυτός -ει, εμείς -ουμε, εσείς -ετε, αυτοί -ουν",
-      "属格所有权: το βιβλίο της Μαρίας (玛利亚的书), το μολύβι του Leo (Leo的铅笔)"
+      "属格所有权: το βιβλίο της Μαρίας (Maria的书), το μολύβι του Leo (Leo的铅笔)"
     ],
     "golden_dialogues": [
       {
@@ -258,7 +258,7 @@
         "drill_type": "choice",
         "skill_type": "declension",
         "question": "Αυτό είναι το βιβλίο ______ Μαρίας.",
-        "translation": "这是玛利亚的书。",
+        "translation": "这是Maria的书。",
         "options": [
           "την",
           "του",
@@ -266,7 +266,7 @@
           "της"
         ],
         "answer": "της",
-        "detailed_tip": "【属格表达】阴性名词人名前用属格冠词 'της' 表示所属关系 (της Μαρίας = 玛利亚的)。"
+        "detailed_tip": "【属格表达】阴性名词人名前用属格冠词 'της' 表示所属关系 (της Μαρίας = Maria的)。"
       },
       {
         "id": 10304,
@@ -606,7 +606,7 @@
         "drill_type": "choice",
         "skill_type": "declension",
         "question": "Η Μαρία φοράει μια ______ φούστα.",
-        "translation": "玛利亚穿着一条蓝色的裙子。",
+        "translation": "Maria穿着一条蓝色的裙子。",
         "options": [
           "μπλεσ",
           "μπλεα",
@@ -1332,7 +1332,7 @@
         "drill_type": "choice",
         "skill_type": "conjugation",
         "question": "Χθες η Ελένη ______ ένα καινούργιο φόρεμα. (αγοράζω -> 过去时)",
-        "translation": "昨天埃莱妮买了一条新裙子。",
+        "translation": "昨天Eleni买了一条新裙子。",
         "options": [
           "αγοράζει",
           "αγοράσουν",
@@ -1695,7 +1695,7 @@
         "drill_type": "choice",
         "skill_type": "conjugation",
         "question": "Αύριο ο Νίκος ______ για το Λονδίνο. (φεύγω -> 将来时)",
-        "translation": "明天尼科斯将启程前往伦敦。",
+        "translation": "明天Nikos将启程前往伦敦。",
         "options": [
           "να φύγει",
           "φεύγει",
@@ -1710,7 +1710,7 @@
         "drill_type": "cloze",
         "skill_type": "declension",
         "question": "Ο Γιώργος είναι καθηγητής και η Μαρία είναι ______ (阴性女老师).",
-        "translation": "乔治是男老师，玛利亚是女老师。",
+        "translation": "Giorgos是男老师，Maria是女老师。",
         "answer": "καθηγήτρια",
         "acceptable_answers": [
           "καθηγήτρια",
@@ -1830,7 +1830,7 @@
       {
         "speaker": "B",
         "greek": "Χρόνια Πολλά, Νίκο! Να τα εκατοστήσεις!",
-        "chinese": "祝你长命百岁，节日快乐，尼科斯！"
+        "chinese": "祝你长命百岁，节日快乐，Nikos！"
       }
     ],
     "drills": [
@@ -2364,7 +2364,7 @@
         "drill_type": "choice",
         "skill_type": "syntax",
         "question": "Όταν έφτασε ο Νίκος, εμείς ______ τηλεόραση. (βλέπω - Παρατατικός 正在进行)",
-        "translation": "当尼科斯到达时，我们正在看电视。",
+        "translation": "当Nikos到达时，我们正在看电视。",
         "options": [
           "βλέπουμε",
           "είδαμε",
@@ -2668,7 +2668,7 @@
         "drill_type": "cloze",
         "skill_type": "conjugation",
         "question": "Νίκο, ______ (ανοίγω - 命令式单数) το παράθυρο, σε παρακαλώ!",
-        "translation": "尼科斯，请打开窗户！",
+        "translation": "Nikos，请打开窗户！",
         "answer": "άνοιξε",
         "acceptable_answers": [
           "άνοιξε",
@@ -2865,7 +2865,7 @@
         "drill_type": "choice",
         "skill_type": "reading",
         "question": "Κείμενο: 'Η Μαρία μένει στην Αθήνα αλλά τα καλοκαίρια πηγαίνει πάντα στην Κρήτη στο σπίτι της γιαγιάς της.' -> Ερώτηση: Πού περνάει η Μαρία τα καλοκαίρια της;",
-        "translation": "微阅读理解：玛利亚在哪里过夏天？",
+        "translation": "微阅读理解：Maria在哪里过夏天？",
         "options": [
           "Στη Θεσσαλονίκη",
           "Στην Αθήνα",
@@ -2880,7 +2880,7 @@
         "drill_type": "qa",
         "skill_type": "reading",
         "question": "Κείμενο: 'Ο Νίκος μαθαίνει ελληνικά εδώ και τρία χρόνια επειδή θέλει να σπουδάσει στην Αθήνα.' -> Ερώτηση: Γιατί μαθαίνει ελληνικά ο Νίκος;",
-        "translation": "阅读理解问答：尼科斯为什么学希腊语？",
+        "translation": "阅读理解问答：Nikos为什么学希腊语？",
         "answer": "Επειδή θέλει να σπουδάσει στην Αθήνα.",
         "acceptable_answers": [
           "Επειδή θέλει να σπουδάσει στην Αθήνα.",
