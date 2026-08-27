@@ -4,6 +4,18 @@
 
 ---
 
+## 📌 [v2.0.3] - 2026-08-27
+
+### 📚 Markdown 题库全景档案与教材进度 JSON 同步 (Markdown Question Banks & Textbook Sync)
+- **全量 39 单元 Markdown 题库全书重构与同步**：
+  - 重新编译生成了 [`materials/question_banks/A1_A_Question_Bank_Units_01_15.md`](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/question_banks/A1_A_Question_Bank_Units_01_15.md)、[`materials/question_banks/A1_B_Question_Bank_Units_16_30.md`](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/question_banks/A1_B_Question_Bank_Units_16_30.md) 与 [`materials/question_banks/A2_Question_Bank_Units_31_39.md`](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/question_banks/A2_Question_Bank_Units_31_39.md)；
+  - 剔除了题库 Markdown 中残留的脑图堆叠题目，全书 1716 道题目全部实现“单词对单词、单句对单句”的纯粹化标准。
+- **教材切片进度与生产 JSON 同步更新**：
+  - 同步清理了 `（已压缩）LEON_S GREEK TEXTBOOK A1-B_progress.json` 及生产端 `unit_master_question_banks.json`。
+- **全量归档推送**：本地 Markdown 题库、代码与 GitHub 远程仓库全量同步。
+
+---
+
 ## 📌 [v2.0.2] - 2026-08-27
 
 ### 🧹 词库深度去噪与“单词 vs 句子”严谨边界治理 (Stacked Vocabulary Cleanup & Strict Word Boundaries)
