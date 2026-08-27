@@ -2490,8 +2490,17 @@ export default function StudentApp() {
       setCompletedModulesForDate(updated);
     }
 
-    // Check if all 6 core modules are completed today
-    const coreModules = ['matching', 'spelling', 'quiz', 'truefalse', 'translation_gr_zh', 'translation_zh_gr', 'glossary_review'];
+    // Check if all 8 core modules are completed today
+    const coreModules = [
+      'matching',           // 1. 单词连连看
+      'spelling',           // 2. 拼字大作战
+      'truefalse',          // 3. 判断对错
+      'quiz',               // 4. 智能选择题
+      'translation_gr_zh',  // 5. 希腊语翻译汉语
+      'translation_zh_gr',  // 6. 汉语翻译希腊语
+      'glossary_review',    // 7. 单词表每日复习
+      'grammar_drill'       // 8. 单元语法与情景特训
+    ];
     const allCoreDone = coreModules.every(mod => updated.includes(mod));
     
     // Check if daily reward has been awarded for today
@@ -2507,9 +2516,9 @@ export default function StudentApp() {
       dailyRewardsAwarded[dateStr] = true;
       updates.daily_rewards_awarded = dailyRewardsAwarded;
       
-      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部七大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
+      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
     } else {
-      pointsEarnedText = `\n今日已完成模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 7\n全部做完每天可积 10 分！\n当前总积分: ${score} XP`;
+      pointsEarnedText = `\n今日已完成核心模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 8\n全部做完每天可积 10 分！\n当前总积分: ${score} XP`;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -3276,18 +3285,66 @@ export default function StudentApp() {
         }}>
           {/* Left Column: Title and Content */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-              <img 
-                src="/hades.png" 
-                alt="Hades" 
-                className="header-char-img"
-              />
-              <div>
-                <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
-                <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
-                  Ενότητες Προσαρμοστικής Εκπαίδευσης
-                </p>
+            <div className="section-header-with-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <img 
+                  src="/hades.png" 
+                  alt="Hades" 
+                  className="header-char-img"
+                />
+                <div>
+                  <h2 className="section-title" style={{ margin: 0, fontSize: '24px', fontWeight: 800 }}>自适应特训模块</h2>
+                  <p style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, margin: '4px 0 0 0', textTransform: 'uppercase' }}>
+                    Ενότητες Προσαρμοστικής Εκπαίδευσης
+                  </p>
+                </div>
               </div>
+
+              {/* Daily 8 Core Tasks Completion Progress Badge */}
+              {(() => {
+                const coreKeys = ['matching', 'spelling', 'truefalse', 'quiz', 'translation_gr_zh', 'translation_zh_gr', 'glossary_review', 'grammar_drill'];
+                const doneCount = coreKeys.filter(k => completedModulesForDate.includes(k)).length;
+                const isAllDone = doneCount === 8;
+                return (
+                  <div style={{
+                    background: isAllDone ? 'rgba(52, 199, 89, 0.08)' : 'rgba(0, 113, 227, 0.06)',
+                    border: `1.5px solid ${isAllDone ? 'rgba(52, 199, 89, 0.3)' : 'rgba(0, 113, 227, 0.15)'}`,
+                    padding: '8px 16px',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 750, color: isAllDone ? '#34C759' : '#0071E3' }}>
+                          今日八大核心特训: {doneCount} / 8
+                        </span>
+                        {isAllDone && <span style={{ fontSize: '13px' }}>🎉</span>}
+                      </div>
+                      <span style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
+                        {isAllDone ? '已达成今日 +10 XP 积分大奖！' : '做完八项即可获得今日 10 分大奖'}
+                      </span>
+                    </div>
+                    {/* Mini Progress Bar */}
+                    <div style={{
+                      width: '64px',
+                      height: '6px',
+                      background: 'rgba(0,0,0,0.06)',
+                      borderRadius: '3px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${(doneCount / 8) * 100}%`,
+                        height: '100%',
+                        background: isAllDone ? '#34C759' : 'linear-gradient(90deg, #0071E3, #34C759)',
+                        borderRadius: '3px',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           
           <div className="game-hub-grid">
@@ -6114,10 +6171,10 @@ export default function StudentApp() {
                   <div>
                     <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#1D1D1F', margin: '0 0 6px 0' }}>今日积分奖励规则</h4>
                     <p style={{ fontSize: '13px', color: '#48484B', lineHeight: 1.5, margin: 0 }}>
-                      Leon 每天把<strong>自适应特训模块</strong>下的<strong>七大必做特训题</strong>（连连看、拼字、选择题、判断对错、希译中、中译希、单词表复习）全部做完，即可自动积 <strong>10 分</strong>！
+                      Leon 每天把<strong>自适应特训模块</strong>下的<strong>八大必做特训题</strong>（单词连连看、拼字大作战、判断对错、智能选择题、希腊语翻译汉语、汉语翻译希腊语、单词表每日复习、单元语法与情景特训）全部做完，即可自动积 <strong>10 分</strong>！
                     </p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: '6px 0 0 0', fontStyle: 'italic' }}>
-                      * 不论答题正确与否，只要完成全部七大项题库，即视作完成今日学习，即可获得积分奖励。
+                      * 不论答题正确与否，只要完成全部八大项题库，即视作完成今日学习，即可获得当日积分奖励。
                     </p>
                   </div>
                 </div>
