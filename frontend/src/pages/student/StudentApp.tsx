@@ -668,8 +668,19 @@ const isValidExerciseWord = (
   if (hasGreekCharacters(zh)) {
     return false; // Prevents "Greek translating Greek"
   }
-  if (!hasGreekCharacters(gr)) {
-    return false; // Greek field must have actual Greek
+  // Rule 4: Disallow stacked word lists / brain-map enumerations
+  // A legitimate word is a single word/phrase; a legitimate sentence has normal sentence structure.
+  // Stacks of 3+ commas (e.g. "ίσια, σγουρά, κυματιστά, μαύρα...") or 3+ enumeration marks are banned.
+  const commaCountGr = (gr.match(/,/g) || []).length;
+  const enumCountZh = (zh.match(/、/g) || []).length;
+  if (commaCountGr >= 3 || enumCountZh >= 3) {
+    return false;
+  }
+
+  // Disallow table/list headers with multiple slashes (e.g. "με / σε / τον, την, το...")
+  const slashCountGr = (gr.match(/\//g) || []).length;
+  if (slashCountGr >= 2) {
+    return false;
   }
 
   return true;
