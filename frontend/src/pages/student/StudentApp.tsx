@@ -2385,13 +2385,53 @@ export default function StudentApp() {
 
 
 
+  const getAcceptableGreekTranslations = (rawGreek: string, rawChinese: string): string[] => {
+    const list: string[] = [];
+    if (rawGreek) {
+      list.push(...getExpandedGlossaryVariants(rawGreek));
+    }
+    const cleanZh = (rawChinese || '').trim();
+    const cleanGr = cleanGreekForComparison(rawGreek);
+
+    // Common synonyms, alternate forms, and imperative/lemma variants
+    if (cleanZh === '说' || cleanZh.includes('说') || ['πες', 'λεω', 'μιλαω', 'μιλω', 'πειτε', 'λες'].includes(cleanGr)) {
+      list.push('λέω', 'μιλάω', 'μιλώ', 'πες', 'πείτε', 'λες');
+    }
+    if (cleanZh === '看' || cleanZh.includes('看') || ['βλεπω', 'κοιταζω', 'κοιτω', 'δες'].includes(cleanGr)) {
+      list.push('βλέπω', 'κοιτάζω', 'κοιτώ', 'δες');
+    }
+    if (cleanZh === '吃' || cleanZh.includes('吃') || ['τρωω', 'τρωγω', 'φαε'].includes(cleanGr)) {
+      list.push('τρώω', 'τρώγω', 'φάε');
+    }
+    if (cleanZh === '喝' || cleanZh.includes('喝') || ['πινω', 'πιες'].includes(cleanGr)) {
+      list.push('πίνω', 'πιες');
+    }
+    if (cleanZh === '买' || cleanZh.includes('买') || ['αγοραζω', 'ψωνιζω'].includes(cleanGr)) {
+      list.push('αγοράζω', 'ψωνίζω');
+    }
+    if (cleanZh.includes('讨论') || ['συζηταω', 'συζητω'].includes(cleanGr)) {
+      list.push('συζητάω', 'συζητώ');
+    }
+    if (cleanZh.includes('喜欢') || cleanZh.includes('爱') || ['αγαπαω', 'αγαπω'].includes(cleanGr)) {
+      list.push('αγαπάω', 'αγαπώ');
+    }
+    if (cleanZh.includes('问') || ['ρωταω', 'ρωτω'].includes(cleanGr)) {
+      list.push('ρωτάω', 'ρωτώ');
+    }
+    if (cleanZh.includes('去') || ['παω', 'πηγαινω'].includes(cleanGr)) {
+      list.push('πάω', 'πηγαίνω');
+    }
+
+    return Array.from(new Set(list));
+  };
+
   const handleCheckTransZhGr = () => {
     const cleanUser = cleanGreekForComparison(userTransZhGrInput);
-    const cleanAnswer = cleanGreekForComparison(currentTransZhGr.greek);
-    const correct = cleanUser === cleanAnswer;
+    const acceptable = getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
+    const correct = acceptable.some(ans => cleanGreekForComparison(ans) === cleanUser) || cleanUser === cleanGreekForComparison(currentTransZhGr.greek);
     if (correct) {
       setTransZhGrChecked(true);
-      setIsCorrectTransZhGrInput(correct);
+      setIsCorrectTransZhGrInput(true);
       setTransZhGrScore(prev => prev + 5);
       setTransZhGrWrongAttempt(false);
     } else {
