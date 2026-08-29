@@ -1052,6 +1052,8 @@ export default function StudentApp() {
   const [userGlossaryInput, setUserGlossaryInput] = useState('');
   const [glossaryChecked, setGlossaryChecked] = useState(false);
   const [isCorrectGlossaryInput, setIsCorrectGlossaryInput] = useState(false);
+  const [isGlossaryRevealed, setIsGlossaryRevealed] = useState(false);
+  const [glossarySkippedIds, setGlossarySkippedIds] = useState<string[]>([]);
   const [glossaryScore, setGlossaryScore] = useState(0);
   const [glossaryMistakes, setGlossaryMistakes] = useState(0);
   const [glossaryWrongAttempt, setGlossaryWrongAttempt] = useState(false);
@@ -2415,24 +2417,82 @@ export default function StudentApp() {
     }
   };
 
-  const checkGlossaryAnswer = (userRaw: string, wordObj: any): boolean => {
-    if (!userRaw || !wordObj) return false;
-    const wordGreek = wordObj.word_greek || '';
-    const userClean = cleanGreekForComparison(userRaw);
-    const targetClean = cleanGreekForComparison(wordGreek);
-    if (userClean === targetClean && userClean.length > 0) return true;
+  const getCleanGlossaryLemma = (str: string): string => {
+    if (!str) return '';
+    let cleaned = str
+      .replace(/\(.*?\)|\[.*?\]|（.*?）|【.*?】/g, '')
+      .replace(/,.*$/, '')
+      .trim();
+    if (cleaned.includes('/')) {
+      cleaned = cleaned.split('/')[0].trim();
+    }
+    return cleaned;
+  };
 
-    const noBrackets = wordGreek.replace(/\(.*?\)|\[.*?\]/g, '').trim();
-    const commaParts = noBrackets.split(',').map((p: string) => p.trim()).filter(Boolean);
-    for (const part of commaParts) {
-      const partClean = cleanGreekForComparison(part);
-      if (userClean === partClean && partClean.length > 0) return true;
+  const getExpandedGlossaryVariants = (wordGreek: string): string[] => {
+    const variants: string[] = [];
+    if (!wordGreek) return variants;
+
+    // 1. Raw string
+    variants.push(wordGreek);
+
+    // 2. Remove all brackets
+    const noBrackets = wordGreek.replace(/\(.*?\)|\[.*?\]|（.*?）|【.*?】/g, '').trim();
+    if (noBrackets) variants.push(noBrackets);
+
+    // 3. Verb variants with (-ώ) / (-ω) e.g. "συζητάω (-ώ)" -> "συζητάω" and "συζητώ"
+    if (wordGreek.includes('(-ώ)') || wordGreek.includes('(-ω)') || wordGreek.includes('( -ώ )')) {
+      const base = wordGreek.replace(/\(.*?\)|\[.*?\]|（.*?）|【.*?】/g, '').trim();
+      if (base.endsWith('άω')) {
+        variants.push(base.slice(0, -2) + 'ώ');
+      } else if (base.endsWith('αω')) {
+        variants.push(base.slice(0, -2) + 'ω');
+      }
     }
 
-    const slashParts = wordGreek.split('/').map((p: string) => p.trim()).filter(Boolean);
+    // 4. Slash parts e.g. "συζητώ / συζητάω"
+    const slashParts = wordGreek.split('/').map(p => p.trim()).filter(Boolean);
     for (const sp of slashParts) {
-      const spClean = cleanGreekForComparison(sp);
-      if (userClean === spClean && spClean.length > 0) return true;
+      variants.push(sp);
+      const spClean = sp.replace(/\(.*?\)|\[.*?\]|（.*?）|【.*?】/g, '').trim();
+      if (spClean) variants.push(spClean);
+    }
+
+    // 5. Comma parts & articles e.g. "συλλαβή, η" -> "συλλαβή", "η συλλαβή"
+    const commaParts = noBrackets.split(',').map(p => p.trim()).filter(Boolean);
+    if (commaParts.length > 0) {
+      variants.push(commaParts[0]);
+      if (commaParts.length > 1) {
+        const article = commaParts[1].toLowerCase().trim();
+        if (['ο', 'η', 'το', 'τα', 'οι', 'του', 'της', 'των', 'τους', 'τις'].includes(article)) {
+          variants.push(`${article} ${commaParts[0]}`);
+          variants.push(commaParts[0]);
+        }
+      }
+    }
+
+    // 6. Adjective forms e.g. "καλός, -ή, -ό" -> "καλός"
+    if (wordGreek.includes(', -') || wordGreek.includes(',-')) {
+      const parts = wordGreek.split(',').map(p => p.trim());
+      if (parts.length > 0) {
+        variants.push(parts[0]);
+      }
+    }
+
+    return Array.from(new Set(variants.filter(Boolean)));
+  };
+
+  const checkGlossaryAnswer = (userRaw: string, wordObj: any): boolean => {
+    if (!userRaw || !wordObj) return false;
+    const userClean = cleanGreekForComparison(userRaw);
+    if (!userClean) return false;
+
+    const variants = getExpandedGlossaryVariants(wordObj.word_greek || '');
+    for (const v of variants) {
+      const targetClean = cleanGreekForComparison(v);
+      if (userClean === targetClean && userClean.length > 0) {
+        return true;
+      }
     }
     return false;
   };
@@ -2443,6 +2503,7 @@ export default function StudentApp() {
     if (correct) {
       setGlossaryChecked(true);
       setIsCorrectGlossaryInput(true);
+      setIsGlossaryRevealed(false);
       setGlossaryScore(prev => prev + 5);
       setGlossaryWrongAttempt(false);
     } else {
@@ -2455,11 +2516,42 @@ export default function StudentApp() {
     }
   };
 
+  const handleRevealGlossary = () => {
+    if (!currentGlossaryWord) return;
+    setIsGlossaryRevealed(true);
+    setGlossaryChecked(true);
+    setIsCorrectGlossaryInput(false);
+    setGlossaryWrongAttempt(false);
+  };
+
+  const handleSkipGlossary = () => {
+    if (!currentGlossaryWord) return;
+    setGlossarySkippedIds(prev => [...prev, String(currentGlossaryWord.id)]);
+    handleNextGlossary();
+  };
+
+  const handleReportGlossaryProblem = async () => {
+    if (!currentGlossaryWord) return;
+    await handleReportFeedback(
+      currentGlossaryWord.id,
+      currentGlossaryWord.word_greek,
+      currentGlossaryWord.word_chinese,
+      userGlossaryInput ? userGlossaryInput.trim() : '(学生一键报错纠错)'
+    );
+    // Automatically reveal answer and allow smooth progression
+    setIsGlossaryRevealed(true);
+    setGlossaryChecked(true);
+    setIsCorrectGlossaryInput(false);
+    setGlossaryWrongAttempt(false);
+  };
+
   const handleNextGlossary = () => {
     if (glossaryIndex < glossaryReviewPool.length - 1) {
       setGlossaryIndex(prev => prev + 1);
       setUserGlossaryInput('');
       setGlossaryChecked(false);
+      setIsCorrectGlossaryInput(false);
+      setIsGlossaryRevealed(false);
       setGlossaryWrongAttempt(false);
       setGlossaryMistakes(0);
       setShowGlossaryTip(false);
@@ -5064,6 +5156,359 @@ export default function StudentApp() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* 8. Daily Glossary Vocabulary Review Question Screen (单词表每日复习填空) */}
+        {activeModule === 'glossary_review' && currentGlossaryWord && (
+          <div className="game-module animate-fade-in" style={{ maxWidth: '680px', width: '100%' }}>
+            <h2 className="module-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>单词表每日复习</span>
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)',
+                  color: '#FFFFFF',
+                  padding: '2px 8px',
+                  borderRadius: '6px'
+                }}>知识库特训</span>
+              </span>
+              <span style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>当前进度: {glossaryIndex + 1} / {glossaryReviewPool.length}</span>
+            </h2>
+            <div style={{ textAlign: 'right', fontSize: '11px', color: '#86868B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '24px', marginRight: '4px' }}>
+              Πρόοδος Λεξιλογίου: {glossaryIndex + 1} / {glossaryReviewPool.length}
+            </div>
+
+            {(() => {
+              const cleanLemma = getCleanGlossaryLemma(currentGlossaryWord.word_greek);
+              const letterCount = cleanLemma.length;
+              const variants = getExpandedGlossaryVariants(currentGlossaryWord.word_greek);
+              const isFeedbackSent = isFeedbackSubmitted(currentGlossaryWord.id);
+
+              return (
+                <div className="game-container-card" style={{ padding: '32px' }}>
+                  {/* Word Header with Badges */}
+                  <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                      <span style={{ 
+                        fontSize: '11.5px', 
+                        fontWeight: 750, 
+                        background: 'rgba(147,51,234,0.1)', 
+                        color: '#9333EA', 
+                        padding: '4px 10px', 
+                        borderRadius: '6px' 
+                      }}>
+                        {currentGlossaryWord.level || 'A1'} 词汇 · {currentGlossaryWord.letter || '核心词'}
+                      </span>
+                      {currentGlossaryWord.tag && (
+                        <span style={{ 
+                          fontSize: '11.5px', 
+                          fontWeight: 750, 
+                          background: 'rgba(0,113,227,0.1)', 
+                          color: '#0071E3', 
+                          padding: '4px 10px', 
+                          borderRadius: '6px' 
+                        }}>
+                          [{currentGlossaryWord.tag}] {
+                            currentGlossaryWord.tag === '中' ? '中性名词' :
+                            currentGlossaryWord.tag === '阳' ? '阳性名词' :
+                            currentGlossaryWord.tag === '阴' ? '阴性名词' :
+                            currentGlossaryWord.tag === '动' ? '动词' :
+                            currentGlossaryWord.tag === '形' ? '形容词' :
+                            currentGlossaryWord.tag === '副' ? '副词' :
+                            currentGlossaryWord.tag === '复' ? '复数名词' : '词汇'
+                          }
+                        </span>
+                      )}
+                      {currentGlossaryWord.status === 'upcoming' && (
+                        <span style={{ 
+                          fontSize: '11px', 
+                          fontWeight: 700, 
+                          background: 'rgba(52,199,89,0.12)', 
+                          color: '#16A34A', 
+                          padding: '4px 8px', 
+                          borderRadius: '6px' 
+                        }}>
+                          ✨ 当日新词
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h3 style={{ 
+                      fontSize: '34px', 
+                      fontWeight: 850, 
+                      color: '#1D1D1F', 
+                      margin: '12px 0 6px 0',
+                      letterSpacing: '-0.5px'
+                    }}>
+                      {currentGlossaryWord.word_chinese}
+                    </h3>
+                    {currentGlossaryWord.word_english && (
+                      <div style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>
+                        ({currentGlossaryWord.word_english})
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input Group */}
+                  <div className="admin-input-group" style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <label className="admin-label" style={{ fontWeight: 700, fontSize: '13.5px', color: '#1D1D1F', margin: 0 }}>
+                        请输入对应的希腊语单词 / Πληκτρολογήστε την ελληνική λέξη:
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleReportGlossaryProblem}
+                        style={{
+                          background: isFeedbackSent ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.1)',
+                          border: '1px solid rgba(255,149,0,0.3)',
+                          color: isFeedbackSent ? '#86868B' : '#D97706',
+                          borderRadius: '6px',
+                          padding: '3px 8px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        title="上报此题问题给家长审核并解锁"
+                      >
+                        🚩 {isFeedbackSent ? '已上报家长' : '一键报错 / 纠错'}
+                      </button>
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="在此输入希腊语单词拼写..."
+                      value={userGlossaryInput}
+                      onChange={e => setUserGlossaryInput(e.target.value)}
+                      className="admin-input"
+                      disabled={glossaryChecked && !isGlossaryRevealed}
+                      autoFocus
+                      style={{ width: '100%', padding: '16px', fontSize: '18px', fontWeight: 650, borderRadius: '14px' }}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          if (!glossaryChecked) {
+                            if (userGlossaryInput.trim()) handleCheckGlossary();
+                          } else {
+                            handleNextGlossary();
+                          }
+                        }
+                      }}
+                    />
+
+                    {/* Quick Greek Special Characters Keyboard */}
+                    {!glossaryChecked && (
+                      <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '11px', color: '#86868B', fontWeight: 600 }}>重音辅助键:</span>
+                        {['ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ', 'ΐ', 'ΰ', 'ς'].map(char => (
+                          <button
+                            key={char}
+                            type="button"
+                            onClick={() => setUserGlossaryInput(prev => prev + char)}
+                            style={{
+                              background: '#F5F5F7',
+                              border: '1px solid rgba(0,0,0,0.08)',
+                              borderRadius: '6px',
+                              padding: '3px 8px',
+                              fontSize: '13px',
+                              fontWeight: 700,
+                              color: '#1D1D1F',
+                              cursor: 'pointer',
+                              transition: 'background 0.15s'
+                            }}
+                          >
+                            {char}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Wrong Attempt Prompt */}
+                  {!glossaryChecked && glossaryWrongAttempt && (
+                    <div style={{ 
+                      background: '#FFF2E8', 
+                      border: '1px solid #FFD591', 
+                      color: '#D4380D',
+                      padding: '12px 16px',
+                      borderRadius: '10px',
+                      marginBottom: '20px',
+                      fontSize: '13.5px',
+                      fontWeight: 650
+                    }}>
+                      ⚠️ 拼写未完全匹配！您可以检查重音或词形并重试，也可以点击下方<strong>【💡 查看标准答案】</strong>或<strong>【⏭️ 跳过此题】</strong>继续学习。
+                    </div>
+                  )}
+
+                  {/* Answer & Feedback box */}
+                  {glossaryChecked && (
+                    <div style={{ 
+                      background: isCorrectGlossaryInput ? 'rgba(52,199,89,0.08)' : 'rgba(255,149,0,0.08)',
+                      color: isCorrectGlossaryInput ? '#34C759' : '#D97706',
+                      padding: '20px',
+                      borderRadius: '14px',
+                      marginBottom: '24px',
+                      fontWeight: 'bold',
+                      border: isCorrectGlossaryInput ? '1.5px solid rgba(52,199,89,0.25)' : '1.5px solid rgba(255,149,0,0.25)'
+                    }}>
+                      <p style={{ margin: 0, fontSize: '17px', fontWeight: 800 }}>
+                        {isCorrectGlossaryInput ? '🎉 回答正确！' : (isGlossaryRevealed ? '💡 标准词条与可接受拼写' : '❌ 拼写未通过，请参考标准答案')}
+                      </p>
+                      <p style={{ fontSize: '11px', textTransform: 'uppercase', margin: '3px 0 8px 0', opacity: 0.9 }}>
+                        {isCorrectGlossaryInput ? 'ΣΩΣΤΗ ΑΠΑΝΤΗΣΗ!' : 'ΣΩΣΤΗ ΛΕΞΗ / ΑΠΑΝΤΗΣΗ'}
+                      </p>
+                      
+                      <div style={{ color: '#1D1D1F', fontSize: '18px', marginTop: '10px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>标准词条: <strong style={{ color: '#0071E3' }}>{currentGlossaryWord.word_greek}</strong></span>
+                        <button 
+                          onClick={() => speakGreek(cleanLemma || currentGlossaryWord.word_greek)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0071E3', display: 'inline-flex', alignItems: 'center', padding: '4px' }}
+                          title="播放读音"
+                        >
+                          <Volume2 size={22} />
+                        </button>
+                      </div>
+
+                      {variants.length > 1 && (
+                        <div style={{ fontSize: '13px', color: '#515154', marginTop: '6px', fontWeight: 600 }}>
+                          ✨ 认可并支持的变体写法: <strong style={{ color: '#1D1D1F' }}>{variants.slice(0, 3).join(' / ')}</strong>
+                        </div>
+                      )}
+
+                      {!isCorrectGlossaryInput && (
+                        <div style={{ marginTop: '14px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => setUserGlossaryInput(cleanLemma)}
+                            className="btn-premium"
+                            style={{
+                              padding: '6px 14px',
+                              fontSize: '12.5px',
+                              background: '#FFFFFF',
+                              border: '1px solid #0071E3',
+                              color: '#0071E3',
+                              fontWeight: 700
+                            }}
+                          >
+                            ✍️ 一键填入标准拼写
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleReportGlossaryProblem}
+                            disabled={isFeedbackSent}
+                            className="btn-premium"
+                            style={{
+                              padding: '6px 14px',
+                              fontSize: '12.5px',
+                              border: '1px solid #FF9500',
+                              background: isFeedbackSent ? 'rgba(0,0,0,0.05)' : 'rgba(255,149,0,0.08)',
+                              color: isFeedbackSent ? '#86868B' : '#FF9500',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontWeight: 700
+                            }}
+                          >
+                            🚩 {isFeedbackSent ? '已提交家长审核' : '我写的对，提交家长审核纠错'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Multi-Action Toolbar */}
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {!glossaryChecked && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={handleRevealGlossary}
+                            className="btn-premium"
+                            style={{
+                              background: 'rgba(147,51,234,0.08)',
+                              borderColor: 'rgba(147,51,234,0.25)',
+                              color: '#9333EA',
+                              padding: '10px 18px',
+                              fontSize: '14px',
+                              fontWeight: 700
+                            }}
+                          >
+                            💡 查看标准答案
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSkipGlossary}
+                            className="btn-premium"
+                            style={{
+                              background: '#F5F5F7',
+                              borderColor: 'rgba(0,0,0,0.12)',
+                              color: '#515154',
+                              padding: '10px 18px',
+                              fontSize: '14px',
+                              fontWeight: 700
+                            }}
+                            title="跳过此题，直接进入下一题"
+                          >
+                            ⏭️ 跳过此题 (稍后复习)
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {!glossaryChecked ? (
+                        <button
+                          onClick={handleCheckGlossary}
+                          disabled={!userGlossaryInput.trim()}
+                          className="btn-premium btn-blue-filled"
+                          style={{ 
+                            background: userGlossaryInput.trim() ? 'linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)' : '#E5E5EA',
+                            borderColor: userGlossaryInput.trim() ? '#7E22CE' : '#E5E5EA',
+                            padding: '12px 28px',
+                            fontSize: '15px'
+                          }}
+                        >
+                          检查答案 / Έλεγχος
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleNextGlossary}
+                          className="btn-premium btn-blue-filled"
+                          style={{ 
+                            background: 'linear-gradient(135deg, #0071E3 0%, #0056B3 100%)',
+                            padding: '12px 30px',
+                            fontSize: '15px'
+                          }}
+                        >
+                          {glossaryIndex === glossaryReviewPool.length - 1 ? '收集积分 / 完成特训' : '下一题 / Επόμενο →'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Tip Box */}
+                  {!glossaryChecked && (
+                    <div style={{ marginTop: '20px', padding: '16px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <h5 style={{ margin: 0, color: '#9333EA', fontWeight: 'bold', fontSize: '13px' }}>💡 词汇提示 / Συμβουλή:</h5>
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#1D1D1F', lineHeight: '1.6' }}>
+                        首字母提示：<strong>{cleanLemma[0] || currentGlossaryWord.word_greek[0]}</strong> ...，词根长度约 <strong>{letterCount}</strong> 个字母。
+                        {variants.length > 1 && (
+                          <span style={{ color: '#86868B', marginLeft: '6px' }}>
+                            (动词/词条支持变体形式，如 <em>{variants.slice(0, 2).join(' 或 ')}</em>)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
         {/* 7. Writing & Speaking Challenge Module */}
