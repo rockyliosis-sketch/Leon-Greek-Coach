@@ -698,6 +698,50 @@ const normalizeChineseString = (str: string): string => {
   return s;
 };
 
+const getLevenshteinDistance = (a: string, b: string): number => {
+  const m = a.length, n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+      else dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]) + 1;
+    }
+  }
+  return dp[m][n];
+};
+
+const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
+  const u = cleanGreekForComparison(userRaw);
+  const t = cleanGreekForComparison(targetRaw);
+  if (!u || !t) return false;
+  if (u === t) return true;
+
+  // 1. Verb / Noun Stem Matching (Forgives conjugations and declensions, e.g. συζητάω vs συζητώ, αγαπάς vs αγαπώ)
+  const uStem = u.replace(/(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/, '');
+  const tStem = t.replace(/(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/, '');
+  if (uStem.length >= 3 && tStem.length >= 3) {
+    if (uStem === tStem || uStem.startsWith(tStem) || tStem.startsWith(uStem)) {
+      return true;
+    }
+  }
+
+  // 2. Substring & Enclosure Matching (e.g. πες μου vs πες, το σπίτι vs σπίτι)
+  if (u.includes(t) || t.includes(u)) {
+    if (Math.abs(u.length - t.length) <= 4) return true;
+  }
+
+  // 3. Edit Distance / Typo Forgiveness (1 typo for medium words, 2 typos for long words)
+  const dist = getLevenshteinDistance(u, t);
+  if (t.length >= 4 && dist <= 1) return true;
+  if (t.length >= 7 && dist <= 2) return true;
+
+  return false;
+};
+
 const cleanChinese = (str: string): string => {
   return normalizeChineseString(str);
 };
@@ -2333,7 +2377,12 @@ export default function StudentApp() {
   const handleCheckTransGrZh = () => {
     const cleanUser = cleanChinese(userTransGrZhInput);
     const cleanAnswer = cleanChinese(currentTransGrZh.chinese);
+    const normUser = normalizeChineseString(userTransGrZhInput);
+    const normAnswer = normalizeChineseString(currentTransGrZh.chinese);
+
     let correct = cleanUser === cleanAnswer || 
+                  normUser === normAnswer ||
+                  (normUser.length >= 1 && (normUser.includes(normAnswer) || normAnswer.includes(normUser))) ||
                   (cleanUser.includes(cleanAnswer) && cleanAnswer.length >= 1) || 
                   (cleanAnswer.includes(cleanUser) && cleanUser.length >= 1);
     
@@ -2346,7 +2395,10 @@ export default function StudentApp() {
       ];
       for (const alt of alternatives) {
         const cleanAlt = cleanChinese(alt);
+        const normAlt = normalizeChineseString(alt);
         if (cleanUser === cleanAlt || 
+            normUser === normAlt ||
+            (normUser.length >= 1 && (normUser.includes(normAlt) || normAlt.includes(normUser))) ||
             (cleanUser.includes(cleanAlt) && cleanAlt.length >= 1) || 
             (cleanAlt.includes(cleanUser) && cleanUser.length >= 1)) {
           correct = true;
@@ -2426,9 +2478,8 @@ export default function StudentApp() {
   };
 
   const handleCheckTransZhGr = () => {
-    const cleanUser = cleanGreekForComparison(userTransZhGrInput);
     const acceptable = getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
-    const correct = acceptable.some(ans => cleanGreekForComparison(ans) === cleanUser) || cleanUser === cleanGreekForComparison(currentTransZhGr.greek);
+    const correct = acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)) || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek);
     if (correct) {
       setTransZhGrChecked(true);
       setIsCorrectTransZhGrInput(true);
@@ -2524,13 +2575,9 @@ export default function StudentApp() {
 
   const checkGlossaryAnswer = (userRaw: string, wordObj: any): boolean => {
     if (!userRaw || !wordObj) return false;
-    const userClean = cleanGreekForComparison(userRaw);
-    if (!userClean) return false;
-
     const variants = getExpandedGlossaryVariants(wordObj.word_greek || '');
     for (const v of variants) {
-      const targetClean = cleanGreekForComparison(v);
-      if (userClean === targetClean && userClean.length > 0) {
+      if (isFuzzyGreekMatch(userRaw, v)) {
         return true;
       }
     }
