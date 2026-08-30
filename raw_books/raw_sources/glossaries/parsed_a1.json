@@ -1,0 +1,10034 @@
+[
+  {
+    "type": "alphabet",
+    "letter": "Α, α",
+    "name": "άλφα",
+    "line": 55
+  },
+  {
+    "type": "entry",
+    "greek": "αβγό",
+    "details": "το",
+    "english": "egg",
+    "indent": false,
+    "line": 57
+  },
+  {
+    "type": "entry",
+    "greek": "αγαπάω",
+    "details": "-ώ",
+    "english": "to love",
+    "indent": false,
+    "line": 58
+  },
+  {
+    "type": "entry",
+    "greek": "αγάπη",
+    "details": "η",
+    "english": "love",
+    "indent": false,
+    "line": 59
+  },
+  {
+    "type": "entry",
+    "greek": "αγαπημένος",
+    "details": "-η, -ο",
+    "english": "favorite",
+    "indent": false,
+    "line": 60
+  },
+  {
+    "type": "entry",
+    "greek": "Αγγέλα",
+    "details": "η",
+    "english": "Angela",
+    "indent": false,
+    "line": 61
+  },
+  {
+    "type": "entry",
+    "greek": "Άγγελος",
+    "details": "ο",
+    "english": "Angelo",
+    "indent": false,
+    "line": 62
+  },
+  {
+    "type": "entry",
+    "greek": "Αγγλία",
+    "details": "η",
+    "english": "England",
+    "indent": false,
+    "line": 63
+  },
+  {
+    "type": "entry",
+    "greek": "Άγγλος",
+    "details": "-ίδα",
+    "english": "English(man/-woman)",
+    "indent": false,
+    "line": 65
+  },
+  {
+    "type": "entry",
+    "greek": "αγγούρι",
+    "details": "το",
+    "english": "cucumber",
+    "indent": false,
+    "line": 66
+  },
+  {
+    "type": "entry",
+    "greek": "αγελάδα",
+    "details": "η",
+    "english": "cow",
+    "indent": false,
+    "line": 67
+  },
+  {
+    "type": "entry",
+    "greek": "αγκινάρα",
+    "details": "η",
+    "english": "artichoke",
+    "indent": false,
+    "line": 68
+  },
+  {
+    "type": "entry",
+    "greek": "άγκυρα",
+    "details": "η",
+    "english": "anchor",
+    "indent": false,
+    "line": 69
+  },
+  {
+    "type": "entry",
+    "greek": "αγορά",
+    "details": "η",
+    "english": "market, marketplace",
+    "indent": false,
+    "line": 70
+  },
+  {
+    "type": "entry",
+    "greek": "λαϊκή αγορά",
+    "details": "η",
+    "english": "street market",
+    "indent": true,
+    "line": 71
+  },
+  {
+    "type": "entry",
+    "greek": "αγοράζω",
+    "details": "",
+    "english": "to buy",
+    "indent": false,
+    "line": 72
+  },
+  {
+    "type": "entry",
+    "greek": "αγόρι",
+    "details": "το",
+    "english": "boy",
+    "indent": false,
+    "line": 73
+  },
+  {
+    "type": "entry",
+    "greek": "αγώνας",
+    "details": "ο",
+    "english": "match, game",
+    "indent": false,
+    "line": 75
+  },
+  {
+    "type": "entry",
+    "greek": "άδειος",
+    "details": "-α, -ο",
+    "english": "empty, vacant",
+    "indent": false,
+    "line": 77
+  },
+  {
+    "type": "entry",
+    "greek": "αδερφή",
+    "details": "η",
+    "english": "sister",
+    "indent": false,
+    "line": 78
+  },
+  {
+    "type": "entry",
+    "greek": "αδερφός",
+    "details": "ο",
+    "english": "brother",
+    "indent": false,
+    "line": 79
+  },
+  {
+    "type": "entry",
+    "greek": "αδύνατος",
+    "details": "-η, -ο",
+    "english": "thin, slim",
+    "indent": false,
+    "line": 80
+  },
+  {
+    "type": "entry",
+    "greek": "αέρας",
+    "details": "ο",
+    "english": "wind",
+    "indent": false,
+    "line": 82
+  },
+  {
+    "type": "entry",
+    "greek": "έχει αέρα",
+    "details": "",
+    "english": "it is windy",
+    "indent": true,
+    "line": 83
+  },
+  {
+    "type": "entry",
+    "greek": "αεροδρόμιο",
+    "details": "το",
+    "english": "airport",
+    "indent": false,
+    "line": 84
+  },
+  {
+    "type": "entry",
+    "greek": "αεροπλάνο",
+    "details": "το",
+    "english": "airplane",
+    "indent": false,
+    "line": 85
+  },
+  {
+    "type": "entry",
+    "greek": "αεροσυνοδός",
+    "details": "ο/η",
+    "english": "air host/hostess",
+    "indent": false,
+    "line": 86
+  },
+  {
+    "type": "entry",
+    "greek": "Αθήνα",
+    "details": "η",
+    "english": "Athens",
+    "indent": false,
+    "line": 87
+  },
+  {
+    "type": "entry",
+    "greek": "άθλημα",
+    "details": "το",
+    "english": "sport",
+    "indent": false,
+    "line": 88
+  },
+  {
+    "type": "entry",
+    "greek": "αθώος",
+    "details": "-α, -ο",
+    "english": "innocent",
+    "indent": false,
+    "line": 89
+  },
+  {
+    "type": "entry",
+    "greek": "αιγυπτιακός",
+    "details": "-ή, -ό",
+    "english": "Egyptian",
+    "indent": false,
+    "line": 91
+  },
+  {
+    "type": "entry",
+    "greek": "Αιγύπτιος",
+    "details": "-α",
+    "english": "Egyptian",
+    "indent": false,
+    "line": 92
+  },
+  {
+    "type": "entry",
+    "greek": "Αίγυπτος",
+    "details": "η",
+    "english": "Egypt",
+    "indent": false,
+    "line": 93
+  },
+  {
+    "type": "entry",
+    "greek": "Αίσωπος",
+    "details": "ο",
+    "english": "Aesopus",
+    "indent": false,
+    "line": 95
+  },
+  {
+    "type": "entry",
+    "greek": "αιτία",
+    "details": "η",
+    "english": "cause, reason",
+    "indent": false,
+    "line": 96
+  },
+  {
+    "type": "entry",
+    "greek": "ακολουθώ",
+    "details": "",
+    "english": "to follow",
+    "indent": false,
+    "line": 97
+  },
+  {
+    "type": "entry",
+    "greek": "ακορντεόν",
+    "details": "το",
+    "english": "accordion",
+    "indent": false,
+    "line": 100
+  },
+  {
+    "type": "entry",
+    "greek": "ακούω",
+    "details": "",
+    "english": "to hear, to listen",
+    "indent": false,
+    "line": 101
+  },
+  {
+    "type": "entry",
+    "greek": "άκρη",
+    "details": "η",
+    "english": "edge, end",
+    "indent": false,
+    "line": 102
+  },
+  {
+    "type": "entry",
+    "greek": "ακριβός",
+    "details": "-ή, -ό",
+    "english": "expensive, costly",
+    "indent": false,
+    "line": 103
+  },
+  {
+    "type": "entry",
+    "greek": "(στις 10) ακριβώς",
+    "details": "",
+    "english": "(at ten o'clock) sharp",
+    "indent": true,
+    "line": 104
+  },
+  {
+    "type": "entry",
+    "greek": "ακροβάτης",
+    "details": "ο",
+    "english": "acrobat",
+    "indent": false,
+    "line": 105
+  },
+  {
+    "type": "entry",
+    "greek": "Ακρόπολη",
+    "details": "η",
+    "english": "Acropolis",
+    "indent": false,
+    "line": 106
+  },
+  {
+    "type": "entry",
+    "greek": "ακτή",
+    "details": "η",
+    "english": "beach",
+    "indent": false,
+    "line": 107
+  },
+  {
+    "type": "entry",
+    "greek": "αλάτι",
+    "details": "το",
+    "english": "salt",
+    "indent": false,
+    "line": 108
+  },
+  {
+    "type": "entry",
+    "greek": "Αλαντίν",
+    "details": "ο",
+    "english": "Aladin",
+    "indent": false,
+    "line": 109
+  },
+  {
+    "type": "entry",
+    "greek": "Αλβανία",
+    "details": "η",
+    "english": "Albania",
+    "indent": false,
+    "line": 110
+  },
+  {
+    "type": "entry",
+    "greek": "αλβανικός",
+    "details": "-ή, -ό",
+    "english": "Albanian",
+    "indent": false,
+    "line": 112
+  },
+  {
+    "type": "entry",
+    "greek": "Αλβανός",
+    "details": "-ή/-ίδα",
+    "english": "Albanian",
+    "indent": false,
+    "line": 113
+  },
+  {
+    "type": "entry",
+    "greek": "Αλέξανδρος",
+    "details": "ο",
+    "english": "Alexander",
+    "indent": false,
+    "line": 114
+  },
+  {
+    "type": "entry",
+    "greek": "Αλέξης",
+    "details": "ο",
+    "english": "Alex",
+    "indent": false,
+    "line": 115
+  },
+  {
+    "type": "entry",
+    "greek": "αλεπού",
+    "details": "η",
+    "english": "fox",
+    "indent": false,
+    "line": 116
+  },
+  {
+    "type": "entry",
+    "greek": "αλεύρι",
+    "details": "το",
+    "english": "flour",
+    "indent": false,
+    "line": 117
+  },
+  {
+    "type": "entry",
+    "greek": "αλήθεια",
+    "details": "η",
+    "english": "truth",
+    "indent": false,
+    "line": 118
+  },
+  {
+    "type": "entry",
+    "greek": "Αλίκη",
+    "details": "η",
+    "english": "Alice",
+    "indent": false,
+    "line": 119
+  },
+  {
+    "type": "entry",
+    "greek": "αλλάζω",
+    "details": "",
+    "english": "to change",
+    "indent": false,
+    "line": 121
+  },
+  {
+    "type": "entry",
+    "greek": "άλλος",
+    "details": "-η, -ο",
+    "english": "other, another, else",
+    "indent": false,
+    "line": 122
+  },
+  {
+    "type": "entry",
+    "greek": "άλογο",
+    "details": "το",
+    "english": "horse",
+    "indent": false,
+    "line": 123
+  },
+  {
+    "type": "entry",
+    "greek": "αλφαβήτα/αλφάβητο",
+    "details": "η/το",
+    "english": "alphabet",
+    "indent": false,
+    "line": 124
+  },
+  {
+    "type": "entry",
+    "greek": "αμερικανικός",
+    "details": "-ή, -ό",
+    "english": "American",
+    "indent": false,
+    "line": 125
+  },
+  {
+    "type": "entry",
+    "greek": "Αμερικανός",
+    "details": "-ίδα",
+    "english": "American",
+    "indent": false,
+    "line": 126
+  },
+  {
+    "type": "entry",
+    "greek": "ανανάς",
+    "details": "ο",
+    "english": "pineapple",
+    "indent": false,
+    "line": 128
+  },
+  {
+    "type": "entry",
+    "greek": "Αναστασία",
+    "details": "η",
+    "english": "Anastasia",
+    "indent": false,
+    "line": 129
+  },
+  {
+    "type": "entry",
+    "greek": "αναψυκτικό",
+    "details": "το",
+    "english": "refreshment, beverage",
+    "indent": false,
+    "line": 130
+  },
+  {
+    "type": "entry",
+    "greek": "ανεβαίνω",
+    "details": "",
+    "english": "to rise, to climb, to get on",
+    "indent": false,
+    "line": 131
+  },
+  {
+    "type": "entry",
+    "greek": "Ανέστης",
+    "details": "ο",
+    "english": "Anestis",
+    "indent": false,
+    "line": 132
+  },
+  {
+    "type": "entry",
+    "greek": "ανησυχώ",
+    "details": "",
+    "english": "to worry, to be concerned",
+    "indent": false,
+    "line": 133
+  },
+  {
+    "type": "entry",
+    "greek": "ανθίζω",
+    "details": "",
+    "english": "to blossom",
+    "indent": false,
+    "line": 134
+  },
+  {
+    "type": "entry",
+    "greek": "ανιψιά",
+    "details": "η",
+    "english": "niece",
+    "indent": false,
+    "line": 135
+  },
+  {
+    "type": "entry",
+    "greek": "ανιψιός",
+    "details": "ο",
+    "english": "nephew",
+    "indent": false,
+    "line": 136
+  },
+  {
+    "type": "entry",
+    "greek": "Άννα",
+    "details": "η",
+    "english": "Anna",
+    "indent": false,
+    "line": 137
+  },
+  {
+    "type": "entry",
+    "greek": "ανοίγω",
+    "details": "",
+    "english": "to open",
+    "indent": false,
+    "line": 138
+  },
+  {
+    "type": "entry",
+    "greek": "άνοιξη",
+    "details": "η",
+    "english": "spring",
+    "indent": false,
+    "line": 139
+  },
+  {
+    "type": "entry",
+    "greek": "ανοιχτός",
+    "details": "-ή, -ό",
+    "english": "open",
+    "indent": false,
+    "line": 140
+  },
+  {
+    "type": "entry",
+    "greek": "αντίθετος",
+    "details": "-η, -ο",
+    "english": "opposite",
+    "indent": false,
+    "line": 141
+  },
+  {
+    "type": "entry",
+    "greek": "αντικρίζω",
+    "details": "",
+    "english": "to face, to see",
+    "indent": false,
+    "line": 143
+  },
+  {
+    "type": "entry",
+    "greek": "άντρας",
+    "details": "ο",
+    "english": "man",
+    "indent": false,
+    "line": 144
+  },
+  {
+    "type": "entry",
+    "greek": "Αντρέας",
+    "details": "ο",
+    "english": "Andrew",
+    "indent": false,
+    "line": 146
+  },
+  {
+    "type": "entry",
+    "greek": "Αντώνης",
+    "details": "ο",
+    "english": "Anthony",
+    "indent": false,
+    "line": 147
+  },
+  {
+    "type": "entry",
+    "greek": "Αντωνία",
+    "details": "η",
+    "english": "Antonia",
+    "indent": false,
+    "line": 148
+  },
+  {
+    "type": "entry",
+    "greek": "απάντηση",
+    "details": "η",
+    "english": "answer, respond, reply",
+    "indent": false,
+    "line": 149
+  },
+  {
+    "type": "entry",
+    "greek": "απαντάω",
+    "details": "-ώ",
+    "english": "to answer, to respond, to reply",
+    "indent": false,
+    "line": 150
+  },
+  {
+    "type": "entry",
+    "greek": "από",
+    "details": "",
+    "english": "from, since",
+    "indent": false,
+    "line": 151
+  },
+  {
+    "type": "entry",
+    "greek": "από μέσα/από έξω",
+    "details": "",
+    "english": "from inside/outside",
+    "indent": false,
+    "line": 152
+  },
+  {
+    "type": "entry",
+    "greek": "απόγευμα",
+    "details": "το",
+    "english": "afternoon, evening",
+    "indent": false,
+    "line": 153
+  },
+  {
+    "type": "entry",
+    "greek": "αποτέλεσμα",
+    "details": "το",
+    "english": "result",
+    "indent": false,
+    "line": 154
+  },
+  {
+    "type": "entry",
+    "greek": "Απρίλιος",
+    "details": "ο",
+    "english": "April",
+    "indent": false,
+    "line": 155
+  },
+  {
+    "type": "entry",
+    "greek": "αργά",
+    "details": "",
+    "english": "late",
+    "indent": false,
+    "line": 157
+  },
+  {
+    "type": "entry",
+    "greek": "Αργεντινή",
+    "details": "η",
+    "english": "Argentina",
+    "indent": false,
+    "line": 158
+  },
+  {
+    "type": "entry",
+    "greek": "αργός",
+    "details": "-ή, -ό",
+    "english": "slow",
+    "indent": false,
+    "line": 159
+  },
+  {
+    "type": "entry",
+    "greek": "Αργοστόλι",
+    "details": "το",
+    "english": "Argostoli",
+    "indent": false,
+    "line": 160
+  },
+  {
+    "type": "entry",
+    "greek": "αργώ",
+    "details": "",
+    "english": "to be late",
+    "indent": false,
+    "line": 161
+  },
+  {
+    "type": "entry",
+    "greek": "(μου) αρέσει",
+    "details": "",
+    "english": "to like",
+    "indent": false,
+    "line": 162
+  },
+  {
+    "type": "entry",
+    "greek": "Άριελ",
+    "details": "η",
+    "english": "Ariel",
+    "indent": false,
+    "line": 166
+  },
+  {
+    "type": "entry",
+    "greek": "αριθμός",
+    "details": "ο",
+    "english": "number",
+    "indent": false,
+    "line": 167
+  },
+  {
+    "type": "entry",
+    "greek": "αρκούδα",
+    "details": "η",
+    "english": "bear",
+    "indent": false,
+    "line": 169
+  },
+  {
+    "type": "entry",
+    "greek": "αρχαιολογικός",
+    "details": "-ή, -ό",
+    "english": "archaeological",
+    "indent": false,
+    "line": 170
+  },
+  {
+    "type": "entry",
+    "greek": "αρχαιολογικός χώρος",
+    "details": "ο",
+    "english": "archaeological site",
+    "indent": false,
+    "line": 171
+  },
+  {
+    "type": "entry",
+    "greek": "αρχαίος",
+    "details": "-α, -ο",
+    "english": "ancient",
+    "indent": false,
+    "line": 172
+  },
+  {
+    "type": "entry",
+    "greek": "αρχή",
+    "details": "η",
+    "english": "beginning, start",
+    "indent": false,
+    "line": 173
+  },
+  {
+    "type": "entry",
+    "greek": "αρχηγός",
+    "details": "ο",
+    "english": "leader, chief",
+    "indent": false,
+    "line": 174
+  },
+  {
+    "type": "entry",
+    "greek": "αρχίζω",
+    "details": "",
+    "english": "to begin, to start",
+    "indent": false,
+    "line": 175
+  },
+  {
+    "type": "entry",
+    "greek": "ασανσέρ",
+    "details": "το",
+    "english": "lift, elevator",
+    "indent": false,
+    "line": 176
+  },
+  {
+    "type": "entry",
+    "greek": "Ασία",
+    "details": "η",
+    "english": "Asia",
+    "indent": false,
+    "line": 177
+  },
+  {
+    "type": "entry",
+    "greek": "άσκηση",
+    "details": "η",
+    "english": "task, exercise",
+    "indent": false,
+    "line": 178
+  },
+  {
+    "type": "entry",
+    "greek": "άσπρος",
+    "details": "-η, -ο",
+    "english": "white",
+    "indent": false,
+    "line": 179
+  },
+  {
+    "type": "entry",
+    "greek": "αστείος",
+    "details": "-α, -ο",
+    "english": "funny",
+    "indent": false,
+    "line": 180
+  },
+  {
+    "type": "entry",
+    "greek": "αστέρι",
+    "details": "το",
+    "english": "star",
+    "indent": false,
+    "line": 181
+  },
+  {
+    "type": "entry",
+    "greek": "Αστερίξ",
+    "details": "ο",
+    "english": "Asterix",
+    "indent": false,
+    "line": 182
+  },
+  {
+    "type": "entry",
+    "greek": "άσχημα",
+    "details": "",
+    "english": "badly",
+    "indent": false,
+    "line": 184
+  },
+  {
+    "type": "entry",
+    "greek": "άσχημος",
+    "details": "-η, -ο",
+    "english": "ugly",
+    "indent": false,
+    "line": 192
+  },
+  {
+    "type": "entry",
+    "greek": "ατύχημα",
+    "details": "το",
+    "english": "accident",
+    "indent": false,
+    "line": 194
+  },
+  {
+    "type": "entry",
+    "greek": "ατυχία",
+    "details": "η",
+    "english": "misfortune",
+    "indent": false,
+    "line": 195
+  },
+  {
+    "type": "entry",
+    "greek": "Αύγουστος",
+    "details": "ο",
+    "english": "August",
+    "indent": false,
+    "line": 196
+  },
+  {
+    "type": "entry",
+    "greek": "αυλή",
+    "details": "η",
+    "english": "yard",
+    "indent": false,
+    "line": 197
+  },
+  {
+    "type": "entry",
+    "greek": "αύριο",
+    "details": "",
+    "english": "tomorrow",
+    "indent": false,
+    "line": 198
+  },
+  {
+    "type": "entry",
+    "greek": "Αυστραλία",
+    "details": "η",
+    "english": "Australia",
+    "indent": false,
+    "line": 199
+  },
+  {
+    "type": "entry",
+    "greek": "Αυστραλός",
+    "details": "-ή",
+    "english": "Australian",
+    "indent": false,
+    "line": 200
+  },
+  {
+    "type": "entry",
+    "greek": "αυτί",
+    "details": "το",
+    "english": "ear",
+    "indent": false,
+    "line": 201
+  },
+  {
+    "type": "entry",
+    "greek": "αυτοί",
+    "details": "-ές, -ά",
+    "english": "these, they",
+    "indent": false,
+    "line": 202
+  },
+  {
+    "type": "entry",
+    "greek": "αυτοκίνητο",
+    "details": "το",
+    "english": "car",
+    "indent": false,
+    "line": 203
+  },
+  {
+    "type": "entry",
+    "greek": "αυτοκόλλητο",
+    "details": "το",
+    "english": "sticker",
+    "indent": false,
+    "line": 204
+  },
+  {
+    "type": "entry",
+    "greek": "αφίσα",
+    "details": "η",
+    "english": "poster",
+    "indent": false,
+    "line": 208
+  },
+  {
+    "type": "entry",
+    "greek": "Αφρική",
+    "details": "η",
+    "english": "Africa",
+    "indent": false,
+    "line": 209
+  },
+  {
+    "type": "entry",
+    "greek": "αχλάδι",
+    "details": "το",
+    "english": "pear",
+    "indent": false,
+    "line": 210
+  },
+  {
+    "type": "alphabet",
+    "letter": "Β, β",
+    "name": "βήτα",
+    "line": 212
+  },
+  {
+    "type": "entry",
+    "greek": "Βαγγέλης",
+    "details": "ο",
+    "english": "Vaggelis/Vanghelis",
+    "indent": false,
+    "line": 214
+  },
+  {
+    "type": "entry",
+    "greek": "βάζω",
+    "details": "",
+    "english": "to put",
+    "indent": false,
+    "line": 215
+  },
+  {
+    "type": "entry",
+    "greek": "βαθμός",
+    "details": "ο",
+    "english": "grade",
+    "indent": false,
+    "line": 216
+  },
+  {
+    "type": "entry",
+    "greek": "βαλίτσα",
+    "details": "η",
+    "english": "suitcase",
+    "indent": false,
+    "line": 217
+  },
+  {
+    "type": "entry",
+    "greek": "βάρος",
+    "details": "το",
+    "english": "weight",
+    "indent": false,
+    "line": 218
+  },
+  {
+    "type": "entry",
+    "greek": "βασίλειο",
+    "details": "το",
+    "english": "kingdom",
+    "indent": false,
+    "line": 219
+  },
+  {
+    "type": "entry",
+    "greek": "Βασίλης",
+    "details": "ο",
+    "english": "Vassilis",
+    "indent": false,
+    "line": 220
+  },
+  {
+    "type": "entry",
+    "greek": "βασιλιάς",
+    "details": "ο",
+    "english": "king",
+    "indent": false,
+    "line": 221
+  },
+  {
+    "type": "entry",
+    "greek": "Βασιλική",
+    "details": "η",
+    "english": "Vasiliki",
+    "indent": false,
+    "line": 222
+  },
+  {
+    "type": "entry",
+    "greek": "βασιλοπούλα",
+    "details": "η",
+    "english": "princess",
+    "indent": false,
+    "line": 223
+  },
+  {
+    "type": "entry",
+    "greek": "Βάσω",
+    "details": "η",
+    "english": "Vasso",
+    "indent": false,
+    "line": 224
+  },
+  {
+    "type": "entry",
+    "greek": "βάτραχος",
+    "details": "ο",
+    "english": "frog",
+    "indent": false,
+    "line": 225
+  },
+  {
+    "type": "entry",
+    "greek": "βάφω",
+    "details": "",
+    "english": "to paint",
+    "indent": false,
+    "line": 226
+  },
+  {
+    "type": "entry",
+    "greek": "βγάζω",
+    "details": "",
+    "english": "to take out, to take off",
+    "indent": false,
+    "line": 227
+  },
+  {
+    "type": "entry",
+    "greek": "βγαίνω",
+    "details": "",
+    "english": "to get out, to go out",
+    "indent": false,
+    "line": 228
+  },
+  {
+    "type": "entry",
+    "greek": "(ε)βδομάδα",
+    "details": "η",
+    "english": "week",
+    "indent": false,
+    "line": 229
+  },
+  {
+    "type": "entry",
+    "greek": "βέβαια",
+    "details": "",
+    "english": "of course, certainly",
+    "indent": false,
+    "line": 230
+  },
+  {
+    "type": "entry",
+    "greek": "βελγικός",
+    "details": "-ή, -ó",
+    "english": "Belgian",
+    "indent": false,
+    "line": 231
+  },
+  {
+    "type": "entry",
+    "greek": "Βέλγιο",
+    "details": "το",
+    "english": "Belgium",
+    "indent": false,
+    "line": 232
+  },
+  {
+    "type": "entry",
+    "greek": "Βέλγος",
+    "details": "-ίδα",
+    "english": "Belgian",
+    "indent": false,
+    "line": 233
+  },
+  {
+    "type": "entry",
+    "greek": "βήμα",
+    "details": "το",
+    "english": "step",
+    "indent": false,
+    "line": 235
+  },
+  {
+    "type": "entry",
+    "greek": "βιβλίο",
+    "details": "το",
+    "english": "book",
+    "indent": false,
+    "line": 236
+  },
+  {
+    "type": "entry",
+    "greek": "Βίκυ",
+    "details": "η",
+    "english": "Vicky",
+    "indent": false,
+    "line": 239
+  },
+  {
+    "type": "entry",
+    "greek": "βιολί",
+    "details": "το",
+    "english": "violin",
+    "indent": false,
+    "line": 240
+  },
+  {
+    "type": "entry",
+    "greek": "βλέπω",
+    "details": "",
+    "english": "to see, to look, to watch",
+    "indent": false,
+    "line": 241
+  },
+  {
+    "type": "entry",
+    "greek": "βοηθάω",
+    "details": "-ώ",
+    "english": "to help",
+    "indent": false,
+    "line": 242
+  },
+  {
+    "type": "entry",
+    "greek": "βοήθεια",
+    "details": "η",
+    "english": "help",
+    "indent": false,
+    "line": 243
+  },
+  {
+    "type": "entry",
+    "greek": "βόλεϊ",
+    "details": "το",
+    "english": "volley ball",
+    "indent": false,
+    "line": 244
+  },
+  {
+    "type": "entry",
+    "greek": "Βόλος",
+    "details": "ο",
+    "english": "Volos",
+    "indent": false,
+    "line": 245
+  },
+  {
+    "type": "entry",
+    "greek": "βόλτα",
+    "details": "η",
+    "english": "walk",
+    "indent": false,
+    "line": 246
+  },
+  {
+    "type": "entry",
+    "greek": "κάνω βόλτα",
+    "details": "",
+    "english": "to take a walk",
+    "indent": true,
+    "line": 247
+  },
+  {
+    "type": "entry",
+    "greek": "βουνό",
+    "details": "το",
+    "english": "mountain",
+    "indent": false,
+    "line": 248
+  },
+  {
+    "type": "entry",
+    "greek": "βούτυρο",
+    "details": "το",
+    "english": "butter",
+    "indent": false,
+    "line": 249
+  },
+  {
+    "type": "entry",
+    "greek": "βράδυ",
+    "details": "το",
+    "english": "evening",
+    "indent": false,
+    "line": 250
+  },
+  {
+    "type": "entry",
+    "greek": "Βρέμη",
+    "details": "η",
+    "english": "Bremen",
+    "indent": false,
+    "line": 251
+  },
+  {
+    "type": "entry",
+    "greek": "βρέχει",
+    "details": "",
+    "english": "it is raining",
+    "indent": false,
+    "line": 252
+  },
+  {
+    "type": "entry",
+    "greek": "βρίσκω",
+    "details": "",
+    "english": "to find",
+    "indent": false,
+    "line": 253
+  },
+  {
+    "type": "entry",
+    "greek": "βρόμικος",
+    "details": "-η, -ο",
+    "english": "dirty",
+    "indent": false,
+    "line": 254
+  },
+  {
+    "type": "entry",
+    "greek": "βροχή",
+    "details": "η",
+    "english": "rain",
+    "indent": false,
+    "line": 255
+  },
+  {
+    "type": "entry",
+    "greek": "βρύση",
+    "details": "η",
+    "english": "tap",
+    "indent": false,
+    "line": 256
+  },
+  {
+    "type": "entry",
+    "greek": "βυθός",
+    "details": "ο",
+    "english": "seabed",
+    "indent": false,
+    "line": 257
+  },
+  {
+    "type": "alphabet",
+    "letter": "Γ, γ",
+    "name": "γάμα",
+    "line": 259
+  },
+  {
+    "type": "entry",
+    "greek": "γαβγίζω",
+    "details": "",
+    "english": "to bark",
+    "indent": false,
+    "line": 261
+  },
+  {
+    "type": "entry",
+    "greek": "γάιδαρος/γαϊδούρι",
+    "details": "ο/το",
+    "english": "donkey",
+    "indent": false,
+    "line": 262
+  },
+  {
+    "type": "entry",
+    "greek": "γάλα",
+    "details": "το",
+    "english": "milk",
+    "indent": false,
+    "line": 263
+  },
+  {
+    "type": "entry",
+    "greek": "γαλάζιος",
+    "details": "-α, -ο",
+    "english": "blue",
+    "indent": false,
+    "line": 264
+  },
+  {
+    "type": "entry",
+    "greek": "γαλανός",
+    "details": "-ή, -ó",
+    "english": "blue",
+    "indent": false,
+    "line": 265
+  },
+  {
+    "type": "entry",
+    "greek": "Γαλλία",
+    "details": "η",
+    "english": "France",
+    "indent": false,
+    "line": 266
+  },
+  {
+    "type": "entry",
+    "greek": "γαλλικός",
+    "details": "-ή, -ό",
+    "english": "French",
+    "indent": false,
+    "line": 268
+  },
+  {
+    "type": "entry",
+    "greek": "Γάλλος",
+    "details": "-ίδα",
+    "english": "French",
+    "indent": false,
+    "line": 269
+  },
+  {
+    "type": "entry",
+    "greek": "γάντι",
+    "details": "το",
+    "english": "glove",
+    "indent": false,
+    "line": 270
+  },
+  {
+    "type": "entry",
+    "greek": "γαριδάκι",
+    "details": "το",
+    "english": "crisp",
+    "indent": false,
+    "line": 271
+  },
+  {
+    "type": "entry",
+    "greek": "γάτα",
+    "details": "η",
+    "english": "cat",
+    "indent": false,
+    "line": 272
+  },
+  {
+    "type": "entry",
+    "greek": "γεια",
+    "details": "",
+    "english": "hi/hello",
+    "indent": false,
+    "line": 273
+  },
+  {
+    "type": "entry",
+    "greek": "γείτονας",
+    "details": "ο",
+    "english": "neighbour",
+    "indent": false,
+    "line": 274
+  },
+  {
+    "type": "entry",
+    "greek": "γειτονιά",
+    "details": "η",
+    "english": "neighbourhood",
+    "indent": false,
+    "line": 275
+  },
+  {
+    "type": "entry",
+    "greek": "γελάω",
+    "details": "-ώ",
+    "english": "to laugh",
+    "indent": false,
+    "line": 276
+  },
+  {
+    "type": "entry",
+    "greek": "γεμάτος",
+    "details": "-η, -ο",
+    "english": "full",
+    "indent": false,
+    "line": 277
+  },
+  {
+    "type": "entry",
+    "greek": "γενέθλια",
+    "details": "τα",
+    "english": "birthday",
+    "indent": false,
+    "line": 278
+  },
+  {
+    "type": "entry",
+    "greek": "γενναίος",
+    "details": "-α, -0",
+    "english": "brave, fearless",
+    "indent": false,
+    "line": 279
+  },
+  {
+    "type": "entry",
+    "greek": "Γερμανία",
+    "details": "η",
+    "english": "Germany",
+    "indent": false,
+    "line": 280
+  },
+  {
+    "type": "entry",
+    "greek": "γερμανικός",
+    "details": "-ή, -ό",
+    "english": "German",
+    "indent": false,
+    "line": 282
+  },
+  {
+    "type": "entry",
+    "greek": "Γερμανός",
+    "details": "-ίδα",
+    "english": "German",
+    "indent": false,
+    "line": 283
+  },
+  {
+    "type": "entry",
+    "greek": "γήπεδο",
+    "details": "το",
+    "english": "playing field",
+    "indent": false,
+    "line": 288
+  },
+  {
+    "type": "entry",
+    "greek": "για",
+    "details": "",
+    "english": "for",
+    "indent": false,
+    "line": 289
+  },
+  {
+    "type": "entry",
+    "greek": "γιαγιά",
+    "details": "η",
+    "english": "grandmother, grandma",
+    "indent": false,
+    "line": 290
+  },
+  {
+    "type": "entry",
+    "greek": "γιαγιάκα",
+    "details": "η",
+    "english": "granny",
+    "indent": false,
+    "line": 291
+  },
+  {
+    "type": "entry",
+    "greek": "γιαλός",
+    "details": "ο",
+    "english": "seashore, seaside, coastline",
+    "indent": false,
+    "line": 292
+  },
+  {
+    "type": "entry",
+    "greek": "Γιάννα",
+    "details": "η",
+    "english": "Gianna",
+    "indent": false,
+    "line": 293
+  },
+  {
+    "type": "entry",
+    "greek": "Γιάννης",
+    "details": "ο",
+    "english": "John",
+    "indent": false,
+    "line": 294
+  },
+  {
+    "type": "entry",
+    "greek": "γιαούρτι",
+    "details": "το",
+    "english": "yoghurt",
+    "indent": false,
+    "line": 295
+  },
+  {
+    "type": "entry",
+    "greek": "Γιαπωνέζος",
+    "details": "-α",
+    "english": "Japanese",
+    "indent": false,
+    "line": 296
+  },
+  {
+    "type": "entry",
+    "greek": "γίγαντας",
+    "details": "ο",
+    "english": "giant",
+    "indent": false,
+    "line": 299
+  },
+  {
+    "type": "entry",
+    "greek": "γίνομαι",
+    "details": "",
+    "english": "to become",
+    "indent": false,
+    "line": 300
+  },
+  {
+    "type": "entry",
+    "greek": "γιος",
+    "details": "ο",
+    "english": "son",
+    "indent": false,
+    "line": 301
+  },
+  {
+    "type": "entry",
+    "greek": "γιρλάντα",
+    "details": "η",
+    "english": "garland",
+    "indent": false,
+    "line": 302
+  },
+  {
+    "type": "entry",
+    "greek": "Γιώργος",
+    "details": "ο",
+    "english": "George",
+    "indent": false,
+    "line": 303
+  },
+  {
+    "type": "entry",
+    "greek": "γκάιντα",
+    "details": "η",
+    "english": "pipe, bagpipe",
+    "indent": false,
+    "line": 304
+  },
+  {
+    "type": "entry",
+    "greek": "γκολ",
+    "details": "το",
+    "english": "goal",
+    "indent": false,
+    "line": 305
+  },
+  {
+    "type": "entry",
+    "greek": "Γκρέτελ",
+    "details": "η",
+    "english": "Gretel",
+    "indent": false,
+    "line": 306
+  },
+  {
+    "type": "entry",
+    "greek": "γκρι",
+    "details": "το",
+    "english": "grey",
+    "indent": false,
+    "line": 307
+  },
+  {
+    "type": "entry",
+    "greek": "γκρίζος",
+    "details": "-α, -ο",
+    "english": "grey",
+    "indent": false,
+    "line": 308
+  },
+  {
+    "type": "entry",
+    "greek": "γλώσσα μητρική",
+    "details": "η",
+    "english": "mother tongue",
+    "indent": false,
+    "line": 313
+  },
+  {
+    "type": "entry",
+    "greek": "γνωρίζω",
+    "details": "",
+    "english": "to know",
+    "indent": false,
+    "line": 315
+  },
+  {
+    "type": "entry",
+    "greek": "γνωστός",
+    "details": "-ή, -ó",
+    "english": "known",
+    "indent": false,
+    "line": 316
+  },
+  {
+    "type": "entry",
+    "greek": "γονείς",
+    "details": "οι",
+    "english": "parents",
+    "indent": false,
+    "line": 317
+  },
+  {
+    "type": "entry",
+    "greek": "γουρούνι",
+    "details": "το",
+    "english": "pig",
+    "indent": false,
+    "line": 319
+  },
+  {
+    "type": "entry",
+    "greek": "γράμμα",
+    "details": "το",
+    "english": "letter",
+    "indent": false,
+    "line": 320
+  },
+  {
+    "type": "entry",
+    "greek": "γραμματόσημο",
+    "details": "το",
+    "english": "stamp",
+    "indent": false,
+    "line": 321
+  },
+  {
+    "type": "entry",
+    "greek": "γραμμή",
+    "details": "η",
+    "english": "line",
+    "indent": false,
+    "line": 322
+  },
+  {
+    "type": "entry",
+    "greek": "γραπτός",
+    "details": "-ή, -ó",
+    "english": "written",
+    "indent": false,
+    "line": 323
+  },
+  {
+    "type": "entry",
+    "greek": "γράφω",
+    "details": "",
+    "english": "to write",
+    "indent": false,
+    "line": 326
+  },
+  {
+    "type": "entry",
+    "greek": "Γρηγόρης",
+    "details": "ο",
+    "english": "Gregory",
+    "indent": false,
+    "line": 327
+  },
+  {
+    "type": "entry",
+    "greek": "γρήγορος",
+    "details": "-η, -o",
+    "english": "fast, quick",
+    "indent": false,
+    "line": 328
+  },
+  {
+    "type": "entry",
+    "greek": "γυμναστήριο",
+    "details": "το",
+    "english": "gym",
+    "indent": false,
+    "line": 329
+  },
+  {
+    "type": "entry",
+    "greek": "γυμναστική",
+    "details": "η",
+    "english": "exercise, gymnastics",
+    "indent": false,
+    "line": 330
+  },
+  {
+    "type": "entry",
+    "greek": "ρυθμική γυμναστική",
+    "details": "",
+    "english": "rythmic gymnastics",
+    "indent": true,
+    "line": 331
+  },
+  {
+    "type": "entry",
+    "greek": "γυναίκα",
+    "details": "η",
+    "english": "woman",
+    "indent": false,
+    "line": 332
+  },
+  {
+    "type": "entry",
+    "greek": "γυρίζω/γυρνάω",
+    "details": "",
+    "english": "to come back",
+    "indent": false,
+    "line": 333
+  },
+  {
+    "type": "entry",
+    "greek": "γυριστός",
+    "details": "-ή, -ό",
+    "english": "turned",
+    "indent": false,
+    "line": 341
+  },
+  {
+    "type": "entry",
+    "greek": "Γωγώ",
+    "details": "η",
+    "english": "Gogo",
+    "indent": false,
+    "line": 342
+  },
+  {
+    "type": "alphabet",
+    "letter": "Δ, δ",
+    "name": "δέλτα",
+    "line": 344
+  },
+  {
+    "type": "entry",
+    "greek": "Δανάη",
+    "details": "η",
+    "english": "Danae",
+    "indent": false,
+    "line": 346
+  },
+  {
+    "type": "entry",
+    "greek": "δάσκαλος/-α",
+    "details": "ο/η",
+    "english": "teacher",
+    "indent": false,
+    "line": 347
+  },
+  {
+    "type": "entry",
+    "greek": "δάσος",
+    "details": "το",
+    "english": "forest",
+    "indent": false,
+    "line": 348
+  },
+  {
+    "type": "entry",
+    "greek": "δείχνω",
+    "details": "",
+    "english": "to show",
+    "indent": false,
+    "line": 351
+  },
+  {
+    "type": "entry",
+    "greek": "δέκα",
+    "details": "",
+    "english": "ten",
+    "indent": false,
+    "line": 352
+  },
+  {
+    "type": "entry",
+    "greek": "δεκαεννιά",
+    "details": "",
+    "english": "nineteen",
+    "indent": false,
+    "line": 353
+  },
+  {
+    "type": "entry",
+    "greek": "δεκαέξι",
+    "details": "",
+    "english": "sixteen",
+    "indent": false,
+    "line": 354
+  },
+  {
+    "type": "entry",
+    "greek": "δεκαεπτά",
+    "details": "",
+    "english": "seventeen",
+    "indent": false,
+    "line": 355
+  },
+  {
+    "type": "entry",
+    "greek": "δεκαοκτώ",
+    "details": "",
+    "english": "eighteen",
+    "indent": false,
+    "line": 356
+  },
+  {
+    "type": "entry",
+    "greek": "δεκαπέντε",
+    "details": "",
+    "english": "fifteen",
+    "indent": false,
+    "line": 357
+  },
+  {
+    "type": "entry",
+    "greek": "δεκατέσσερις, δεκατέσσερα",
+    "details": "",
+    "english": "fourteen",
+    "indent": false,
+    "line": 358
+  },
+  {
+    "type": "entry",
+    "greek": "δεκατρείς, δεκατρία",
+    "details": "",
+    "english": "thirteen",
+    "indent": false,
+    "line": 359
+  },
+  {
+    "type": "entry",
+    "greek": "Δεκέμβριος",
+    "details": "ο",
+    "english": "December",
+    "indent": false,
+    "line": 360
+  },
+  {
+    "type": "entry",
+    "greek": "δελφίνι",
+    "details": "το",
+    "english": "dolphin",
+    "indent": false,
+    "line": 361
+  },
+  {
+    "type": "entry",
+    "greek": "δε(ν)",
+    "details": "",
+    "english": "not",
+    "indent": false,
+    "line": 362
+  },
+  {
+    "type": "entry",
+    "greek": "δέντρο",
+    "details": "το",
+    "english": "tree",
+    "indent": false,
+    "line": 363
+  },
+  {
+    "type": "entry",
+    "greek": "Δέσποινα",
+    "details": "η",
+    "english": "Despina/Despoina",
+    "indent": false,
+    "line": 365
+  },
+  {
+    "type": "entry",
+    "greek": "Δευτέρα",
+    "details": "η",
+    "english": "Monday",
+    "indent": false,
+    "line": 366
+  },
+  {
+    "type": "entry",
+    "greek": "δεύτερος",
+    "details": "-η, -ο",
+    "english": "second",
+    "indent": false,
+    "line": 367
+  },
+  {
+    "type": "entry",
+    "greek": "Δήμητρα",
+    "details": "η",
+    "english": "Dimitra",
+    "indent": false,
+    "line": 368
+  },
+  {
+    "type": "entry",
+    "greek": "Δημήτρης",
+    "details": "ο",
+    "english": "Jim/Dimitris",
+    "indent": false,
+    "line": 369
+  },
+  {
+    "type": "entry",
+    "greek": "Δημοτικό σχολείο",
+    "details": "το",
+    "english": "Elementary/Primary School",
+    "indent": false,
+    "line": 370
+  },
+  {
+    "type": "entry",
+    "greek": "διαβάζω",
+    "details": "",
+    "english": "to read",
+    "indent": false,
+    "line": 371
+  },
+  {
+    "type": "entry",
+    "greek": "διάβασμα",
+    "details": "το",
+    "english": "reading, studying",
+    "indent": false,
+    "line": 372
+  },
+  {
+    "type": "entry",
+    "greek": "διαγώνισμα",
+    "details": "το",
+    "english": "test",
+    "indent": false,
+    "line": 373
+  },
+  {
+    "type": "entry",
+    "greek": "διαδρομή",
+    "details": "η",
+    "english": "way, path, route",
+    "indent": false,
+    "line": 374
+  },
+  {
+    "type": "entry",
+    "greek": "διαιτητής",
+    "details": "ο",
+    "english": "referee",
+    "indent": false,
+    "line": 375
+  },
+  {
+    "type": "entry",
+    "greek": "διακοπές",
+    "details": "οι",
+    "english": "holiday, vacation",
+    "indent": false,
+    "line": 376
+  },
+  {
+    "type": "entry",
+    "greek": "διαλέγω",
+    "details": "",
+    "english": "to choose",
+    "indent": false,
+    "line": 377
+  },
+  {
+    "type": "entry",
+    "greek": "διάλειμμα",
+    "details": "το",
+    "english": "break",
+    "indent": false,
+    "line": 378
+  },
+  {
+    "type": "entry",
+    "greek": "διάλογος",
+    "details": "ο",
+    "english": "dialogue",
+    "indent": false,
+    "line": 379
+  },
+  {
+    "type": "entry",
+    "greek": "διαλυτικά",
+    "details": "τα",
+    "english": "umlaut",
+    "indent": false,
+    "line": 380
+  },
+  {
+    "type": "entry",
+    "greek": "διασκέδαση",
+    "details": "η",
+    "english": "entertainment, fun, amusement",
+    "indent": false,
+    "line": 381
+  },
+  {
+    "type": "entry",
+    "greek": "διαφήμιση",
+    "details": "η",
+    "english": "advertisement, ad",
+    "indent": false,
+    "line": 382
+  },
+  {
+    "type": "entry",
+    "greek": "διαφορά",
+    "details": "η",
+    "english": "difference",
+    "indent": false,
+    "line": 383
+  },
+  {
+    "type": "entry",
+    "greek": "διαφορετικός",
+    "details": "-ή, -ό",
+    "english": "different",
+    "indent": false,
+    "line": 384
+  },
+  {
+    "type": "entry",
+    "greek": "διάφορος",
+    "details": "-η, -o",
+    "english": "different, various",
+    "indent": false,
+    "line": 385
+  },
+  {
+    "type": "entry",
+    "greek": "διεύθυνση",
+    "details": "η",
+    "english": "address",
+    "indent": false,
+    "line": 386
+  },
+  {
+    "type": "entry",
+    "greek": "δίνω",
+    "details": "",
+    "english": "to give",
+    "indent": false,
+    "line": 395
+  },
+  {
+    "type": "entry",
+    "greek": "δίπλα",
+    "details": "",
+    "english": "beside",
+    "indent": false,
+    "line": 396
+  },
+  {
+    "type": "entry",
+    "greek": "διπλανός",
+    "details": "-ή, -ό",
+    "english": "nearby",
+    "indent": false,
+    "line": 397
+  },
+  {
+    "type": "entry",
+    "greek": "διπλός",
+    "details": "-ή, -ό",
+    "english": "double",
+    "indent": false,
+    "line": 398
+  },
+  {
+    "type": "entry",
+    "greek": "διψάω",
+    "details": "-ώ",
+    "english": "to be thirsty",
+    "indent": false,
+    "line": 399
+  },
+  {
+    "type": "entry",
+    "greek": "Δον Κιχώτης",
+    "details": "ο",
+    "english": "Don Quixote",
+    "indent": false,
+    "line": 400
+  },
+  {
+    "type": "entry",
+    "greek": "δόντι",
+    "details": "το",
+    "english": "tooth",
+    "indent": false,
+    "line": 401
+  },
+  {
+    "type": "entry",
+    "greek": "δόντια",
+    "details": "τα",
+    "english": "teeth",
+    "indent": false,
+    "line": 402
+  },
+  {
+    "type": "entry",
+    "greek": "δουλειά",
+    "details": "η",
+    "english": "work",
+    "indent": false,
+    "line": 404
+  },
+  {
+    "type": "entry",
+    "greek": "δουλειές σπιτιού",
+    "details": "οι",
+    "english": "housework, housekeeping chores",
+    "indent": true,
+    "line": 405
+  },
+  {
+    "type": "entry",
+    "greek": "δουλεύω",
+    "details": "",
+    "english": "to work",
+    "indent": false,
+    "line": 406
+  },
+  {
+    "type": "entry",
+    "greek": "Δούρειος Ίππος",
+    "details": "ο",
+    "english": "Trojan horse",
+    "indent": false,
+    "line": 407
+  },
+  {
+    "type": "entry",
+    "greek": "Δράκος",
+    "details": "ο",
+    "english": "dragon",
+    "indent": false,
+    "line": 408
+  },
+  {
+    "type": "entry",
+    "greek": "δρόμος",
+    "details": "ο",
+    "english": "road, street",
+    "indent": false,
+    "line": 410
+  },
+  {
+    "type": "entry",
+    "greek": "δυνατά",
+    "details": "",
+    "english": "strongly",
+    "indent": false,
+    "line": 411
+  },
+  {
+    "type": "entry",
+    "greek": "δυνατός",
+    "details": "-ή, -ό",
+    "english": "strong",
+    "indent": false,
+    "line": 413
+  },
+  {
+    "type": "entry",
+    "greek": "δύο",
+    "details": "",
+    "english": "two",
+    "indent": false,
+    "line": 414
+  },
+  {
+    "type": "entry",
+    "greek": "και οι δύο",
+    "details": "",
+    "english": "both",
+    "indent": true,
+    "line": 415
+  },
+  {
+    "type": "entry",
+    "greek": "δύσκολος",
+    "details": "-η, -o",
+    "english": "difficult",
+    "indent": false,
+    "line": 416
+  },
+  {
+    "type": "entry",
+    "greek": "δώδεκα",
+    "details": "",
+    "english": "twelve",
+    "indent": false,
+    "line": 417
+  },
+  {
+    "type": "entry",
+    "greek": "δωμάτιο",
+    "details": "το",
+    "english": "room",
+    "indent": false,
+    "line": 418
+  },
+  {
+    "type": "entry",
+    "greek": "Δώρα",
+    "details": "η",
+    "english": "Dora",
+    "indent": false,
+    "line": 419
+  },
+  {
+    "type": "entry",
+    "greek": "δωρεάν",
+    "details": "",
+    "english": "free of charge",
+    "indent": false,
+    "line": 420
+  },
+  {
+    "type": "entry",
+    "greek": "δώρο",
+    "details": "το",
+    "english": "present",
+    "indent": false,
+    "line": 421
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ε, ε",
+    "name": "έψιλον",
+    "line": 423
+  },
+  {
+    "type": "entry",
+    "greek": "εβδομήντα",
+    "details": "",
+    "english": "seventy",
+    "indent": false,
+    "line": 425
+  },
+  {
+    "type": "entry",
+    "greek": "εγγόνι",
+    "details": "το",
+    "english": "grandchild",
+    "indent": false,
+    "line": 426
+  },
+  {
+    "type": "entry",
+    "greek": "εγώ",
+    "details": "",
+    "english": "I",
+    "indent": false,
+    "line": 427
+  },
+  {
+    "type": "entry",
+    "greek": "Εδιμβούργο",
+    "details": "το",
+    "english": "Edinburgh",
+    "indent": false,
+    "line": 428
+  },
+  {
+    "type": "entry",
+    "greek": "εδώ",
+    "details": "",
+    "english": "here",
+    "indent": false,
+    "line": 429
+  },
+  {
+    "type": "entry",
+    "greek": "εικόνα",
+    "details": "η",
+    "english": "image, picture",
+    "indent": false,
+    "line": 430
+  },
+  {
+    "type": "entry",
+    "greek": "είκοσι",
+    "details": "",
+    "english": "twenty",
+    "indent": false,
+    "line": 431
+  },
+  {
+    "type": "entry",
+    "greek": "είκοσι ένας/μία/ένα",
+    "details": "",
+    "english": "twenty one",
+    "indent": false,
+    "line": 432
+  },
+  {
+    "type": "entry",
+    "greek": "είκοσι",
+    "details": "",
+    "english": "twenty",
+    "indent": false,
+    "line": 433
+  },
+  {
+    "type": "entry",
+    "greek": "είμαι",
+    "details": "",
+    "english": "I am",
+    "indent": false,
+    "line": 434
+  },
+  {
+    "type": "entry",
+    "greek": "ειρήνη",
+    "details": "η",
+    "english": "peace",
+    "indent": false,
+    "line": 436
+  },
+  {
+    "type": "entry",
+    "greek": "εισιτήριο",
+    "details": "το",
+    "english": "ticket",
+    "indent": false,
+    "line": 437
+  },
+  {
+    "type": "entry",
+    "greek": "εκατό",
+    "details": "",
+    "english": "a hundred",
+    "indent": false,
+    "line": 438
+  },
+  {
+    "type": "entry",
+    "greek": "εκδρομή",
+    "details": "η",
+    "english": "excursion",
+    "indent": false,
+    "line": 439
+  },
+  {
+    "type": "entry",
+    "greek": "εκεί",
+    "details": "",
+    "english": "there",
+    "indent": false,
+    "line": 440
+  },
+  {
+    "type": "entry",
+    "greek": "εκείνος",
+    "details": "-η, -ο",
+    "english": "that",
+    "indent": false,
+    "line": 443
+  },
+  {
+    "type": "entry",
+    "greek": "εκκλησία",
+    "details": "η",
+    "english": "church",
+    "indent": false,
+    "line": 444
+  },
+  {
+    "type": "entry",
+    "greek": "έκπληξη",
+    "details": "η",
+    "english": "surprise",
+    "indent": false,
+    "line": 445
+  },
+  {
+    "type": "entry",
+    "greek": "εκπομπή",
+    "details": "η",
+    "english": "show, program",
+    "indent": false,
+    "line": 446
+  },
+  {
+    "type": "entry",
+    "greek": "Ελένη",
+    "details": "η",
+    "english": "Helen",
+    "indent": false,
+    "line": 447
+  },
+  {
+    "type": "entry",
+    "greek": "ελέφαντας",
+    "details": "ο",
+    "english": "elephant",
+    "indent": false,
+    "line": 448
+  },
+  {
+    "type": "entry",
+    "greek": "ελιά",
+    "details": "η",
+    "english": "olive",
+    "indent": false,
+    "line": 449
+  },
+  {
+    "type": "entry",
+    "greek": "ελικόπτερο",
+    "details": "το",
+    "english": "helicopter",
+    "indent": false,
+    "line": 450
+  },
+  {
+    "type": "entry",
+    "greek": "Ελίνα",
+    "details": "η",
+    "english": "Elina",
+    "indent": false,
+    "line": 451
+  },
+  {
+    "type": "entry",
+    "greek": "Ελισάβετ",
+    "details": "η",
+    "english": "Elisabeth",
+    "indent": false,
+    "line": 452
+  },
+  {
+    "type": "entry",
+    "greek": "Ελλάδα",
+    "details": "η",
+    "english": "Greece",
+    "indent": false,
+    "line": 453
+  },
+  {
+    "type": "entry",
+    "greek": "Έλλη",
+    "details": "η",
+    "english": "Elli",
+    "indent": false,
+    "line": 454
+  },
+  {
+    "type": "entry",
+    "greek": "Έλληνας/-ίδα",
+    "details": "ο/η",
+    "english": "Greek",
+    "indent": false,
+    "line": 455
+  },
+  {
+    "type": "entry",
+    "greek": "ελληνικός",
+    "details": "-ή, -ó",
+    "english": "Greek, Hellenic",
+    "indent": false,
+    "line": 457
+  },
+  {
+    "type": "entry",
+    "greek": "ελπίδα",
+    "details": "η",
+    "english": "hope",
+    "indent": false,
+    "line": 459
+  },
+  {
+    "type": "entry",
+    "greek": "ελπίζω",
+    "details": "",
+    "english": "to hope",
+    "indent": false,
+    "line": 460
+  },
+  {
+    "type": "entry",
+    "greek": "Έλσα",
+    "details": "η",
+    "english": "Elsa",
+    "indent": false,
+    "line": 461
+  },
+  {
+    "type": "entry",
+    "greek": "εμείς",
+    "details": "",
+    "english": "we",
+    "indent": false,
+    "line": 462
+  },
+  {
+    "type": "entry",
+    "greek": "εμένα",
+    "details": "",
+    "english": "me",
+    "indent": false,
+    "line": 463
+  },
+  {
+    "type": "entry",
+    "greek": "εννέα/εννιά",
+    "details": "",
+    "english": "nine",
+    "indent": false,
+    "line": 467
+  },
+  {
+    "type": "entry",
+    "greek": "ενενήντα",
+    "details": "",
+    "english": "ninety",
+    "indent": false,
+    "line": 468
+  },
+  {
+    "type": "entry",
+    "greek": "έντεκα",
+    "details": "",
+    "english": "eleven",
+    "indent": false,
+    "line": 469
+  },
+  {
+    "type": "entry",
+    "greek": "ενότητα",
+    "details": "η",
+    "english": "unit",
+    "indent": false,
+    "line": 470
+  },
+  {
+    "type": "entry",
+    "greek": "εντάξει",
+    "details": "",
+    "english": "OK",
+    "indent": false,
+    "line": 471
+  },
+  {
+    "type": "entry",
+    "greek": "ενώνω",
+    "details": "",
+    "english": "to join",
+    "indent": false,
+    "line": 472
+  },
+  {
+    "type": "entry",
+    "greek": "εξετάσεις",
+    "details": "οι",
+    "english": "examinations, exams",
+    "indent": false,
+    "line": 473
+  },
+  {
+    "type": "entry",
+    "greek": "έξι",
+    "details": "",
+    "english": "six",
+    "indent": false,
+    "line": 474
+  },
+  {
+    "type": "entry",
+    "greek": "εξήντα",
+    "details": "",
+    "english": "sixty",
+    "indent": false,
+    "line": 475
+  },
+  {
+    "type": "entry",
+    "greek": "έξω",
+    "details": "",
+    "english": "out",
+    "indent": false,
+    "line": 483
+  },
+  {
+    "type": "entry",
+    "greek": "έξω από",
+    "details": "",
+    "english": "outside",
+    "indent": false,
+    "line": 484
+  },
+  {
+    "type": "entry",
+    "greek": "έπιπλο",
+    "details": "το",
+    "english": "furniture",
+    "indent": false,
+    "line": 485
+  },
+  {
+    "type": "entry",
+    "greek": "επίσης",
+    "details": "",
+    "english": "also, too, as well",
+    "indent": false,
+    "line": 486
+  },
+  {
+    "type": "entry",
+    "greek": "επισκέπτομαι",
+    "details": "",
+    "english": "to visit",
+    "indent": false,
+    "line": 487
+  },
+  {
+    "type": "entry",
+    "greek": "επίσκεψη",
+    "details": "η",
+    "english": "visit",
+    "indent": false,
+    "line": 488
+  },
+  {
+    "type": "entry",
+    "greek": "επιστήμη",
+    "details": "η",
+    "english": "science",
+    "indent": false,
+    "line": 489
+  },
+  {
+    "type": "entry",
+    "greek": "επιστρέφω",
+    "details": "",
+    "english": "to come back, to return",
+    "indent": false,
+    "line": 490
+  },
+  {
+    "type": "entry",
+    "greek": "επιτραπέζιο παιχνίδι",
+    "details": "το",
+    "english": "board game",
+    "indent": false,
+    "line": 491
+  },
+  {
+    "type": "entry",
+    "greek": "επόμενος",
+    "details": "-η, -o",
+    "english": "next, following",
+    "indent": false,
+    "line": 492
+  },
+  {
+    "type": "entry",
+    "greek": "εποχή",
+    "details": "η",
+    "english": "season",
+    "indent": false,
+    "line": 493
+  },
+  {
+    "type": "entry",
+    "greek": "επώνυμο",
+    "details": "το",
+    "english": "surname",
+    "indent": false,
+    "line": 494
+  },
+  {
+    "type": "entry",
+    "greek": "εργαλείο",
+    "details": "το",
+    "english": "tool",
+    "indent": false,
+    "line": 495
+  },
+  {
+    "type": "entry",
+    "greek": "εργασία",
+    "details": "η",
+    "english": "work, project",
+    "indent": false,
+    "line": 496
+  },
+  {
+    "type": "entry",
+    "greek": "έρχομαι",
+    "details": "",
+    "english": "to come",
+    "indent": false,
+    "line": 497
+  },
+  {
+    "type": "entry",
+    "greek": "έρημος",
+    "details": "-η, -ο",
+    "english": "lonesome, deserted",
+    "indent": false,
+    "line": 498
+  },
+  {
+    "type": "entry",
+    "greek": "ερώτηση",
+    "details": "η",
+    "english": "question",
+    "indent": false,
+    "line": 499
+  },
+  {
+    "type": "entry",
+    "greek": "εστιατόριο",
+    "details": "το",
+    "english": "restaurant",
+    "indent": false,
+    "line": 500
+  },
+  {
+    "type": "entry",
+    "greek": "εσύ, εσείς",
+    "details": "",
+    "english": "you",
+    "indent": false,
+    "line": 501
+  },
+  {
+    "type": "entry",
+    "greek": "εσένα",
+    "details": "",
+    "english": "you",
+    "indent": false,
+    "line": 502
+  },
+  {
+    "type": "entry",
+    "greek": "έτοιμος",
+    "details": "-η, -ο",
+    "english": "ready",
+    "indent": false,
+    "line": 505
+  },
+  {
+    "type": "entry",
+    "greek": "έτσι",
+    "details": "",
+    "english": "this way, thus, so",
+    "indent": false,
+    "line": 507
+  },
+  {
+    "type": "entry",
+    "greek": "ευγενικός",
+    "details": "-ή, -ό",
+    "english": "kind, polite",
+    "indent": false,
+    "line": 509
+  },
+  {
+    "type": "entry",
+    "greek": "Εύη",
+    "details": "η",
+    "english": "Ενί",
+    "indent": false,
+    "line": 510
+  },
+  {
+    "type": "entry",
+    "greek": "εύκολος",
+    "details": "-η, -ο",
+    "english": "easy",
+    "indent": false,
+    "line": 511
+  },
+  {
+    "type": "entry",
+    "greek": "ευρώ",
+    "details": "το",
+    "english": "euro",
+    "indent": false,
+    "line": 512
+  },
+  {
+    "type": "entry",
+    "greek": "ευρωπαϊκός",
+    "details": "-ή, -ό",
+    "english": "European",
+    "indent": false,
+    "line": 513
+  },
+  {
+    "type": "entry",
+    "greek": "Ευρωπαίος",
+    "details": "-α",
+    "english": "European",
+    "indent": false,
+    "line": 514
+  },
+  {
+    "type": "entry",
+    "greek": "Ευρώπη",
+    "details": "η",
+    "english": "Europe",
+    "indent": false,
+    "line": 515
+  },
+  {
+    "type": "entry",
+    "greek": "ευτυχία",
+    "details": "η",
+    "english": "happiness",
+    "indent": false,
+    "line": 516
+  },
+  {
+    "type": "entry",
+    "greek": "ευτυχισμένος",
+    "details": "-η, -ο",
+    "english": "happy",
+    "indent": false,
+    "line": 517
+  },
+  {
+    "type": "entry",
+    "greek": "ευχάριστος",
+    "details": "-η, -o",
+    "english": "pleasant",
+    "indent": false,
+    "line": 518
+  },
+  {
+    "type": "entry",
+    "greek": "ευχαριστώ",
+    "details": "",
+    "english": "to thank",
+    "indent": false,
+    "line": 519
+  },
+  {
+    "type": "entry",
+    "greek": "Ευχαριστώ!",
+    "details": "",
+    "english": "Thanks! / Thank you!",
+    "indent": false,
+    "line": 520
+  },
+  {
+    "type": "entry",
+    "greek": "ευχή",
+    "details": "η",
+    "english": "wish",
+    "indent": false,
+    "line": 521
+  },
+  {
+    "type": "entry",
+    "greek": "έφηβος/-η",
+    "details": "ο/η",
+    "english": "teenager",
+    "indent": false,
+    "line": 522
+  },
+  {
+    "type": "entry",
+    "greek": "εφημερίδα",
+    "details": "η",
+    "english": "newspaper",
+    "indent": false,
+    "line": 523
+  },
+  {
+    "type": "entry",
+    "greek": "εφτά/επτά",
+    "details": "",
+    "english": "seven",
+    "indent": false,
+    "line": 524
+  },
+  {
+    "type": "entry",
+    "greek": "εφτακόσιοι/επτακόσιοι",
+    "details": "-ες, -α",
+    "english": "seven hundred",
+    "indent": false,
+    "line": 525
+  },
+  {
+    "type": "entry",
+    "greek": "έχω",
+    "details": "",
+    "english": "to have",
+    "indent": false,
+    "line": 526
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ζ, ζ",
+    "name": "ζήτα",
+    "line": 528
+  },
+  {
+    "type": "entry",
+    "greek": "ζάχαρη",
+    "details": "η",
+    "english": "sugar",
+    "indent": false,
+    "line": 530
+  },
+  {
+    "type": "entry",
+    "greek": "ζέβρα",
+    "details": "η",
+    "english": "zebra",
+    "indent": false,
+    "line": 531
+  },
+  {
+    "type": "entry",
+    "greek": "Ζήσης",
+    "details": "ο",
+    "english": "Zisis",
+    "indent": false,
+    "line": 532
+  },
+  {
+    "type": "entry",
+    "greek": "ζευγάρι",
+    "details": "το",
+    "english": "pair",
+    "indent": false,
+    "line": 534
+  },
+  {
+    "type": "entry",
+    "greek": "ζω",
+    "details": "",
+    "english": "to live",
+    "indent": false,
+    "line": 535
+  },
+  {
+    "type": "entry",
+    "greek": "ζούγκλα",
+    "details": "η",
+    "english": "jungle",
+    "indent": false,
+    "line": 536
+  },
+  {
+    "type": "entry",
+    "greek": "ζωγραφίζω",
+    "details": "",
+    "english": "to paint, to draw",
+    "indent": false,
+    "line": 537
+  },
+  {
+    "type": "entry",
+    "greek": "ζωγραφική",
+    "details": "η",
+    "english": "painting",
+    "indent": false,
+    "line": 538
+  },
+  {
+    "type": "entry",
+    "greek": "ζωγραφιά",
+    "details": "η",
+    "english": "drawing",
+    "indent": false,
+    "line": 539
+  },
+  {
+    "type": "entry",
+    "greek": "ζωή",
+    "details": "η",
+    "english": "life",
+    "indent": false,
+    "line": 540
+  },
+  {
+    "type": "entry",
+    "greek": "ζώνη",
+    "details": "η",
+    "english": "belt",
+    "indent": false,
+    "line": 541
+  },
+  {
+    "type": "entry",
+    "greek": "ζώο",
+    "details": "το",
+    "english": "animal",
+    "indent": false,
+    "line": 542
+  },
+  {
+    "type": "alphabet",
+    "letter": "Η, η",
+    "name": "ήτα",
+    "line": 544
+  },
+  {
+    "type": "entry",
+    "greek": "Ήβη",
+    "details": "η",
+    "english": "Ινί",
+    "indent": false,
+    "line": 547
+  },
+  {
+    "type": "entry",
+    "greek": "ηθοποιός",
+    "details": "η",
+    "english": "actress",
+    "indent": false,
+    "line": 548
+  },
+  {
+    "type": "entry",
+    "greek": "ηθοποιός",
+    "details": "ο",
+    "english": "actor",
+    "indent": false,
+    "line": 549
+  },
+  {
+    "type": "entry",
+    "greek": "ηλεκτρικός",
+    "details": "-ή, -ό",
+    "english": "electric",
+    "indent": false,
+    "line": 550
+  },
+  {
+    "type": "entry",
+    "greek": "Ηλιάνα",
+    "details": "η",
+    "english": "Iliana",
+    "indent": false,
+    "line": 551
+  },
+  {
+    "type": "entry",
+    "greek": "Ηλίας",
+    "details": "ο",
+    "english": "Elias",
+    "indent": false,
+    "line": 552
+  },
+  {
+    "type": "entry",
+    "greek": "ηλικία",
+    "details": "η",
+    "english": "age",
+    "indent": false,
+    "line": 553
+  },
+  {
+    "type": "entry",
+    "greek": "ήλιος",
+    "details": "ο",
+    "english": "sun",
+    "indent": false,
+    "line": 554
+  },
+  {
+    "type": "entry",
+    "greek": "έχει ήλιο",
+    "details": "",
+    "english": "it is sunny",
+    "indent": true,
+    "line": 555
+  },
+  {
+    "type": "entry",
+    "greek": "ημερολόγιο",
+    "details": "το",
+    "english": "calendar",
+    "indent": false,
+    "line": 557
+  },
+  {
+    "type": "entry",
+    "greek": "ήρεμος",
+    "details": "-η, -ο",
+    "english": "calm, peaceful",
+    "indent": false,
+    "line": 560
+  },
+  {
+    "type": "entry",
+    "greek": "ήρωας",
+    "details": "ο",
+    "english": "hero",
+    "indent": false,
+    "line": 561
+  },
+  {
+    "type": "entry",
+    "greek": "ησυχία",
+    "details": "η",
+    "english": "silence, quietness",
+    "indent": false,
+    "line": 562
+  },
+  {
+    "type": "entry",
+    "greek": "ήσυχος",
+    "details": "-η, -ο",
+    "english": "quiet, calm",
+    "indent": false,
+    "line": 563
+  },
+  {
+    "type": "alphabet",
+    "letter": "Θ, θ",
+    "name": "θήτα",
+    "line": 565
+  },
+  {
+    "type": "entry",
+    "greek": "θα",
+    "details": "",
+    "english": "will, going to",
+    "indent": false,
+    "line": 567
+  },
+  {
+    "type": "entry",
+    "greek": "θάλασσα",
+    "details": "η",
+    "english": "sea",
+    "indent": false,
+    "line": 568
+  },
+  {
+    "type": "entry",
+    "greek": "θαλασσί",
+    "details": "το",
+    "english": "blue",
+    "indent": false,
+    "line": 569
+  },
+  {
+    "type": "entry",
+    "greek": "Θανάσης",
+    "details": "ο",
+    "english": "Thanassis",
+    "indent": false,
+    "line": 570
+  },
+  {
+    "type": "entry",
+    "greek": "Θάνος",
+    "details": "ο",
+    "english": "Thanos",
+    "indent": false,
+    "line": 571
+  },
+  {
+    "type": "entry",
+    "greek": "θέα",
+    "details": "η",
+    "english": "view",
+    "indent": false,
+    "line": 572
+  },
+  {
+    "type": "entry",
+    "greek": "θεατής",
+    "details": "ο",
+    "english": "spectator, audience",
+    "indent": false,
+    "line": 573
+  },
+  {
+    "type": "entry",
+    "greek": "θέατρο",
+    "details": "το",
+    "english": "theatre",
+    "indent": false,
+    "line": 574
+  },
+  {
+    "type": "entry",
+    "greek": "θεία",
+    "details": "η",
+    "english": "aunt",
+    "indent": false,
+    "line": 575
+  },
+  {
+    "type": "entry",
+    "greek": "θείος",
+    "details": "ο",
+    "english": "uncle",
+    "indent": false,
+    "line": 576
+  },
+  {
+    "type": "entry",
+    "greek": "θέλω",
+    "details": "",
+    "english": "to want",
+    "indent": false,
+    "line": 577
+  },
+  {
+    "type": "entry",
+    "greek": "θέμα",
+    "details": "το",
+    "english": "subject, subject matter",
+    "indent": false,
+    "line": 578
+  },
+  {
+    "type": "entry",
+    "greek": "Θερβάντες Μιχαήλ",
+    "details": "ο",
+    "english": "Miguel de Cervantes",
+    "indent": false,
+    "line": 579
+  },
+  {
+    "type": "entry",
+    "greek": "θέση",
+    "details": "η",
+    "english": "seat, place, position",
+    "indent": false,
+    "line": 580
+  },
+  {
+    "type": "entry",
+    "greek": "Θεσσαλονίκη",
+    "details": "η",
+    "english": "Thessaloniki",
+    "indent": false,
+    "line": 581
+  },
+  {
+    "type": "entry",
+    "greek": "θησαυρός",
+    "details": "ο",
+    "english": "treasure",
+    "indent": false,
+    "line": 582
+  },
+  {
+    "type": "entry",
+    "greek": "θρανίο",
+    "details": "το",
+    "english": "desk",
+    "indent": false,
+    "line": 583
+  },
+  {
+    "type": "entry",
+    "greek": "θυμάμαι",
+    "details": "",
+    "english": "to remember",
+    "indent": false,
+    "line": 584
+  },
+  {
+    "type": "entry",
+    "greek": "Θωμαή",
+    "details": "η",
+    "english": "Thomais",
+    "indent": false,
+    "line": 585
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ι, ι",
+    "name": "γιώτα",
+    "line": 587
+  },
+  {
+    "type": "entry",
+    "greek": "Ιανουάριος",
+    "details": "ο",
+    "english": "January",
+    "indent": false,
+    "line": 589
+  },
+  {
+    "type": "entry",
+    "greek": "Ιαπωνία",
+    "details": "η",
+    "english": "Japan",
+    "indent": false,
+    "line": 590
+  },
+  {
+    "type": "entry",
+    "greek": "ίδιος",
+    "details": "-α, -ο",
+    "english": "the same",
+    "indent": false,
+    "line": 591
+  },
+  {
+    "type": "entry",
+    "greek": "Ιάσονας",
+    "details": "ο",
+    "english": "Jason",
+    "indent": false,
+    "line": 592
+  },
+  {
+    "type": "entry",
+    "greek": "Ιούλιος",
+    "details": "ο",
+    "english": "July",
+    "indent": false,
+    "line": 593
+  },
+  {
+    "type": "entry",
+    "greek": "Ιούνιος",
+    "details": "ο",
+    "english": "June",
+    "indent": false,
+    "line": 594
+  },
+  {
+    "type": "entry",
+    "greek": "ιππασία",
+    "details": "η",
+    "english": "riding",
+    "indent": false,
+    "line": 595
+  },
+  {
+    "type": "entry",
+    "greek": "ιππότης",
+    "details": "ο",
+    "english": "knight",
+    "indent": false,
+    "line": 596
+  },
+  {
+    "type": "entry",
+    "greek": "ιπποπόταμος",
+    "details": "ο",
+    "english": "hippopotamus, hippo",
+    "indent": false,
+    "line": 597
+  },
+  {
+    "type": "entry",
+    "greek": "ίσιος",
+    "details": "-α, -ο",
+    "english": "straight",
+    "indent": false,
+    "line": 598
+  },
+  {
+    "type": "entry",
+    "greek": "Ισπανία",
+    "details": "η",
+    "english": "Spain",
+    "indent": false,
+    "line": 599
+  },
+  {
+    "type": "entry",
+    "greek": "ισπανικός",
+    "details": "-ή, -ό",
+    "english": "Spanish",
+    "indent": false,
+    "line": 601
+  },
+  {
+    "type": "entry",
+    "greek": "Ισπανός",
+    "details": "-ίδα",
+    "english": "Spanish",
+    "indent": false,
+    "line": 602
+  },
+  {
+    "type": "entry",
+    "greek": "ιστορία",
+    "details": "η",
+    "english": "history, story",
+    "indent": false,
+    "line": 603
+  },
+  {
+    "type": "entry",
+    "greek": "Ιταλία",
+    "details": "η",
+    "english": "Italy",
+    "indent": false,
+    "line": 605
+  },
+  {
+    "type": "entry",
+    "greek": "ιταλικός",
+    "details": "-ή, -ό",
+    "english": "Italian",
+    "indent": false,
+    "line": 607
+  },
+  {
+    "type": "entry",
+    "greek": "Ιταλός",
+    "details": "-ίδα",
+    "english": "Italian",
+    "indent": false,
+    "line": 608
+  },
+  {
+    "type": "entry",
+    "greek": "Ιωάννα",
+    "details": "η",
+    "english": "Ioanna",
+    "indent": false,
+    "line": 609
+  },
+  {
+    "type": "entry",
+    "greek": "Ιωάννινα",
+    "details": "τα",
+    "english": "Ioannina",
+    "indent": false,
+    "line": 610
+  },
+  {
+    "type": "alphabet",
+    "letter": "Κ, κ",
+    "name": "κάπα",
+    "line": 612
+  },
+  {
+    "type": "entry",
+    "greek": "Καβάλα",
+    "details": "η",
+    "english": "Kavala",
+    "indent": false,
+    "line": 614
+  },
+  {
+    "type": "entry",
+    "greek": "κάδρο",
+    "details": "το",
+    "english": "frame, picture frame",
+    "indent": false,
+    "line": 615
+  },
+  {
+    "type": "entry",
+    "greek": "καημένος",
+    "details": "-η, -ο",
+    "english": "poor",
+    "indent": false,
+    "line": 616
+  },
+  {
+    "type": "entry",
+    "greek": "καθαρίζω",
+    "details": "",
+    "english": "to clean",
+    "indent": false,
+    "line": 617
+  },
+  {
+    "type": "entry",
+    "greek": "κάθε",
+    "details": "",
+    "english": "every",
+    "indent": false,
+    "line": 625
+  },
+  {
+    "type": "entry",
+    "greek": "καθόλου",
+    "details": "",
+    "english": "any, at all",
+    "indent": false,
+    "line": 626
+  },
+  {
+    "type": "entry",
+    "greek": "καθρέφτης",
+    "details": "ο",
+    "english": "mirror",
+    "indent": false,
+    "line": 627
+  },
+  {
+    "type": "entry",
+    "greek": "και",
+    "details": "",
+    "english": "and",
+    "indent": false,
+    "line": 628
+  },
+  {
+    "type": "entry",
+    "greek": "Κάιρο",
+    "details": "το",
+    "english": "Cairo",
+    "indent": false,
+    "line": 630
+  },
+  {
+    "type": "entry",
+    "greek": "καίω",
+    "details": "",
+    "english": "to burn",
+    "indent": false,
+    "line": 631
+  },
+  {
+    "type": "entry",
+    "greek": "μια φορά και έναν καιρό",
+    "details": "",
+    "english": "once upon a time",
+    "indent": false,
+    "line": 632
+  },
+  {
+    "type": "entry",
+    "greek": "Κάιτη",
+    "details": "η",
+    "english": "Kate",
+    "indent": false,
+    "line": 633
+  },
+  {
+    "type": "entry",
+    "greek": "κακός",
+    "details": "-ή, -ό",
+    "english": "bad",
+    "indent": false,
+    "line": 634
+  },
+  {
+    "type": "entry",
+    "greek": "καλάθι",
+    "details": "το",
+    "english": "basket, bin",
+    "indent": false,
+    "line": 636
+  },
+  {
+    "type": "entry",
+    "greek": "καλή διασκέδαση",
+    "details": "",
+    "english": "have a nice time, enjoy",
+    "indent": false,
+    "line": 637
+  },
+  {
+    "type": "entry",
+    "greek": "καλημέρα",
+    "details": "",
+    "english": "good morning",
+    "indent": false,
+    "line": 638
+  },
+  {
+    "type": "entry",
+    "greek": "καλοκαίρι",
+    "details": "το",
+    "english": "summer",
+    "indent": false,
+    "line": 639
+  },
+  {
+    "type": "entry",
+    "greek": "καλός",
+    "details": "-ή, -ό",
+    "english": "good",
+    "indent": false,
+    "line": 640
+  },
+  {
+    "type": "entry",
+    "greek": "Καλαμάτα",
+    "details": "η",
+    "english": "Kalamata",
+    "indent": false,
+    "line": 641
+  },
+  {
+    "type": "entry",
+    "greek": "καλσόν",
+    "details": "το",
+    "english": "tights, pantyhose",
+    "indent": false,
+    "line": 642
+  },
+  {
+    "type": "entry",
+    "greek": "καλώ",
+    "details": "",
+    "english": "to call",
+    "indent": false,
+    "line": 643
+  },
+  {
+    "type": "entry",
+    "greek": "καμηλοπάρδαλη",
+    "details": "η",
+    "english": "giraffe",
+    "indent": false,
+    "line": 646
+  },
+  {
+    "type": "entry",
+    "greek": "Καναδάς",
+    "details": "ο",
+    "english": "Canada",
+    "indent": false,
+    "line": 647
+  },
+  {
+    "type": "entry",
+    "greek": "καναδικός",
+    "details": "-ή, -ό",
+    "english": "Canadian",
+    "indent": false,
+    "line": 648
+  },
+  {
+    "type": "entry",
+    "greek": "Καναδός",
+    "details": "-ή",
+    "english": "Canadian",
+    "indent": false,
+    "line": 649
+  },
+  {
+    "type": "entry",
+    "greek": "καναπές",
+    "details": "ο",
+    "english": "sofa",
+    "indent": false,
+    "line": 650
+  },
+  {
+    "type": "entry",
+    "greek": "κανένας",
+    "details": "-ια, -ένα",
+    "english": "no one",
+    "indent": false,
+    "line": 651
+  },
+  {
+    "type": "entry",
+    "greek": "κάνω",
+    "details": "",
+    "english": "to do, to make",
+    "indent": false,
+    "line": 652
+  },
+  {
+    "type": "entry",
+    "greek": "καπέλο",
+    "details": "το",
+    "english": "hat",
+    "indent": false,
+    "line": 654
+  },
+  {
+    "type": "entry",
+    "greek": "καπάκι",
+    "details": "το",
+    "english": "cap",
+    "indent": false,
+    "line": 655
+  },
+  {
+    "type": "entry",
+    "greek": "κάποτε",
+    "details": "",
+    "english": "once, someday, one day",
+    "indent": false,
+    "line": 656
+  },
+  {
+    "type": "entry",
+    "greek": "κάπως",
+    "details": "",
+    "english": "somehow, somewhat",
+    "indent": false,
+    "line": 657
+  },
+  {
+    "type": "entry",
+    "greek": "Καραγκιόζης",
+    "details": "",
+    "english": "Karagiozis [popular hero in Greek shadow play]",
+    "indent": false,
+    "line": 659
+  },
+  {
+    "type": "entry",
+    "greek": "καρδιά",
+    "details": "η",
+    "english": "heart",
+    "indent": false,
+    "line": 660
+  },
+  {
+    "type": "entry",
+    "greek": "καρέκλα",
+    "details": "η",
+    "english": "chair",
+    "indent": false,
+    "line": 661
+  },
+  {
+    "type": "entry",
+    "greek": "καρότο",
+    "details": "το",
+    "english": "carrot",
+    "indent": false,
+    "line": 662
+  },
+  {
+    "type": "entry",
+    "greek": "καρπούζι",
+    "details": "το",
+    "english": "watermelon",
+    "indent": false,
+    "line": 663
+  },
+  {
+    "type": "entry",
+    "greek": "καρπός",
+    "details": "το",
+    "english": "fruit",
+    "indent": false,
+    "line": 664
+  },
+  {
+    "type": "entry",
+    "greek": "κασετίνα",
+    "details": "η",
+    "english": "pencil case, pencil holder",
+    "indent": false,
+    "line": 665
+  },
+  {
+    "type": "entry",
+    "greek": "κασκόλ",
+    "details": "το",
+    "english": "scarf",
+    "indent": false,
+    "line": 666
+  },
+  {
+    "type": "entry",
+    "greek": "Καστοριά",
+    "details": "η",
+    "english": "Kastoria",
+    "indent": false,
+    "line": 667
+  },
+  {
+    "type": "entry",
+    "greek": "κάστρο",
+    "details": "το",
+    "english": "castle",
+    "indent": false,
+    "line": 668
+  },
+  {
+    "type": "entry",
+    "greek": "καταγωγή",
+    "details": "η",
+    "english": "origins, descent",
+    "indent": false,
+    "line": 669
+  },
+  {
+    "type": "entry",
+    "greek": "καταλαβαίνω",
+    "details": "",
+    "english": "to understand",
+    "indent": false,
+    "line": 670
+  },
+  {
+    "type": "entry",
+    "greek": "καταπληκτικός",
+    "details": "-ή, -ό",
+    "english": "amazing",
+    "indent": false,
+    "line": 671
+  },
+  {
+    "type": "entry",
+    "greek": "κατάσταση",
+    "details": "η",
+    "english": "camp",
+    "indent": false,
+    "line": 672
+  },
+  {
+    "type": "entry",
+    "greek": "πηγαίνω κατασκήνωση",
+    "details": "",
+    "english": "to go camping",
+    "indent": true,
+    "line": 673
+  },
+  {
+    "type": "entry",
+    "greek": "κατεβαίνω",
+    "details": "",
+    "english": "to get down",
+    "indent": false,
+    "line": 674
+  },
+  {
+    "type": "entry",
+    "greek": "Κατερίνα",
+    "details": "η",
+    "english": "Catherine",
+    "indent": false,
+    "line": 675
+  },
+  {
+    "type": "entry",
+    "greek": "κατοικώ",
+    "details": "",
+    "english": "to live, to inhabit",
+    "indent": false,
+    "line": 676
+  },
+  {
+    "type": "entry",
+    "greek": "Κάτια",
+    "details": "η",
+    "english": "Katja",
+    "indent": false,
+    "line": 677
+  },
+  {
+    "type": "entry",
+    "greek": "κατσίκα/κατσίκι",
+    "details": "η/το",
+    "english": "goat",
+    "indent": false,
+    "line": 678
+  },
+  {
+    "type": "entry",
+    "greek": "κάτω",
+    "details": "",
+    "english": "down",
+    "indent": false,
+    "line": 679
+  },
+  {
+    "type": "entry",
+    "greek": "κάτω από",
+    "details": "",
+    "english": "under",
+    "indent": false,
+    "line": 680
+  },
+  {
+    "type": "entry",
+    "greek": "καφέ",
+    "details": "",
+    "english": "brown",
+    "indent": false,
+    "line": 683
+  },
+  {
+    "type": "entry",
+    "greek": "κειμενάκι",
+    "details": "το",
+    "english": "text",
+    "indent": false,
+    "line": 684
+  },
+  {
+    "type": "entry",
+    "greek": "κεντρικός",
+    "details": "-ή, -ό",
+    "english": "central",
+    "indent": false,
+    "line": 685
+  },
+  {
+    "type": "entry",
+    "greek": "κέντρο",
+    "details": "το",
+    "english": "centre",
+    "indent": false,
+    "line": 686
+  },
+  {
+    "type": "entry",
+    "greek": "κενό",
+    "details": "το",
+    "english": "gap",
+    "indent": false,
+    "line": 687
+  },
+  {
+    "type": "entry",
+    "greek": "Κένταυρος",
+    "details": "ο",
+    "english": "Centaur",
+    "indent": false,
+    "line": 688
+  },
+  {
+    "type": "entry",
+    "greek": "κεράσι",
+    "details": "το",
+    "english": "cherry",
+    "indent": false,
+    "line": 689
+  },
+  {
+    "type": "entry",
+    "greek": "κερί",
+    "details": "το",
+    "english": "candle",
+    "indent": false,
+    "line": 690
+  },
+  {
+    "type": "entry",
+    "greek": "κεφάλι",
+    "details": "το",
+    "english": "head",
+    "indent": false,
+    "line": 691
+  },
+  {
+    "type": "entry",
+    "greek": "κίνηση",
+    "details": "η",
+    "english": "movement",
+    "indent": false,
+    "line": 692
+  },
+  {
+    "type": "entry",
+    "greek": "κιθάρα",
+    "details": "η",
+    "english": "guitar",
+    "indent": false,
+    "line": 693
+  },
+  {
+    "type": "entry",
+    "greek": "κιλό",
+    "details": "το",
+    "english": "kilo",
+    "indent": false,
+    "line": 694
+  },
+  {
+    "type": "entry",
+    "greek": "κιμάς",
+    "details": "ο",
+    "english": "minced meat",
+    "indent": false,
+    "line": 695
+  },
+  {
+    "type": "entry",
+    "greek": "Κίνα",
+    "details": "η",
+    "english": "China",
+    "indent": false,
+    "line": 696
+  },
+  {
+    "type": "entry",
+    "greek": "κινέζικος",
+    "details": "-η, -ο",
+    "english": "Chinese",
+    "indent": false,
+    "line": 698
+  },
+  {
+    "type": "entry",
+    "greek": "Κινέζος",
+    "details": "-α",
+    "english": "Chinese",
+    "indent": false,
+    "line": 699
+  },
+  {
+    "type": "entry",
+    "greek": "κινούμαι",
+    "details": "",
+    "english": "to move",
+    "indent": false,
+    "line": 701
+  },
+  {
+    "type": "entry",
+    "greek": "κινούμενο σχέδιο",
+    "details": "το",
+    "english": "cartoon",
+    "indent": false,
+    "line": 702
+  },
+  {
+    "type": "entry",
+    "greek": "κίτρινος",
+    "details": "-η, -ο",
+    "english": "yellow",
+    "indent": false,
+    "line": 703
+  },
+  {
+    "type": "entry",
+    "greek": "κλάδι",
+    "details": "το",
+    "english": "branch, stick",
+    "indent": false,
+    "line": 704
+  },
+  {
+    "type": "entry",
+    "greek": "Κλάουντ Μουσική",
+    "details": "η",
+    "english": "Cloud Music",
+    "indent": false,
+    "line": 705
+  },
+  {
+    "type": "entry",
+    "greek": "κλειδώνω",
+    "details": "",
+    "english": "to lock",
+    "indent": false,
+    "line": 706
+  },
+  {
+    "type": "entry",
+    "greek": "κλείνω",
+    "details": "",
+    "english": "to close, to shut, to turn off",
+    "indent": false,
+    "line": 707
+  },
+  {
+    "type": "entry",
+    "greek": "κλειδώνω το παράθυρο",
+    "details": "",
+    "english": "to close a window",
+    "indent": false,
+    "line": 708
+  },
+  {
+    "type": "entry",
+    "greek": "κλοτσάω",
+    "details": "-ώ",
+    "english": "to kick",
+    "indent": false,
+    "line": 714
+  },
+  {
+    "type": "entry",
+    "greek": "κλοτσάω",
+    "details": "-ώ",
+    "english": "to kick",
+    "indent": false,
+    "line": 715
+  },
+  {
+    "type": "entry",
+    "greek": "κλοτσάω",
+    "details": "το",
+    "english": "kick",
+    "indent": false,
+    "line": 716
+  },
+  {
+    "type": "entry",
+    "greek": "κλουβί",
+    "details": "το",
+    "english": "cage",
+    "indent": false,
+    "line": 717
+  },
+  {
+    "type": "entry",
+    "greek": "κλουβί",
+    "details": "το",
+    "english": "cage",
+    "indent": false,
+    "line": 718
+  },
+  {
+    "type": "entry",
+    "greek": "κλωστη",
+    "details": "η",
+    "english": "thread",
+    "indent": false,
+    "line": 719
+  },
+  {
+    "type": "entry",
+    "greek": "κλωστή",
+    "details": "η",
+    "english": "thread",
+    "indent": false,
+    "line": 720
+  },
+  {
+    "type": "entry",
+    "greek": "κοιμάμαι",
+    "details": "",
+    "english": "to sleep",
+    "indent": false,
+    "line": 721
+  },
+  {
+    "type": "entry",
+    "greek": "κοιτάζω",
+    "details": "",
+    "english": "to look (at)",
+    "indent": false,
+    "line": 722
+  },
+  {
+    "type": "entry",
+    "greek": "κοιτάω",
+    "details": "",
+    "english": "to look (at)",
+    "indent": false,
+    "line": 723
+  },
+  {
+    "type": "entry",
+    "greek": "κοινότητα",
+    "details": "η",
+    "english": "community",
+    "indent": false,
+    "line": 724
+  },
+  {
+    "type": "entry",
+    "greek": "κόκορας",
+    "details": "ο",
+    "english": "rooster",
+    "indent": false,
+    "line": 726
+  },
+  {
+    "type": "entry",
+    "greek": "κολλάω",
+    "details": "-ώ",
+    "english": "to stick",
+    "indent": false,
+    "line": 727
+  },
+  {
+    "type": "entry",
+    "greek": "κόλλα",
+    "details": "η",
+    "english": "glue",
+    "indent": false,
+    "line": 728
+  },
+  {
+    "type": "entry",
+    "greek": "κολοκυθάκια",
+    "details": "τα",
+    "english": "zucchini",
+    "indent": false,
+    "line": 729
+  },
+  {
+    "type": "entry",
+    "greek": "«παίζω την κολοκυθιά»",
+    "details": "",
+    "english": "\"play 20 questions\"",
+    "indent": false,
+    "line": 730
+  },
+  {
+    "type": "entry",
+    "greek": "κολυμπάω",
+    "details": "",
+    "english": "to swim",
+    "indent": false,
+    "line": 731
+  },
+  {
+    "type": "entry",
+    "greek": "κόλπο",
+    "details": "το",
+    "english": "trick",
+    "indent": false,
+    "line": 732
+  },
+  {
+    "type": "entry",
+    "greek": "κόμικ",
+    "details": "",
+    "english": "comic",
+    "indent": false,
+    "line": 733
+  },
+  {
+    "type": "entry",
+    "greek": "κόμπρα",
+    "details": "η",
+    "english": "cobra",
+    "indent": false,
+    "line": 734
+  },
+  {
+    "type": "entry",
+    "greek": "κομμάτι",
+    "details": "το",
+    "english": "piece",
+    "indent": false,
+    "line": 735
+  },
+  {
+    "type": "entry",
+    "greek": "κοντά",
+    "details": "",
+    "english": "close, nearby",
+    "indent": false,
+    "line": 736
+  },
+  {
+    "type": "entry",
+    "greek": "κοντάρι",
+    "details": "το",
+    "english": "spear",
+    "indent": false,
+    "line": 737
+  },
+  {
+    "type": "entry",
+    "greek": "κοντομάνικο",
+    "details": "το",
+    "english": "short sleeve",
+    "indent": false,
+    "line": 738
+  },
+  {
+    "type": "entry",
+    "greek": "κοντομάνικη μπλούζα",
+    "details": "η",
+    "english": "T-shirt",
+    "indent": false,
+    "line": 739
+  },
+  {
+    "type": "entry",
+    "greek": "κορίτσι",
+    "details": "το",
+    "english": "girl",
+    "indent": false,
+    "line": 740
+  },
+  {
+    "type": "entry",
+    "greek": "κορδέλα",
+    "details": "η",
+    "english": "ribbon",
+    "indent": false,
+    "line": 741
+  },
+  {
+    "type": "entry",
+    "greek": "κορμός",
+    "details": "ο",
+    "english": "torso",
+    "indent": false,
+    "line": 742
+  },
+  {
+    "type": "entry",
+    "greek": "κορμί",
+    "details": "το",
+    "english": "body",
+    "indent": false,
+    "line": 743
+  },
+  {
+    "type": "entry",
+    "greek": "κόρη",
+    "details": "η",
+    "english": "daughter",
+    "indent": false,
+    "line": 744
+  },
+  {
+    "type": "entry",
+    "greek": "κόρη",
+    "details": "η",
+    "english": "daughter",
+    "indent": false,
+    "line": 745
+  },
+  {
+    "type": "entry",
+    "greek": "κορίτσι",
+    "details": "το",
+    "english": "girl",
+    "indent": false,
+    "line": 746
+  },
+  {
+    "type": "entry",
+    "greek": "κορυφή",
+    "details": "η",
+    "english": "top",
+    "indent": false,
+    "line": 747
+  },
+  {
+    "type": "entry",
+    "greek": "κοινωνία",
+    "details": "η",
+    "english": "society",
+    "indent": false,
+    "line": 748
+  },
+  {
+    "type": "entry",
+    "greek": "κορυφή",
+    "details": "το",
+    "english": "peak",
+    "indent": false,
+    "line": 749
+  },
+  {
+    "type": "entry",
+    "greek": "κορμάκι",
+    "details": "το",
+    "english": "bodysuit, leotard",
+    "indent": false,
+    "line": 750
+  },
+  {
+    "type": "entry",
+    "greek": "κόσμος",
+    "details": "ο",
+    "english": "cosmos",
+    "indent": false,
+    "line": 751
+  },
+  {
+    "type": "entry",
+    "greek": "κοσμάς",
+    "details": "ο",
+    "english": "people, crowd",
+    "indent": false,
+    "line": 752
+  },
+  {
+    "type": "entry",
+    "greek": "κοτόπουλο/κότα",
+    "details": "το/η",
+    "english": "chicken",
+    "indent": false,
+    "line": 754
+  },
+  {
+    "type": "entry",
+    "greek": "κουβαλάω",
+    "details": "-ώ",
+    "english": "to carry",
+    "indent": false,
+    "line": 755
+  },
+  {
+    "type": "entry",
+    "greek": "κούκλα",
+    "details": "η",
+    "english": "doll",
+    "indent": false,
+    "line": 756
+  },
+  {
+    "type": "entry",
+    "greek": "κουράγιο",
+    "details": "το",
+    "english": "courage",
+    "indent": false,
+    "line": 757
+  },
+  {
+    "type": "entry",
+    "greek": "κουράζομαι",
+    "details": "",
+    "english": "to get tired",
+    "indent": false,
+    "line": 758
+  },
+  {
+    "type": "entry",
+    "greek": "κουράζω",
+    "details": "",
+    "english": "to tire",
+    "indent": false,
+    "line": 759
+  },
+  {
+    "type": "entry",
+    "greek": "κουράζομαι",
+    "details": "",
+    "english": "to get tired",
+    "indent": false,
+    "line": 760
+  },
+  {
+    "type": "entry",
+    "greek": "κούραση",
+    "details": "η",
+    "english": "tiredness",
+    "indent": false,
+    "line": 761
+  },
+  {
+    "type": "entry",
+    "greek": "κουράγιο",
+    "details": "το",
+    "english": "courage",
+    "indent": false,
+    "line": 762
+  },
+  {
+    "type": "entry",
+    "greek": "κουβέρτα",
+    "details": "η",
+    "english": "blanket",
+    "indent": false,
+    "line": 763
+  },
+  {
+    "type": "entry",
+    "greek": "κουκλόσπιτο",
+    "details": "το",
+    "english": "dollhouse",
+    "indent": false,
+    "line": 766
+  },
+  {
+    "type": "entry",
+    "greek": "κουκλοθέατρο",
+    "details": "το",
+    "english": "puppet show",
+    "indent": false,
+    "line": 767
+  },
+  {
+    "type": "entry",
+    "greek": "κουνάω",
+    "details": "-ώ",
+    "english": "to move, to shake, to swing",
+    "indent": false,
+    "line": 768
+  },
+  {
+    "type": "entry",
+    "greek": "κούνια",
+    "details": "η",
+    "english": "swing",
+    "indent": false,
+    "line": 776
+  },
+  {
+    "type": "entry",
+    "greek": "κουνέλι",
+    "details": "το",
+    "english": "rabbit",
+    "indent": false,
+    "line": 777
+  },
+  {
+    "type": "entry",
+    "greek": "κουκουβάγια",
+    "details": "η",
+    "english": "owl",
+    "indent": false,
+    "line": 778
+  },
+  {
+    "type": "entry",
+    "greek": "κουλούρι",
+    "details": "το",
+    "english": "bagel, simit",
+    "indent": false,
+    "line": 779
+  },
+  {
+    "type": "entry",
+    "greek": "κουπί",
+    "details": "το",
+    "english": "row",
+    "indent": false,
+    "line": 780
+  },
+  {
+    "type": "entry",
+    "greek": "κουτάλι",
+    "details": "το",
+    "english": "spoon",
+    "indent": false,
+    "line": 781
+  },
+  {
+    "type": "entry",
+    "greek": "κουτί",
+    "details": "το",
+    "english": "box",
+    "indent": false,
+    "line": 782
+  },
+  {
+    "type": "entry",
+    "greek": "κουρτίνα",
+    "details": "η",
+    "english": "curtain",
+    "indent": false,
+    "line": 783
+  },
+  {
+    "type": "entry",
+    "greek": "κουτσό",
+    "details": "το",
+    "english": "hopscotch",
+    "indent": false,
+    "line": 784
+  },
+  {
+    "type": "entry",
+    "greek": "κρατάω",
+    "details": "-ώ",
+    "english": "to hold",
+    "indent": false,
+    "line": 785
+  },
+  {
+    "type": "entry",
+    "greek": "κρέας",
+    "details": "το",
+    "english": "meat",
+    "indent": false,
+    "line": 786
+  },
+  {
+    "type": "entry",
+    "greek": "κρεβάτι",
+    "details": "το",
+    "english": "bed",
+    "indent": false,
+    "line": 787
+  },
+  {
+    "type": "entry",
+    "greek": "κρεμάστρα",
+    "details": "η",
+    "english": "hanger, hook",
+    "indent": false,
+    "line": 788
+  },
+  {
+    "type": "entry",
+    "greek": "κρεμμύδι",
+    "details": "το",
+    "english": "onion",
+    "indent": false,
+    "line": 789
+  },
+  {
+    "type": "entry",
+    "greek": "κρεοπωλείο",
+    "details": "το",
+    "english": "the butcher's",
+    "indent": false,
+    "line": 790
+  },
+  {
+    "type": "entry",
+    "greek": "Κρήτη",
+    "details": "η",
+    "english": "Crete",
+    "indent": false,
+    "line": 791
+  },
+  {
+    "type": "entry",
+    "greek": "κροκόδειλος",
+    "details": "ο",
+    "english": "crocodile",
+    "indent": false,
+    "line": 792
+  },
+  {
+    "type": "entry",
+    "greek": "κρυμμένος",
+    "details": "-η, -ο",
+    "english": "hidden",
+    "indent": false,
+    "line": 793
+  },
+  {
+    "type": "entry",
+    "greek": "κάνει/έχει κρύο",
+    "details": "",
+    "english": "it is cold",
+    "indent": false,
+    "line": 794
+  },
+  {
+    "type": "entry",
+    "greek": "κρυφτό",
+    "details": "το",
+    "english": "hide-and-seek",
+    "indent": false,
+    "line": 795
+  },
+  {
+    "type": "entry",
+    "greek": "κύκλος",
+    "details": "ο",
+    "english": "circle",
+    "indent": false,
+    "line": 796
+  },
+  {
+    "type": "entry",
+    "greek": "κυκλώνω",
+    "details": "",
+    "english": "to circle",
+    "indent": false,
+    "line": 797
+  },
+  {
+    "type": "entry",
+    "greek": "Κύκλωπας",
+    "details": "ο",
+    "english": "Cyclops",
+    "indent": false,
+    "line": 798
+  },
+  {
+    "type": "entry",
+    "greek": "κυλικείο",
+    "details": "το",
+    "english": "canteen",
+    "indent": false,
+    "line": 799
+  },
+  {
+    "type": "entry",
+    "greek": "κύμα",
+    "details": "το",
+    "english": "wave",
+    "indent": false,
+    "line": 800
+  },
+  {
+    "type": "entry",
+    "greek": "κυνηγητό",
+    "details": "το",
+    "english": "cat and mouse",
+    "indent": false,
+    "line": 801
+  },
+  {
+    "type": "entry",
+    "greek": "κυρία",
+    "details": "η",
+    "english": "lady, madam",
+    "indent": false,
+    "line": 802
+  },
+  {
+    "type": "entry",
+    "greek": "Κυριάκος",
+    "details": "ο",
+    "english": "Kyriakos",
+    "indent": false,
+    "line": 805
+  },
+  {
+    "type": "entry",
+    "greek": "κύριος",
+    "details": "ο",
+    "english": "sir, mister",
+    "indent": false,
+    "line": 806
+  },
+  {
+    "type": "entry",
+    "greek": "κωμωδία",
+    "details": "η",
+    "english": "comedy",
+    "indent": false,
+    "line": 807
+  },
+  {
+    "type": "entry",
+    "greek": "Κως",
+    "details": "η",
+    "english": "Cos",
+    "indent": false,
+    "line": 808
+  },
+  {
+    "type": "entry",
+    "greek": "Κώστας",
+    "details": "ο",
+    "english": "Kostas",
+    "indent": false,
+    "line": 809
+  },
+  {
+    "type": "alphabet",
+    "letter": "Λ, λ",
+    "name": "λάμδα",
+    "line": 811
+  },
+  {
+    "type": "entry",
+    "greek": "λαβύρινθος",
+    "details": "ο",
+    "english": "labyrinth",
+    "indent": false,
+    "line": 813
+  },
+  {
+    "type": "entry",
+    "greek": "λαγός",
+    "details": "ο",
+    "english": "hare",
+    "indent": false,
+    "line": 814
+  },
+  {
+    "type": "entry",
+    "greek": "λάδι",
+    "details": "το",
+    "english": "oil",
+    "indent": false,
+    "line": 815
+  },
+  {
+    "type": "entry",
+    "greek": "λαϊκή μουσική",
+    "details": "η",
+    "english": "popular music",
+    "indent": false,
+    "line": 818
+  },
+  {
+    "type": "entry",
+    "greek": "λαιμός",
+    "details": "ο",
+    "english": "neck",
+    "indent": false,
+    "line": 819
+  },
+  {
+    "type": "entry",
+    "greek": "Λάρισα",
+    "details": "η",
+    "english": "Larissa",
+    "indent": false,
+    "line": 820
+  },
+  {
+    "type": "entry",
+    "greek": "λαχανικό",
+    "details": "το",
+    "english": "vegetable",
+    "indent": false,
+    "line": 821
+  },
+  {
+    "type": "entry",
+    "greek": "λάχανο",
+    "details": "το",
+    "english": "cabbage",
+    "indent": false,
+    "line": 822
+  },
+  {
+    "type": "entry",
+    "greek": "λείπω",
+    "details": "",
+    "english": "to be absent, to be missing",
+    "indent": false,
+    "line": 823
+  },
+  {
+    "type": "entry",
+    "greek": "λεκάνη",
+    "details": "η",
+    "english": "wash basin",
+    "indent": false,
+    "line": 824
+  },
+  {
+    "type": "entry",
+    "greek": "λεμονάδα",
+    "details": "η",
+    "english": "lemonade",
+    "indent": false,
+    "line": 825
+  },
+  {
+    "type": "entry",
+    "greek": "λεμόνι",
+    "details": "το",
+    "english": "lemon",
+    "indent": false,
+    "line": 826
+  },
+  {
+    "type": "entry",
+    "greek": "λέξη",
+    "details": "η",
+    "english": "word",
+    "indent": false,
+    "line": 827
+  },
+  {
+    "type": "entry",
+    "greek": "λεπτό",
+    "details": "το",
+    "english": "minute",
+    "indent": false,
+    "line": 828
+  },
+  {
+    "type": "entry",
+    "greek": "Λευτέρης",
+    "details": "ο",
+    "english": "Lefteris",
+    "indent": false,
+    "line": 829
+  },
+  {
+    "type": "entry",
+    "greek": "λέω",
+    "details": "",
+    "english": "to say",
+    "indent": false,
+    "line": 831
+  },
+  {
+    "type": "entry",
+    "greek": "λεωφορείο",
+    "details": "το",
+    "english": "bus",
+    "indent": false,
+    "line": 832
+  },
+  {
+    "type": "entry",
+    "greek": "λεωφορείο σχολικό",
+    "details": "το",
+    "english": "school bus",
+    "indent": false,
+    "line": 833
+  },
+  {
+    "type": "entry",
+    "greek": "Λιάνα",
+    "details": "η",
+    "english": "Liana",
+    "indent": false,
+    "line": 834
+  },
+  {
+    "type": "entry",
+    "greek": "Λίζα",
+    "details": "η",
+    "english": "Lisa",
+    "indent": false,
+    "line": 839
+  },
+  {
+    "type": "entry",
+    "greek": "λιμάνι",
+    "details": "το",
+    "english": "port",
+    "indent": false,
+    "line": 840
+  },
+  {
+    "type": "entry",
+    "greek": "λίμνη",
+    "details": "η",
+    "english": "lake",
+    "indent": false,
+    "line": 841
+  },
+  {
+    "type": "entry",
+    "greek": "λιοντάρι",
+    "details": "το",
+    "english": "lion",
+    "indent": false,
+    "line": 842
+  },
+  {
+    "type": "entry",
+    "greek": "λίστα",
+    "details": "η",
+    "english": "list",
+    "indent": false,
+    "line": 843
+  },
+  {
+    "type": "entry",
+    "greek": "λίστα με ψώνια",
+    "details": "η",
+    "english": "shopping list",
+    "indent": false,
+    "line": 844
+  },
+  {
+    "type": "entry",
+    "greek": "Λονδίνο",
+    "details": "το",
+    "english": "London",
+    "indent": false,
+    "line": 846
+  },
+  {
+    "type": "entry",
+    "greek": "λουλούδι",
+    "details": "το",
+    "english": "flower",
+    "indent": false,
+    "line": 847
+  },
+  {
+    "type": "entry",
+    "greek": "λύκος",
+    "details": "ο",
+    "english": "wolf",
+    "indent": false,
+    "line": 848
+  },
+  {
+    "type": "entry",
+    "greek": "λυπημένος",
+    "details": "-η, -0",
+    "english": "sad",
+    "indent": false,
+    "line": 849
+  },
+  {
+    "type": "entry",
+    "greek": "λύση",
+    "details": "η",
+    "english": "solution, answer",
+    "indent": false,
+    "line": 850
+  },
+  {
+    "type": "alphabet",
+    "letter": "Μ, μ",
+    "name": "μι",
+    "line": 852
+  },
+  {
+    "type": "entry",
+    "greek": "μαγαζί",
+    "details": "το",
+    "english": "shop, store",
+    "indent": false,
+    "line": 855
+  },
+  {
+    "type": "entry",
+    "greek": "μαγικός",
+    "details": "-ή, -ό",
+    "english": "magic",
+    "indent": false,
+    "line": 856
+  },
+  {
+    "type": "entry",
+    "greek": "μάγισσα",
+    "details": "η",
+    "english": "witch",
+    "indent": false,
+    "line": 857
+  },
+  {
+    "type": "entry",
+    "greek": "μάγος",
+    "details": "ο",
+    "english": "magician",
+    "indent": false,
+    "line": 858
+  },
+  {
+    "type": "entry",
+    "greek": "Μαδρίτη",
+    "details": "η",
+    "english": "Madrid",
+    "indent": false,
+    "line": 859
+  },
+  {
+    "type": "entry",
+    "greek": "μαζί",
+    "details": "",
+    "english": "together",
+    "indent": false,
+    "line": 860
+  },
+  {
+    "type": "entry",
+    "greek": "μαζί με",
+    "details": "",
+    "english": "with",
+    "indent": false,
+    "line": 861
+  },
+  {
+    "type": "entry",
+    "greek": "μαθαίνω",
+    "details": "",
+    "english": "to learn",
+    "indent": false,
+    "line": 862
+  },
+  {
+    "type": "entry",
+    "greek": "μάθημα",
+    "details": "το",
+    "english": "subject, lesson, course, class",
+    "indent": false,
+    "line": 863
+  },
+  {
+    "type": "entry",
+    "greek": "Μαθηματικά",
+    "details": "τα",
+    "english": "Mathematics, Maths",
+    "indent": false,
+    "line": 864
+  },
+  {
+    "type": "entry",
+    "greek": "μαθητής/-τρια",
+    "details": "ο/η",
+    "english": "pupil, student",
+    "indent": false,
+    "line": 865
+  },
+  {
+    "type": "entry",
+    "greek": "μαϊμού",
+    "details": "η",
+    "english": "monkey",
+    "indent": false,
+    "line": 866
+  },
+  {
+    "type": "entry",
+    "greek": "Μάιος",
+    "details": "ο",
+    "english": "May",
+    "indent": false,
+    "line": 867
+  },
+  {
+    "type": "entry",
+    "greek": "μακαρόνια",
+    "details": "τα",
+    "english": "macaroni, spaghetti, pasta",
+    "indent": false,
+    "line": 868
+  },
+  {
+    "type": "entry",
+    "greek": "μακριά",
+    "details": "",
+    "english": "far, away",
+    "indent": false,
+    "line": 869
+  },
+  {
+    "type": "entry",
+    "greek": "μακρινός",
+    "details": "-ή, -ό",
+    "english": "distant",
+    "indent": false,
+    "line": 870
+  },
+  {
+    "type": "entry",
+    "greek": "μακρύς",
+    "details": "-ιά, -ύ",
+    "english": "long",
+    "indent": false,
+    "line": 871
+  },
+  {
+    "type": "entry",
+    "greek": "μαλλιά",
+    "details": "τα",
+    "english": "hair",
+    "indent": false,
+    "line": 872
+  },
+  {
+    "type": "entry",
+    "greek": "μάλλον",
+    "details": "",
+    "english": "maybe, perhaps",
+    "indent": false,
+    "line": 873
+  },
+  {
+    "type": "entry",
+    "greek": "μαλώνω",
+    "details": "",
+    "english": "to quarrel, to argue",
+    "indent": false,
+    "line": 874
+  },
+  {
+    "type": "entry",
+    "greek": "μανάβικο",
+    "details": "το",
+    "english": "the grocer's",
+    "indent": false,
+    "line": 876
+  },
+  {
+    "type": "entry",
+    "greek": "Μανόλης",
+    "details": "ο",
+    "english": "Manolis",
+    "indent": false,
+    "line": 877
+  },
+  {
+    "type": "entry",
+    "greek": "μαντεύω",
+    "details": "",
+    "english": "to guess",
+    "indent": false,
+    "line": 878
+  },
+  {
+    "type": "entry",
+    "greek": "μαντίλι",
+    "details": "το",
+    "english": "handkerchief, scarf",
+    "indent": false,
+    "line": 879
+  },
+  {
+    "type": "entry",
+    "greek": "μαντολίνο",
+    "details": "το",
+    "english": "mandolin",
+    "indent": false,
+    "line": 880
+  },
+  {
+    "type": "entry",
+    "greek": "μαξιλάρι",
+    "details": "το",
+    "english": "pillow",
+    "indent": false,
+    "line": 881
+  },
+  {
+    "type": "entry",
+    "greek": "Μαίρη",
+    "details": "η",
+    "english": "Mary",
+    "indent": false,
+    "line": 882
+  },
+  {
+    "type": "entry",
+    "greek": "Μαργαρίτα",
+    "details": "η",
+    "english": "Margaret",
+    "indent": false,
+    "line": 883
+  },
+  {
+    "type": "entry",
+    "greek": "Μαρί",
+    "details": "η",
+    "english": "Marie",
+    "indent": false,
+    "line": 884
+  },
+  {
+    "type": "entry",
+    "greek": "Μαρία",
+    "details": "η",
+    "english": "Maria, Mary",
+    "indent": false,
+    "line": 885
+  },
+  {
+    "type": "entry",
+    "greek": "Μαρία-Νεφέλη",
+    "details": "η",
+    "english": "Maria-Nefeli",
+    "indent": false,
+    "line": 886
+  },
+  {
+    "type": "entry",
+    "greek": "Μάριος",
+    "details": "ο",
+    "english": "Marios",
+    "indent": false,
+    "line": 887
+  },
+  {
+    "type": "entry",
+    "greek": "Μαριώ",
+    "details": "η",
+    "english": "Mario",
+    "indent": false,
+    "line": 888
+  },
+  {
+    "type": "entry",
+    "greek": "μαρκαδόρος",
+    "details": "ο",
+    "english": "marker",
+    "indent": false,
+    "line": 889
+  },
+  {
+    "type": "entry",
+    "greek": "Μάρκος",
+    "details": "ο",
+    "english": "Mark",
+    "indent": false,
+    "line": 890
+  },
+  {
+    "type": "entry",
+    "greek": "μασάω",
+    "details": "-ώ",
+    "english": "to chew",
+    "indent": false,
+    "line": 891
+  },
+  {
+    "type": "entry",
+    "greek": "μασκότ",
+    "details": "η",
+    "english": "mascot",
+    "indent": false,
+    "line": 892
+  },
+  {
+    "type": "entry",
+    "greek": "Μάρτιος",
+    "details": "ο",
+    "english": "March",
+    "indent": false,
+    "line": 893
+  },
+  {
+    "type": "entry",
+    "greek": "μάτι",
+    "details": "το",
+    "english": "eye",
+    "indent": false,
+    "line": 894
+  },
+  {
+    "type": "entry",
+    "greek": "μαστίχα",
+    "details": "η",
+    "english": "chewing gum",
+    "indent": false,
+    "line": 895
+  },
+  {
+    "type": "entry",
+    "greek": "μαύρος",
+    "details": "-η, -ο",
+    "english": "black",
+    "indent": false,
+    "line": 896
+  },
+  {
+    "type": "entry",
+    "greek": "μαχαίρι",
+    "details": "το",
+    "english": "knife",
+    "indent": false,
+    "line": 897
+  },
+  {
+    "type": "entry",
+    "greek": "με",
+    "details": "",
+    "english": "with",
+    "indent": false,
+    "line": 898
+  },
+  {
+    "type": "entry",
+    "greek": "με λένε",
+    "details": "",
+    "english": "my name is",
+    "indent": false,
+    "line": 899
+  },
+  {
+    "type": "entry",
+    "greek": "μέλι",
+    "details": "το",
+    "english": "honey",
+    "indent": false,
+    "line": 902
+  },
+  {
+    "type": "entry",
+    "greek": "μένω",
+    "details": "",
+    "english": "to stay, to live",
+    "indent": false,
+    "line": 903
+  },
+  {
+    "type": "entry",
+    "greek": "μέρμηγκας/μυρμήγκι",
+    "details": "ο/το",
+    "english": "ant",
+    "indent": false,
+    "line": 905
+  },
+  {
+    "type": "entry",
+    "greek": "μέσα σε",
+    "details": "",
+    "english": "in, into",
+    "indent": false,
+    "line": 906
+  },
+  {
+    "type": "entry",
+    "greek": "μεσημέρι",
+    "details": "το",
+    "english": "noon",
+    "indent": false,
+    "line": 908
+  },
+  {
+    "type": "entry",
+    "greek": "μετά",
+    "details": "",
+    "english": "after, afterwards",
+    "indent": false,
+    "line": 909
+  },
+  {
+    "type": "entry",
+    "greek": "μεταξύ",
+    "details": "",
+    "english": "between",
+    "indent": false,
+    "line": 910
+  },
+  {
+    "type": "entry",
+    "greek": "μετράω",
+    "details": "-ώ",
+    "english": "to count",
+    "indent": false,
+    "line": 911
+  },
+  {
+    "type": "entry",
+    "greek": "μήλο",
+    "details": "το",
+    "english": "apple",
+    "indent": false,
+    "line": 912
+  },
+  {
+    "type": "entry",
+    "greek": "Μηνάς",
+    "details": "ο",
+    "english": "Minas",
+    "indent": false,
+    "line": 913
+  },
+  {
+    "type": "entry",
+    "greek": "μιλάω",
+    "details": "-ώ",
+    "english": "to talk, to speak",
+    "indent": false,
+    "line": 925
+  },
+  {
+    "type": "entry",
+    "greek": "μισός",
+    "details": "-ή, -ό",
+    "english": "half",
+    "indent": false,
+    "line": 926
+  },
+  {
+    "type": "entry",
+    "greek": "Μιχαέλα",
+    "details": "η",
+    "english": "Michaela",
+    "indent": false,
+    "line": 927
+  },
+  {
+    "type": "entry",
+    "greek": "Μιχάλης",
+    "details": "ο",
+    "english": "Michael",
+    "indent": false,
+    "line": 928
+  },
+  {
+    "type": "entry",
+    "greek": "μοβ",
+    "details": "",
+    "english": "purple",
+    "indent": false,
+    "line": 929
+  },
+  {
+    "type": "entry",
+    "greek": "μοιάζω",
+    "details": "",
+    "english": "to look like",
+    "indent": false,
+    "line": 930
+  },
+  {
+    "type": "entry",
+    "greek": "μολύβι",
+    "details": "το",
+    "english": "pencil",
+    "indent": false,
+    "line": 932
+  },
+  {
+    "type": "entry",
+    "greek": "μόνο",
+    "details": "",
+    "english": "only",
+    "indent": false,
+    "line": 933
+  },
+  {
+    "type": "entry",
+    "greek": "μονοκατοικία",
+    "details": "η",
+    "english": "detached house",
+    "indent": false,
+    "line": 934
+  },
+  {
+    "type": "entry",
+    "greek": "μόνος",
+    "details": "-η, -ο",
+    "english": "alone, only",
+    "indent": false,
+    "line": 935
+  },
+  {
+    "type": "entry",
+    "greek": "μονός",
+    "details": "-ή, -ό",
+    "english": "single",
+    "indent": false,
+    "line": 936
+  },
+  {
+    "type": "entry",
+    "greek": "μοντέρνος",
+    "details": "-α, -0",
+    "english": "modern",
+    "indent": false,
+    "line": 937
+  },
+  {
+    "type": "entry",
+    "greek": "Μόσχα",
+    "details": "η",
+    "english": "Moscow",
+    "indent": false,
+    "line": 938
+  },
+  {
+    "type": "entry",
+    "greek": "μουσείο",
+    "details": "το",
+    "english": "museum",
+    "indent": false,
+    "line": 939
+  },
+  {
+    "type": "entry",
+    "greek": "μουσική",
+    "details": "η",
+    "english": "music",
+    "indent": false,
+    "line": 940
+  },
+  {
+    "type": "entry",
+    "greek": "μουσικό όργανο",
+    "details": "το",
+    "english": "musical instrument",
+    "indent": false,
+    "line": 941
+  },
+  {
+    "type": "entry",
+    "greek": "μουσικός",
+    "details": "ο/η",
+    "english": "musician",
+    "indent": false,
+    "line": 942
+  },
+  {
+    "type": "entry",
+    "greek": "μπαίνω",
+    "details": "",
+    "english": "to get into, to enter",
+    "indent": false,
+    "line": 943
+  },
+  {
+    "type": "entry",
+    "greek": "μπάλα",
+    "details": "η",
+    "english": "ball",
+    "indent": false,
+    "line": 944
+  },
+  {
+    "type": "entry",
+    "greek": "μπαλαρίνα",
+    "details": "η",
+    "english": "ballerina",
+    "indent": false,
+    "line": 945
+  },
+  {
+    "type": "entry",
+    "greek": "μπαλκόνι",
+    "details": "το",
+    "english": "balcony",
+    "indent": false,
+    "line": 946
+  },
+  {
+    "type": "entry",
+    "greek": "μπαλόνι",
+    "details": "το",
+    "english": "ballon",
+    "indent": false,
+    "line": 947
+  },
+  {
+    "type": "entry",
+    "greek": "Μπάμπης",
+    "details": "ο",
+    "english": "Babis",
+    "indent": false,
+    "line": 949
+  },
+  {
+    "type": "entry",
+    "greek": "μπανάνα",
+    "details": "η",
+    "english": "banana",
+    "indent": false,
+    "line": 950
+  },
+  {
+    "type": "entry",
+    "greek": "μπανιέρα",
+    "details": "η",
+    "english": "bath tub",
+    "indent": false,
+    "line": 951
+  },
+  {
+    "type": "entry",
+    "greek": "μπάσκετ",
+    "details": "το",
+    "english": "basketball",
+    "indent": false,
+    "line": 955
+  },
+  {
+    "type": "entry",
+    "greek": "μπέμπης",
+    "details": "ο",
+    "english": "baby boy",
+    "indent": false,
+    "line": 956
+  },
+  {
+    "type": "entry",
+    "greek": "μπιφτέκι",
+    "details": "το",
+    "english": "burger",
+    "indent": false,
+    "line": 957
+  },
+  {
+    "type": "entry",
+    "greek": "μπλε",
+    "details": "",
+    "english": "blue",
+    "indent": false,
+    "line": 958
+  },
+  {
+    "type": "entry",
+    "greek": "μπλούζα",
+    "details": "η",
+    "english": "blouse",
+    "indent": false,
+    "line": 959
+  },
+  {
+    "type": "entry",
+    "greek": "μπότα",
+    "details": "η",
+    "english": "boot",
+    "indent": false,
+    "line": 960
+  },
+  {
+    "type": "entry",
+    "greek": "μπορώ",
+    "details": "",
+    "english": "can",
+    "indent": false,
+    "line": 961
+  },
+  {
+    "type": "entry",
+    "greek": "μπουφάν",
+    "details": "το",
+    "english": "jacket, coat",
+    "indent": false,
+    "line": 962
+  },
+  {
+    "type": "entry",
+    "greek": "μπροστά",
+    "details": "",
+    "english": "ahead",
+    "indent": false,
+    "line": 963
+  },
+  {
+    "type": "entry",
+    "greek": "μπροστά από",
+    "details": "",
+    "english": "in front of",
+    "indent": false,
+    "line": 964
+  },
+  {
+    "type": "entry",
+    "greek": "μπριζόλα",
+    "details": "η",
+    "english": "stake",
+    "indent": false,
+    "line": 965
+  },
+  {
+    "type": "entry",
+    "greek": "μυρμήγκι",
+    "details": "το",
+    "english": "ant",
+    "indent": false,
+    "line": 966
+  },
+  {
+    "type": "entry",
+    "greek": "μυστικό",
+    "details": "το",
+    "english": "secret",
+    "indent": false,
+    "line": 967
+  },
+  {
+    "type": "entry",
+    "greek": "Μυτιλήνη",
+    "details": "η",
+    "english": "Mytilene",
+    "indent": false,
+    "line": 968
+  },
+  {
+    "type": "entry",
+    "greek": "μωρό",
+    "details": "το",
+    "english": "baby",
+    "indent": false,
+    "line": 969
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ν, ν",
+    "name": "νι",
+    "line": 971
+  },
+  {
+    "type": "entry",
+    "greek": "ναι",
+    "details": "",
+    "english": "yes",
+    "indent": false,
+    "line": 973
+  },
+  {
+    "type": "entry",
+    "greek": "νάνος",
+    "details": "ο",
+    "english": "dwarf",
+    "indent": false,
+    "line": 974
+  },
+  {
+    "type": "entry",
+    "greek": "Ναύπλιο",
+    "details": "το",
+    "english": "Nafplio",
+    "indent": false,
+    "line": 975
+  },
+  {
+    "type": "entry",
+    "greek": "ναύτης",
+    "details": "ο",
+    "english": "sailor",
+    "indent": false,
+    "line": 976
+  },
+  {
+    "type": "entry",
+    "greek": "νέα",
+    "details": "τα",
+    "english": "news",
+    "indent": false,
+    "line": 977
+  },
+  {
+    "type": "entry",
+    "greek": "νεράιδα",
+    "details": "η",
+    "english": "fairy",
+    "indent": false,
+    "line": 980
+  },
+  {
+    "type": "entry",
+    "greek": "νερό",
+    "details": "το",
+    "english": "water",
+    "indent": false,
+    "line": 981
+  },
+  {
+    "type": "entry",
+    "greek": "νησί",
+    "details": "το",
+    "english": "island",
+    "indent": false,
+    "line": 982
+  },
+  {
+    "type": "entry",
+    "greek": "νησιώτικος",
+    "details": "-η, -0",
+    "english": "of the island",
+    "indent": false,
+    "line": 983
+  },
+  {
+    "type": "entry",
+    "greek": "νιαουρίζω",
+    "details": "",
+    "english": "to meow",
+    "indent": false,
+    "line": 984
+  },
+  {
+    "type": "entry",
+    "greek": "νίκη",
+    "details": "η",
+    "english": "victory, win",
+    "indent": false,
+    "line": 986
+  },
+  {
+    "type": "entry",
+    "greek": "νικητής/-τρια",
+    "details": "ο/η",
+    "english": "winner",
+    "indent": false,
+    "line": 987
+  },
+  {
+    "type": "entry",
+    "greek": "Νίκος",
+    "details": "ο",
+    "english": "Nick",
+    "indent": false,
+    "line": 988
+  },
+  {
+    "type": "entry",
+    "greek": "Νιόβη",
+    "details": "η",
+    "english": "Niovi",
+    "indent": false,
+    "line": 989
+  },
+  {
+    "type": "entry",
+    "greek": "νιώθω",
+    "details": "",
+    "english": "to feel",
+    "indent": false,
+    "line": 990
+  },
+  {
+    "type": "entry",
+    "greek": "Νοέμβριος",
+    "details": "ο",
+    "english": "November",
+    "indent": false,
+    "line": 991
+  },
+  {
+    "type": "entry",
+    "greek": "νοσοκομείο",
+    "details": "το",
+    "english": "hospital",
+    "indent": false,
+    "line": 992
+  },
+  {
+    "type": "entry",
+    "greek": "νοσοκόμος/-α",
+    "details": "ο/η",
+    "english": "nurse",
+    "indent": false,
+    "line": 993
+  },
+  {
+    "type": "entry",
+    "greek": "νότα",
+    "details": "η",
+    "english": "note",
+    "indent": false,
+    "line": 994
+  },
+  {
+    "type": "entry",
+    "greek": "Ντίνα",
+    "details": "η",
+    "english": "Ntina",
+    "indent": false,
+    "line": 997
+  },
+  {
+    "type": "entry",
+    "greek": "ντομάτα",
+    "details": "η",
+    "english": "tomato",
+    "indent": false,
+    "line": 998
+  },
+  {
+    "type": "entry",
+    "greek": "ντουλάπα",
+    "details": "η",
+    "english": "closet, wardrobe",
+    "indent": false,
+    "line": 999
+  },
+  {
+    "type": "entry",
+    "greek": "ντουλάπι",
+    "details": "το",
+    "english": "cupboard",
+    "indent": false,
+    "line": 1000
+  },
+  {
+    "type": "entry",
+    "greek": "ντραμς/νταούλι",
+    "details": "τα/το",
+    "english": "drums",
+    "indent": false,
+    "line": 1001
+  },
+  {
+    "type": "entry",
+    "greek": "νωρίς",
+    "details": "",
+    "english": "early",
+    "indent": false,
+    "line": 1002
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ξ, ξ",
+    "name": "ξι",
+    "line": 1004
+  },
+  {
+    "type": "entry",
+    "greek": "ξάδερφος/ξαδέρφη",
+    "details": "ο/η",
+    "english": "cousin",
+    "indent": false,
+    "line": 1006
+  },
+  {
+    "type": "entry",
+    "greek": "ξανά",
+    "details": "",
+    "english": "again",
+    "indent": false,
+    "line": 1007
+  },
+  {
+    "type": "entry",
+    "greek": "ξαναγράφω",
+    "details": "",
+    "english": "to rewrite",
+    "indent": false,
+    "line": 1008
+  },
+  {
+    "type": "entry",
+    "greek": "ξαναμιλάω",
+    "details": "-ώ",
+    "english": "to talk again",
+    "indent": false,
+    "line": 1009
+  },
+  {
+    "type": "entry",
+    "greek": "Ξάνθη",
+    "details": "η",
+    "english": "Xanthi",
+    "indent": false,
+    "line": 1010
+  },
+  {
+    "type": "entry",
+    "greek": "ξανθός",
+    "details": "-ή/-ιά, -ό",
+    "english": "blond",
+    "indent": false,
+    "line": 1011
+  },
+  {
+    "type": "entry",
+    "greek": "Ξένια",
+    "details": "η",
+    "english": "Xenia",
+    "indent": false,
+    "line": 1014
+  },
+  {
+    "type": "entry",
+    "greek": "ξενοδοχείο",
+    "details": "το",
+    "english": "hotel",
+    "indent": false,
+    "line": 1015
+  },
+  {
+    "type": "entry",
+    "greek": "ξέρω",
+    "details": "",
+    "english": "to know",
+    "indent": false,
+    "line": 1018
+  },
+  {
+    "type": "entry",
+    "greek": "ξεσκονίζω",
+    "details": "",
+    "english": "to dust",
+    "indent": false,
+    "line": 1019
+  },
+  {
+    "type": "entry",
+    "greek": "ξύλο",
+    "details": "το",
+    "english": "wood",
+    "indent": false,
+    "line": 1020
+  },
+  {
+    "type": "entry",
+    "greek": "ξυλοκόπος",
+    "details": "ο",
+    "english": "lumberjack",
+    "indent": false,
+    "line": 1021
+  },
+  {
+    "type": "entry",
+    "greek": "ξυπνάω",
+    "details": "-ώ",
+    "english": "to wake up",
+    "indent": false,
+    "line": 1022
+  },
+  {
+    "type": "entry",
+    "greek": "ξυπνητήρι",
+    "details": "το",
+    "english": "alarm clock",
+    "indent": false,
+    "line": 1023
+  },
+  {
+    "type": "entry",
+    "greek": "ξύστρα",
+    "details": "η",
+    "english": "sharpener",
+    "indent": false,
+    "line": 1024
+  },
+  {
+    "type": "entry",
+    "greek": "ξωτικό",
+    "details": "το",
+    "english": "elf",
+    "indent": false,
+    "line": 1025
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ο, ο",
+    "name": "όμικρον",
+    "line": 1027
+  },
+  {
+    "type": "entry",
+    "greek": "Οβελίξ",
+    "details": "ο",
+    "english": "Obelix",
+    "indent": false,
+    "line": 1029
+  },
+  {
+    "type": "entry",
+    "greek": "ογδόντα",
+    "details": "",
+    "english": "eighty",
+    "indent": false,
+    "line": 1030
+  },
+  {
+    "type": "entry",
+    "greek": "οδηγία",
+    "details": "η",
+    "english": "instruction, direction",
+    "indent": false,
+    "line": 1031
+  },
+  {
+    "type": "entry",
+    "greek": "οδηγώ",
+    "details": "",
+    "english": "to drive, to guide",
+    "indent": false,
+    "line": 1032
+  },
+  {
+    "type": "entry",
+    "greek": "Οδυσσέας",
+    "details": "ο",
+    "english": "Odysseus",
+    "indent": false,
+    "line": 1033
+  },
+  {
+    "type": "entry",
+    "greek": "οικογένεια",
+    "details": "η",
+    "english": "family",
+    "indent": false,
+    "line": 1035
+  },
+  {
+    "type": "entry",
+    "greek": "οικογενειακό δέντρο",
+    "details": "το",
+    "english": "family tree",
+    "indent": false,
+    "line": 1036
+  },
+  {
+    "type": "entry",
+    "greek": "οκτώ/οχτώ",
+    "details": "",
+    "english": "eight",
+    "indent": false,
+    "line": 1037
+  },
+  {
+    "type": "entry",
+    "greek": "Οκτώβριος",
+    "details": "ο",
+    "english": "October",
+    "indent": false,
+    "line": 1038
+  },
+  {
+    "type": "entry",
+    "greek": "Όλγα",
+    "details": "η",
+    "english": "Olga",
+    "indent": false,
+    "line": 1039
+  },
+  {
+    "type": "entry",
+    "greek": "Ολλανδία",
+    "details": "η",
+    "english": "Holland",
+    "indent": false,
+    "line": 1040
+  },
+  {
+    "type": "entry",
+    "greek": "ολλανδικός",
+    "details": "-ή, -ό",
+    "english": "Dutch",
+    "indent": false,
+    "line": 1042
+  },
+  {
+    "type": "entry",
+    "greek": "Ολλανδός",
+    "details": "-ή",
+    "english": "Dutch",
+    "indent": false,
+    "line": 1043
+  },
+  {
+    "type": "entry",
+    "greek": "όλοι",
+    "details": "-ες, -α",
+    "english": "all, every",
+    "indent": false,
+    "line": 1044
+  },
+  {
+    "type": "entry",
+    "greek": "όλος",
+    "details": "-η, -ο",
+    "english": "the whole",
+    "indent": false,
+    "line": 1045
+  },
+  {
+    "type": "entry",
+    "greek": "Ολυμπιακοί αγώνες",
+    "details": "οι",
+    "english": "Olympic games",
+    "indent": false,
+    "line": 1047
+  },
+  {
+    "type": "entry",
+    "greek": "ομάδα",
+    "details": "η",
+    "english": "team",
+    "indent": false,
+    "line": 1048
+  },
+  {
+    "type": "entry",
+    "greek": "όμορφος",
+    "details": "-η, -0",
+    "english": "beautiful, pretty",
+    "indent": false,
+    "line": 1049
+  },
+  {
+    "type": "entry",
+    "greek": "ομπρέλα",
+    "details": "η",
+    "english": "umbrella",
+    "indent": false,
+    "line": 1050
+  },
+  {
+    "type": "entry",
+    "greek": "ονειρεμένος",
+    "details": "-η, -ο",
+    "english": "dreamy",
+    "indent": false,
+    "line": 1052
+  },
+  {
+    "type": "entry",
+    "greek": "όνειρο",
+    "details": "το",
+    "english": "dream",
+    "indent": false,
+    "line": 1053
+  },
+  {
+    "type": "entry",
+    "greek": "όνομα",
+    "details": "το",
+    "english": "name",
+    "indent": false,
+    "line": 1054
+  },
+  {
+    "type": "entry",
+    "greek": "όπως",
+    "details": "",
+    "english": "like, as",
+    "indent": false,
+    "line": 1055
+  },
+  {
+    "type": "entry",
+    "greek": "Ορέστης",
+    "details": "ο",
+    "english": "Orestes",
+    "indent": false,
+    "line": 1056
+  },
+  {
+    "type": "entry",
+    "greek": "ορθογώνιο",
+    "details": "το",
+    "english": "rectangle",
+    "indent": false,
+    "line": 1057
+  },
+  {
+    "type": "entry",
+    "greek": "Ορίστε!",
+    "details": "",
+    "english": "Here you are!",
+    "indent": false,
+    "line": 1065
+  },
+  {
+    "type": "entry",
+    "greek": "Ορίστε;",
+    "details": "",
+    "english": "I beg your pardon?",
+    "indent": false,
+    "line": 1066
+  },
+  {
+    "type": "entry",
+    "greek": "όροφος",
+    "details": "ο",
+    "english": "floor",
+    "indent": false,
+    "line": 1067
+  },
+  {
+    "type": "entry",
+    "greek": "όταν",
+    "details": "",
+    "english": "when",
+    "indent": false,
+    "line": 1068
+  },
+  {
+    "type": "entry",
+    "greek": "Ουρανία",
+    "details": "η",
+    "english": "Ourania",
+    "indent": false,
+    "line": 1069
+  },
+  {
+    "type": "entry",
+    "greek": "ουρανός",
+    "details": "ο",
+    "english": "sky",
+    "indent": false,
+    "line": 1070
+  },
+  {
+    "type": "entry",
+    "greek": "όχι",
+    "details": "",
+    "english": "no",
+    "indent": false,
+    "line": 1071
+  },
+  {
+    "type": "alphabet",
+    "letter": "Π, π",
+    "name": "πι",
+    "line": 1073
+  },
+  {
+    "type": "entry",
+    "greek": "πάγκος ποδοσφαίρου",
+    "details": "ο",
+    "english": "football bench",
+    "indent": false,
+    "line": 1075
+  },
+  {
+    "type": "entry",
+    "greek": "Πάτρικ",
+    "details": "ο",
+    "english": "Patric",
+    "indent": false,
+    "line": 1076
+  },
+  {
+    "type": "entry",
+    "greek": "παϊδάκι",
+    "details": "το",
+    "english": "chop, rib",
+    "indent": false,
+    "line": 1077
+  },
+  {
+    "type": "entry",
+    "greek": "παγωτό",
+    "details": "το",
+    "english": "ice cream",
+    "indent": false,
+    "line": 1078
+  },
+  {
+    "type": "entry",
+    "greek": "παζλ",
+    "details": "το",
+    "english": "puzzle",
+    "indent": false,
+    "line": 1079
+  },
+  {
+    "type": "entry",
+    "greek": "παιδί",
+    "details": "το",
+    "english": "child, kid",
+    "indent": false,
+    "line": 1080
+  },
+  {
+    "type": "entry",
+    "greek": "παιδιά",
+    "details": "τα",
+    "english": "children, kids",
+    "indent": false,
+    "line": 1081
+  },
+  {
+    "type": "entry",
+    "greek": "παιδική χαρά",
+    "details": "η",
+    "english": "playground",
+    "indent": false,
+    "line": 1082
+  },
+  {
+    "type": "entry",
+    "greek": "παιδότοπος",
+    "details": "ο",
+    "english": "playground",
+    "indent": false,
+    "line": 1083
+  },
+  {
+    "type": "entry",
+    "greek": "παίζω",
+    "details": "",
+    "english": "to play",
+    "indent": false,
+    "line": 1084
+  },
+  {
+    "type": "entry",
+    "greek": "παίκτης/-τρια",
+    "details": "ο/η",
+    "english": "player",
+    "indent": false,
+    "line": 1085
+  },
+  {
+    "type": "entry",
+    "greek": "παίρνω",
+    "details": "",
+    "english": "to take",
+    "indent": false,
+    "line": 1086
+  },
+  {
+    "type": "entry",
+    "greek": "παιχνίδι",
+    "details": "το",
+    "english": "game, toy",
+    "indent": false,
+    "line": 1087
+  },
+  {
+    "type": "entry",
+    "greek": "παλάτι",
+    "details": "το",
+    "english": "palace",
+    "indent": false,
+    "line": 1088
+  },
+  {
+    "type": "entry",
+    "greek": "πάλι",
+    "details": "",
+    "english": "again",
+    "indent": false,
+    "line": 1089
+  },
+  {
+    "type": "entry",
+    "greek": "παλιός",
+    "details": "-ά, -ό",
+    "english": "old",
+    "indent": false,
+    "line": 1090
+  },
+  {
+    "type": "entry",
+    "greek": "παλτό",
+    "details": "το",
+    "english": "coat",
+    "indent": false,
+    "line": 1091
+  },
+  {
+    "type": "entry",
+    "greek": "Παναμάς",
+    "details": "ο",
+    "english": "Panama",
+    "indent": false,
+    "line": 1093
+  },
+  {
+    "type": "entry",
+    "greek": "πανί",
+    "details": "το",
+    "english": "sail cloth",
+    "indent": false,
+    "line": 1094
+  },
+  {
+    "type": "entry",
+    "greek": "πανοπλία",
+    "details": "η",
+    "english": "armor",
+    "indent": false,
+    "line": 1095
+  },
+  {
+    "type": "entry",
+    "greek": "Πάνος",
+    "details": "ο",
+    "english": "Panos",
+    "indent": false,
+    "line": 1096
+  },
+  {
+    "type": "entry",
+    "greek": "Πόπη",
+    "details": "η",
+    "english": "Popi",
+    "indent": false,
+    "line": 1097
+  },
+  {
+    "type": "entry",
+    "greek": "πάντα",
+    "details": "",
+    "english": "always",
+    "indent": false,
+    "line": 1098
+  },
+  {
+    "type": "entry",
+    "greek": "παντελόνι",
+    "details": "το",
+    "english": "trousers (a pair of), pants",
+    "indent": false,
+    "line": 1099
+  },
+  {
+    "type": "entry",
+    "greek": "παντομίμα",
+    "details": "η",
+    "english": "pantomime",
+    "indent": false,
+    "line": 1100
+  },
+  {
+    "type": "entry",
+    "greek": "παντόφλα",
+    "details": "η",
+    "english": "slipper",
+    "indent": false,
+    "line": 1101
+  },
+  {
+    "type": "entry",
+    "greek": "(ε)πάνω",
+    "details": "",
+    "english": "up",
+    "indent": false,
+    "line": 1102
+  },
+  {
+    "type": "entry",
+    "greek": "(ε)πάνω από",
+    "details": "",
+    "english": "above",
+    "indent": false,
+    "line": 1103
+  },
+  {
+    "type": "entry",
+    "greek": "(ε)πάνω σε",
+    "details": "",
+    "english": "on, onto",
+    "indent": false,
+    "line": 1104
+  },
+  {
+    "type": "entry",
+    "greek": "παπαγάλος",
+    "details": "ο",
+    "english": "parrot",
+    "indent": false,
+    "line": 1106
+  },
+  {
+    "type": "entry",
+    "greek": "πάπια",
+    "details": "η",
+    "english": "duck",
+    "indent": false,
+    "line": 1107
+  },
+  {
+    "type": "entry",
+    "greek": "παπούτσι",
+    "details": "το",
+    "english": "shoe",
+    "indent": false,
+    "line": 1108
+  },
+  {
+    "type": "entry",
+    "greek": "παππούς",
+    "details": "ο",
+    "english": "grandfather, grandad, grandpa",
+    "indent": false,
+    "line": 1110
+  },
+  {
+    "type": "entry",
+    "greek": "πάρα πολύ",
+    "details": "",
+    "english": "too much",
+    "indent": false,
+    "line": 1111
+  },
+  {
+    "type": "entry",
+    "greek": "παράδειγμα",
+    "details": "το",
+    "english": "example",
+    "indent": false,
+    "line": 1112
+  },
+  {
+    "type": "entry",
+    "greek": "παράθυρο",
+    "details": "το",
+    "english": "window",
+    "indent": false,
+    "line": 1113
+  },
+  {
+    "type": "entry",
+    "greek": "παρακαλώ",
+    "details": "",
+    "english": "to please",
+    "indent": false,
+    "line": 1114
+  },
+  {
+    "type": "entry",
+    "greek": "Σας παρακαλώ!",
+    "details": "",
+    "english": "Please!",
+    "indent": true,
+    "line": 1115
+  },
+  {
+    "type": "entry",
+    "greek": "παρακάτω",
+    "details": "",
+    "english": "below, following",
+    "indent": false,
+    "line": 1117
+  },
+  {
+    "type": "entry",
+    "greek": "παρακολουθώ",
+    "details": "",
+    "english": "to watch",
+    "indent": false,
+    "line": 1118
+  },
+  {
+    "type": "entry",
+    "greek": "παραμύθι",
+    "details": "το",
+    "english": "fairy tale",
+    "indent": false,
+    "line": 1119
+  },
+  {
+    "type": "entry",
+    "greek": "παραπάνω / πιο πάνω",
+    "details": "",
+    "english": "above",
+    "indent": false,
+    "line": 1120
+  },
+  {
+    "type": "entry",
+    "greek": "Παρασκευή",
+    "details": "η",
+    "english": "Friday",
+    "indent": false,
+    "line": 1121
+  },
+  {
+    "type": "entry",
+    "greek": "παράσταση",
+    "details": "η",
+    "english": "show, performance",
+    "indent": false,
+    "line": 1122
+  },
+  {
+    "type": "entry",
+    "greek": "παρέα",
+    "details": "η",
+    "english": "company",
+    "indent": false,
+    "line": 1123
+  },
+  {
+    "type": "entry",
+    "greek": "Παρίσι",
+    "details": "το",
+    "english": "Paris",
+    "indent": false,
+    "line": 1124
+  },
+  {
+    "type": "entry",
+    "greek": "πάρκιγκ",
+    "details": "το",
+    "english": "parking",
+    "indent": false,
+    "line": 1125
+  },
+  {
+    "type": "entry",
+    "greek": "πάρκο",
+    "details": "το",
+    "english": "park",
+    "indent": false,
+    "line": 1126
+  },
+  {
+    "type": "entry",
+    "greek": "παρόμοιος",
+    "details": "-α, -ο",
+    "english": "similar",
+    "indent": false,
+    "line": 1127
+  },
+  {
+    "type": "entry",
+    "greek": "πάρτι",
+    "details": "το",
+    "english": "party",
+    "indent": false,
+    "line": 1128
+  },
+  {
+    "type": "entry",
+    "greek": "πατάτα",
+    "details": "η",
+    "english": "potato",
+    "indent": false,
+    "line": 1129
+  },
+  {
+    "type": "entry",
+    "greek": "πατατάκια",
+    "details": "τα",
+    "english": "chips",
+    "indent": false,
+    "line": 1130
+  },
+  {
+    "type": "entry",
+    "greek": "πατίνι",
+    "details": "το",
+    "english": "roller skate",
+    "indent": false,
+    "line": 1132
+  },
+  {
+    "type": "entry",
+    "greek": "Πάτρα",
+    "details": "η",
+    "english": "Patras",
+    "indent": false,
+    "line": 1133
+  },
+  {
+    "type": "entry",
+    "greek": "πάτωμα",
+    "details": "το",
+    "english": "floor",
+    "indent": false,
+    "line": 1134
+  },
+  {
+    "type": "entry",
+    "greek": "Παύλος",
+    "details": "ο",
+    "english": "Paul",
+    "indent": false,
+    "line": 1135
+  },
+  {
+    "type": "entry",
+    "greek": "πεινάω",
+    "details": "-ώ",
+    "english": "to be hungry",
+    "indent": false,
+    "line": 1136
+  },
+  {
+    "type": "entry",
+    "greek": "Πειραιάς",
+    "details": "ο",
+    "english": "Pireaus",
+    "indent": false,
+    "line": 1137
+  },
+  {
+    "type": "entry",
+    "greek": "πειρατής",
+    "details": "ο",
+    "english": "pirate",
+    "indent": false,
+    "line": 1138
+  },
+  {
+    "type": "entry",
+    "greek": "Πέμπτη",
+    "details": "η",
+    "english": "Thursday",
+    "indent": false,
+    "line": 1139
+  },
+  {
+    "type": "entry",
+    "greek": "πενήντα",
+    "details": "",
+    "english": "fifty",
+    "indent": false,
+    "line": 1140
+  },
+  {
+    "type": "entry",
+    "greek": "πέντε",
+    "details": "",
+    "english": "five",
+    "indent": false,
+    "line": 1141
+  },
+  {
+    "type": "entry",
+    "greek": "πεπόνι",
+    "details": "το",
+    "english": "melon",
+    "indent": false,
+    "line": 1142
+  },
+  {
+    "type": "entry",
+    "greek": "περιγράφω",
+    "details": "",
+    "english": "to describe",
+    "indent": false,
+    "line": 1143
+  },
+  {
+    "type": "entry",
+    "greek": "περιμένω",
+    "details": "",
+    "english": "to wait",
+    "indent": false,
+    "line": 1144
+  },
+  {
+    "type": "entry",
+    "greek": "περιοδικό",
+    "details": "το",
+    "english": "magazine",
+    "indent": false,
+    "line": 1145
+  },
+  {
+    "type": "entry",
+    "greek": "περιοχή",
+    "details": "η",
+    "english": "region, district",
+    "indent": false,
+    "line": 1146
+  },
+  {
+    "type": "entry",
+    "greek": "περίπτερο",
+    "details": "το",
+    "english": "kiosk",
+    "indent": false,
+    "line": 1147
+  },
+  {
+    "type": "entry",
+    "greek": "περισσότερος",
+    "details": "-η, -ο",
+    "english": "more",
+    "indent": false,
+    "line": 1148
+  },
+  {
+    "type": "entry",
+    "greek": "περνάω",
+    "details": "-ώ",
+    "english": "to pass",
+    "indent": false,
+    "line": 1149
+  },
+  {
+    "type": "entry",
+    "greek": "περνάω καλά",
+    "details": "",
+    "english": "to have a good time",
+    "indent": false,
+    "line": 1150
+  },
+  {
+    "type": "entry",
+    "greek": "περπατάω",
+    "details": "-ώ",
+    "english": "to walk",
+    "indent": false,
+    "line": 1151
+  },
+  {
+    "type": "entry",
+    "greek": "Πέρσα",
+    "details": "η",
+    "english": "Persa",
+    "indent": false,
+    "line": 1152
+  },
+  {
+    "type": "entry",
+    "greek": "πέτρα",
+    "details": "η",
+    "english": "stone",
+    "indent": false,
+    "line": 1155
+  },
+  {
+    "type": "entry",
+    "greek": "Πέτρος",
+    "details": "ο",
+    "english": "Peter",
+    "indent": false,
+    "line": 1156
+  },
+  {
+    "type": "entry",
+    "greek": "πετσέτα",
+    "details": "η",
+    "english": "towel",
+    "indent": false,
+    "line": 1157
+  },
+  {
+    "type": "entry",
+    "greek": "πέφτω",
+    "details": "",
+    "english": "to fall",
+    "indent": false,
+    "line": 1158
+  },
+  {
+    "type": "entry",
+    "greek": "πηγαίνω",
+    "details": "",
+    "english": "to go",
+    "indent": false,
+    "line": 1159
+  },
+  {
+    "type": "entry",
+    "greek": "Πήγασος",
+    "details": "ο",
+    "english": "Pegasus",
+    "indent": false,
+    "line": 1160
+  },
+  {
+    "type": "entry",
+    "greek": "πηδάω",
+    "details": "-ώ",
+    "english": "to jump",
+    "indent": false,
+    "line": 1161
+  },
+  {
+    "type": "entry",
+    "greek": "Πηνελόπη",
+    "details": "η",
+    "english": "Penelope",
+    "indent": false,
+    "line": 1162
+  },
+  {
+    "type": "entry",
+    "greek": "πιάνο",
+    "details": "το",
+    "english": "piano",
+    "indent": false,
+    "line": 1163
+  },
+  {
+    "type": "entry",
+    "greek": "πιγκ-πογκ",
+    "details": "το",
+    "english": "ping pong",
+    "indent": false,
+    "line": 1164
+  },
+  {
+    "type": "entry",
+    "greek": "πικ-νικ",
+    "details": "το",
+    "english": "pic-nic",
+    "indent": false,
+    "line": 1165
+  },
+  {
+    "type": "entry",
+    "greek": "πινέλο",
+    "details": "το",
+    "english": "brush",
+    "indent": false,
+    "line": 1169
+  },
+  {
+    "type": "entry",
+    "greek": "Πινόκιο",
+    "details": "ο",
+    "english": "Pinocchio",
+    "indent": false,
+    "line": 1170
+  },
+  {
+    "type": "entry",
+    "greek": "πίνω",
+    "details": "",
+    "english": "to drink",
+    "indent": false,
+    "line": 1171
+  },
+  {
+    "type": "entry",
+    "greek": "πιο",
+    "details": "",
+    "english": "more",
+    "indent": false,
+    "line": 1172
+  },
+  {
+    "type": "entry",
+    "greek": "πιπέρι",
+    "details": "το",
+    "english": "pepper",
+    "indent": false,
+    "line": 1173
+  },
+  {
+    "type": "entry",
+    "greek": "πιπεριά",
+    "details": "η",
+    "english": "pepper",
+    "indent": false,
+    "line": 1174
+  },
+  {
+    "type": "entry",
+    "greek": "πιρούνι",
+    "details": "το",
+    "english": "fork",
+    "indent": false,
+    "line": 1175
+  },
+  {
+    "type": "entry",
+    "greek": "πίσω",
+    "details": "",
+    "english": "behind",
+    "indent": false,
+    "line": 1176
+  },
+  {
+    "type": "entry",
+    "greek": "πίτα",
+    "details": "η",
+    "english": "pie",
+    "indent": false,
+    "line": 1177
+  },
+  {
+    "type": "entry",
+    "greek": "πίτσα",
+    "details": "η",
+    "english": "pizza",
+    "indent": false,
+    "line": 1178
+  },
+  {
+    "type": "entry",
+    "greek": "Πήτερ Παν",
+    "details": "ο",
+    "english": "Peter Pan",
+    "indent": false,
+    "line": 1179
+  },
+  {
+    "type": "entry",
+    "greek": "πλατεία",
+    "details": "η",
+    "english": "square",
+    "indent": false,
+    "line": 1180
+  },
+  {
+    "type": "entry",
+    "greek": "πλάτη",
+    "details": "η",
+    "english": "back",
+    "indent": false,
+    "line": 1181
+  },
+  {
+    "type": "entry",
+    "greek": "πλατσουρίζω",
+    "details": "",
+    "english": "to splash",
+    "indent": false,
+    "line": 1182
+  },
+  {
+    "type": "entry",
+    "greek": "πλένω",
+    "details": "",
+    "english": "to wash",
+    "indent": false,
+    "line": 1183
+  },
+  {
+    "type": "entry",
+    "greek": "πλένω τα πιάτα",
+    "details": "",
+    "english": "to do the washing up",
+    "indent": true,
+    "line": 1184
+  },
+  {
+    "type": "entry",
+    "greek": "πληροφορία/-ες",
+    "details": "η/οι",
+    "english": "information, info",
+    "indent": false,
+    "line": 1185
+  },
+  {
+    "type": "entry",
+    "greek": "πληροφορική",
+    "details": "η",
+    "english": "computer science",
+    "indent": false,
+    "line": 1186
+  },
+  {
+    "type": "entry",
+    "greek": "πληρώνω",
+    "details": "",
+    "english": "to pay",
+    "indent": false,
+    "line": 1187
+  },
+  {
+    "type": "entry",
+    "greek": "πλούσιος",
+    "details": "-α, -ο",
+    "english": "rich, wealthy",
+    "indent": false,
+    "line": 1189
+  },
+  {
+    "type": "entry",
+    "greek": "πλυντήριο",
+    "details": "το",
+    "english": "washing machine",
+    "indent": false,
+    "line": 1190
+  },
+  {
+    "type": "entry",
+    "greek": "βάζω πλυντήριο",
+    "details": "",
+    "english": "to do the laundry",
+    "indent": true,
+    "line": 1191
+  },
+  {
+    "type": "entry",
+    "greek": "πλώρη",
+    "details": "η",
+    "english": "prow",
+    "indent": false,
+    "line": 1192
+  },
+  {
+    "type": "entry",
+    "greek": "ποδήλατο",
+    "details": "το",
+    "english": "bicycle, bike",
+    "indent": false,
+    "line": 1193
+  },
+  {
+    "type": "entry",
+    "greek": "πόδι/πόδια",
+    "details": "το/τα",
+    "english": "foot / feet",
+    "indent": false,
+    "line": 1194
+  },
+  {
+    "type": "entry",
+    "greek": "ποδόσφαιρο",
+    "details": "το",
+    "english": "football",
+    "indent": false,
+    "line": 1195
+  },
+  {
+    "type": "entry",
+    "greek": "πόλη",
+    "details": "η",
+    "english": "city",
+    "indent": false,
+    "line": 1207
+  },
+  {
+    "type": "entry",
+    "greek": "πολύ",
+    "details": "",
+    "english": "much",
+    "indent": false,
+    "line": 1209
+  },
+  {
+    "type": "entry",
+    "greek": "πολυθρόνα",
+    "details": "η",
+    "english": "armchair",
+    "indent": false,
+    "line": 1210
+  },
+  {
+    "type": "entry",
+    "greek": "πολυκατοικία",
+    "details": "η",
+    "english": "apartment building",
+    "indent": false,
+    "line": 1211
+  },
+  {
+    "type": "entry",
+    "greek": "πολυτέλεια",
+    "details": "η",
+    "english": "luxury",
+    "indent": false,
+    "line": 1213
+  },
+  {
+    "type": "entry",
+    "greek": "πολύχρωμος",
+    "details": "-η, ο",
+    "english": "colorful",
+    "indent": false,
+    "line": 1214
+  },
+  {
+    "type": "entry",
+    "greek": "πονάει η κοιλιά μου",
+    "details": "",
+    "english": "to have a stomach ache",
+    "indent": false,
+    "line": 1215
+  },
+  {
+    "type": "entry",
+    "greek": "πονάει το πόδι μου",
+    "details": "",
+    "english": "my foot hurts",
+    "indent": false,
+    "line": 1216
+  },
+  {
+    "type": "entry",
+    "greek": "ποντίκι",
+    "details": "το",
+    "english": "mouse",
+    "indent": false,
+    "line": 1217
+  },
+  {
+    "type": "entry",
+    "greek": "ποντίκια",
+    "details": "τα",
+    "english": "mice",
+    "indent": false,
+    "line": 1218
+  },
+  {
+    "type": "entry",
+    "greek": "ποπ-κορν",
+    "details": "το",
+    "english": "pop-corn",
+    "indent": false,
+    "line": 1219
+  },
+  {
+    "type": "entry",
+    "greek": "πόρτα",
+    "details": "η",
+    "english": "door",
+    "indent": false,
+    "line": 1221
+  },
+  {
+    "type": "entry",
+    "greek": "πορτοκάλι",
+    "details": "το",
+    "english": "orange",
+    "indent": false,
+    "line": 1222
+  },
+  {
+    "type": "entry",
+    "greek": "πορτοκαλάδα",
+    "details": "η",
+    "english": "orangade",
+    "indent": false,
+    "line": 1223
+  },
+  {
+    "type": "entry",
+    "greek": "πορτοφόλι",
+    "details": "το",
+    "english": "wallet",
+    "indent": false,
+    "line": 1224
+  },
+  {
+    "type": "entry",
+    "greek": "πόσο κάνει/κάνουν...;",
+    "details": "",
+    "english": "how much does/do... cost?",
+    "indent": false,
+    "line": 1225
+  },
+  {
+    "type": "entry",
+    "greek": "Πόσων χρονών είσαι;",
+    "details": "",
+    "english": "How old are you?",
+    "indent": false,
+    "line": 1228
+  },
+  {
+    "type": "entry",
+    "greek": "ποτάμι",
+    "details": "το",
+    "english": "river",
+    "indent": false,
+    "line": 1229
+  },
+  {
+    "type": "entry",
+    "greek": "ποτήρι",
+    "details": "το",
+    "english": "glass, cup",
+    "indent": false,
+    "line": 1230
+  },
+  {
+    "type": "entry",
+    "greek": "ποτίζω",
+    "details": "",
+    "english": "to water",
+    "indent": false,
+    "line": 1231
+  },
+  {
+    "type": "entry",
+    "greek": "πουκάμισο",
+    "details": "το",
+    "english": "shirt",
+    "indent": false,
+    "line": 1233
+  },
+  {
+    "type": "entry",
+    "greek": "πουλί",
+    "details": "το",
+    "english": "bird",
+    "indent": false,
+    "line": 1234
+  },
+  {
+    "type": "entry",
+    "greek": "πουλάκι",
+    "details": "το",
+    "english": "little bird",
+    "indent": false,
+    "line": 1235
+  },
+  {
+    "type": "entry",
+    "greek": "πουλάω",
+    "details": "-ώ",
+    "english": "to sell",
+    "indent": false,
+    "line": 1236
+  },
+  {
+    "type": "entry",
+    "greek": "πράσινος",
+    "details": "-η, -ο",
+    "english": "green",
+    "indent": false,
+    "line": 1238
+  },
+  {
+    "type": "entry",
+    "greek": "πρέπει",
+    "details": "",
+    "english": "I/you ... must",
+    "indent": false,
+    "line": 1239
+  },
+  {
+    "type": "entry",
+    "greek": "πριγκίπισσα",
+    "details": "η",
+    "english": "princess",
+    "indent": false,
+    "line": 1240
+  },
+  {
+    "type": "entry",
+    "greek": "πρίγκιπας",
+    "details": "ο",
+    "english": "prince",
+    "indent": false,
+    "line": 1241
+  },
+  {
+    "type": "entry",
+    "greek": "πρόβατο",
+    "details": "το",
+    "english": "lamb",
+    "indent": false,
+    "line": 1242
+  },
+  {
+    "type": "entry",
+    "greek": "πρόβλημα",
+    "details": "το",
+    "english": "problem",
+    "indent": false,
+    "line": 1243
+  },
+  {
+    "type": "entry",
+    "greek": "προπόνηση",
+    "details": "η",
+    "english": "training",
+    "indent": false,
+    "line": 1246
+  },
+  {
+    "type": "entry",
+    "greek": "προς",
+    "details": "",
+    "english": "to, towards",
+    "indent": false,
+    "line": 1247
+  },
+  {
+    "type": "entry",
+    "greek": "προσεκτικά",
+    "details": "",
+    "english": "carefully",
+    "indent": false,
+    "line": 1248
+  },
+  {
+    "type": "entry",
+    "greek": "προσέχω",
+    "details": "",
+    "english": "to be careful, to pay attention",
+    "indent": false,
+    "line": 1249
+  },
+  {
+    "type": "entry",
+    "greek": "προσοχή",
+    "details": "η",
+    "english": "attention",
+    "indent": false,
+    "line": 1250
+  },
+  {
+    "type": "entry",
+    "greek": "πρόταση",
+    "details": "η",
+    "english": "sentence",
+    "indent": false,
+    "line": 1253
+  },
+  {
+    "type": "entry",
+    "greek": "προτιμάω",
+    "details": "-ώ",
+    "english": "to prefer",
+    "indent": false,
+    "line": 1254
+  },
+  {
+    "type": "entry",
+    "greek": "προχτές/προχθές",
+    "details": "",
+    "english": "the day before yesterday",
+    "indent": false,
+    "line": 1255
+  },
+  {
+    "type": "entry",
+    "greek": "πρωί",
+    "details": "το",
+    "english": "morning",
+    "indent": false,
+    "line": 1256
+  },
+  {
+    "type": "entry",
+    "greek": "πρωί-πρωί",
+    "details": "",
+    "english": "early in the morning, first thing in the morning",
+    "indent": false,
+    "line": 1257
+  },
+  {
+    "type": "entry",
+    "greek": "πρώτος",
+    "details": "-η, -ο",
+    "english": "first",
+    "indent": false,
+    "line": 1258
+  },
+  {
+    "type": "entry",
+    "greek": "Πώς σε λένε;",
+    "details": "",
+    "english": "What's your name?",
+    "indent": false,
+    "line": 1261
+  },
+  {
+    "type": "alphabet",
+    "letter": "P, ρ",
+    "name": "ρο",
+    "line": 1263
+  },
+  {
+    "type": "entry",
+    "greek": "ραδιόφωνο",
+    "details": "το",
+    "english": "radio, radiophone",
+    "indent": false,
+    "line": 1265
+  },
+  {
+    "type": "entry",
+    "greek": "ραδιοφωνικός σταθμός",
+    "details": "",
+    "english": "radio station",
+    "indent": false,
+    "line": 1266
+  },
+  {
+    "type": "entry",
+    "greek": "ρακέτα",
+    "details": "η",
+    "english": "racket",
+    "indent": false,
+    "line": 1267
+  },
+  {
+    "type": "entry",
+    "greek": "Ραπουνζέλ",
+    "details": "η",
+    "english": "Rapunzel",
+    "indent": false,
+    "line": 1268
+  },
+  {
+    "type": "entry",
+    "greek": "ράφι",
+    "details": "το",
+    "english": "shelf",
+    "indent": false,
+    "line": 1269
+  },
+  {
+    "type": "entry",
+    "greek": "Ρέα",
+    "details": "η",
+    "english": "Rea",
+    "indent": false,
+    "line": 1270
+  },
+  {
+    "type": "entry",
+    "greek": "Ρέθυμνο",
+    "details": "το",
+    "english": "Rethymno",
+    "indent": false,
+    "line": 1271
+  },
+  {
+    "type": "entry",
+    "greek": "ρέστα",
+    "details": "τα",
+    "english": "change",
+    "indent": false,
+    "line": 1272
+  },
+  {
+    "type": "entry",
+    "greek": "Ρόδος",
+    "details": "η",
+    "english": "Rhodes",
+    "indent": false,
+    "line": 1273
+  },
+  {
+    "type": "entry",
+    "greek": "ροζ",
+    "details": "",
+    "english": "pink",
+    "indent": false,
+    "line": 1274
+  },
+  {
+    "type": "entry",
+    "greek": "ρόλος",
+    "details": "ο",
+    "english": "role, part",
+    "indent": false,
+    "line": 1275
+  },
+  {
+    "type": "entry",
+    "greek": "ρούχο",
+    "details": "το",
+    "english": "cloth",
+    "indent": false,
+    "line": 1278
+  },
+  {
+    "type": "entry",
+    "greek": "ρύζι",
+    "details": "το",
+    "english": "rice",
+    "indent": false,
+    "line": 1279
+  },
+  {
+    "type": "entry",
+    "greek": "Ρώμη",
+    "details": "η",
+    "english": "Rome",
+    "indent": false,
+    "line": 1280
+  },
+  {
+    "type": "entry",
+    "greek": "Ρωσία",
+    "details": "η",
+    "english": "Russia",
+    "indent": false,
+    "line": 1281
+  },
+  {
+    "type": "entry",
+    "greek": "ρωσικός",
+    "details": "-ή, -ό",
+    "english": "Russian",
+    "indent": false,
+    "line": 1283
+  },
+  {
+    "type": "entry",
+    "greek": "Ρώσος",
+    "details": "-ίδα",
+    "english": "Russian",
+    "indent": false,
+    "line": 1284
+  },
+  {
+    "type": "entry",
+    "greek": "ρωτάω",
+    "details": "-ώ",
+    "english": "to ask",
+    "indent": false,
+    "line": 1285
+  },
+  {
+    "type": "alphabet",
+    "letter": "Σ, σ",
+    "name": "σίγμα",
+    "line": 1287
+  },
+  {
+    "type": "entry",
+    "greek": "Σάββατο",
+    "details": "το",
+    "english": "Saturday",
+    "indent": false,
+    "line": 1289
+  },
+  {
+    "type": "entry",
+    "greek": "Σαββατοκύριακο",
+    "details": "το",
+    "english": "weekend",
+    "indent": false,
+    "line": 1290
+  },
+  {
+    "type": "entry",
+    "greek": "Σάκης",
+    "details": "ο",
+    "english": "Sakis",
+    "indent": false,
+    "line": 1291
+  },
+  {
+    "type": "entry",
+    "greek": "σάκος",
+    "details": "ο",
+    "english": "bag, sack",
+    "indent": false,
+    "line": 1292
+  },
+  {
+    "type": "entry",
+    "greek": "σαλόνι",
+    "details": "το",
+    "english": "living room",
+    "indent": false,
+    "line": 1293
+  },
+  {
+    "type": "entry",
+    "greek": "σαμπουάν",
+    "details": "το",
+    "english": "shampoo",
+    "indent": false,
+    "line": 1294
+  },
+  {
+    "type": "entry",
+    "greek": "σάντουιτς",
+    "details": "το",
+    "english": "sandwitch",
+    "indent": false,
+    "line": 1295
+  },
+  {
+    "type": "entry",
+    "greek": "σαράντα",
+    "details": "",
+    "english": "forty",
+    "indent": false,
+    "line": 1296
+  },
+  {
+    "type": "entry",
+    "greek": "σβήνω το φως",
+    "details": "",
+    "english": "turn the light off",
+    "indent": false,
+    "line": 1297
+  },
+  {
+    "type": "entry",
+    "greek": "σβήστρα",
+    "details": "η",
+    "english": "rubber",
+    "indent": false,
+    "line": 1298
+  },
+  {
+    "type": "entry",
+    "greek": "σγουρός",
+    "details": "-ή, -ó",
+    "english": "curly",
+    "indent": false,
+    "line": 1299
+  },
+  {
+    "type": "entry",
+    "greek": "σε",
+    "details": "",
+    "english": "at, to",
+    "indent": false,
+    "line": 1300
+  },
+  {
+    "type": "entry",
+    "greek": "σειρά",
+    "details": "η",
+    "english": "order, line, row",
+    "indent": false,
+    "line": 1301
+  },
+  {
+    "type": "entry",
+    "greek": "η σειρά μου",
+    "details": "",
+    "english": "my turn",
+    "indent": true,
+    "line": 1302
+  },
+  {
+    "type": "entry",
+    "greek": "σελίδα",
+    "details": "η",
+    "english": "page",
+    "indent": false,
+    "line": 1303
+  },
+  {
+    "type": "entry",
+    "greek": "σεντόνι",
+    "details": "το",
+    "english": "sheet",
+    "indent": false,
+    "line": 1304
+  },
+  {
+    "type": "entry",
+    "greek": "Σεπτέμβριος",
+    "details": "ο",
+    "english": "September",
+    "indent": false,
+    "line": 1305
+  },
+  {
+    "type": "entry",
+    "greek": "σημαία",
+    "details": "η",
+    "english": "flag",
+    "indent": false,
+    "line": 1306
+  },
+  {
+    "type": "entry",
+    "greek": "σημαντικός",
+    "details": "-ή, -ó",
+    "english": "important, significant",
+    "indent": false,
+    "line": 1307
+  },
+  {
+    "type": "entry",
+    "greek": "σημείωση",
+    "details": "η",
+    "english": "note, memo",
+    "indent": false,
+    "line": 1308
+  },
+  {
+    "type": "entry",
+    "greek": "σήμερα",
+    "details": "",
+    "english": "today",
+    "indent": false,
+    "line": 1309
+  },
+  {
+    "type": "entry",
+    "greek": "σιδερένιος",
+    "details": "-ια, -ο",
+    "english": "iron",
+    "indent": false,
+    "line": 1310
+  },
+  {
+    "type": "entry",
+    "greek": "σιδερώνω",
+    "details": "",
+    "english": "to iron",
+    "indent": false,
+    "line": 1312
+  },
+  {
+    "type": "entry",
+    "greek": "σιδερώστρα",
+    "details": "η",
+    "english": "ironing board",
+    "indent": false,
+    "line": 1313
+  },
+  {
+    "type": "entry",
+    "greek": "σκάκι",
+    "details": "το",
+    "english": "chess",
+    "indent": false,
+    "line": 1315
+  },
+  {
+    "type": "entry",
+    "greek": "σκάλα",
+    "details": "η",
+    "english": "staircase",
+    "indent": false,
+    "line": 1316
+  },
+  {
+    "type": "entry",
+    "greek": "σκάλες",
+    "details": "οι",
+    "english": "stairs",
+    "indent": false,
+    "line": 1317
+  },
+  {
+    "type": "entry",
+    "greek": "σκέφτομαι",
+    "details": "",
+    "english": "to think",
+    "indent": false,
+    "line": 1318
+  },
+  {
+    "type": "entry",
+    "greek": "σκηνοθέτης",
+    "details": "ο",
+    "english": "director",
+    "indent": false,
+    "line": 1320
+  },
+  {
+    "type": "entry",
+    "greek": "σκι",
+    "details": "το",
+    "english": "skiing",
+    "indent": false,
+    "line": 1321
+  },
+  {
+    "type": "entry",
+    "greek": "πηγαίνω για σκι",
+    "details": "",
+    "english": "to go skiing",
+    "indent": true,
+    "line": 1322
+  },
+  {
+    "type": "entry",
+    "greek": "σκούπα ηλεκτρική",
+    "details": "η",
+    "english": "vacuum cleaner",
+    "indent": false,
+    "line": 1323
+  },
+  {
+    "type": "entry",
+    "greek": "σκουπόξυλο",
+    "details": "το",
+    "english": "broomstick",
+    "indent": false,
+    "line": 1324
+  },
+  {
+    "type": "entry",
+    "greek": "σκούρος",
+    "details": "-η, -0",
+    "english": "dark",
+    "indent": false,
+    "line": 1325
+  },
+  {
+    "type": "entry",
+    "greek": "σκούφος/σκουφί",
+    "details": "ο/το",
+    "english": "beanie, hat",
+    "indent": false,
+    "line": 1326
+  },
+  {
+    "type": "entry",
+    "greek": "σκύλος",
+    "details": "ο",
+    "english": "dog",
+    "indent": false,
+    "line": 1327
+  },
+  {
+    "type": "entry",
+    "greek": "Σκωτία",
+    "details": "η",
+    "english": "Scotland",
+    "indent": false,
+    "line": 1328
+  },
+  {
+    "type": "entry",
+    "greek": "Σκωτσέζος",
+    "details": "-a",
+    "english": "Scotish",
+    "indent": false,
+    "line": 1329
+  },
+  {
+    "type": "entry",
+    "greek": "σκωτσέζικος",
+    "details": "-η, -ο",
+    "english": "Scotish",
+    "indent": false,
+    "line": 1330
+  },
+  {
+    "type": "entry",
+    "greek": "Σμαρώ",
+    "details": "η",
+    "english": "Smaro",
+    "indent": false,
+    "line": 1331
+  },
+  {
+    "type": "entry",
+    "greek": "σοβαρός",
+    "details": "-ή, -ό",
+    "english": "serious",
+    "indent": false,
+    "line": 1332
+  },
+  {
+    "type": "entry",
+    "greek": "σοκολάτα",
+    "details": "η",
+    "english": "chocolate",
+    "indent": false,
+    "line": 1340
+  },
+  {
+    "type": "entry",
+    "greek": "σουβλάκι",
+    "details": "το",
+    "english": "souvlaki",
+    "indent": false,
+    "line": 1341
+  },
+  {
+    "type": "entry",
+    "greek": "σούπα",
+    "details": "η",
+    "english": "soup",
+    "indent": false,
+    "line": 1342
+  },
+  {
+    "type": "entry",
+    "greek": "σούπερ μάρκετ",
+    "details": "το",
+    "english": "super market",
+    "indent": false,
+    "line": 1343
+  },
+  {
+    "type": "entry",
+    "greek": "Σοφί",
+    "details": "η",
+    "english": "Sofi",
+    "indent": false,
+    "line": 1344
+  },
+  {
+    "type": "entry",
+    "greek": "σοφία",
+    "details": "η",
+    "english": "wisdom",
+    "indent": false,
+    "line": 1345
+  },
+  {
+    "type": "entry",
+    "greek": "σοφός",
+    "details": "-ή, -ό",
+    "english": "wise",
+    "indent": false,
+    "line": 1347
+  },
+  {
+    "type": "entry",
+    "greek": "σπαζοκεφαλιά",
+    "details": "η",
+    "english": "riddle",
+    "indent": false,
+    "line": 1348
+  },
+  {
+    "type": "entry",
+    "greek": "σπαθί",
+    "details": "το",
+    "english": "sword",
+    "indent": false,
+    "line": 1349
+  },
+  {
+    "type": "entry",
+    "greek": "είμαι σπίτι",
+    "details": "",
+    "english": "to be (at) home",
+    "indent": true,
+    "line": 1352
+  },
+  {
+    "type": "entry",
+    "greek": "σπουδαίος",
+    "details": "-α, -0",
+    "english": "great, important",
+    "indent": false,
+    "line": 1354
+  },
+  {
+    "type": "entry",
+    "greek": "σταθμός",
+    "details": "ο",
+    "english": "station",
+    "indent": false,
+    "line": 1355
+  },
+  {
+    "type": "entry",
+    "greek": "στάση λεωφορείου",
+    "details": "η",
+    "english": "bus stop",
+    "indent": false,
+    "line": 1356
+  },
+  {
+    "type": "entry",
+    "greek": "σταυρόλεξο",
+    "details": "το",
+    "english": "crossword",
+    "indent": false,
+    "line": 1357
+  },
+  {
+    "type": "entry",
+    "greek": "σταφύλια",
+    "details": "τα",
+    "english": "grapes",
+    "indent": false,
+    "line": 1358
+  },
+  {
+    "type": "entry",
+    "greek": "Σταχτοπούτα",
+    "details": "η",
+    "english": "Cinderella",
+    "indent": false,
+    "line": 1359
+  },
+  {
+    "type": "entry",
+    "greek": "στέλνω",
+    "details": "",
+    "english": "to send",
+    "indent": false,
+    "line": 1360
+  },
+  {
+    "type": "entry",
+    "greek": "στενάχωρος",
+    "details": "-η, -0",
+    "english": "drear, gloomy",
+    "indent": false,
+    "line": 1361
+  },
+  {
+    "type": "entry",
+    "greek": "στενός",
+    "details": "-ή, -ό",
+    "english": "narrow, tight",
+    "indent": false,
+    "line": 1362
+  },
+  {
+    "type": "entry",
+    "greek": "στήλη",
+    "details": "η",
+    "english": "column",
+    "indent": false,
+    "line": 1363
+  },
+  {
+    "type": "entry",
+    "greek": "στιγμή",
+    "details": "η",
+    "english": "moment",
+    "indent": false,
+    "line": 1364
+  },
+  {
+    "type": "entry",
+    "greek": "στιλό/στιλός",
+    "details": "το/ο",
+    "english": "pen",
+    "indent": false,
+    "line": 1365
+  },
+  {
+    "type": "entry",
+    "greek": "στόμα",
+    "details": "το",
+    "english": "mouth",
+    "indent": false,
+    "line": 1366
+  },
+  {
+    "type": "entry",
+    "greek": "Στρουμφίτα",
+    "details": "η",
+    "english": "Smurfette",
+    "indent": false,
+    "line": 1367
+  },
+  {
+    "type": "entry",
+    "greek": "στρώμα",
+    "details": "το",
+    "english": "mattress",
+    "indent": false,
+    "line": 1368
+  },
+  {
+    "type": "entry",
+    "greek": "συγγραφέας",
+    "details": "ο/η",
+    "english": "author",
+    "indent": false,
+    "line": 1369
+  },
+  {
+    "type": "entry",
+    "greek": "συγκάτοικος",
+    "details": "ο/η",
+    "english": "roommate",
+    "indent": false,
+    "line": 1370
+  },
+  {
+    "type": "entry",
+    "greek": "συγκρίνω",
+    "details": "",
+    "english": "to compare",
+    "indent": false,
+    "line": 1371
+  },
+  {
+    "type": "entry",
+    "greek": "συζητάω",
+    "details": "-ώ",
+    "english": "to discuss",
+    "indent": false,
+    "line": 1372
+  },
+  {
+    "type": "entry",
+    "greek": "συλλαβή",
+    "details": "η",
+    "english": "syllable",
+    "indent": false,
+    "line": 1373
+  },
+  {
+    "type": "entry",
+    "greek": "συμμαθητής/-τρια",
+    "details": "ο/η",
+    "english": "schoolmate",
+    "indent": false,
+    "line": 1374
+  },
+  {
+    "type": "entry",
+    "greek": "συμπληρώνω",
+    "details": "",
+    "english": "to complete, to fill",
+    "indent": false,
+    "line": 1375
+  },
+  {
+    "type": "entry",
+    "greek": "συναντάω",
+    "details": "-ώ",
+    "english": "to meet (with), to come across",
+    "indent": false,
+    "line": 1376
+  },
+  {
+    "type": "entry",
+    "greek": "συναυλία",
+    "details": "η",
+    "english": "concert",
+    "indent": false,
+    "line": 1377
+  },
+  {
+    "type": "entry",
+    "greek": "συνήθως",
+    "details": "",
+    "english": "usually",
+    "indent": false,
+    "line": 1378
+  },
+  {
+    "type": "entry",
+    "greek": "σύννεφο",
+    "details": "το",
+    "english": "cloud",
+    "indent": false,
+    "line": 1379
+  },
+  {
+    "type": "entry",
+    "greek": "συνταγή",
+    "details": "η",
+    "english": "recipe",
+    "indent": false,
+    "line": 1380
+  },
+  {
+    "type": "entry",
+    "greek": "συρτάρι",
+    "details": "το",
+    "english": "drawer",
+    "indent": false,
+    "line": 1382
+  },
+  {
+    "type": "entry",
+    "greek": "συχνά",
+    "details": "",
+    "english": "often",
+    "indent": false,
+    "line": 1383
+  },
+  {
+    "type": "entry",
+    "greek": "σφυρίζω",
+    "details": "",
+    "english": "to whistle",
+    "indent": false,
+    "line": 1384
+  },
+  {
+    "type": "entry",
+    "greek": "σφυρίχτρα",
+    "details": "η",
+    "english": "whistle",
+    "indent": false,
+    "line": 1385
+  },
+  {
+    "type": "entry",
+    "greek": "σχέδιο",
+    "details": "το",
+    "english": "design",
+    "indent": false,
+    "line": 1386
+  },
+  {
+    "type": "entry",
+    "greek": "σχήμα",
+    "details": "το",
+    "english": "shape, form",
+    "indent": false,
+    "line": 1387
+  },
+  {
+    "type": "entry",
+    "greek": "σχολείο/σχολή",
+    "details": "το/η",
+    "english": "school",
+    "indent": false,
+    "line": 1389
+  },
+  {
+    "type": "entry",
+    "greek": "σωπαίνω",
+    "details": "",
+    "english": "to be quiet, to hush",
+    "indent": false,
+    "line": 1391
+  },
+  {
+    "type": "entry",
+    "greek": "σωστός",
+    "details": "-ή, -ό",
+    "english": "right, correct",
+    "indent": false,
+    "line": 1392
+  },
+  {
+    "type": "entry",
+    "greek": "Σωτήρης",
+    "details": "ο",
+    "english": "Sotiris",
+    "indent": false,
+    "line": 1393
+  },
+  {
+    "type": "entry",
+    "greek": "Σωτηρία",
+    "details": "η",
+    "english": "Sotiria",
+    "indent": false,
+    "line": 1394
+  },
+  {
+    "type": "alphabet",
+    "letter": "Τ, τ",
+    "name": "ταυ",
+    "line": 1396
+  },
+  {
+    "type": "entry",
+    "greek": "ταβέρνα",
+    "details": "η",
+    "english": "tavern",
+    "indent": false,
+    "line": 1398
+  },
+  {
+    "type": "entry",
+    "greek": "τάγκο",
+    "details": "το",
+    "english": "tango",
+    "indent": false,
+    "line": 1399
+  },
+  {
+    "type": "entry",
+    "greek": "ταΐζω",
+    "details": "",
+    "english": "to feed",
+    "indent": false,
+    "line": 1400
+  },
+  {
+    "type": "entry",
+    "greek": "ταινία",
+    "details": "η",
+    "english": "movie, film",
+    "indent": false,
+    "line": 1401
+  },
+  {
+    "type": "entry",
+    "greek": "ταιριάζω",
+    "details": "",
+    "english": "to fit, to match",
+    "indent": false,
+    "line": 1402
+  },
+  {
+    "type": "entry",
+    "greek": "ταμείο",
+    "details": "το",
+    "english": "cash desk",
+    "indent": false,
+    "line": 1403
+  },
+  {
+    "type": "entry",
+    "greek": "Τάνια",
+    "details": "η",
+    "english": "Tania",
+    "indent": false,
+    "line": 1404
+  },
+  {
+    "type": "entry",
+    "greek": "ταξιδεύω",
+    "details": "",
+    "english": "to travel, to take a trip, to make a journey",
+    "indent": false,
+    "line": 1407
+  },
+  {
+    "type": "entry",
+    "greek": "ταξίδι",
+    "details": "το",
+    "english": "travel, journey, trip",
+    "indent": false,
+    "line": 1408
+  },
+  {
+    "type": "entry",
+    "greek": "Τάσος",
+    "details": "ο",
+    "english": "Tassos",
+    "indent": false,
+    "line": 1409
+  },
+  {
+    "type": "entry",
+    "greek": "ταχυδρομείο",
+    "details": "το",
+    "english": "post office",
+    "indent": false,
+    "line": 1410
+  },
+  {
+    "type": "entry",
+    "greek": "τελευταίος",
+    "details": "-α, -0",
+    "english": "last, final",
+    "indent": false,
+    "line": 1411
+  },
+  {
+    "type": "entry",
+    "greek": "τέλεια",
+    "details": "",
+    "english": "perfect",
+    "indent": false,
+    "line": 1412
+  },
+  {
+    "type": "entry",
+    "greek": "τελεία",
+    "details": "η",
+    "english": "dot",
+    "indent": false,
+    "line": 1413
+  },
+  {
+    "type": "entry",
+    "greek": "τελικά",
+    "details": "",
+    "english": "finally, after all",
+    "indent": false,
+    "line": 1414
+  },
+  {
+    "type": "entry",
+    "greek": "τέλος",
+    "details": "το",
+    "english": "end",
+    "indent": false,
+    "line": 1415
+  },
+  {
+    "type": "entry",
+    "greek": "τένις",
+    "details": "το",
+    "english": "tennis",
+    "indent": false,
+    "line": 1416
+  },
+  {
+    "type": "entry",
+    "greek": "τεράστιος",
+    "details": "-α, -0",
+    "english": "huge, enormous, gigantic",
+    "indent": false,
+    "line": 1417
+  },
+  {
+    "type": "entry",
+    "greek": "τέρμα λεωφορείου",
+    "details": "το",
+    "english": "final stop, terminal",
+    "indent": false,
+    "line": 1419
+  },
+  {
+    "type": "entry",
+    "greek": "τέσσερις",
+    "details": "-α",
+    "english": "four",
+    "indent": false,
+    "line": 1420
+  },
+  {
+    "type": "entry",
+    "greek": "Τετάρτη",
+    "details": "η",
+    "english": "Wednesday",
+    "indent": false,
+    "line": 1421
+  },
+  {
+    "type": "entry",
+    "greek": "τετράγωνο",
+    "details": "το",
+    "english": "square",
+    "indent": false,
+    "line": 1422
+  },
+  {
+    "type": "entry",
+    "greek": "τετράδιο",
+    "details": "το",
+    "english": "exercise book",
+    "indent": false,
+    "line": 1423
+  },
+  {
+    "type": "entry",
+    "greek": "τζάκι",
+    "details": "το",
+    "english": "fire place",
+    "indent": false,
+    "line": 1424
+  },
+  {
+    "type": "entry",
+    "greek": "Τζιμ",
+    "details": "ο",
+    "english": "Jim",
+    "indent": false,
+    "line": 1425
+  },
+  {
+    "type": "entry",
+    "greek": "τζιν",
+    "details": "το",
+    "english": "jeans (a pair of)",
+    "indent": false,
+    "line": 1426
+  },
+  {
+    "type": "entry",
+    "greek": "τζίτζικας/τζιτζίκι",
+    "details": "ο/το",
+    "english": "cicada",
+    "indent": false,
+    "line": 1427
+  },
+  {
+    "type": "entry",
+    "greek": "τηλεόραση",
+    "details": "η",
+    "english": "television",
+    "indent": false,
+    "line": 1428
+  },
+  {
+    "type": "entry",
+    "greek": "τηλέφωνο",
+    "details": "το",
+    "english": "telephone, phone",
+    "indent": false,
+    "line": 1429
+  },
+  {
+    "type": "entry",
+    "greek": "τι",
+    "details": "",
+    "english": "what",
+    "indent": false,
+    "line": 1430
+  },
+  {
+    "type": "entry",
+    "greek": "Τι κρίμα!",
+    "details": "",
+    "english": "What a pity!",
+    "indent": false,
+    "line": 1431
+  },
+  {
+    "type": "entry",
+    "greek": "τίγρης/-η",
+    "details": "ο/η",
+    "english": "tiger",
+    "indent": false,
+    "line": 1432
+  },
+  {
+    "type": "entry",
+    "greek": "τιμή",
+    "details": "η",
+    "english": "price",
+    "indent": false,
+    "line": 1433
+  },
+  {
+    "type": "entry",
+    "greek": "Τίνκερμπελ",
+    "details": "η",
+    "english": "Tinkerbell",
+    "indent": false,
+    "line": 1434
+  },
+  {
+    "type": "entry",
+    "greek": "τίτλος",
+    "details": "ο",
+    "english": "title",
+    "indent": false,
+    "line": 1435
+  },
+  {
+    "type": "entry",
+    "greek": "τοίχος",
+    "details": "ο",
+    "english": "wall",
+    "indent": false,
+    "line": 1437
+  },
+  {
+    "type": "entry",
+    "greek": "τόνος",
+    "details": "ο",
+    "english": "accent mark",
+    "indent": false,
+    "line": 1438
+  },
+  {
+    "type": "entry",
+    "greek": "Τουέιν Μάρκ",
+    "details": "ο",
+    "english": "Mark Twain",
+    "indent": false,
+    "line": 1439
+  },
+  {
+    "type": "entry",
+    "greek": "τούρτα",
+    "details": "η",
+    "english": "birthday cake",
+    "indent": false,
+    "line": 1440
+  },
+  {
+    "type": "entry",
+    "greek": "τραγουδάω",
+    "details": "-ώ",
+    "english": "to sing",
+    "indent": false,
+    "line": 1441
+  },
+  {
+    "type": "entry",
+    "greek": "τραγούδι",
+    "details": "το",
+    "english": "song",
+    "indent": false,
+    "line": 1442
+  },
+  {
+    "type": "entry",
+    "greek": "τραγουδιστής/-τρια",
+    "details": "ο/η",
+    "english": "singer",
+    "indent": false,
+    "line": 1443
+  },
+  {
+    "type": "entry",
+    "greek": "τρακτέρ",
+    "details": "το",
+    "english": "tractor",
+    "indent": false,
+    "line": 1444
+  },
+  {
+    "type": "entry",
+    "greek": "τραμπάλα",
+    "details": "η",
+    "english": "seesaw",
+    "indent": false,
+    "line": 1445
+  },
+  {
+    "type": "entry",
+    "greek": "τράπεζα",
+    "details": "η",
+    "english": "bank",
+    "indent": false,
+    "line": 1446
+  },
+  {
+    "type": "entry",
+    "greek": "τραπέζι",
+    "details": "το",
+    "english": "table",
+    "indent": false,
+    "line": 1447
+  },
+  {
+    "type": "entry",
+    "greek": "τρένο",
+    "details": "το",
+    "english": "train",
+    "indent": false,
+    "line": 1448
+  },
+  {
+    "type": "entry",
+    "greek": "τρέχω",
+    "details": "",
+    "english": "to run",
+    "indent": false,
+    "line": 1449
+  },
+  {
+    "type": "entry",
+    "greek": "τρείς, τρία",
+    "details": "",
+    "english": "three",
+    "indent": false,
+    "line": 1450
+  },
+  {
+    "type": "entry",
+    "greek": "τριακόσιοι",
+    "details": "-ες, -α",
+    "english": "three hundred",
+    "indent": false,
+    "line": 1451
+  },
+  {
+    "type": "entry",
+    "greek": "τριάντα",
+    "details": "",
+    "english": "thirty",
+    "indent": false,
+    "line": 1452
+  },
+  {
+    "type": "entry",
+    "greek": "τρίγωνο",
+    "details": "το",
+    "english": "triangle",
+    "indent": false,
+    "line": 1453
+  },
+  {
+    "type": "entry",
+    "greek": "Τρίτη",
+    "details": "η",
+    "english": "Tuesday",
+    "indent": false,
+    "line": 1454
+  },
+  {
+    "type": "entry",
+    "greek": "τρίτος",
+    "details": "-η, -ο",
+    "english": "third",
+    "indent": false,
+    "line": 1455
+  },
+  {
+    "type": "entry",
+    "greek": "τρώω",
+    "details": "",
+    "english": "to eat",
+    "indent": false,
+    "line": 1456
+  },
+  {
+    "type": "entry",
+    "greek": "τσάι",
+    "details": "το",
+    "english": "tea",
+    "indent": false,
+    "line": 1458
+  },
+  {
+    "type": "entry",
+    "greek": "τσάντα σχολική",
+    "details": "η",
+    "english": "schoolbag",
+    "indent": false,
+    "line": 1459
+  },
+  {
+    "type": "entry",
+    "greek": "τσάντα",
+    "details": "η",
+    "english": "bag, purse",
+    "indent": false,
+    "line": 1460
+  },
+  {
+    "type": "entry",
+    "greek": "τσίρκο",
+    "details": "το",
+    "english": "circus",
+    "indent": false,
+    "line": 1461
+  },
+  {
+    "type": "entry",
+    "greek": "τσουλήθρα",
+    "details": "η",
+    "english": "slide",
+    "indent": false,
+    "line": 1462
+  },
+  {
+    "type": "entry",
+    "greek": "τύμπανο",
+    "details": "το",
+    "english": "drum",
+    "indent": false,
+    "line": 1463
+  },
+  {
+    "type": "entry",
+    "greek": "τυρί",
+    "details": "το",
+    "english": "cheese",
+    "indent": false,
+    "line": 1464
+  },
+  {
+    "type": "entry",
+    "greek": "τυχαίος",
+    "details": "-α, -ο",
+    "english": "random",
+    "indent": false,
+    "line": 1465
+  },
+  {
+    "type": "entry",
+    "greek": "τώρα",
+    "details": "",
+    "english": "now",
+    "indent": false,
+    "line": 1466
+  },
+  {
+    "type": "alphabet",
+    "letter": "Υ, υ",
+    "name": "ύψιλον",
+    "line": 1468
+  },
+  {
+    "type": "entry",
+    "greek": "Υβόννη",
+    "details": "η",
+    "english": "Ivonni",
+    "indent": false,
+    "line": 1470
+  },
+  {
+    "type": "entry",
+    "greek": "υγεία",
+    "details": "η",
+    "english": "health",
+    "indent": false,
+    "line": 1471
+  },
+  {
+    "type": "entry",
+    "greek": "υγιεινός",
+    "details": "-ή, -ό",
+    "english": "healthy",
+    "indent": false,
+    "line": 1472
+  },
+  {
+    "type": "entry",
+    "greek": "υλικό",
+    "details": "το",
+    "english": "material",
+    "indent": false,
+    "line": 1473
+  },
+  {
+    "type": "entry",
+    "greek": "υπάρχει",
+    "details": "",
+    "english": "there is",
+    "indent": false,
+    "line": 1474
+  },
+  {
+    "type": "entry",
+    "greek": "υπάρχω",
+    "details": "",
+    "english": "to exist",
+    "indent": false,
+    "line": 1475
+  },
+  {
+    "type": "entry",
+    "greek": "υπέροχος",
+    "details": "-η, -ο",
+    "english": "marvellous, wonderful, splendid",
+    "indent": false,
+    "line": 1476
+  },
+  {
+    "type": "entry",
+    "greek": "υποβρύχιο",
+    "details": "το",
+    "english": "submarine",
+    "indent": false,
+    "line": 1477
+  },
+  {
+    "type": "entry",
+    "greek": "υπογραμμίζω",
+    "details": "",
+    "english": "to underline",
+    "indent": false,
+    "line": 1478
+  },
+  {
+    "type": "entry",
+    "greek": "υπολογιστής",
+    "details": "ο",
+    "english": "computer",
+    "indent": false,
+    "line": 1479
+  },
+  {
+    "type": "entry",
+    "greek": "ύψος",
+    "details": "το",
+    "english": "height",
+    "indent": false,
+    "line": 1480
+  },
+  {
+    "type": "alphabet",
+    "letter": "Φ, φ",
+    "name": "φι",
+    "line": 1488
+  },
+  {
+    "type": "entry",
+    "greek": "φαγητό",
+    "details": "το",
+    "english": "food",
+    "indent": false,
+    "line": 1490
+  },
+  {
+    "type": "entry",
+    "greek": "φάκελος",
+    "details": "ο",
+    "english": "envelope",
+    "indent": false,
+    "line": 1491
+  },
+  {
+    "type": "entry",
+    "greek": "φακός",
+    "details": "ο",
+    "english": "flashlight",
+    "indent": false,
+    "line": 1492
+  },
+  {
+    "type": "entry",
+    "greek": "φανάρι",
+    "details": "το",
+    "english": "traffic light",
+    "indent": false,
+    "line": 1493
+  },
+  {
+    "type": "entry",
+    "greek": "Φανή",
+    "details": "η",
+    "english": "Fani",
+    "indent": false,
+    "line": 1494
+  },
+  {
+    "type": "entry",
+    "greek": "Φάνης",
+    "details": "ο",
+    "english": "Fanis",
+    "indent": false,
+    "line": 1495
+  },
+  {
+    "type": "entry",
+    "greek": "φάρμα",
+    "details": "η",
+    "english": "farm",
+    "indent": false,
+    "line": 1496
+  },
+  {
+    "type": "entry",
+    "greek": "φασαρία",
+    "details": "η",
+    "english": "fuss",
+    "indent": false,
+    "line": 1497
+  },
+  {
+    "type": "entry",
+    "greek": "φασολιά",
+    "details": "η",
+    "english": "bean plan",
+    "indent": false,
+    "line": 1498
+  },
+  {
+    "type": "entry",
+    "greek": "Φεβρουάριος",
+    "details": "ο",
+    "english": "February",
+    "indent": false,
+    "line": 1499
+  },
+  {
+    "type": "entry",
+    "greek": "φέτα",
+    "details": "η",
+    "english": "slice",
+    "indent": false,
+    "line": 1500
+  },
+  {
+    "type": "entry",
+    "greek": "φέτος",
+    "details": "",
+    "english": "this year",
+    "indent": false,
+    "line": 1502
+  },
+  {
+    "type": "entry",
+    "greek": "φεύγω",
+    "details": "",
+    "english": "to leave",
+    "indent": false,
+    "line": 1503
+  },
+  {
+    "type": "entry",
+    "greek": "φθηνός",
+    "details": "-ή, -ό",
+    "english": "cheap",
+    "indent": false,
+    "line": 1504
+  },
+  {
+    "type": "entry",
+    "greek": "φθινόπωρο",
+    "details": "το",
+    "english": "autumn",
+    "indent": false,
+    "line": 1505
+  },
+  {
+    "type": "entry",
+    "greek": "φιλάω",
+    "details": "-ώ",
+    "english": "to kiss",
+    "indent": false,
+    "line": 1506
+  },
+  {
+    "type": "entry",
+    "greek": "φίλος/-η",
+    "details": "ο/η",
+    "english": "friend",
+    "indent": false,
+    "line": 1507
+  },
+  {
+    "type": "entry",
+    "greek": "φλιτζάνι",
+    "details": "το",
+    "english": "cup",
+    "indent": false,
+    "line": 1508
+  },
+  {
+    "type": "entry",
+    "greek": "φοβερός",
+    "details": "-ή, -ό",
+    "english": "terrifying, frightening",
+    "indent": false,
+    "line": 1509
+  },
+  {
+    "type": "entry",
+    "greek": "φοιτητής/-τρια",
+    "details": "ο/η",
+    "english": "student",
+    "indent": false,
+    "line": 1510
+  },
+  {
+    "type": "entry",
+    "greek": "φορά",
+    "details": "η",
+    "english": "time",
+    "indent": false,
+    "line": 1511
+  },
+  {
+    "type": "entry",
+    "greek": "μία φορά",
+    "details": "",
+    "english": "once",
+    "indent": true,
+    "line": 1512
+  },
+  {
+    "type": "entry",
+    "greek": "δύο φορές",
+    "details": "",
+    "english": "twice",
+    "indent": true,
+    "line": 1513
+  },
+  {
+    "type": "entry",
+    "greek": "φοράω",
+    "details": "-ώ",
+    "english": "to wear",
+    "indent": false,
+    "line": 1514
+  },
+  {
+    "type": "entry",
+    "greek": "φόρεμα",
+    "details": "το",
+    "english": "dress",
+    "indent": false,
+    "line": 1515
+  },
+  {
+    "type": "entry",
+    "greek": "φούρνος",
+    "details": "ο",
+    "english": "oven",
+    "indent": false,
+    "line": 1516
+  },
+  {
+    "type": "entry",
+    "greek": "φούστα",
+    "details": "η",
+    "english": "skirt",
+    "indent": false,
+    "line": 1517
+  },
+  {
+    "type": "entry",
+    "greek": "φράουλα",
+    "details": "η",
+    "english": "strawberry",
+    "indent": false,
+    "line": 1518
+  },
+  {
+    "type": "entry",
+    "greek": "φράση",
+    "details": "η",
+    "english": "phrase",
+    "indent": false,
+    "line": 1519
+  },
+  {
+    "type": "entry",
+    "greek": "φρούτο",
+    "details": "το",
+    "english": "fruit",
+    "indent": false,
+    "line": 1520
+  },
+  {
+    "type": "entry",
+    "greek": "φρύδι",
+    "details": "το",
+    "english": "brow, eyebrow",
+    "indent": false,
+    "line": 1521
+  },
+  {
+    "type": "entry",
+    "greek": "φταίω",
+    "details": "",
+    "english": "to be responsible, I am to blame, it is my fault",
+    "indent": false,
+    "line": 1522
+  },
+  {
+    "type": "entry",
+    "greek": "φτάνω",
+    "details": "",
+    "english": "to arrive",
+    "indent": false,
+    "line": 1523
+  },
+  {
+    "type": "entry",
+    "greek": "φτερό",
+    "details": "το",
+    "english": "feather, wing",
+    "indent": false,
+    "line": 1524
+  },
+  {
+    "type": "entry",
+    "greek": "φτωχός",
+    "details": "-ή, -ό",
+    "english": "poor",
+    "indent": false,
+    "line": 1525
+  },
+  {
+    "type": "entry",
+    "greek": "φυλακισμένος",
+    "details": "-η, -ο",
+    "english": "jailed, imprisoned, prisoner",
+    "indent": false,
+    "line": 1526
+  },
+  {
+    "type": "entry",
+    "greek": "φύλλο",
+    "details": "το",
+    "english": "leaf",
+    "indent": false,
+    "line": 1527
+  },
+  {
+    "type": "entry",
+    "greek": "φωνάζω",
+    "details": "",
+    "english": "to yell, to speak out loud",
+    "indent": false,
+    "line": 1529
+  },
+  {
+    "type": "entry",
+    "greek": "φωνή",
+    "details": "η",
+    "english": "voice",
+    "indent": false,
+    "line": 1530
+  },
+  {
+    "type": "entry",
+    "greek": "φως",
+    "details": "το",
+    "english": "light",
+    "indent": false,
+    "line": 1531
+  },
+  {
+    "type": "entry",
+    "greek": "φωτεινός",
+    "details": "-ή, -ó",
+    "english": "bright, luminous",
+    "indent": false,
+    "line": 1533
+  },
+  {
+    "type": "entry",
+    "greek": "Φώτης",
+    "details": "ο",
+    "english": "Fotis",
+    "indent": false,
+    "line": 1534
+  },
+  {
+    "type": "entry",
+    "greek": "φωτιστικό",
+    "details": "το",
+    "english": "lamp",
+    "indent": false,
+    "line": 1535
+  },
+  {
+    "type": "entry",
+    "greek": "φωτογραφία",
+    "details": "η",
+    "english": "picture, photo",
+    "indent": false,
+    "line": 1536
+  },
+  {
+    "type": "alphabet",
+    "letter": "Χ, χ",
+    "name": "χι",
+    "line": 1538
+  },
+  {
+    "type": "entry",
+    "greek": "χαιρετάω",
+    "details": "-ώ",
+    "english": "to say hello",
+    "indent": false,
+    "line": 1540
+  },
+  {
+    "type": "entry",
+    "greek": "χαλαρός",
+    "details": "-ή, -ό",
+    "english": "relaxed",
+    "indent": false,
+    "line": 1541
+  },
+  {
+    "type": "entry",
+    "greek": "χαλί",
+    "details": "το",
+    "english": "carpet",
+    "indent": false,
+    "line": 1542
+  },
+  {
+    "type": "entry",
+    "greek": "χαμηλός",
+    "details": "-ή, -ό",
+    "english": "short, low",
+    "indent": false,
+    "line": 1543
+  },
+  {
+    "type": "entry",
+    "greek": "χάμπουργκερ",
+    "details": "το",
+    "english": "hamburger",
+    "indent": false,
+    "line": 1544
+  },
+  {
+    "type": "entry",
+    "greek": "Χάνσελ",
+    "details": "ο",
+    "english": "Hansel",
+    "indent": false,
+    "line": 1545
+  },
+  {
+    "type": "entry",
+    "greek": "χάνω",
+    "details": "",
+    "english": "to lose",
+    "indent": false,
+    "line": 1546
+  },
+  {
+    "type": "entry",
+    "greek": "χαρά",
+    "details": "η",
+    "english": "happiness, joy",
+    "indent": false,
+    "line": 1547
+  },
+  {
+    "type": "entry",
+    "greek": "χάρακας",
+    "details": "ο",
+    "english": "ruler",
+    "indent": false,
+    "line": 1548
+  },
+  {
+    "type": "entry",
+    "greek": "Χάρης",
+    "details": "ο",
+    "english": "Charis",
+    "indent": false,
+    "line": 1550
+  },
+  {
+    "type": "entry",
+    "greek": "Χαρούλα",
+    "details": "η",
+    "english": "Charoula",
+    "indent": false,
+    "line": 1551
+  },
+  {
+    "type": "entry",
+    "greek": "χαρούμενος",
+    "details": "-η, -ο",
+    "english": "happy",
+    "indent": false,
+    "line": 1552
+  },
+  {
+    "type": "entry",
+    "greek": "χάρτης",
+    "details": "ο",
+    "english": "map",
+    "indent": false,
+    "line": 1553
+  },
+  {
+    "type": "entry",
+    "greek": "χαρτί",
+    "details": "το",
+    "english": "paper",
+    "indent": false,
+    "line": 1554
+  },
+  {
+    "type": "entry",
+    "greek": "χειμώνας",
+    "details": "ο",
+    "english": "winter",
+    "indent": false,
+    "line": 1555
+  },
+  {
+    "type": "entry",
+    "greek": "χελιδόνι",
+    "details": "το",
+    "english": "swallow",
+    "indent": false,
+    "line": 1556
+  },
+  {
+    "type": "entry",
+    "greek": "χελώνα",
+    "details": "η",
+    "english": "turtle",
+    "indent": false,
+    "line": 1557
+  },
+  {
+    "type": "entry",
+    "greek": "χέρι",
+    "details": "το",
+    "english": "hand, arm",
+    "indent": false,
+    "line": 1558
+  },
+  {
+    "type": "entry",
+    "greek": "Χιλή",
+    "details": "η",
+    "english": "Chile",
+    "indent": false,
+    "line": 1560
+  },
+  {
+    "type": "entry",
+    "greek": "Χιονάτη",
+    "details": "η",
+    "english": "Snow White",
+    "indent": false,
+    "line": 1561
+  },
+  {
+    "type": "entry",
+    "greek": "χιόνι",
+    "details": "το",
+    "english": "snow",
+    "indent": false,
+    "line": 1562
+  },
+  {
+    "type": "entry",
+    "greek": "χιονίζει",
+    "details": "",
+    "english": "it is snowing",
+    "indent": false,
+    "line": 1563
+  },
+  {
+    "type": "entry",
+    "greek": "χιονοπόλεμος",
+    "details": "ο",
+    "english": "snowball",
+    "indent": false,
+    "line": 1564
+  },
+  {
+    "type": "entry",
+    "greek": "χολ",
+    "details": "το",
+    "english": "corridor",
+    "indent": false,
+    "line": 1565
+  },
+  {
+    "type": "entry",
+    "greek": "χοντρός",
+    "details": "-ή, -ό",
+    "english": "fat, thick",
+    "indent": false,
+    "line": 1566
+  },
+  {
+    "type": "entry",
+    "greek": "χορευτής/-τρια",
+    "details": "ο/η",
+    "english": "dancer",
+    "indent": false,
+    "line": 1567
+  },
+  {
+    "type": "entry",
+    "greek": "χορεύω",
+    "details": "",
+    "english": "to dance",
+    "indent": false,
+    "line": 1568
+  },
+  {
+    "type": "entry",
+    "greek": "χορός",
+    "details": "ο",
+    "english": "dancing",
+    "indent": false,
+    "line": 1569
+  },
+  {
+    "type": "entry",
+    "greek": "χρήματα",
+    "details": "τα",
+    "english": "money",
+    "indent": false,
+    "line": 1570
+  },
+  {
+    "type": "entry",
+    "greek": "χρησιμοποιώ",
+    "details": "",
+    "english": "to use",
+    "indent": false,
+    "line": 1571
+  },
+  {
+    "type": "entry",
+    "greek": "Χρήστος",
+    "details": "ο",
+    "english": "Chris",
+    "indent": false,
+    "line": 1572
+  },
+  {
+    "type": "entry",
+    "greek": "Χριστίνα",
+    "details": "η",
+    "english": "Christina",
+    "indent": false,
+    "line": 1573
+  },
+  {
+    "type": "entry",
+    "greek": "χρυσάφι",
+    "details": "το",
+    "english": "gold",
+    "indent": false,
+    "line": 1574
+  },
+  {
+    "type": "entry",
+    "greek": "χρυσός",
+    "details": "ο",
+    "english": "gold",
+    "indent": false,
+    "line": 1575
+  },
+  {
+    "type": "entry",
+    "greek": "χρώμα",
+    "details": "το",
+    "english": "colour",
+    "indent": false,
+    "line": 1576
+  },
+  {
+    "type": "entry",
+    "greek": "χρωματίζω",
+    "details": "",
+    "english": "to colour, to paint",
+    "indent": false,
+    "line": 1577
+  },
+  {
+    "type": "entry",
+    "greek": "χτενίζω",
+    "details": "",
+    "english": "to comb",
+    "indent": false,
+    "line": 1578
+  },
+  {
+    "type": "entry",
+    "greek": "χτένα",
+    "details": "η",
+    "english": "comb",
+    "indent": false,
+    "line": 1579
+  },
+  {
+    "type": "entry",
+    "greek": "χτες/χθες",
+    "details": "",
+    "english": "yesterday",
+    "indent": false,
+    "line": 1580
+  },
+  {
+    "type": "entry",
+    "greek": "χτυπάω/-ώ την πόρτα",
+    "details": "",
+    "english": "to knock on the door",
+    "indent": false,
+    "line": 1581
+  },
+  {
+    "type": "entry",
+    "greek": "χτυπάει η πόρτα",
+    "details": "",
+    "english": "there is a knock on the door",
+    "indent": false,
+    "line": 1582
+  },
+  {
+    "type": "entry",
+    "greek": "χτυπάει το τηλέφωνο",
+    "details": "",
+    "english": "the phone is ringing",
+    "indent": false,
+    "line": 1583
+  },
+  {
+    "type": "entry",
+    "greek": "χυμός",
+    "details": "ο",
+    "english": "juice",
+    "indent": false,
+    "line": 1584
+  },
+  {
+    "type": "entry",
+    "greek": "χώμα",
+    "details": "το",
+    "english": "soil, ground",
+    "indent": false,
+    "line": 1585
+  },
+  {
+    "type": "entry",
+    "greek": "χώρα",
+    "details": "η",
+    "english": "country",
+    "indent": false,
+    "line": 1586
+  },
+  {
+    "type": "entry",
+    "greek": "χωριάτικη σαλάτα",
+    "details": "η",
+    "english": "Greek salad",
+    "indent": false,
+    "line": 1587
+  },
+  {
+    "type": "entry",
+    "greek": "χωριό",
+    "details": "το",
+    "english": "village",
+    "indent": false,
+    "line": 1588
+  },
+  {
+    "type": "entry",
+    "greek": "χωρίς",
+    "details": "",
+    "english": "without",
+    "indent": false,
+    "line": 1589
+  },
+  {
+    "type": "entry",
+    "greek": "χώρος",
+    "details": "ο",
+    "english": "space, room",
+    "indent": false,
+    "line": 1590
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ψ, ψ",
+    "name": "ψι",
+    "line": 1592
+  },
+  {
+    "type": "entry",
+    "greek": "ψαρεύω",
+    "details": "",
+    "english": "to fish",
+    "indent": false,
+    "line": 1594
+  },
+  {
+    "type": "entry",
+    "greek": "ψάρι",
+    "details": "το",
+    "english": "fish",
+    "indent": false,
+    "line": 1595
+  },
+  {
+    "type": "entry",
+    "greek": "ψάχνω",
+    "details": "",
+    "english": "to search, to look for",
+    "indent": false,
+    "line": 1596
+  },
+  {
+    "type": "entry",
+    "greek": "ψέμα",
+    "details": "το",
+    "english": "lie",
+    "indent": false,
+    "line": 1597
+  },
+  {
+    "type": "entry",
+    "greek": "λέω ψέματα",
+    "details": "",
+    "english": "to lie",
+    "indent": true,
+    "line": 1598
+  },
+  {
+    "type": "entry",
+    "greek": "ψηλός",
+    "details": "-ή, -ό",
+    "english": "tall, high",
+    "indent": false,
+    "line": 1599
+  },
+  {
+    "type": "entry",
+    "greek": "ψυγείο",
+    "details": "το",
+    "english": "refrigerator, fridge",
+    "indent": false,
+    "line": 1600
+  },
+  {
+    "type": "entry",
+    "greek": "ψωμί",
+    "details": "το",
+    "english": "bread",
+    "indent": false,
+    "line": 1601
+  },
+  {
+    "type": "entry",
+    "greek": "ψώνια",
+    "details": "τα",
+    "english": "shopping",
+    "indent": false,
+    "line": 1602
+  },
+  {
+    "type": "entry",
+    "greek": "ψωνίζω",
+    "details": "",
+    "english": "to shop, to go shopping",
+    "indent": false,
+    "line": 1603
+  },
+  {
+    "type": "alphabet",
+    "letter": "Ω, ω",
+    "name": "ωμέγα",
+    "line": 1605
+  },
+  {
+    "type": "entry",
+    "greek": "ωδείο",
+    "details": "το",
+    "english": "conservatory",
+    "indent": false,
+    "line": 1607
+  },
+  {
+    "type": "entry",
+    "greek": "ώρα",
+    "details": "η",
+    "english": "hour",
+    "indent": false,
+    "line": 1608
+  },
+  {
+    "type": "entry",
+    "greek": "η ώρα είναι τέσσερις",
+    "details": "",
+    "english": "(it is) four o'clock",
+    "indent": true,
+    "line": 1609
+  },
+  {
+    "type": "entry",
+    "greek": "η ώρα είναι τεσσερισήμισι",
+    "details": "",
+    "english": "(it is) half past four",
+    "indent": true,
+    "line": 1610
+  },
+  {
+    "type": "entry",
+    "greek": "ωράριο",
+    "details": "το",
+    "english": "schedule, working hours",
+    "indent": false,
+    "line": 1613
+  },
+  {
+    "type": "entry",
+    "greek": "ως",
+    "details": "",
+    "english": "until, till",
+    "indent": false,
+    "line": 1614
+  },
+  {
+    "type": "entry",
+    "greek": "ώστε",
+    "details": "",
+    "english": "in order to, so that",
+    "indent": false,
+    "line": 1615
+  },
+  {
+    "type": "entry",
+    "greek": "ωστόσο",
+    "details": "",
+    "english": "however",
+    "indent": false,
+    "line": 1616
+  }
+]
