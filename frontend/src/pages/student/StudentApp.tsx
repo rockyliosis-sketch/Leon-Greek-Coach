@@ -634,7 +634,11 @@ const normalizeChineseString = (str: string): string => {
   });
 
   // Remove common prefixes
-  const prefixes = ["这是", "那是", "它是", "这个是", "那个是", "一个", "是一只", "一个", "一些", "这", "那", "它"];
+  const prefixes = [
+    "这是", "那是", "它是", "这个是", "那个是", "是一只", "一个", "一些",
+    "我们", "你们", "他们", "她们", "它们",
+    "这", "那", "它", "我", "你", "他", "她", "去", "要", "在"
+  ];
   let changedPrefix = true;
   while (changedPrefix) {
     changedPrefix = false;
@@ -658,9 +662,6 @@ const normalizeChineseString = (str: string): string => {
       }
     }
   }
-
-  // Strip common structural/pronoun fillers to allow flexible syntax
-  s = s.replace(/[我在去你他她它们]/g, "");
 
   // Apply synonym replacements
   const synonymGroups = [
@@ -714,36 +715,88 @@ const getLevenshteinDistance = (a: string, b: string): number => {
   return dp[m][n];
 };
 
+const GREEK_INFLECTION_SUFFIX = /(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/;
+
 const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   const u = cleanGreekForComparison(userRaw);
   const t = cleanGreekForComparison(targetRaw);
   if (!u || !t) return false;
   if (u === t) return true;
 
-  // 1. Verb / Noun Stem Matching (Forgives conjugations and declensions, e.g. συζητάω vs συζητώ, αγαπάς vs αγαπώ)
-  const uStem = u.replace(/(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/, '');
-  const tStem = t.replace(/(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/, '');
-  if (uStem.length >= 3 && tStem.length >= 3) {
-    if (uStem === tStem || uStem.startsWith(tStem) || tStem.startsWith(uStem)) {
+  const isProper = isGreekProperNoun(userRaw) || isGreekProperNoun(targetRaw);
+
+  if (!isProper) {
+    // 1. 词干匹配：容忍变位与变格（συζητάω/συζητώ、αγαπάς/αγαπώ、καλός/καλή）
+    //    收紧点：词干必须完全相同，或只多出 1 个字母的词尾；且原词长度差不得超过 2~3
+    //    （旧版只要前 3 个字母一样就判对，导致 δέκα=δεκαοκτώ、κρέας=κρεμάστρα）
+    const uStem = u.replace(GREEK_INFLECTION_SUFFIX, '');
+    const tStem = t.replace(GREEK_INFLECTION_SUFFIX, '');
+    if (uStem.length >= 3 && tStem.length >= 3) {
+      if (uStem === tStem && Math.abs(u.length - t.length) <= 3) return true;
+      const longer = uStem.length >= tStem.length ? uStem : tStem;
+      const shorter = uStem.length >= tStem.length ? tStem : uStem;
+      if (
+        longer !== shorter &&
+        longer.startsWith(shorter) &&
+        longer.length - shorter.length <= 1 &&
+        Math.abs(u.length - t.length) <= 2
+      ) {
+        return true;
+      }
+    }
+
+    // 2. 包含匹配：容忍冠词与短语外壳（το σπίτι vs σπίτι）
+    //    收紧点：较短的一方至少 4 个字母，长度差不超过 3
+    const shorterLen = Math.min(u.length, t.length);
+    if ((u.includes(t) || t.includes(u)) && shorterLen >= 4 && Math.abs(u.length - t.length) <= 3) {
       return true;
     }
   }
 
-  // 2. Substring & Enclosure Matching (e.g. πες μου vs πες, το σπίτι vs σπίτι)
-  if (u.includes(t) || t.includes(u)) {
-    if (Math.abs(u.length - t.length) <= 4) return true;
-  }
-
-  // 3. Edit Distance / Typo Forgiveness (1 typo for medium words, 2 typos for long words)
+  // 3. 拼写容错：4 个字母及以上允许 1 个错字（AGENTS.md 硬性规则）
+  //    专名要求更严：至少 8 个字母才给 1 个错字的余量
   const dist = getLevenshteinDistance(u, t);
+  if (isProper) {
+    return t.length >= 8 && dist <= 1;
+  }
   if (t.length >= 4 && dist <= 1) return true;
-  if (t.length >= 7 && dist <= 2) return true;
+  if (t.length >= 9 && dist <= 2) return true;
 
   return false;
 };
 
 const cleanChinese = (str: string): string => {
   return normalizeChineseString(str);
+};
+
+// 把一条中文释义拆成若干「义项」：顿号/逗号/斜杠分隔的每一段都算一个可接受答案
+// 例：「顶部 / 陀螺」→ ["顶部","陀螺","顶部陀螺"]；「衣架、挂钩」→ ["衣架","挂钩","衣架挂钩"]
+const splitChineseSenses = (raw: string): string[] => {
+  if (!raw) return [];
+  const senses = removeBracketContents(raw)
+    .split(/[，,、;；\/／|｜]+/)
+    .map(part => normalizeChineseString(part))
+    .filter(Boolean);
+  const whole = normalizeChineseString(raw);
+  if (whole) senses.push(whole);
+  return Array.from(new Set(senses));
+};
+
+// 中文答案判定：必须答出某一个完整义项，不再是「命中一个字就算对」
+const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => {
+  const user = normalizeChineseString(userRaw);
+  if (!user) return false;
+  const senses = splitChineseSenses(answerRaw);
+  if (senses.length === 0) return false;   // 答案为空时一律判错，绝不放行
+
+  for (const sense of senses) {
+    if (user === sense) return true;
+    // 学生少写了修饰字：至少写满 2 字，且最多只能少 2 字
+    if (sense.includes(user) && user.length >= 2 && sense.length - user.length <= 2) return true;
+    // 学生多写了限定字：义项本身至少 2 字，且最多只能多 3 字
+    if (user.includes(sense) && sense.length >= 2 && user.length - sense.length <= 3) return true;
+  }
+  return false;
 };
 
 // Alternative translations mapping for specific Greek words to support multiple meanings
@@ -759,11 +812,13 @@ const getCleanSpellingWord = (word: string): string => {
   return removeGreekAccents(target).replace(/\s+/g, '');
 };
 
+// 判断是不是专有名词（人名/地名）：跳过前导符号后，首个希腊字母是大写
+// 专名之间只差一两个字母的情况极多（Πέτρος/πέτρα、Αστερίξ/αστέρι），判题时必须走严格比对
 const isGreekProperNoun = (word: string): boolean => {
-  const trimmed = word.trim();
-  if (trimmed.length === 0) return false;
-  const firstChar = trimmed[0];
-  return firstChar === firstChar.toUpperCase() && firstChar !== firstChar.toLowerCase();
+  const trimmed = (word || '').trim().replace(/^[^Ͱ-Ͽἀ-῿]+/, '');
+  const firstChar = trimmed.charAt(0);
+  if (!firstChar || !/[Ͱ-Ͽἀ-῿]/.test(firstChar)) return false;
+  return firstChar !== firstChar.toLowerCase();
 };
 
 const hasGreekCharacters = (text: string): boolean => {
@@ -2375,18 +2430,9 @@ export default function StudentApp() {
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
   const handleCheckTransGrZh = () => {
-    const cleanUser = cleanChinese(userTransGrZhInput);
-    const cleanAnswer = cleanChinese(currentTransGrZh.chinese);
-    const normUser = normalizeChineseString(userTransGrZhInput);
-    const normAnswer = normalizeChineseString(currentTransGrZh.chinese);
+    let correct = isChineseAnswerCorrect(userTransGrZhInput, currentTransGrZh.chinese);
 
-    let correct = cleanUser === cleanAnswer || 
-                  normUser === normAnswer ||
-                  (normUser.length >= 1 && (normUser.includes(normAnswer) || normAnswer.includes(normUser))) ||
-                  (cleanUser.includes(cleanAnswer) && cleanAnswer.length >= 1) || 
-                  (cleanAnswer.includes(cleanUser) && cleanUser.length >= 1);
-    
-    // Check alternative translations based on the Greek word
+    // 家长后台审核通过的备选译法，以及内置的一词多义表
     if (!correct) {
       const cleanGreekKey = cleanGreekForComparison(currentTransGrZh.greek);
       const alternatives = [
@@ -2394,13 +2440,7 @@ export default function StudentApp() {
         ...(alternativeTranslations[cleanGreekKey] || [])
       ];
       for (const alt of alternatives) {
-        const cleanAlt = cleanChinese(alt);
-        const normAlt = normalizeChineseString(alt);
-        if (cleanUser === cleanAlt || 
-            normUser === normAlt ||
-            (normUser.length >= 1 && (normUser.includes(normAlt) || normAlt.includes(normUser))) ||
-            (cleanUser.includes(cleanAlt) && cleanAlt.length >= 1) || 
-            (cleanAlt.includes(cleanUser) && cleanUser.length >= 1)) {
+        if (isChineseAnswerCorrect(userTransGrZhInput, alt)) {
           correct = true;
           break;
         }
@@ -2442,37 +2482,51 @@ export default function StudentApp() {
     if (rawGreek) {
       list.push(...getExpandedGlossaryVariants(rawGreek));
     }
-    const cleanZh = (rawChinese || '').trim();
     const cleanGr = cleanGreekForComparison(rawGreek);
+    const senses = splitChineseSenses(rawChinese || '');
 
-    // Common synonyms, alternate forms, and imperative/lemma variants
-    if (cleanZh === '说' || cleanZh.includes('说') || ['πες', 'λεω', 'μιλαω', 'μιλω', 'πειτε', 'λες'].includes(cleanGr)) {
-      list.push('λέω', 'μιλάω', 'μιλώ', 'πες', 'πείτε', 'λες');
-    }
-    if (cleanZh === '看' || cleanZh.includes('看') || ['βλεπω', 'κοιταζω', 'κοιτω', 'δες'].includes(cleanGr)) {
-      list.push('βλέπω', 'κοιτάζω', 'κοιτώ', 'δες');
-    }
-    if (cleanZh === '吃' || cleanZh.includes('吃') || ['τρωω', 'τρωγω', 'φαε'].includes(cleanGr)) {
-      list.push('τρώω', 'τρώγω', 'φάε');
-    }
-    if (cleanZh === '喝' || cleanZh.includes('喝') || ['πινω', 'πιες'].includes(cleanGr)) {
-      list.push('πίνω', 'πιες');
-    }
-    if (cleanZh === '买' || cleanZh.includes('买') || ['αγοραζω', 'ψωνιζω'].includes(cleanGr)) {
-      list.push('αγοράζω', 'ψωνίζω');
-    }
-    if (cleanZh.includes('讨论') || ['συζηταω', 'συζητω'].includes(cleanGr)) {
-      list.push('συζητάω', 'συζητώ');
-    }
-    if (cleanZh.includes('喜欢') || cleanZh.includes('爱') || ['αγαπαω', 'αγαπω'].includes(cleanGr)) {
-      list.push('αγαπάω', 'αγαπώ');
-    }
-    if (cleanZh.includes('问') || ['ρωταω', 'ρωτω'].includes(cleanGr)) {
-      list.push('ρωτάω', 'ρωτώ');
-    }
-    if (cleanZh.includes('去') || ['παω', 'πηγαινω'].includes(cleanGr)) {
-      list.push('πάω', 'πηγαίνω');
-    }
+    // 同义词族。旧版用「中文里含有某个字」来触发，导致「去爱」触发 πάω、
+    // 「爱丁堡」触发 αγαπάω、「访问」触发 ρωτάω。现在必须整条义项完全等于关键词才触发。
+    const SAY = ['λέω', 'μιλάω', 'μιλώ', 'πες', 'πείτε', 'λες'];
+    const SEE = ['βλέπω', 'κοιτάζω', 'κοιτώ', 'δες'];
+    const EAT = ['τρώω', 'τρώγω', 'φάε'];
+    const DRINK = ['πίνω', 'πιες'];
+    const BUY = ['αγοράζω', 'ψωνίζω'];
+    const DISCUSS = ['συζητάω', 'συζητώ'];
+    const LOVE = ['αγαπάω', 'αγαπώ'];
+    const ASK = ['ρωτάω', 'ρωτώ'];
+    const GO = ['πάω', 'πηγαίνω'];
+
+    const ZH_SENSE_SYNONYMS: Record<string, string[]> = {
+      '说': SAY, '说话': SAY, '讲': SAY, '告诉': SAY,
+      '看': SEE, '看见': SEE, '观看': SEE, '瞧': SEE,
+      '吃': EAT, '吃饭': EAT,
+      '喝': DRINK, '喝水': DRINK,
+      '买': BUY, '购买': BUY,
+      '讨论': DISCUSS, '商量': DISCUSS,
+      '爱': LOVE, '喜欢': LOVE, '喜爱': LOVE,
+      '问': ASK, '提问': ASK, '询问': ASK,
+      '去': GO, '走': GO, '前往': GO
+    };
+
+    const GR_LEMMA_SYNONYMS: Record<string, string[]> = {
+      'λεω': SAY, 'μιλαω': SAY, 'μιλω': SAY, 'πες': SAY, 'πειτε': SAY, 'λες': SAY,
+      'βλεπω': SEE, 'κοιταζω': SEE, 'κοιτω': SEE, 'δες': SEE,
+      'τρωω': EAT, 'τρωγω': EAT, 'φαε': EAT,
+      'πινω': DRINK, 'πιες': DRINK,
+      'αγοραζω': BUY, 'ψωνιζω': BUY,
+      'συζηταω': DISCUSS, 'συζητω': DISCUSS,
+      'αγαπαω': LOVE, 'αγαπω': LOVE,
+      'ρωταω': ASK, 'ρωτω': ASK,
+      'παω': GO, 'πηγαινω': GO
+    };
+
+    senses.forEach(sense => {
+      const family = ZH_SENSE_SYNONYMS[sense];
+      if (family) list.push(...family);
+    });
+    const grFamily = GR_LEMMA_SYNONYMS[cleanGr];
+    if (grFamily) list.push(...grFamily);
 
     return Array.from(new Set(list));
   };
