@@ -3,6 +3,14 @@ import { db } from "./firebase";
 
 export interface SharedState {
   unit_study_dates: Record<string, string>;
+  /** 按课本页码的课堂进度：每次课记一笔「上到第几页」 */
+  page_progress?: Array<{
+    id: string;
+    date: string;
+    bookId: string;
+    upToPage: number;
+    note?: string;
+  }>;
   custom_vocab: any[];
   score: number;
   completed_date_modules: Record<string, string[]>;
@@ -27,6 +35,12 @@ export const getInitialLocalState = (): SharedState => {
   let daily_rewards_awarded = {};
   let alternative_translations = {};
   let user_feedback = [];
+  let page_progress: SharedState['page_progress'] = [];
+
+  try {
+    const pp = localStorage.getItem("leon_page_progress");
+    if (pp) page_progress = JSON.parse(pp);
+  } catch (e) {}
 
   try {
     const dates = localStorage.getItem("leon_unit_study_dates");
@@ -65,6 +79,7 @@ export const getInitialLocalState = (): SharedState => {
 
   return {
     unit_study_dates,
+    page_progress,
     custom_vocab,
     score,
     completed_date_modules,
@@ -95,6 +110,7 @@ export const subscribeToSharedState = (
         // Sync back to localStorage as a cache/backup
         try {
           localStorage.setItem("leon_unit_study_dates", JSON.stringify(data.unit_study_dates || {}));
+          localStorage.setItem("leon_page_progress", JSON.stringify(data.page_progress || []));
           localStorage.setItem("leon_custom_vocab", JSON.stringify(data.custom_vocab || []));
           localStorage.setItem("leon_score", (data.score || 0).toString());
           localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
@@ -105,6 +121,7 @@ export const subscribeToSharedState = (
         
         onUpdate({
           unit_study_dates: data.unit_study_dates || {},
+          page_progress: data.page_progress || [],
           custom_vocab: data.custom_vocab || [],
           score: data.score || 0,
           completed_date_modules: data.completed_date_modules || {},
@@ -150,6 +167,9 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
     try {
       if (updates.unit_study_dates) {
         localStorage.setItem("leon_unit_study_dates", JSON.stringify(updates.unit_study_dates));
+      }
+      if (updates.page_progress) {
+        localStorage.setItem("leon_page_progress", JSON.stringify(updates.page_progress));
       }
       if (updates.custom_vocab) {
         localStorage.setItem("leon_custom_vocab", JSON.stringify(updates.custom_vocab));

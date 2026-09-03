@@ -8,14 +8,15 @@
   {
    "unit": 1,
    "pdf_pages": [
-    1,
+    17,
     41
    ],
    "book_pages": [
-    0,
+    16,
     40
    ],
-   "anchors": 4
+   "anchors": 4,
+   "note": "原书0-15页为版权页/序言/教师说明, 非教学内容, 已排除"
   },
   {
    "unit": 2,
@@ -77,5 +78,9 @@
    ],
    "anchors": 1
   }
+ ],
+ "front_matter_book_pages": [
+  0,
+  15
  ]
 }

@@ -16,9 +16,17 @@ import {
   CloudOff,
   RefreshCw,
   AlertTriangle,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  BookMarked
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
+import vocabV2Data from '../../data/vocabulary_v2.json';
+import {
+  type PageMark, type V2Word,
+  normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
+  makeMarkId, BOOK_PAGE_RANGE, LOCKED as PAGE_LOCKED
+} from '../../lib/pageProgress';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
@@ -268,6 +276,9 @@ const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
   return grammarData[bookKey]?.[unitNum] || "主要涵盖当前章节语法知识点及课后练习";
 };
 
+// 教材重建产出的真词库(每个词带书内首次出现页码与全部出现页)
+const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
+
 const START_DATE = "2025-09-06";
 
 interface UnitSchedule {
@@ -509,6 +520,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // Vocabulary & Activation states
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
+  const [pageMarks, setPageMarks] = useState<PageMark[]>([]);
+  const [pmBook, setPmBook] = useState<string>('a1-b');
+  const [pmPage, setPmPage] = useState<string>('');
+  const [pmDate, setPmDate] = useState<string>('');
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
@@ -558,6 +573,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         
         setAllVocab(mergedVocab);
         setUnitStudyDates(state.unit_study_dates || {});
+        setPageMarks(Array.isArray(state.page_progress) ? state.page_progress : []);
         const mergedAlts = {
           ...localAlternatives,
           ...(state.alternative_translations || {})
@@ -617,6 +633,36 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   }, [allVocab]);
 
   // Handle unit date update
+  // ===== 按课本页码的课堂进度 =====
+  const persistPageMarks = (next: PageMark[]) => {
+    setPageMarks(next);
+    saveSharedState({ page_progress: next });
+  };
+
+  const handleAddPageMark = () => {
+    const rng = BOOK_PAGE_RANGE[pmBook];
+    const page = parseInt(pmPage, 10);
+    const date = pmDate || getGreeceDateString();
+    if (!rng) { alert('请选择课本'); return; }
+    if (!Number.isFinite(page) || page < rng.min || page > rng.max) {
+      alert(`页码需要在 ${rng.min}–${rng.max} 之间（${rng.name}）`);
+      return;
+    }
+    const frontier = getBookFrontier(pageMarks, pmBook);
+    if (page < frontier && !window.confirm(
+      `这本书已经记录到第 ${frontier} 页，你现在填的是第 ${page} 页（往回退）。\n` +
+      `确定要这样记吗？（回退不会删掉已有记录，只是多一个更早的进度点）`)) return;
+    persistPageMarks([...pageMarks, { id: makeMarkId(), date, bookId: pmBook, upToPage: page }]);
+    setPmPage(''); setPmDate('');
+  };
+
+  const handleDeletePageMark = (id: string) => {
+    const m = pageMarks.find(x => x.id === id);
+    if (!m) return;
+    if (!window.confirm(`删除这条进度记录？\n${m.date}  ${BOOK_PAGE_RANGE[m.bookId]?.name || m.bookId}  上到第 ${m.upToPage} 页`)) return;
+    persistPageMarks(pageMarks.filter(x => x.id !== id));
+  };
+
   const handleUpdateUnitDate = (bookId: string, unit: number, dateStr: string) => {
     if (!dateStr) {
       alert('请选择有效的日期！');
@@ -810,8 +856,115 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   // --- Views ---
 
+  // ===== 课堂进度面板（按课本页码） =====
+  const renderPageProgressPanel = () => {
+    const today = getGreeceDateString();
+    const books = ['a1-a', 'a1-b', 'a2'];
+    const unlockedAll = unlockedWords(V2_WORDS, pageMarks, today);
+    const history = [...pageMarks].sort((a, b) =>
+      (b.date + b.bookId).localeCompare(a.date + a.bookId));
+
+    return (
+      <div className="admin-panel mb-8">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h3 className="admin-panel-title" style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookMarked size={18} className="text-blue" /> 课堂进度（按课本页码）
+            </h3>
+            <p style={{ fontSize: '13px', color: '#86868B', fontWeight: 500, lineHeight: 1.6, maxWidth: '640px' }}>
+              每次上完课，记一笔「今天上到第几页」就行。系统按<b>词在课本里第一次出现的那一页</b>解锁，
+              艾宾浩斯复习也从那天算起。<b>不必等整个单元学完</b>——课上到哪，练到哪。
+            </p>
+          </div>
+          <div style={{ background: 'rgba(52,199,89,0.08)', border: '1px solid rgba(52,199,89,0.2)', borderRadius: '10px', padding: '8px 14px' }}>
+            <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 700 }}>按页码已解锁</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#34C759' }}>{unlockedAll.length} 词</div>
+          </div>
+        </div>
+
+        {/* 各书进度条 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '12px', marginBottom: '20px' }}>
+          {books.map(b => {
+            const rng = BOOK_PAGE_RANGE[b];
+            const front = getBookFrontier(pageMarks, b);
+            const pct = front <= 0 ? 0 : Math.min(100, Math.round((front - rng.min) / (rng.max - rng.min) * 100));
+            const cnt = unlockedAll.filter(w => w.book_id === b).length;
+            const total = V2_WORDS.filter(w => w.book_id === b).length;
+            return (
+              <div key={b} style={{ border: '1px solid #E5E5EA', borderRadius: '12px', padding: '14px', background: '#FFF' }}>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '2px' }}>{rng.name}</div>
+                <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '10px' }}>
+                  {front > 0 ? <>已上到 <b style={{ color: '#0071E3' }}>第 {front} 页</b> / 共 {rng.max} 页</> : '尚未记录进度'}
+                </div>
+                <div style={{ height: '8px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#0071E3,#34C759)', borderRadius: '99px', transition: 'width .3s' }} />
+                </div>
+                <div style={{ fontSize: '12px', color: '#86868B', marginTop: '8px' }}>
+                  已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 记录一次课 */}
+        <div style={{ background: '#F5F5F7', borderRadius: '12px', padding: '14px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>课本</label>
+            <select value={pmBook} onChange={e => setPmBook(e.target.value)}
+              style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600, minWidth: '190px', background: '#FFF' }}>
+              {books.map(b => <option key={b} value={b}>{BOOK_PAGE_RANGE[b].name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>
+              这次课上到第几页（{BOOK_PAGE_RANGE[pmBook]?.min}–{BOOK_PAGE_RANGE[pmBook]?.max}）
+            </label>
+            <input type="number" value={pmPage} onChange={e => setPmPage(e.target.value)}
+              placeholder={String(getBookFrontier(pageMarks, pmBook) || BOOK_PAGE_RANGE[pmBook]?.min || '')}
+              style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600, width: '130px' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>上课日期（默认今天）</label>
+            <input type="date" value={pmDate} onChange={e => setPmDate(e.target.value)}
+              style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600 }} />
+          </div>
+          <button onClick={handleAddPageMark}
+            style={{ padding: '10px 20px', borderRadius: '9px', border: 'none', background: '#0071E3', color: '#FFF', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Check size={15} /> 记录这次课
+          </button>
+        </div>
+
+        {/* 历史记录 */}
+        {history.length > 0 && (
+          <div style={{ marginTop: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#86868B', marginBottom: '8px' }}>
+              进度记录（共 {history.length} 条，点右侧可删除）
+            </div>
+            <div style={{ maxHeight: '220px', overflowY: 'auto', border: '1px solid #E5E5EA', borderRadius: '10px' }}>
+              {history.map(m => (
+                <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid #F0F0F3', fontSize: '13px' }}>
+                  <span style={{ color: '#1D1D1F', fontWeight: 600 }}>
+                    <span style={{ color: '#0071E3', fontWeight: 700 }}>{m.date}</span>
+                    <span style={{ margin: '0 10px', color: '#86868B' }}>{BOOK_PAGE_RANGE[m.bookId]?.name || m.bookId}</span>
+                    上到第 <b>{m.upToPage}</b> 页
+                  </span>
+                  <button onClick={() => handleDeletePageMark(m.id)} title="删除这条记录"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF3B30', display: 'flex', padding: '4px' }}>
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderActivationTab = () => (
     <div className="animate-fade-in">
+      {renderPageProgressPanel()}
       <div className="admin-panel mb-8">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
@@ -1419,6 +1572,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       const stateToSave = {
         unit_study_dates: unitStudyDates,
+        page_progress: pageMarks,
         custom_vocab: customVocab,
         score: score,
         completed_date_modules: completedModules,

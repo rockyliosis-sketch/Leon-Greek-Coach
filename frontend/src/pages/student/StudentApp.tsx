@@ -22,6 +22,11 @@ import {
 } from 'lucide-react';
 
 import staticVocabData from '../../data/vocabulary.json';
+import vocabV2Data from '../../data/vocabulary_v2.json';
+import {
+  type PageMark, type V2Word,
+  resolveActivationByPage, LOCKED as PAGE_LOCKED
+} from '../../lib/pageProgress';
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
@@ -46,7 +51,24 @@ const speakGreek = (text: string) => {
   }
 };
 
+/** 教材重建产出的真词库 */
+const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
+/** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
+export const PAGE_UNIT_BASE = 1000;
+const v2ToWord = (w: V2Word): any => ({
+  id: 100000 + w.id,
+  book_id: w.book_id,
+  unit: w.unit != null ? w.unit : PAGE_UNIT_BASE + w.page_number,
+  page_number: w.page_number,
+  word_greek: w.headword,
+  word_chinese: w.word_chinese,
+  pronunciation: w.pronunciation,
+  example_greek: null,
+  example_chinese: null,
+});
+
 const getUnitChineseName = (bookId: string, unitNum: number): string => {
+  if (unitNum >= PAGE_UNIT_BASE) return `课本第 ${unitNum - PAGE_UNIT_BASE} 页`;
   const bookKey = bookId.toUpperCase();
   const unitNames: Record<string, Record<number, string>> = {
     "A1-A": {
@@ -1250,7 +1272,13 @@ export default function StudentApp() {
   useEffect(() => {
     const unsubscribe = subscribeToSharedState(
       (state) => {
-        let mergedVocab = [...(staticVocabData.textbook_vocabulary || [])] as Word[];
+        const pageMarks: PageMark[] = Array.isArray(state.page_progress) ? state.page_progress : [];
+        const pageBooks = new Set(pageMarks.map(m => String(m.bookId).toLowerCase()));
+        // 家长已按页码记录进度的书 -> 换成教材重建产出的真词库; 其余书维持原样, 不影响现有进度
+        const oldKept = (staticVocabData.textbook_vocabulary || [])
+          .filter((w: any) => !pageBooks.has(String(w.book_id || '').toLowerCase()));
+        const v2Words = V2_WORDS.filter(w => pageBooks.has(w.book_id)).map(v2ToWord);
+        let mergedVocab = [...oldKept, ...v2Words] as Word[];
         let customVocab = state.custom_vocab || [];
         
         // --- DATA MIGRATION FIX ---
@@ -1284,6 +1312,12 @@ export default function StudentApp() {
         setUserFeedbackList(state.user_feedback || []);
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
+        // 按页码解锁的词, 用课堂进度覆盖掉按单元算出来的日期
+        const byPage = resolveActivationByPage(
+          V2_WORDS.filter(w => pageBooks.has(w.book_id)), pageMarks);
+        Object.keys(byPage).forEach(k => {
+          finalActivated[100000 + Number(k)] = byPage[Number(k)];
+        });
         setActivatedDates(finalActivated);
 
         const dateStr = getGreeceDateString();
