@@ -1,0 +1,44 @@
+{
+ "book": "A2new",
+ "source": "A2_Book.pdf 印刷版扫描",
+ "offset": "书页=PDF页-1",
+ "method": "全页OCR页脚单元号 + 单调相容过滤 + 中点定界",
+ "units": [
+  {
+   "unit": 1,
+   "pdf_pages": [
+    1,
+    152
+   ],
+   "book_pages": [
+    0,
+    151
+   ],
+   "anchors": 0
+  },
+  {
+   "unit": 3,
+   "pdf_pages": [
+    56,
+    152
+   ],
+   "book_pages": [
+    55,
+    151
+   ],
+   "anchors": 3
+  },
+  {
+   "unit": 5,
+   "pdf_pages": [
+    100,
+    152
+   ],
+   "book_pages": [
+    99,
+    151
+   ],
+   "anchors": 1
+  }
+ ]
+}
