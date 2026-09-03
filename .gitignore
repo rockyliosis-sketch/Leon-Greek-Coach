@@ -25,3 +25,9 @@ Thumbs.db
 *.docx
 *.zip
 *.tar.gz
+
+# OCR 中间产物(可重跑, 不入库)
+scratch/ocr_work/
+scratch/ocr_text/
+scratch/pdf_verify/*.png
+scratch/pdf_verify/*.jpg
