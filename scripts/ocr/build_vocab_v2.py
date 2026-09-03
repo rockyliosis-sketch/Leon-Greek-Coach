@@ -43,7 +43,7 @@ def headword(entry):
     return h or entry
 
 # 交叉引用与人工补充的中文释义
-XREF = json.load(open(f'{ROOT}/scratch/zh_crossref.json')) if os.path.exists(f'{ROOT}/scratch/zh_crossref.json') else {}
+XREF = json.load(open(f'{G}/zh_crossref.json')) if os.path.exists(f'{G}/zh_crossref.json') else {}
 _SUP_RAW = json.load(open(f'{G}/zh_supplement.json'))
 SUPP = {k: v for k, v in _SUP_RAW.items() if not k.startswith('_')}
 FIXES = _SUP_RAW.get('_corrections', {})       # 更正官方误译, 优先级最高

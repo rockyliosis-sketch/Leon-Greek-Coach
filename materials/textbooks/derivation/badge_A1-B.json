@@ -1,0 +1,427 @@
+{
+ "1": {
+  "book_page": 174,
+  "unit": null,
+  "has_word": false
+ },
+ "2": {
+  "book_page": 172,
+  "unit": null,
+  "has_word": false
+ },
+ "3": {
+  "book_page": 170,
+  "unit": null,
+  "has_word": false
+ },
+ "4": {
+  "book_page": 168,
+  "unit": null,
+  "has_word": false
+ },
+ "5": {
+  "book_page": 166,
+  "unit": null,
+  "has_word": false
+ },
+ "6": {
+  "book_page": 164,
+  "unit": null,
+  "has_word": false
+ },
+ "7": {
+  "book_page": 162,
+  "unit": null,
+  "has_word": false
+ },
+ "8": {
+  "book_page": 160,
+  "unit": null,
+  "has_word": false
+ },
+ "9": {
+  "book_page": 158,
+  "unit": null,
+  "has_word": false
+ },
+ "10": {
+  "book_page": 156,
+  "unit": null,
+  "has_word": false
+ },
+ "11": {
+  "book_page": 154,
+  "unit": null,
+  "has_word": false
+ },
+ "12": {
+  "book_page": 152,
+  "unit": null,
+  "has_word": false
+ },
+ "13": {
+  "book_page": 150,
+  "unit": null,
+  "has_word": false
+ },
+ "14": {
+  "book_page": 148,
+  "unit": null,
+  "has_word": false
+ },
+ "15": {
+  "book_page": 146,
+  "unit": null,
+  "has_word": false
+ },
+ "16": {
+  "book_page": 144,
+  "unit": null,
+  "has_word": false
+ },
+ "17": {
+  "book_page": 142,
+  "unit": null,
+  "has_word": false
+ },
+ "18": {
+  "book_page": 140,
+  "unit": null,
+  "has_word": true
+ },
+ "19": {
+  "book_page": 138,
+  "unit": null,
+  "has_word": false
+ },
+ "20": {
+  "book_page": 136,
+  "unit": null,
+  "has_word": false
+ },
+ "21": {
+  "book_page": 134,
+  "unit": null,
+  "has_word": false
+ },
+ "22": {
+  "book_page": 132,
+  "unit": null,
+  "has_word": true
+ },
+ "23": {
+  "book_page": 130,
+  "unit": null,
+  "has_word": false
+ },
+ "24": {
+  "book_page": 128,
+  "unit": null,
+  "has_word": false
+ },
+ "25": {
+  "book_page": 126,
+  "unit": null,
+  "has_word": false
+ },
+ "26": {
+  "book_page": 124,
+  "unit": null,
+  "has_word": false
+ },
+ "27": {
+  "book_page": 122,
+  "unit": null,
+  "has_word": false
+ },
+ "28": {
+  "book_page": 120,
+  "unit": null,
+  "has_word": false
+ },
+ "29": {
+  "book_page": 118,
+  "unit": null,
+  "has_word": false
+ },
+ "30": {
+  "book_page": 116,
+  "unit": null,
+  "has_word": false
+ },
+ "31": {
+  "book_page": 114,
+  "unit": null,
+  "has_word": false
+ },
+ "32": {
+  "book_page": 112,
+  "unit": null,
+  "has_word": false
+ },
+ "33": {
+  "book_page": 110,
+  "unit": null,
+  "has_word": false
+ },
+ "34": {
+  "book_page": 108,
+  "unit": null,
+  "has_word": false
+ },
+ "35": {
+  "book_page": 106,
+  "unit": null,
+  "has_word": false
+ },
+ "36": {
+  "book_page": 104,
+  "unit": null,
+  "has_word": false
+ },
+ "37": {
+  "book_page": 102,
+  "unit": null,
+  "has_word": false
+ },
+ "38": {
+  "book_page": 100,
+  "unit": null,
+  "has_word": false
+ },
+ "39": {
+  "book_page": 98,
+  "unit": null,
+  "has_word": false
+ },
+ "40": {
+  "book_page": 96,
+  "unit": null,
+  "has_word": false
+ },
+ "41": {
+  "book_page": 94,
+  "unit": null,
+  "has_word": false
+ },
+ "42": {
+  "book_page": 92,
+  "unit": null,
+  "has_word": false
+ },
+ "43": {
+  "book_page": 90,
+  "unit": null,
+  "has_word": false
+ },
+ "44": {
+  "book_page": 88,
+  "unit": null,
+  "has_word": false
+ },
+ "45": {
+  "book_page": 86,
+  "unit": null,
+  "has_word": false
+ },
+ "46": {
+  "book_page": 84,
+  "unit": null,
+  "has_word": false
+ },
+ "47": {
+  "book_page": 82,
+  "unit": null,
+  "has_word": false
+ },
+ "48": {
+  "book_page": 80,
+  "unit": null,
+  "has_word": false
+ },
+ "49": {
+  "book_page": 78,
+  "unit": null,
+  "has_word": false
+ },
+ "50": {
+  "book_page": 76,
+  "unit": null,
+  "has_word": false
+ },
+ "51": {
+  "book_page": 74,
+  "unit": null,
+  "has_word": false
+ },
+ "52": {
+  "book_page": 72,
+  "unit": null,
+  "has_word": false
+ },
+ "53": {
+  "book_page": 70,
+  "unit": null,
+  "has_word": false
+ },
+ "54": {
+  "book_page": 68,
+  "unit": null,
+  "has_word": false
+ },
+ "55": {
+  "book_page": 66,
+  "unit": null,
+  "has_word": false
+ },
+ "56": {
+  "book_page": 64,
+  "unit": null,
+  "has_word": false
+ },
+ "57": {
+  "book_page": 62,
+  "unit": null,
+  "has_word": false
+ },
+ "58": {
+  "book_page": 60,
+  "unit": null,
+  "has_word": false
+ },
+ "59": {
+  "book_page": 58,
+  "unit": null,
+  "has_word": false
+ },
+ "60": {
+  "book_page": 56,
+  "unit": null,
+  "has_word": false
+ },
+ "61": {
+  "book_page": 54,
+  "unit": null,
+  "has_word": false
+ },
+ "62": {
+  "book_page": 52,
+  "unit": null,
+  "has_word": false
+ },
+ "63": {
+  "book_page": 50,
+  "unit": null,
+  "has_word": false
+ },
+ "64": {
+  "book_page": 48,
+  "unit": null,
+  "has_word": false
+ },
+ "65": {
+  "book_page": 46,
+  "unit": null,
+  "has_word": false
+ },
+ "66": {
+  "book_page": 44,
+  "unit": null,
+  "has_word": true
+ },
+ "67": {
+  "book_page": 42,
+  "unit": null,
+  "has_word": false
+ },
+ "68": {
+  "book_page": 40,
+  "unit": null,
+  "has_word": false
+ },
+ "69": {
+  "book_page": 38,
+  "unit": null,
+  "has_word": false
+ },
+ "70": {
+  "book_page": 36,
+  "unit": null,
+  "has_word": false
+ },
+ "71": {
+  "book_page": 34,
+  "unit": null,
+  "has_word": false
+ },
+ "72": {
+  "book_page": 32,
+  "unit": null,
+  "has_word": false
+ },
+ "73": {
+  "book_page": 30,
+  "unit": 3,
+  "has_word": true
+ },
+ "74": {
+  "book_page": 28,
+  "unit": null,
+  "has_word": false
+ },
+ "75": {
+  "book_page": 26,
+  "unit": null,
+  "has_word": false
+ },
+ "76": {
+  "book_page": 24,
+  "unit": null,
+  "has_word": true
+ },
+ "77": {
+  "book_page": 22,
+  "unit": null,
+  "has_word": false
+ },
+ "78": {
+  "book_page": 20,
+  "unit": null,
+  "has_word": false
+ },
+ "79": {
+  "book_page": 18,
+  "unit": null,
+  "has_word": true
+ },
+ "80": {
+  "book_page": 16,
+  "unit": null,
+  "has_word": false
+ },
+ "81": {
+  "book_page": 14,
+  "unit": null,
+  "has_word": false
+ },
+ "82": {
+  "book_page": 12,
+  "unit": null,
+  "has_word": false
+ },
+ "83": {
+  "book_page": 10,
+  "unit": null,
+  "has_word": false
+ },
+ "84": {
+  "book_page": 8,
+  "unit": null,
+  "has_word": false
+ },
+ "85": {
+  "book_page": 6,
+  "unit": null,
+  "has_word": false
+ }
+}
