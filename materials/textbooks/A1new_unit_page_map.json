@@ -1,0 +1,159 @@
+{
+ "book": "A1new(成人版 ΚΛΙΚ Α1 για εφήβους και ενήλικους)",
+ "source": "A1_Book.pdf 印刷版扫描(256页)",
+ "offset": "书页=PDF页-1",
+ "front_matter_pdf_pages": [
+  1,
+  35
+ ],
+ "method": "页脚OCR只认数字+要求紧邻Ενότητα词形+中点定界",
+ "caveats": [
+  "单元2无任何锚点, 只能确定它落在 PDF 53-68 之间",
+  "单元11之后(PDF 244+)未读到单元号, 该区段可能含附录"
+ ],
+ "units": [
+  {
+   "unit": 1,
+   "pdf_pages": [
+    36,
+    52
+   ],
+   "book_pages": [
+    35,
+    51
+   ],
+   "anchors": 7,
+   "inferred": false
+  },
+  {
+   "unit": 2,
+   "pdf_pages": [
+    53,
+    68
+   ],
+   "book_pages": [
+    52,
+    67
+   ],
+   "anchors": 0,
+   "inferred": true
+  },
+  {
+   "unit": 3,
+   "pdf_pages": [
+    69,
+    84
+   ],
+   "book_pages": [
+    68,
+    83
+   ],
+   "anchors": 3,
+   "inferred": false
+  },
+  {
+   "unit": 4,
+   "pdf_pages": [
+    85,
+    109
+   ],
+   "book_pages": [
+    84,
+    108
+   ],
+   "anchors": 16,
+   "inferred": false
+  },
+  {
+   "unit": 5,
+   "pdf_pages": [
+    110,
+    134
+   ],
+   "book_pages": [
+    109,
+    133
+   ],
+   "anchors": 12,
+   "inferred": false
+  },
+  {
+   "unit": 6,
+   "pdf_pages": [
+    135,
+    151
+   ],
+   "book_pages": [
+    134,
+    150
+   ],
+   "anchors": 10,
+   "inferred": false
+  },
+  {
+   "unit": 7,
+   "pdf_pages": [
+    152,
+    171
+   ],
+   "book_pages": [
+    151,
+    170
+   ],
+   "anchors": 7,
+   "inferred": false
+  },
+  {
+   "unit": 8,
+   "pdf_pages": [
+    172,
+    192
+   ],
+   "book_pages": [
+    171,
+    191
+   ],
+   "anchors": 9,
+   "inferred": false
+  },
+  {
+   "unit": 9,
+   "pdf_pages": [
+    193,
+    216
+   ],
+   "book_pages": [
+    192,
+    215
+   ],
+   "anchors": 8,
+   "inferred": false
+  },
+  {
+   "unit": 10,
+   "pdf_pages": [
+    217,
+    231
+   ],
+   "book_pages": [
+    216,
+    230
+   ],
+   "anchors": 8,
+   "inferred": false
+  },
+  {
+   "unit": 11,
+   "pdf_pages": [
+    232,
+    256
+   ],
+   "book_pages": [
+    231,
+    255
+   ],
+   "anchors": 6,
+   "inferred": false
+  }
+ ]
+}
