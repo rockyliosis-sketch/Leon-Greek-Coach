@@ -69,10 +69,17 @@ WORK = f'{ROOT}/scratch/ocr_work'
 os.makedirs(WORK, exist_ok=True)
 
 def render(pdf, page, dpi=300, out=None):
+    """pdftoppm 的补零位数取决于总页数(2位/3位), 不能猜 —— 用 glob 取实际文件"""
+    import glob as _g
     out = out or f'{WORK}/p{page}'
+    for f in _g.glob(out + '-*.png'):
+        os.remove(f)
     subprocess.run(['pdftoppm','-f',str(page),'-l',str(page),'-r',str(dpi),'-png',pdf,out],
                    capture_output=True)
-    return f'{out}-{page:02d}.png' if os.path.exists(f'{out}-{page:02d}.png') else f'{out}-{page}.png'
+    hits = _g.glob(out + '-*.png')
+    if not hits:
+        raise FileNotFoundError(f'pdftoppm 未产出: {out} (page {page})')
+    return hits[0]
 
 def ocr(img, psm=3):
     r = subprocess.run(['tesseract', img, 'stdout', '-l', 'ell', '--psm', str(psm)],
