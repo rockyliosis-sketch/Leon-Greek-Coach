@@ -118,3 +118,72 @@ export const GLOSSARY_RANGE: Record<string, { min: number; max: number; name: st
   'glossary-a2': { min: 1, max: 1682, name: 'A2 单词表' },
   'glossary-a1': { min: 1, max: 1313, name: 'A1 单词表' },
 };
+
+/* ===================================================================
+ * 单词表按首字母折叠
+ * -------------------------------------------------------------------
+ * 家长手里只有纸质词表，没有编号，数不出「背到第几个」。
+ * 所以改成：展开一个字母 → 点那个词 → 就是「背到这里」。
+ * ------------------------------------------------------------------- */
+
+/** 重音大写 Ά→Α，以及词表里混进来的拉丁同形字母 A/K/O/X→Α/Κ/Ο/Χ */
+const LETTER_FOLD: Record<string, string> = {
+  'Ά': 'Α', 'Έ': 'Ε', 'Ή': 'Η', 'Ί': 'Ι', 'Ό': 'Ο', 'Ύ': 'Υ', 'Ώ': 'Ω',
+  'Ϊ': 'Ι', 'Ϋ': 'Υ',
+  'A': 'Α', 'B': 'Β', 'E': 'Ε', 'Z': 'Ζ', 'H': 'Η', 'I': 'Ι', 'K': 'Κ',
+  'M': 'Μ', 'N': 'Ν', 'O': 'Ο', 'P': 'Ρ', 'T': 'Τ', 'X': 'Χ', 'Y': 'Υ',
+};
+
+/** 取一个词条的分组首字母（去掉引号等前导符号后的第一个字母） */
+export const glossaryLetter = (entry: { word_greek?: string; entry?: string }): string => {
+  const raw = (entry.word_greek || entry.entry || '').replace(/^[«»"“”'\s(]+/, '');
+  const ch = raw.slice(0, 1).toUpperCase();
+  return LETTER_FOLD[ch] || ch || '?';
+};
+
+export const GREEK_ALPHABET = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'.split('');
+
+export interface GlossaryLetterGroup {
+  letter: string;
+  words: any[];      // 该字母下的词条（保留原 idx）
+  firstIdx: number;  // 组内最小 idx
+  lastIdx: number;   // 组内最大 idx
+}
+
+/** 把整张词表按首字母分组，字母顺序按希腊字母表 */
+export const groupGlossaryByLetter = (list: any[]): GlossaryLetterGroup[] => {
+  const buckets = new Map<string, any[]>();
+  list.forEach(w => {
+    const L = glossaryLetter(w);
+    if (!buckets.has(L)) buckets.set(L, []);
+    buckets.get(L)!.push(w);
+  });
+  const order = (L: string) => {
+    const i = GREEK_ALPHABET.indexOf(L);
+    return i < 0 ? 999 : i;
+  };
+  return [...buckets.entries()]
+    .map(([letter, words]) => {
+      const sorted = [...words].sort((a, b) => a.idx - b.idx);
+      return {
+        letter,
+        words: sorted,
+        firstIdx: sorted[0].idx,
+        lastIdx: sorted[sorted.length - 1].idx,
+      };
+    })
+    .sort((a, b) => order(a.letter) - order(b.letter) || a.firstIdx - b.firstIdx);
+};
+
+/** 搜索词表：希腊语 / 中文 / 英文 / 拼音 任一命中即可 */
+export const searchGlossary = (list: any[], q: string, limit = 30): any[] => {
+  const s = q.trim().toLowerCase();
+  if (!s) return [];
+  return list.filter(w =>
+    (w.word_greek || '').toLowerCase().includes(s) ||
+    (w.entry || '').toLowerCase().includes(s) ||
+    (w.word_chinese || '').includes(q.trim()) ||
+    (w.word_english || '').toLowerCase().includes(s) ||
+    (w.pronunciation || '').toLowerCase().includes(s)
+  ).slice(0, limit);
+};

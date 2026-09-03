@@ -27,7 +27,8 @@ import glossaryV2 from '../../data/glossary_v2.json';
 import {
   type PageMark, type V2Word,
   normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
-  makeMarkId, BOOK_PAGE_RANGE, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
+  makeMarkId, BOOK_PAGE_RANGE, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED,
+  groupGlossaryByLetter, searchGlossary
 } from '../../lib/pageProgress';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
@@ -530,6 +531,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pmPage, setPmPage] = useState<string>('');
   const [pmDate, setPmDate] = useState<string>('');
   const [showLegacyUnits, setShowLegacyUnits] = useState(false);
+  // 单词表折叠面板：当前展开的是哪张表 / 哪个字母 / 搜索词
+  const [glossOpen, setGlossOpen] = useState<string | null>(null);
+  const [glossLetter, setGlossLetter] = useState<string | null>(null);
+  const [glossSearch, setGlossSearch] = useState('');
   const [answerLog, setAnswerLog] = useState<any[]>([]);
   const [reportWeekOffset, setReportWeekOffset] = useState(0);
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
@@ -883,6 +888,64 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // --- Views ---
 
   // ===== 课堂进度面板（按课本页码） =====
+  /** 点一个词 = 「背到这里」。upToPage 存的是这个词在词表里的序号 */
+  const handleSetGlossaryTo = (glossId: string, w: any) => {
+    const rng = GLOSSARY_RANGE[glossId];
+    if (!rng) return;
+    const date = pmDate || getGreeceDateString();
+    const front = getBookFrontier(pageMarks, glossId);
+    const zh = w.word_chinese ? `（${w.word_chinese}）` : '';
+    if (w.idx < front && !window.confirm(
+      `这张表已经记到第 ${front} 个词了，你现在点的是第 ${w.idx} 个「${w.word_greek}」${zh}（往回退）。\n` +
+      `确定要这样记吗？（回退不删已有记录，只是多一个更早的进度点）`)) return;
+    if (!window.confirm(
+      `记为：${date} 背到「${w.word_greek}」${zh}\n` +
+      `${rng.name}第 ${w.idx} / ${rng.max} 个词，前面 ${w.idx} 个词全部解锁。`)) return;
+    persistPageMarks([...pageMarks, { id: makeMarkId(), date, bookId: glossId, upToPage: w.idx, note: w.word_greek }]);
+    setGlossSearch('');
+  };
+
+  /** 清空某张单词表的全部进度记录 */
+  const handleClearGlossary = (glossId: string) => {
+    const n = pageMarks.filter(m => m.bookId === glossId).length;
+    if (!n) return;
+    if (!window.confirm(`清空「${GLOSSARY_RANGE[glossId]?.name}」的 ${n} 条背诵进度记录？\n课堂进度不受影响。`)) return;
+    persistPageMarks(pageMarks.filter(m => m.bookId !== glossId));
+  };
+
+  /** 单词表里的一行：左边词，右边「背到这里」 */
+  const renderGlossWordRow = (glossId: string, w: any, front: number) => {
+    const done = w.idx <= front;
+    const isCur = w.idx === front;
+    return (
+      <div key={w.idx}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
+          borderBottom: '1px solid #F5F5F7', fontSize: '13px',
+          background: isCur ? 'rgba(175,82,222,0.10)' : done ? 'rgba(52,199,89,0.05)' : '#FFF',
+        }}>
+        <span style={{ fontSize: '11px', color: '#C7C7CC', minWidth: '34px', fontWeight: 700 }}>{w.idx}</span>
+        <span style={{ minWidth: '14px', color: done ? '#34C759' : '#E5E5EA', fontWeight: 800 }}>{done ? '✓' : '○'}</span>
+        <span style={{ fontWeight: 700, color: '#1D1D1F', flex: '0 0 auto' }}>{w.word_greek}</span>
+        <span style={{ color: '#86868B', flex: '1 1 auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {w.word_chinese || w.word_english || ''}
+        </span>
+        {isCur ? (
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#AF52DE', whiteSpace: 'nowrap' }}>← 当前进度</span>
+        ) : (
+          <button onClick={() => handleSetGlossaryTo(glossId, w)}
+            style={{
+              fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer',
+              color: '#AF52DE', background: 'rgba(175,82,222,0.10)',
+              border: '1px solid rgba(175,82,222,0.25)', borderRadius: '7px', padding: '4px 9px',
+            }}>
+            背到这里
+          </button>
+        )}
+      </div>
+    );
+  };
+
   const renderPageProgressPanel = () => {
     const today = getGreeceDateString();
     const books = ['a1-a', 'a1-b', 'a2', 'b1'];
@@ -930,8 +993,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px', gap: '8px' }}>
                   <span style={{ fontSize: '12px', color: '#86868B' }}>
                     {total > 0
-                      ? <>已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词</>
-                      : <>课本填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b> / {clozeTotal} 道</>}
+                      ? <>已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词
+                          {clozeTotal > 0 && <> · 填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b>/{clozeTotal}</>}</>
+                      : <><b style={{ color: '#FF9500' }}>单词未入库</b> · 只有课本原句填空 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b>/{clozeTotal} 道</>}
                   </span>
                   {front < rng.max && (
                     <button onClick={() => handleFinishBook(b)}
@@ -945,6 +1009,18 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             );
           })}
         </div>
+
+        {/* B 本为什么只有填空题：如实说明，不藏 */}
+        {V2_WORDS.filter(w => w.book_id === 'b1').length === 0 && (
+          <div style={{ background: 'rgba(255,149,0,0.07)', border: '1px solid rgba(255,149,0,0.22)', borderRadius: '10px', padding: '11px 14px', marginBottom: '16px', fontSize: '12px', color: '#86868B', lineHeight: 1.7 }}>
+            <b style={{ color: '#C77700' }}>为什么 B 本这张卡跟别的不一样？</b><br />
+            A1/A2 有希腊教育部的<b>官方配套词表（含中文）</b>，我拿它当「标准答案册」去反查课本每一页，
+            所以能保证 2472 个词<b>没有一个是编的</b>。<br />
+            <b>B 本没有这样一份官方词表</b>，它的单词目前<b>一个都还没入库</b>——不是只有 150 个词，
+            而是「宁可空着，也不敢瞎编中文释义」。所以 B 本现在只出<b>课本原句填空</b>（150 道，
+            全部来自 PDF 文字层逐字解码，不是 OCR 猜的）。B 本单词入库是下一步的事。
+          </div>
+        )}
 
         {/* 记录一次课 */}
         <div style={{ background: '#F5F5F7', borderRadius: '12px', padding: '14px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
@@ -974,45 +1050,120 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </button>
         </div>
 
-        {/* ===== 单词表背诵进度（紧凑一行）===== */}
+        {/* ===== 单词表背诵进度（按首字母折叠，点词即定位）===== */}
         <div style={{ marginTop: '18px', paddingTop: '16px', borderTop: '1px dashed #E5E5EA' }}>
           <div style={{ fontSize: '14px', fontWeight: 800, color: '#1D1D1F', marginBottom: '4px' }}>
             📖 单词表背诵进度
           </div>
-          <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '10px' }}>
-            和课堂进度分开记。这里说的是「官方单词表按字母顺序背到第几个」。
+          <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '12px' }}>
+            和课堂进度分开记。<b>不用数第几个</b>——展开一个字母，找到「背到的最后一个词」，点它就行。
+            也可以直接在下面搜中文或希腊语。
           </div>
+
           {Object.keys(GLOSSARY_RANGE).map(g => {
             const rng = GLOSSARY_RANGE[g];
             const front = getBookFrontier(pageMarks, g);
             const pct = Math.min(100, Math.round(front / rng.max * 100));
             const list = GLOSS_LISTS[GLOSS_KEY[g]] || [];
-            const nextWord = list[front] ? list[front].word_greek : '—';
+            const groups = groupGlossaryByLetter(list);
+            const curWord = front > 0 ? list.find((w: any) => w.idx === front) : null;
+            const isOpen = glossOpen === g;
+            const hits = isOpen && glossSearch.trim() ? searchGlossary(list, glossSearch) : [];
+
             return (
-              <div key={g} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '13px', fontWeight: 700, color: '#1D1D1F', minWidth: '92px' }}>{rng.name}</span>
-                <div style={{ flex: '1 1 150px', minWidth: '120px' }}>
-                  <div style={{ height: '7px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: '#AF52DE', borderRadius: '99px' }} />
+              <div key={g} style={{ border: '1px solid #E5E5EA', borderRadius: '12px', marginBottom: '10px', background: '#FFF', overflow: 'hidden' }}>
+                {/* 折叠头：一行看完进度 */}
+                <div
+                  onClick={() => { setGlossOpen(isOpen ? null : g); setGlossLetter(null); setGlossSearch(''); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', cursor: 'pointer', flexWrap: 'wrap' }}
+                >
+                  <ChevronRight size={16} style={{ color: '#86868B', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }} />
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', minWidth: '84px' }}>{rng.name}</span>
+                  <div style={{ flex: '1 1 140px', minWidth: '110px' }}>
+                    <div style={{ height: '7px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: '#AF52DE', borderRadius: '99px', transition: 'width .3s' }} />
+                    </div>
                   </div>
+                  <span style={{ fontSize: '12px', color: '#86868B' }}>
+                    {front > 0
+                      ? <>已背 <b style={{ color: '#AF52DE' }}>{front}</b> / {rng.max}（背到 <b style={{ color: '#1D1D1F' }}>{curWord ? curWord.word_greek : '—'}</b>{curWord?.word_chinese ? ` ${curWord.word_chinese}` : ''}）</>
+                      : <>未开始 / 共 {rng.max} 词</>}
+                  </span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#0071E3', marginLeft: 'auto' }}>
+                    {isOpen ? '收起' : '点开设置进度'}
+                  </span>
                 </div>
-                <span style={{ fontSize: '12px', color: '#86868B', minWidth: '150px' }}>
-                  {front > 0 ? <>已背 <b style={{ color: '#AF52DE' }}>{front}</b> / {rng.max}，下一个 <b>{nextWord}</b></> : `未开始 / 共 ${rng.max} 词`}
-                </span>
-                <input type="number" placeholder={String(front || 1)}
-                  value={pmBook === g ? pmPage : ''}
-                  onFocus={() => setPmBook(g)}
-                  onChange={e => { setPmBook(g); setPmPage(e.target.value); }}
-                  style={{ padding: '6px 9px', borderRadius: '8px', border: '1px solid #D2D2D7', fontSize: '13px', width: '92px' }} />
-                <button onClick={() => { setPmBook(g); setTimeout(handleAddPageMark, 0); }}
-                  style={{ padding: '7px 13px', borderRadius: '8px', border: 'none', background: '#AF52DE', color: '#FFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-                  记录
-                </button>
-                {front < rng.max && (
-                  <button onClick={() => handleFinishBook(g)}
-                    style={{ fontSize: '11px', fontWeight: 700, color: '#34C759', background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)', borderRadius: '7px', padding: '5px 9px', cursor: 'pointer' }}>
-                    ✓ 整本背完
-                  </button>
+
+                {isOpen && (
+                  <div style={{ borderTop: '1px solid #F0F0F3', padding: '12px 14px', background: '#FAFAFC' }}>
+                    {/* 搜索框 */}
+                    <input
+                      value={glossSearch}
+                      onChange={e => setGlossSearch(e.target.value)}
+                      placeholder="搜中文 / 希腊语 / 英文，例如「舒适」或 comfortably"
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', marginBottom: '10px', background: '#FFF' }}
+                    />
+
+                    {hits.length > 0 ? (
+                      <div style={{ maxHeight: '260px', overflowY: 'auto', border: '1px solid #E5E5EA', borderRadius: '9px', background: '#FFF' }}>
+                        {hits.map((w: any) => renderGlossWordRow(g, w, front))}
+                      </div>
+                    ) : glossSearch.trim() ? (
+                      <div style={{ fontSize: '12px', color: '#86868B', padding: '8px 2px' }}>没找到「{glossSearch}」。换个说法试试，或用下面的字母翻。</div>
+                    ) : (
+                      <>
+                        {/* 字母格 */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                          {groups.map(grp => {
+                            const done = front >= grp.lastIdx;
+                            const partial = !done && front >= grp.firstIdx;
+                            const active = glossLetter === grp.letter;
+                            return (
+                              <button key={grp.letter}
+                                onClick={() => setGlossLetter(active ? null : grp.letter)}
+                                title={`${grp.words.length} 个词`}
+                                style={{
+                                  minWidth: '38px', padding: '6px 8px', borderRadius: '8px', cursor: 'pointer',
+                                  fontSize: '13px', fontWeight: 800, lineHeight: 1.2,
+                                  border: active ? '2px solid #AF52DE' : '1px solid #D2D2D7',
+                                  background: done ? 'rgba(52,199,89,0.12)' : partial ? 'rgba(175,82,222,0.12)' : '#FFF',
+                                  color: done ? '#248A3D' : partial ? '#AF52DE' : '#1D1D1F',
+                                }}>
+                                {grp.letter}
+                                <div style={{ fontSize: '9px', fontWeight: 600, color: '#86868B' }}>{grp.words.length}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#86868B', marginBottom: '8px' }}>
+                          <span style={{ color: '#248A3D', fontWeight: 700 }}>绿色</span> = 这个字母整段背完 ·
+                          <span style={{ color: '#AF52DE', fontWeight: 700 }}> 紫色</span> = 正背到这个字母 · 白色 = 还没到
+                        </div>
+
+                        {/* 展开的字母词条 */}
+                        {glossLetter && (
+                          <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E5EA', borderRadius: '9px', background: '#FFF' }}>
+                            {(groups.find(x => x.letter === glossLetter)?.words || []).map((w: any) => renderGlossWordRow(g, w, front))}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                      {front < rng.max && (
+                        <button onClick={() => handleFinishBook(g)}
+                          style={{ fontSize: '11px', fontWeight: 700, color: '#34C759', background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer' }}>
+                          ✓ 整本背完
+                        </button>
+                      )}
+                      {front > 0 && (
+                        <button onClick={() => handleClearGlossary(g)}
+                          style={{ fontSize: '11px', fontWeight: 700, color: '#FF3B30', background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)', borderRadius: '7px', padding: '6px 10px', cursor: 'pointer' }}>
+                          清空这张表的进度
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             );
