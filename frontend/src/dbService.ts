@@ -31,6 +31,15 @@ export interface SharedState {
   }>;
   /** 家长停用的词（希腊语原形，已归一化）——不再出题 */
   disabled_words?: string[];
+  /** 逐题作答记录（用于每周正确率报告）。字段刻意用短名，控制体积 */
+  answer_log?: Array<{
+    d: string;        // 日期 YYYY-MM-DD
+    m: string;        // 模块: spelling/quiz/tf/grzh/zhgr/glossary/matching
+    q: string;        // 题目标识（词或题 id）
+    ok: boolean;      // 是否答对
+    h: boolean;       // 是否看了提示/答案
+    ms: number;       // 本题耗时（毫秒）
+  }>;
 }
 
 export const getInitialLocalState = (): SharedState => {
@@ -43,6 +52,12 @@ export const getInitialLocalState = (): SharedState => {
   let user_feedback = [];
   let page_progress: SharedState['page_progress'] = [];
   let disabled_words: string[] = [];
+  let answer_log: SharedState['answer_log'] = [];
+
+  try {
+    const al = localStorage.getItem("leon_answer_log");
+    if (al) answer_log = JSON.parse(al);
+  } catch (e) {}
 
   try {
     const dw = localStorage.getItem("leon_disabled_words");
@@ -93,6 +108,7 @@ export const getInitialLocalState = (): SharedState => {
     unit_study_dates,
     page_progress,
     disabled_words,
+    answer_log,
     custom_vocab,
     score,
     completed_date_modules,
@@ -125,6 +141,7 @@ export const subscribeToSharedState = (
           localStorage.setItem("leon_unit_study_dates", JSON.stringify(data.unit_study_dates || {}));
           localStorage.setItem("leon_page_progress", JSON.stringify(data.page_progress || []));
           localStorage.setItem("leon_disabled_words", JSON.stringify(data.disabled_words || []));
+          localStorage.setItem("leon_answer_log", JSON.stringify(data.answer_log || []));
           localStorage.setItem("leon_custom_vocab", JSON.stringify(data.custom_vocab || []));
           localStorage.setItem("leon_score", (data.score || 0).toString());
           localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
@@ -137,6 +154,7 @@ export const subscribeToSharedState = (
           unit_study_dates: data.unit_study_dates || {},
           page_progress: data.page_progress || [],
           disabled_words: data.disabled_words || [],
+          answer_log: data.answer_log || [],
           custom_vocab: data.custom_vocab || [],
           score: data.score || 0,
           completed_date_modules: data.completed_date_modules || {},
@@ -188,6 +206,9 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
       }
       if (updates.disabled_words) {
         localStorage.setItem("leon_disabled_words", JSON.stringify(updates.disabled_words));
+      }
+      if (updates.answer_log) {
+        localStorage.setItem("leon_answer_log", JSON.stringify(updates.answer_log));
       }
       if (updates.custom_vocab) {
         localStorage.setItem("leon_custom_vocab", JSON.stringify(updates.custom_vocab));

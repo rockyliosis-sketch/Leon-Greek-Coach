@@ -23,10 +23,11 @@ import {
 import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
 import sentencesData from '../../data/sentences.json';
+import glossaryV2 from '../../data/glossary_v2.json';
 import {
   type PageMark, type V2Word,
   normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
-  makeMarkId, BOOK_PAGE_RANGE, LOCKED as PAGE_LOCKED
+  makeMarkId, BOOK_PAGE_RANGE, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
 } from '../../lib/pageProgress';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
@@ -280,6 +281,8 @@ const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
 // 教材重建产出的真词库(每个词带书内首次出现页码与全部出现页)
 const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
 const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
+const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
+const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2' };
 
 const START_DATE = "2025-09-06";
 
@@ -526,6 +529,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pmBook, setPmBook] = useState<string>('a1-b');
   const [pmPage, setPmPage] = useState<string>('');
   const [pmDate, setPmDate] = useState<string>('');
+  const [showLegacyUnits, setShowLegacyUnits] = useState(false);
+  const [answerLog, setAnswerLog] = useState<any[]>([]);
+  const [reportWeekOffset, setReportWeekOffset] = useState(0);
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
@@ -584,6 +590,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setAlternativeTranslations(mergedAlts);
         setUserFeedbackList(state.user_feedback || []);
         setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
+        setAnswerLog(Array.isArray(state.answer_log) ? state.answer_log : []);
       },
       (status, error) => {
         setDbStatus(status);
@@ -644,7 +651,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   const handleAddPageMark = () => {
-    const rng = BOOK_PAGE_RANGE[pmBook];
+    const rng = BOOK_PAGE_RANGE[pmBook] || GLOSSARY_RANGE[pmBook];
     const page = parseInt(pmPage, 10);
     const date = pmDate || getGreeceDateString();
     if (!rng) { alert('请选择课本'); return; }
@@ -660,10 +667,25 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     setPmPage(''); setPmDate('');
   };
 
+  /** 一键标记「这本整本已学完」 */
+  const handleFinishBook = (bookId: string) => {
+    const rng = BOOK_PAGE_RANGE[bookId] || GLOSSARY_RANGE[bookId];
+    if (!rng) return;
+    const isGloss = !!GLOSSARY_RANGE[bookId];
+    const label = isGloss ? '整本背完' : '整本学完';
+    const date = pmDate || getGreeceDateString();
+    if (!window.confirm(
+      `标记「${rng.name}」${label}？\n` +
+      `会记一条「${date} 上到第 ${rng.max} ${isGloss ? '个词' : '页'}」的进度，` +
+      `这本书的内容全部解锁。\n（记错了可以在下面的进度记录里删掉）`)) return;
+    persistPageMarks([...pageMarks, { id: makeMarkId(), date, bookId, upToPage: rng.max, note: label }]);
+  };
+
   const handleDeletePageMark = (id: string) => {
     const m = pageMarks.find(x => x.id === id);
     if (!m) return;
-    if (!window.confirm(`删除这条进度记录？\n${m.date}  ${BOOK_PAGE_RANGE[m.bookId]?.name || m.bookId}  上到第 ${m.upToPage} 页`)) return;
+    const nm = BOOK_PAGE_RANGE[m.bookId]?.name || GLOSSARY_RANGE[m.bookId]?.name || m.bookId;
+    if (!window.confirm(`删除这条进度记录？\n${m.date}  ${nm}  ${GLOSSARY_RANGE[m.bookId] ? '背到第' : '上到第'} ${m.upToPage} ${GLOSSARY_RANGE[m.bookId] ? '个词' : '页'}`)) return;
     persistPageMarks(pageMarks.filter(x => x.id !== id));
   };
 
@@ -905,10 +927,19 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <div style={{ height: '8px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#0071E3,#34C759)', borderRadius: '99px', transition: 'width .3s' }} />
                 </div>
-                <div style={{ fontSize: '12px', color: '#86868B', marginTop: '8px' }}>
-                  {total > 0
-                    ? <>已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词</>
-                    : <>课本填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b> / {clozeTotal} 道</>}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', color: '#86868B' }}>
+                    {total > 0
+                      ? <>已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词</>
+                      : <>课本填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b> / {clozeTotal} 道</>}
+                  </span>
+                  {front < rng.max && (
+                    <button onClick={() => handleFinishBook(b)}
+                      style={{ fontSize: '11px', fontWeight: 700, color: '#34C759', background: 'rgba(52,199,89,0.1)',
+                               border: '1px solid rgba(52,199,89,0.25)', borderRadius: '7px', padding: '4px 9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      ✓ 整本学完
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -943,6 +974,51 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </button>
         </div>
 
+        {/* ===== 单词表背诵进度（紧凑一行）===== */}
+        <div style={{ marginTop: '18px', paddingTop: '16px', borderTop: '1px dashed #E5E5EA' }}>
+          <div style={{ fontSize: '14px', fontWeight: 800, color: '#1D1D1F', marginBottom: '4px' }}>
+            📖 单词表背诵进度
+          </div>
+          <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '10px' }}>
+            和课堂进度分开记。这里说的是「官方单词表按字母顺序背到第几个」。
+          </div>
+          {Object.keys(GLOSSARY_RANGE).map(g => {
+            const rng = GLOSSARY_RANGE[g];
+            const front = getBookFrontier(pageMarks, g);
+            const pct = Math.min(100, Math.round(front / rng.max * 100));
+            const list = GLOSS_LISTS[GLOSS_KEY[g]] || [];
+            const nextWord = list[front] ? list[front].word_greek : '—';
+            return (
+              <div key={g} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#1D1D1F', minWidth: '92px' }}>{rng.name}</span>
+                <div style={{ flex: '1 1 150px', minWidth: '120px' }}>
+                  <div style={{ height: '7px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: '#AF52DE', borderRadius: '99px' }} />
+                  </div>
+                </div>
+                <span style={{ fontSize: '12px', color: '#86868B', minWidth: '150px' }}>
+                  {front > 0 ? <>已背 <b style={{ color: '#AF52DE' }}>{front}</b> / {rng.max}，下一个 <b>{nextWord}</b></> : `未开始 / 共 ${rng.max} 词`}
+                </span>
+                <input type="number" placeholder={String(front || 1)}
+                  value={pmBook === g ? pmPage : ''}
+                  onFocus={() => setPmBook(g)}
+                  onChange={e => { setPmBook(g); setPmPage(e.target.value); }}
+                  style={{ padding: '6px 9px', borderRadius: '8px', border: '1px solid #D2D2D7', fontSize: '13px', width: '92px' }} />
+                <button onClick={() => { setPmBook(g); setTimeout(handleAddPageMark, 0); }}
+                  style={{ padding: '7px 13px', borderRadius: '8px', border: 'none', background: '#AF52DE', color: '#FFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                  记录
+                </button>
+                {front < rng.max && (
+                  <button onClick={() => handleFinishBook(g)}
+                    style={{ fontSize: '11px', fontWeight: 700, color: '#34C759', background: 'rgba(52,199,89,0.1)', border: '1px solid rgba(52,199,89,0.25)', borderRadius: '7px', padding: '5px 9px', cursor: 'pointer' }}>
+                    ✓ 整本背完
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {/* 历史记录 */}
         {history.length > 0 && (
           <div style={{ marginTop: '16px' }}>
@@ -954,8 +1030,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid #F0F0F3', fontSize: '13px' }}>
                   <span style={{ color: '#1D1D1F', fontWeight: 600 }}>
                     <span style={{ color: '#0071E3', fontWeight: 700 }}>{m.date}</span>
-                    <span style={{ margin: '0 10px', color: '#86868B' }}>{BOOK_PAGE_RANGE[m.bookId]?.name || m.bookId}</span>
-                    上到第 <b>{m.upToPage}</b> 页
+                    <span style={{ margin: '0 10px', color: '#86868B' }}>{BOOK_PAGE_RANGE[m.bookId]?.name || GLOSSARY_RANGE[m.bookId]?.name || m.bookId}</span>
+                    {GLOSSARY_RANGE[m.bookId] ? <>背到第 <b>{m.upToPage}</b> 个词</> : <>上到第 <b>{m.upToPage}</b> 页</>}
                   </span>
                   <button onClick={() => handleDeletePageMark(m.id)} title="删除这条记录"
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#FF3B30', display: 'flex', padding: '4px' }}>
@@ -973,6 +1049,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const renderActivationTab = () => (
     <div className="animate-fade-in">
       {renderPageProgressPanel()}
+
+      <div style={{ marginBottom: showLegacyUnits ? '16px' : '32px' }}>
+        <button onClick={() => setShowLegacyUnits(v => !v)}
+          style={{ background: 'none', border: '1px dashed #D2D2D7', borderRadius: '10px',
+                   padding: '10px 16px', fontSize: '13px', fontWeight: 600, color: '#86868B', cursor: 'pointer' }}>
+          {showLegacyUnits ? '▲ 收起旧版「单元授权」' : '▼ 旧版「单元授权」（已被上面的页码进度取代，一般用不到）'}
+        </button>
+      </div>
+
+      {showLegacyUnits && (
       <div className="admin-panel mb-8">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
@@ -1226,6 +1312,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 
@@ -1415,6 +1502,135 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     });
   };
 
+
+  // ===== 每周做题报告 =====
+  const MODULE_CN: Record<string, string> = {
+    spelling: '拼字', quiz: '选择', cloze: '课本填空', tf: '判断',
+    grzh: '希→中翻译', zhgr: '中→希翻译', matching: '连连看', glossary: '单词表',
+  };
+
+  const renderWeeklyReport = () => {
+    const base = parseLocalDate(getGreeceDateString()) || new Date();
+    const monday = new Date(base);
+    const dow = (monday.getDay() + 6) % 7;                   // 周一=0
+    monday.setDate(monday.getDate() - dow + reportWeekOffset * 7);
+    const days: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday); d.setDate(monday.getDate() + i);
+      days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+    }
+    const inWeek = answerLog.filter(r => days.includes(r.d));
+    const pct = (a: number, b: number) => b > 0 ? Math.round(a / b * 100) : 0;
+    const fmtSec = (ms: number) => ms > 0 ? `${(ms / 1000).toFixed(1)} 秒` : '—';
+
+    const total = inWeek.length;
+    const right = inWeek.filter(r => r.ok).length;
+    const hinted = inWeek.filter(r => r.h).length;
+    const avgMs = total ? Math.round(inWeek.reduce((s, r) => s + (r.ms || 0), 0) / total) : 0;
+
+    const byModule: Record<string, any[]> = {};
+    inWeek.forEach(r => { (byModule[r.m] = byModule[r.m] || []).push(r); });
+
+    const wrongCount: Record<string, number> = {};
+    inWeek.filter(r => !r.ok).forEach(r => { wrongCount[r.q] = (wrongCount[r.q] || 0) + 1; });
+    const topWrong = Object.entries(wrongCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
+
+    return (
+      <div className="admin-panel mb-8">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+          <div>
+            <h3 className="admin-panel-title" style={{ marginBottom: '2px' }}>📊 每周做题报告</h3>
+            <div style={{ fontSize: '12px', color: '#86868B' }}>{days[0]} ~ {days[6]}</div>
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button onClick={() => setReportWeekOffset(v => v - 1)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #D2D2D7', background: '#FFF', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}>← 上一周</button>
+            <button onClick={() => setReportWeekOffset(0)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #D2D2D7', background: reportWeekOffset === 0 ? '#F5F5F7' : '#FFF', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}>本周</button>
+            <button onClick={() => setReportWeekOffset(v => Math.min(0, v + 1))} disabled={reportWeekOffset >= 0} style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #D2D2D7', background: '#FFF', cursor: reportWeekOffset >= 0 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 700, opacity: reportWeekOffset >= 0 ? 0.4 : 1 }}>下一周 →</button>
+          </div>
+        </div>
+
+        {total === 0 ? (
+          <div style={{ fontSize: '13px', color: '#86868B', background: '#F5F5F7', borderRadius: '10px', padding: '16px', lineHeight: 1.7 }}>
+            这一周还没有做题记录。
+            <br /><b style={{ color: '#1D1D1F' }}>说明：</b>逐题记录是本次新加的功能，<b>以前的答题过程系统从未保存过</b>，
+            所以历史数据补不出来。从现在起 Leon 每做一题都会记下「对错 / 有没有看提示 / 用了多久」，攒满一周这里就有完整报告。
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: '10px', marginBottom: '18px' }}>
+              {[
+                { l: '做题总数', v: `${total} 题`, c: '#0071E3' },
+                { l: '正确率', v: `${pct(right, total)}%`, c: right / total >= 0.8 ? '#34C759' : '#FF9500' },
+                { l: '看提示的题', v: `${hinted} 题（${pct(hinted, total)}%）`, c: '#AF52DE' },
+                { l: '平均每题用时', v: fmtSec(avgMs), c: '#1D1D1F' },
+              ].map(k => (
+                <div key={k.l} style={{ border: '1px solid #E5E5EA', borderRadius: '12px', padding: '12px' }}>
+                  <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 700 }}>{k.l}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: k.c, marginTop: '2px' }}>{k.v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '8px' }}>每天的情况</div>
+            <div style={{ overflowX: 'auto', marginBottom: '18px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '520px' }}>
+                <thead><tr style={{ background: '#F5F5F7' }}>
+                  {['日期', '做题', '正确率', '看提示', '平均用时'].map(h => (
+                    <th key={h} style={{ padding: '8px', textAlign: 'left', fontSize: '12px', color: '#86868B' }}>{h}</th>))}
+                </tr></thead>
+                <tbody>
+                  {days.map(d => {
+                    const rs = inWeek.filter(r => r.d === d);
+                    const rt = rs.filter(r => r.ok).length;
+                    const av = rs.length ? Math.round(rs.reduce((s, r) => s + (r.ms || 0), 0) / rs.length) : 0;
+                    return (
+                      <tr key={d} style={{ borderBottom: '1px solid #F0F0F3', opacity: rs.length ? 1 : 0.45 }}>
+                        <td style={{ padding: '8px', fontWeight: 600 }}>{d.slice(5)}</td>
+                        <td style={{ padding: '8px' }}>{rs.length || '—'}</td>
+                        <td style={{ padding: '8px', fontWeight: 700, color: rs.length ? (pct(rt, rs.length) >= 80 ? '#34C759' : '#FF9500') : '#AEAEB2' }}>
+                          {rs.length ? `${pct(rt, rs.length)}%` : '—'}</td>
+                        <td style={{ padding: '8px' }}>{rs.length ? `${rs.filter(r => r.h).length} 题` : '—'}</td>
+                        <td style={{ padding: '8px' }}>{rs.length ? fmtSec(av) : '—'}</td>
+                      </tr>);
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '8px' }}>分题型</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '18px' }}>
+              {Object.entries(byModule).sort((a, b) => b[1].length - a[1].length).map(([m, rs]) => (
+                <div key={m} style={{ border: '1px solid #E5E5EA', borderRadius: '10px', padding: '9px 13px', fontSize: '12px' }}>
+                  <b style={{ color: '#1D1D1F' }}>{MODULE_CN[m] || m}</b>
+                  <span style={{ color: '#86868B' }}> · {rs.length} 题 · </span>
+                  <b style={{ color: pct(rs.filter((r: any) => r.ok).length, rs.length) >= 80 ? '#34C759' : '#FF9500' }}>
+                    {pct(rs.filter((r: any) => r.ok).length, rs.length)}%
+                  </b>
+                  <span style={{ color: '#86868B' }}> · 提示 {rs.filter((r: any) => r.h).length}</span>
+                </div>
+              ))}
+            </div>
+
+            {topWrong.length > 0 && (
+              <>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '8px' }}>这周错得最多的</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+                  {topWrong.map(([q, n]) => (
+                    <span key={q} style={{ background: 'rgba(255,59,48,0.07)', border: '1px solid rgba(255,59,48,0.2)',
+                      borderRadius: '99px', padding: '5px 12px', fontSize: '13px' }}>
+                      <b style={{ color: '#1D1D1F' }}>{q}</b>
+                      <span style={{ color: '#FF3B30', fontWeight: 700 }}> ×{n}</span>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
+
   const renderDisabledWordsPanel = () => (
     <div className="admin-panel mb-8">
       <h3 className="admin-panel-title" style={{ marginBottom: '4px' }}>已停用的词（{disabledWords.length}）</h3>
@@ -1446,6 +1662,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     
     return (
       <div className="animate-fade-in">
+        {renderWeeklyReport()}
         {renderDisabledWordsPanel()}
         <div className="admin-panel mb-8">
           <h3 className="admin-panel-title">Leon 答题纠偏与系统成长中心</h3>

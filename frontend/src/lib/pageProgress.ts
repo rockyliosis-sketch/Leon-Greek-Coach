@@ -107,8 +107,14 @@ export const makeMarkId = () => `pm_${Date.now()}_${Math.random().toString(36).s
 
 /** 各书的页码范围（来自教材重建，用于输入校验与滑块上下界） */
 export const BOOK_PAGE_RANGE: Record<string, { min: number; max: number; name: string }> = {
-  'a1-a': { min: 10, max: 191, name: 'A1 第一分册（儿童版）' },
-  'a1-b': { min: 6,  max: 174, name: 'A1 第二分册（儿童版）' },
+  'b1':   { min: 8,  max: 356, name: 'B（Ελληνικά Β΄）· 在学' },
   'a2':   { min: 16, max: 151, name: 'A2（ΚΛΙΚ Α2）' },
-  'b1':   { min: 8,  max: 356, name: 'B（Ελληνικά Β΄）' },
+  'a1-b': { min: 6,  max: 174, name: 'A1 第二分册（儿童版）' },
+  'a1-a': { min: 10, max: 191, name: 'A1 第一分册（儿童版）' },
+};
+
+/** 单词表背诵进度：与课堂进度同一套模型，upToPage 存的是「背到第几个词」 */
+export const GLOSSARY_RANGE: Record<string, { min: number; max: number; name: string }> = {
+  'glossary-a2': { min: 1, max: 1682, name: 'A2 单词表' },
+  'glossary-a1': { min: 1, max: 1313, name: 'A1 单词表' },
 };

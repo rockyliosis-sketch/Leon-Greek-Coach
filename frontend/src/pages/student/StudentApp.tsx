@@ -24,9 +24,10 @@ import {
 import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
 import sentencesData from '../../data/sentences.json';
+import glossaryV2 from '../../data/glossary_v2.json';
 import {
   type PageMark, type V2Word,
-  resolveActivationByPage, LOCKED as PAGE_LOCKED
+  resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
 } from '../../lib/pageProgress';
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
@@ -56,6 +57,8 @@ const speakGreek = (text: string) => {
 const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
 /** 课本真句子填空题（B本来自PDF文字层解码，逐字精确，非OCR） */
 const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
+/** 官方单词表(按字母序), 由家长在后台标「背到第几个」控制解锁 */
+const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
 
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
@@ -1224,6 +1227,9 @@ export default function StudentApp() {
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
   const [disabledWords, setDisabledWords] = useState<string[]>([]);
   const [pageMarksState, setPageMarksState] = useState<PageMark[]>([]);
+  const answerLogRef = React.useRef<any[]>([]);
+  const questionStartRef = React.useRef<number>(Date.now());
+  const saveTimerRef = React.useRef<any>(null);
   // 报错弹窗：先问原因，再决定怎么处理
   const [feedbackCtx, setFeedbackCtx] = useState<null | {
     questionId: any; greek: string; expected: string; userTyped: string;
@@ -1329,6 +1335,7 @@ export default function StudentApp() {
         setUserFeedbackList(state.user_feedback || []);
         setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
         setPageMarksState(pageMarks);
+        if (Array.isArray(state.answer_log)) answerLogRef.current = state.answer_log;
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
         // 按页码解锁的词, 用课堂进度覆盖掉按单元算出来的日期
@@ -2139,59 +2146,58 @@ export default function StudentApp() {
 
   // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
   const glossaryReviewPool = useMemo(() => {
-    const masterList: any[] = (staticVocabData as any).master_glossary || [];
-    
-    // 1. 获取当天排期的 20 个主攻新词 (8月24日命中 #930 ~ #949，包含 #948 Ραπουνζέλ)
-    const scheduledToday = masterList.filter((w: any) => w.scheduled_date === selectedDateStr);
-    
-    // 2. 艾宾浩斯复习：调度 1, 2, 4, 7, 15, 30 天前已学过的词包
-    const ebbinghausReviews: any[] = [];
-    const parts = selectedDateStr.split('-');
-    if (parts.length === 3) {
-      const selD = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-      const intervals = [1, 2, 4, 7, 15, 30];
-      intervals.forEach(inv => {
-        const prevD = new Date(selD);
-        prevD.setDate(prevD.getDate() - inv);
-        const prevStr = `${prevD.getFullYear()}-${String(prevD.getMonth() + 1).padStart(2, '0')}-${String(prevD.getDate()).padStart(2, '0')}`;
-        const prevWords = masterList.filter((w: any) => w.scheduled_date === prevStr);
-        ebbinghausReviews.push(...prevWords);
+    // 家长在后台标了「背到第几个」才有内容；没标就回退到旧的固定日程，避免空白
+    const gKeys = Object.keys(GLOSSARY_RANGE);
+    const marked = gKeys.filter(g => getBookFrontier(pageMarksState, g) > 0);
+    if (marked.length === 0) {
+      const masterList: any[] = (staticVocabData as any).master_glossary || [];
+      return masterList.filter((w: any) => w.scheduled_date === selectedDateStr).slice(0, 40);
+    }
+
+    const out: any[] = [];
+    marked.forEach(g => {
+      const lvl = g === 'glossary-a1' ? 'A1' : 'A2';
+      const list = GLOSS_LISTS[lvl] || [];
+      const front = getBookFrontier(pageMarksState, g);
+      list.slice(0, front).forEach((w: any) => {
+        const d = getPageDate(pageMarksState, g, w.idx);
+        if (!d) return;
+        out.push({ ...w, letter: (w.word_greek || '?')[0], tag: w.pos || '词', activated_on: d });
       });
-    }
+    });
 
-    // 3. 补充池：当排期不足时，由已掌握词库按种子轮转补足
-    const fallbackList = masterList.filter((w: any) => w.status === 'mastered' || (w.day_assigned && w.day_assigned < 7));
-    const seed = selectedDateStr.split('-').reduce((acc, v) => acc + (parseInt(v, 10) || 0), 0);
-    const shuffledFallback = [...fallbackList].sort((a: any, b: any) => ((a.id * 31 + seed) % 97) - ((b.id * 31 + seed) % 97));
-
-    // 合并并去重
-    const combined = [...scheduledToday, ...ebbinghausReviews, ...shuffledFallback];
-    const seen = new Set<number>();
-    const uniquePool: any[] = [];
-
-    for (const item of combined) {
-      if (!seen.has(item.id)) {
-        seen.add(item.id);
-        uniquePool.push({
-          id: item.id,
-          word_greek: item.word_greek,
-          word_chinese: item.word_chinese,
-          word_english: item.word_english || '',
-          pronunciation: item.pronunciation || '',
-          level: item.level || 'A1',
-          letter: item.letter || '核心词',
-          tag: item.tag || '词',
-          status: item.scheduled_date === selectedDateStr ? 'upcoming' : 'mastered',
-          scheduled_date: item.scheduled_date
-        });
-        if (uniquePool.length >= 40) break;
-      }
-    }
-
-    return uniquePool;
-  }, [selectedDateStr]);
+    // 到期优先（艾宾浩斯），其余按当天种子轮转
+    const parts = selectedDateStr.split('-');
+    const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
+    const due = (w: any) => isWordDueToday(w.id, selectedDateStr, { [w.id]: w.activated_on });
+    return out
+      .sort((a, b) => {
+        const da = due(a) ? 0 : 1, db = due(b) ? 0 : 1;
+        if (da !== db) return da - db;
+        return ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973);
+      })
+      .slice(0, 40)
+      .map((w: any) => ({ ...w, status: due(w) ? 'upcoming' : 'mastered' }));
+  }, [pageMarksState, selectedDateStr]);
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
+
+  /**
+   * 记一条作答记录：对错 / 有没有看提示 / 花了多久。
+   * 攒够或 4 秒后批量写云端，避免每题一次网络请求。
+   */
+  const logAnswer = (moduleKey: string, qLabel: string, ok: boolean, hintUsed: boolean) => {
+    const now = Date.now();
+    const ms = Math.max(0, Math.min(now - (questionStartRef.current || now), 10 * 60 * 1000));
+    questionStartRef.current = now;
+    const entry = { d: getGreeceDateString(), m: moduleKey, q: String(qLabel || '').slice(0, 40), ok, h: !!hintUsed, ms };
+    const next = [...answerLogRef.current, entry].slice(-4000);   // 只保留最近 4000 条
+    answerLogRef.current = next;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveSharedState({ answer_log: answerLogRef.current });
+    }, 4000);
+  };
 
   /** 点「一键报错」不再直接提交，而是先问清楚是哪种情况 */
   const handleReportFeedback = (questionId: any, greek: string, expected: string, userTyped: string) => {
@@ -2243,6 +2249,7 @@ export default function StudentApp() {
       setSpellInput(newInput);
       if (newInput.length === target.length) {
         setSpellingCompleted(true);
+        logAnswer('spelling', currentSpellingWord?.word_greek || '', spellingMistakes === 0, showTip);
       }
     } else {
       setSpellingWrongFlash(true);
@@ -2414,6 +2421,8 @@ export default function StudentApp() {
     setAnswerChecked(true);
     const points = quizMistakes === 0 ? 5 : (quizMistakes === 1 ? 3 : 1);
     setQuizScore(prev => prev + points);
+    logAnswer(currentQuizWord?.isCloze ? 'cloze' : 'quiz',
+      currentQuizWord?.word_greek || '', quizMistakes === 0, showTip);
   };
 
   const nextQuiz = () => {
@@ -2567,6 +2576,7 @@ export default function StudentApp() {
     setTfChecked(true);
     const correct = choice === tfQuestionData.isCorrect;
     setTfIsCorrect(correct);
+    logAnswer('tf', currentTfWord?.word_greek || '', correct, showTip);
     if (correct) {
       setTfScore(prev => prev + 5);
     } else {
@@ -2620,11 +2630,13 @@ export default function StudentApp() {
     }
 
     if (correct) {
+      logAnswer('grzh', currentTransGrZh?.greek || '', transGrZhMistakes === 0, showTip);
       setTransGrZhChecked(true);
       setIsCorrectTransGrZh(true);
       setTransGrZhScore(prev => prev + 5);
       setTransGrZhWrongAttempt(false);
     } else {
+      if (transGrZhMistakes >= 1) logAnswer('grzh', currentTransGrZh?.greek || '', false, showTip);
       setTransGrZhWrongAttempt(true);
       setTransGrZhMistakes(prev => {
         const next = prev + 1;
