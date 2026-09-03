@@ -1,41 +1,78 @@
 {
  "book": "A2new",
- "source": "A2_Book.pdf 印刷版扫描",
+ "source": "A2_Book.pdf 印刷版扫描(152页)",
  "offset": "书页=PDF页-1",
- "method": "全页OCR页脚单元号 + 单调相容过滤 + 中点定界",
+ "method": "页脚OCR只认数字+要求紧邻Ενότητα词形+人工剔除孤立噪声+中点定界",
+ "boundary_uncertainty": "边界±2页(与手机照片版独立推导结果互相印证)",
  "units": [
   {
    "unit": 1,
    "pdf_pages": [
     1,
-    152
+    41
    ],
    "book_pages": [
     0,
-    151
+    40
    ],
-   "anchors": 0
+   "anchors": 4
+  },
+  {
+   "unit": 2,
+   "pdf_pages": [
+    42,
+    64
+   ],
+   "book_pages": [
+    41,
+    63
+   ],
+   "anchors": 4
   },
   {
    "unit": 3,
    "pdf_pages": [
-    56,
-    152
+    65,
+    89
    ],
    "book_pages": [
-    55,
-    151
+    64,
+    88
+   ],
+   "anchors": 7
+  },
+  {
+   "unit": 4,
+   "pdf_pages": [
+    90,
+    104
+   ],
+   "book_pages": [
+    89,
+    103
    ],
    "anchors": 3
   },
   {
    "unit": 5,
    "pdf_pages": [
-    100,
+    105,
+    122
+   ],
+   "book_pages": [
+    104,
+    121
+   ],
+   "anchors": 7
+  },
+  {
+   "unit": 6,
+   "pdf_pages": [
+    123,
     152
    ],
    "book_pages": [
-    99,
+    122,
     151
    ],
    "anchors": 1

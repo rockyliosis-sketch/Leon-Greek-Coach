@@ -3,13 +3,25 @@
 输入: materials/textbooks/<name>_unit_page_map.json + scratch/ocr_text/<name>/
 输出: materials/glossaries/<name>_unit_words.json
 """
-import re, os, sys, json, collections
+import re, os, sys, json, collections, itertools
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from morph import norm
 from wordfind import find
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 GREEK_RE = re.compile(r'[Ͱ-Ͽἀ-῿]+')
 D = json.load(open(f'{ROOT}/materials/glossaries/AUTHORITATIVE_DICT.json'))
+
+def lambda_variants(w, chars='βπώϊ', maxn=3):
+    """印刷版字体里 λ 常被认成 β/π/ώ/ϊ. 生成还原候选(原词保留, 只做增补)."""
+    idx = [i for i, c in enumerate(w) if c in chars]
+    if not idx or len(idx) > maxn: return []
+    out = []
+    for r in range(1, len(idx)+1):
+        for combo in itertools.combinations(idx, r):
+            t = list(w)
+            for i in combo: t[i] = 'λ'
+            out.append(''.join(t))
+    return out
 
 def run(name, level):
     M = json.load(open(f'{ROOT}/materials/textbooks/{name}_unit_page_map.json'))
@@ -23,17 +35,26 @@ def run(name, level):
             if not os.path.exists(p): continue
             t = open(p).read().split('\n', 1)[-1]
             hay |= {norm(w) for w in GREEK_RE.findall(t) if len(norm(w)) >= 2}
-        hay = list(hay)
+        base = list(hay)
+        extra = set()
+        for w in base: extra |= set(lambda_variants(w))
+        extra -= hay
+        hay_all = base + list(extra)
         found = []
         for e in entries:
             best = None
             for k in e['keys']:
-                d = find(k, hay)
+                d = find(k, base)
                 if d is not None and (best is None or d < best): best = d
                 if best == 0: break
+            src = 'ocr'
+            if best != 0:                      # 原文找不到时才试 λ 还原, 并留痕
+                for k in e['keys']:
+                    if find(k, list(extra)) == 0: best, src = 0, 'lambda-fix'; break
             if best is not None:
                 found.append({'word': e['entry'], 'key': e['key'], 'pos': e.get('pos',''),
                               'en': e.get('english',''), 'zh': e.get('chinese',''),
+                              'source': src,
                               'confidence': 'high' if best == 0 else ('mid' if best == 1 else 'low')})
         hi = [f for f in found if f['confidence'] == 'high']
         out.append({'unit': u['unit'], 'book_pages': u['book_pages'], 'pdf_pages': [a, b],
