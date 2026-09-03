@@ -1010,15 +1010,16 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           })}
         </div>
 
-        {/* B 本为什么只有填空题：如实说明，不藏 */}
-        {V2_WORDS.filter(w => w.book_id === 'b1').length === 0 && (
-          <div style={{ background: 'rgba(255,149,0,0.07)', border: '1px solid rgba(255,149,0,0.22)', borderRadius: '10px', padding: '11px 14px', marginBottom: '16px', fontSize: '12px', color: '#86868B', lineHeight: 1.7 }}>
-            <b style={{ color: '#C77700' }}>为什么 B 本这张卡跟别的不一样？</b><br />
-            A1/A2 有希腊教育部的<b>官方配套词表（含中文）</b>，我拿它当「标准答案册」去反查课本每一页，
-            所以能保证 2472 个词<b>没有一个是编的</b>。<br />
-            <b>B 本没有这样一份官方词表</b>，它的单词目前<b>一个都还没入库</b>——不是只有 150 个词，
-            而是「宁可空着，也不敢瞎编中文释义」。所以 B 本现在只出<b>课本原句填空</b>（150 道，
-            全部来自 PDF 文字层逐字解码，不是 OCR 猜的）。B 本单词入库是下一步的事。
+        {/* B 本词库的中文来源和 A1/A2 不同，如实说明 */}
+        {V2_WORDS.filter(w => w.book_id === 'b1').length > 0 && (
+          <div style={{ background: 'rgba(0,113,227,0.05)', border: '1px solid rgba(0,113,227,0.18)', borderRadius: '10px', padding: '11px 14px', marginBottom: '16px', fontSize: '12px', color: '#86868B', lineHeight: 1.7 }}>
+            <b style={{ color: '#0071E3' }}>B 本词库的中文，来源和 A1/A2 不一样。</b><br />
+            A1/A2 的中文来自<b>希腊教育部官方配套词表</b>；B 本<b>没有</b>这样一份官方词表，
+            所以这 {V2_WORDS.filter(w => w.book_id === 'b1').length} 个词的<b>希腊语原词是从课本 PDF 文字层逐字解码出来的（不是 OCR 猜的，逐字精确）</b>，
+            但<b>中文释义是我给的，不是官方译文</b>。<br />
+            选词标准：先收教材每单元「Λέξεις, λέξεις」方框点名的生词，
+            再补该单元高频出现、且 A1/A2 词表里没有的词；人名地名、A1/A2 已学词、
+            纯变位形式都已剔除。发现译得不准，在题目里点「一键报错」告诉我。
           </div>
         )}
 

@@ -103,9 +103,35 @@ for i, (uk, r) in enumerate(sorted(uniq_map.items(),
         key=lambda x: (x[0][0], x[1]['page_number'], x[0][1])), 1):
     r['id'] = i; r['pages'] = sorted(set(r['pages'])); r['occurrences'] = len(r['pages'])
     out.append(r)
+# ---- 并入 B 本 ----
+# B 本没有官方配套词表, 词是从 PDF 文字层逐字解码后提取、再人工逐条校对的,
+# 中文由模型给出(zh_source='claude'), 与 A1/A2 的官方释义来源不同, 必须可区分。
+# 由 scripts/ocr/build_b_vocab.py 生成; 缺文件时不报错, 只是这次不含 B。
+b_path = f'{ROOT}/materials/glossaries/B_vocab.json'
+b_entries = []
+if os.path.exists(b_path):
+    for e in json.load(open(b_path))['entries']:
+        b_entries.append({
+            'id': e['id'], 'book_id': 'b1', 'unit': e['unit'],
+            'unit_title': e.get('unit_title', ''), 'system_unit': e.get('system_unit'),
+            'page_number': e['page_number'], 'pages': e['pages'],
+            'word_greek': e['word_greek'], 'headword': e['headword'],
+            'word_chinese': e['word_chinese'], 'word_english': e.get('word_english', ''),
+            'pronunciation': e.get('pronunciation', ''), 'pos': e.get('pos', ''),
+            'example_greek': None, 'example_chinese': None,
+            'match': e.get('match', 'corpus'), 'zh_source': 'claude',
+            'has_chinese': bool(e['word_chinese']),
+            'error_count': 0, 'difficulty_score': 1.0,
+            'last_reviewed_at': None, 'next_review_at': None, 'note_date': None,
+            'occurrences': e.get('occurrences', 1),
+        })
+out = out + b_entries
+
 json.dump({'schema': 'vocabulary_v2',
-           'built_from': '希腊教育部官方词表(3038条) + 教材逐页OCR封闭词表反向搜索',
-           'note': 'a1-a/a1-b 为儿童版, 课本照片无可靠单元标记, unit=null, 按 page_number 索引',
+           'built_from': 'A1/A2: 希腊教育部官方词表(3038条) + 教材逐页OCR封闭词表反向搜索; '
+                         'B: PDF文字层逐字解码 + 人工逐条校对',
+           'note': 'a1-a/a1-b 为儿童版, 课本照片无可靠单元标记, unit=null, 按 page_number 索引. '
+                   'b1 按单元索引, 中文 zh_source=claude(非官方来源, 可单独复核).',
            'entries': out}, open(f'{ROOT}/frontend/src/data/vocabulary_v2.json','w'),
           ensure_ascii=False, indent=1)
 

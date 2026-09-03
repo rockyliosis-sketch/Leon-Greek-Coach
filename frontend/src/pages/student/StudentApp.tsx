@@ -65,7 +65,13 @@ export const PAGE_UNIT_BASE = 1000;
 const v2ToWord = (w: V2Word): any => ({
   id: 100000 + w.id,
   book_id: w.book_id,
-  unit: w.unit != null ? w.unit : PAGE_UNIT_BASE + w.page_number,
+  // 单元号只在「旧的按单元解锁」体系里有意义(A2 = 31-36)。
+  // B本虽然有真实单元号 1-20, 但这里不能用: 一来家长是按页码记进度的,
+  // 二来 1-20 会和 A1-A 的单元号撞车 —— 撞上就会走进
+  // getUnitStudyDate 里「单元<=30 按 A1 默认课表自动解锁」那条分支,
+  // 结果是 B 本 967 个词不受家长控制、自己全放出来。
+  // 所以 b1 一律用「1000+页码」的合成单元号, 走课堂进度那条路。
+  unit: (w.unit != null && w.book_id !== 'b1') ? w.unit : PAGE_UNIT_BASE + w.page_number,
   page_number: w.page_number,
   word_greek: w.headword,
   word_chinese: w.word_chinese,
