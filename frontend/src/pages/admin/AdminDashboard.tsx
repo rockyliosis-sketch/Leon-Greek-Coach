@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
+import sentencesData from '../../data/sentences.json';
 import {
   type PageMark, type V2Word,
   normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
@@ -278,6 +279,7 @@ const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
 
 // 教材重建产出的真词库(每个词带书内首次出现页码与全部出现页)
 const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
+const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
 
 const START_DATE = "2025-09-06";
 
@@ -861,7 +863,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   // ===== 课堂进度面板（按课本页码） =====
   const renderPageProgressPanel = () => {
     const today = getGreeceDateString();
-    const books = ['a1-a', 'a1-b', 'a2'];
+    const books = ['a1-a', 'a1-b', 'a2', 'b1'];
     const unlockedAll = unlockedWords(V2_WORDS, pageMarks, today);
     const history = [...pageMarks].sort((a, b) =>
       (b.date + b.bookId).localeCompare(a.date + a.bookId));
@@ -892,6 +894,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             const pct = front <= 0 ? 0 : Math.min(100, Math.round((front - rng.min) / (rng.max - rng.min) * 100));
             const cnt = unlockedAll.filter(w => w.book_id === b).length;
             const total = V2_WORDS.filter(w => w.book_id === b).length;
+            const clozeTotal = CLOZE_ALL.filter((c: any) => c.book === b).length;
+            const clozeOpen = CLOZE_ALL.filter((c: any) => c.book === b && c.page <= front).length;
             return (
               <div key={b} style={{ border: '1px solid #E5E5EA', borderRadius: '12px', padding: '14px', background: '#FFF' }}>
                 <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '2px' }}>{rng.name}</div>
@@ -902,7 +906,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#0071E3,#34C759)', borderRadius: '99px', transition: 'width .3s' }} />
                 </div>
                 <div style={{ fontSize: '12px', color: '#86868B', marginTop: '8px' }}>
-                  已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词
+                  {total > 0
+                    ? <>已解锁 <b style={{ color: '#1D1D1F' }}>{cnt}</b> / {total} 词</>
+                    : <>课本填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b> / {clozeTotal} 道</>}
                 </div>
               </div>
             );

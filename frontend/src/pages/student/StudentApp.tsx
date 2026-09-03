@@ -23,6 +23,7 @@ import {
 
 import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
+import sentencesData from '../../data/sentences.json';
 import {
   type PageMark, type V2Word,
   resolveActivationByPage, LOCKED as PAGE_LOCKED
@@ -53,6 +54,9 @@ const speakGreek = (text: string) => {
 
 /** 教材重建产出的真词库 */
 const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
+/** 课本真句子填空题（B本来自PDF文字层解码，逐字精确，非OCR） */
+const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
+
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
 const v2ToWord = (w: V2Word): any => ({
@@ -1219,6 +1223,7 @@ export default function StudentApp() {
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
   const [disabledWords, setDisabledWords] = useState<string[]>([]);
+  const [pageMarksState, setPageMarksState] = useState<PageMark[]>([]);
   // 报错弹窗：先问原因，再决定怎么处理
   const [feedbackCtx, setFeedbackCtx] = useState<null | {
     questionId: any; greek: string; expected: string; userTyped: string;
@@ -1280,7 +1285,12 @@ export default function StudentApp() {
     const unsubscribe = subscribeToSharedState(
       (state) => {
         const pageMarks: PageMark[] = Array.isArray(state.page_progress) ? state.page_progress : [];
-        const pageBooks = new Set(pageMarks.map(m => String(m.bookId).toLowerCase()));
+        // 只有「新词库里确实有这本书的词」才做替换。
+        // B本(b1)目前只有真句子填空题、没有重建词库, 若也替换会让B词汇整本消失。
+        const v2Books = new Set(V2_WORDS.map(w => w.book_id));
+        const pageBooks = new Set(
+          pageMarks.map(m => String(m.bookId).toLowerCase()).filter(b => v2Books.has(b))
+        );
         // 家长已按页码记录进度的书 -> 换成教材重建产出的真词库; 其余书维持原样, 不影响现有进度
         const oldKept = (staticVocabData.textbook_vocabulary || [])
           .filter((w: any) => !pageBooks.has(String(w.book_id || '').toLowerCase()));
@@ -1318,6 +1328,7 @@ export default function StudentApp() {
         setAlternativeTranslations(mergedAlts);
         setUserFeedbackList(state.user_feedback || []);
         setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
+        setPageMarksState(pageMarks);
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
         // 按页码解锁的词, 用课堂进度覆盖掉按单元算出来的日期
@@ -2263,6 +2274,25 @@ export default function StudentApp() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [answerChecked, setAnswerChecked] = useState(false);
 
+  /** 已解锁的课本填空题：优先按 B 本页码进度，其次按单元解锁日期 */
+  const clozePool = useMemo(() => {
+    const marks = (pageMarksState || []).filter(m => String(m.bookId).toLowerCase() === 'b1');
+    const frontier = marks.length ? Math.max(...marks.map(m => m.upToPage)) : 0;
+    let items = CLOZE_ALL;
+    if (frontier > 0) {
+      items = items.filter(s => s.page <= frontier);
+    } else {
+      items = items.filter(s => {
+        if (!s.unit) return false;
+        const d = getUnitStudyDate('B1', s.unit, unitStudyDates);
+        return d && d !== 'LOCKED';
+      });
+    }
+    const parts = selectedDateStr.split('-');
+    const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
+    return [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
+  }, [pageMarksState, unitStudyDates, selectedDateStr]);
+
   const quizPool = useMemo(() => {
     const pool = modulePartition.quiz || [];
     const quizItems = pool.map(w => ({
@@ -2282,9 +2312,20 @@ export default function StudentApp() {
       detailed_tip: q.detailed_tip
     }));
 
-    const combined = [...examItems, ...quizItems];
+    // 课本真句子填空题：占选择题的一半，把「全是单词题」拉回到语境里
+    const clozeItems = clozePool.slice(0, 15).map((c: any) => ({
+      id: c.id,
+      isExam: true,
+      isCloze: true,
+      word_greek: c.cloze,
+      word_chinese: c.answer,
+      options: c.options,
+      detailed_tip: `【课本原句】${c.text}\n【出处】${c.unit_title || ''}（课本第 ${c.page} 页）`,
+    }));
+
+    const combined = [...examItems, ...clozeItems, ...quizItems];
     return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
