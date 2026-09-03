@@ -18,13 +18,19 @@ export interface SharedState {
   alternative_translations?: Record<string, string[]>;
   user_feedback?: Array<{
     id: string;
-    questionId: number;
+    questionId: number | string;
     greek: string;
     expected: string;
     userTyped: string;
     date: string;
     status: 'pending' | 'approved' | 'rejected';
+    /** 报错原因：alt_answer=我的答案也对；bad_word=这道题/这个词有问题 */
+    reason?: 'alt_answer' | 'bad_word';
+    /** 出问题的词（希腊语原形），家长可据此停用该词 */
+    wordKey?: string;
   }>;
+  /** 家长停用的词（希腊语原形，已归一化）——不再出题 */
+  disabled_words?: string[];
 }
 
 export const getInitialLocalState = (): SharedState => {
@@ -36,6 +42,12 @@ export const getInitialLocalState = (): SharedState => {
   let alternative_translations = {};
   let user_feedback = [];
   let page_progress: SharedState['page_progress'] = [];
+  let disabled_words: string[] = [];
+
+  try {
+    const dw = localStorage.getItem("leon_disabled_words");
+    if (dw) disabled_words = JSON.parse(dw);
+  } catch (e) {}
 
   try {
     const pp = localStorage.getItem("leon_page_progress");
@@ -80,6 +92,7 @@ export const getInitialLocalState = (): SharedState => {
   return {
     unit_study_dates,
     page_progress,
+    disabled_words,
     custom_vocab,
     score,
     completed_date_modules,
@@ -111,6 +124,7 @@ export const subscribeToSharedState = (
         try {
           localStorage.setItem("leon_unit_study_dates", JSON.stringify(data.unit_study_dates || {}));
           localStorage.setItem("leon_page_progress", JSON.stringify(data.page_progress || []));
+          localStorage.setItem("leon_disabled_words", JSON.stringify(data.disabled_words || []));
           localStorage.setItem("leon_custom_vocab", JSON.stringify(data.custom_vocab || []));
           localStorage.setItem("leon_score", (data.score || 0).toString());
           localStorage.setItem("leon_completed_date_modules", JSON.stringify(data.completed_date_modules || {}));
@@ -122,6 +136,7 @@ export const subscribeToSharedState = (
         onUpdate({
           unit_study_dates: data.unit_study_dates || {},
           page_progress: data.page_progress || [],
+          disabled_words: data.disabled_words || [],
           custom_vocab: data.custom_vocab || [],
           score: data.score || 0,
           completed_date_modules: data.completed_date_modules || {},
@@ -170,6 +185,9 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
       }
       if (updates.page_progress) {
         localStorage.setItem("leon_page_progress", JSON.stringify(updates.page_progress));
+      }
+      if (updates.disabled_words) {
+        localStorage.setItem("leon_disabled_words", JSON.stringify(updates.disabled_words));
       }
       if (updates.custom_vocab) {
         localStorage.setItem("leon_custom_vocab", JSON.stringify(updates.custom_vocab));

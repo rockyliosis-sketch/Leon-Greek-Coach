@@ -411,6 +411,8 @@ const getUnitStudyDate = (
   unitNum: number,
   studyDatesMap: Record<string, string> = {}
 ): string => {
+  // 合成单元号(1000+页码)由「课堂进度」决定, 不受单元解锁日期控制
+  if (unitNum >= PAGE_UNIT_BASE) return 'PAGE';
   const key = `${bookId.toUpperCase()}_${unitNum}`;
   if (studyDatesMap[key] !== undefined) {
     return studyDatesMap[key];
@@ -1216,6 +1218,11 @@ export default function StudentApp() {
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
+  const [disabledWords, setDisabledWords] = useState<string[]>([]);
+  // 报错弹窗：先问原因，再决定怎么处理
+  const [feedbackCtx, setFeedbackCtx] = useState<null | {
+    questionId: any; greek: string; expected: string; userTyped: string;
+  }>(null);
   const [submittedFeedbackIds, setSubmittedFeedbackIds] = useState<Record<string, boolean>>({});
 
   const isFeedbackSubmitted = (key: string | number | undefined | null): boolean => {
@@ -1310,6 +1317,7 @@ export default function StudentApp() {
         };
         setAlternativeTranslations(mergedAlts);
         setUserFeedbackList(state.user_feedback || []);
+        setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
         // 按页码解锁的词, 用课堂进度覆盖掉按单元算出来的日期
@@ -1333,8 +1341,15 @@ export default function StudentApp() {
   }, []);
 
   // Filter allVocab to only contain unlocked words as of selectedDateStr
+  /** 家长停用的词 —— 不再出现在任何题目里 */
+  const disabledSet = useMemo(
+    () => new Set(disabledWords.map(w => cleanGreekForComparison(String(w)))),
+    [disabledWords]
+  );
+
   const unlockedVocab = useMemo(() => {
     return allVocab.filter(word => {
+      if (disabledSet.has(cleanGreekForComparison(word.word_greek))) return false;
       const actDateStr = activatedDates[word.id];
       if (!actDateStr || actDateStr === 'LOCKED') return false;
       const activationDate = new Date(actDateStr);
@@ -1343,7 +1358,7 @@ export default function StudentApp() {
       targetDate.setHours(0, 0, 0, 0);
       return activationDate <= targetDate;
     });
-  }, [allVocab, activatedDates, selectedDateStr]);
+  }, [allVocab, activatedDates, selectedDateStr, disabledSet]);
 
   const selectedUnitKeys = useMemo(() => {
     // 1. Get the list of all unique unit keys that have unlocked words as of selectedDateStr
@@ -1368,11 +1383,13 @@ export default function StudentApp() {
       const unitNumA = parseInt(unitNumStrA, 10);
       let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
       if (dateA === 'LOCKED') dateA = '0000-00-00';
+      if (dateA === 'PAGE') dateA = `9999-${String(unitNumA).padStart(5, '0')}`;
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
       let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
       if (dateB === 'LOCKED') dateB = '0000-00-00';
+      if (dateB === 'PAGE') dateB = `9999-${String(unitNumB).padStart(5, '0')}`;
       
       if (dateA !== dateB) {
         return dateA.localeCompare(dateB);
@@ -1488,11 +1505,13 @@ export default function StudentApp() {
       const unitNumA = parseInt(unitNumStrA, 10);
       let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
       if (dateA === 'LOCKED') dateA = '0000-00-00';
+      if (dateA === 'PAGE') dateA = `9999-${String(unitNumA).padStart(5, '0')}`;
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
       let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
       if (dateB === 'LOCKED') dateB = '0000-00-00';
+      if (dateB === 'PAGE') dateB = `9999-${String(unitNumB).padStart(5, '0')}`;
       
       if (dateA !== dateB) {
         return dateB.localeCompare(dateA); // Descending chronological order
@@ -1878,9 +1897,67 @@ export default function StudentApp() {
     }).slice(0, limit);
   };
 
+
+  /**
+   * 把当天的词**分配**给各题型，互不重叠。
+   * 旧做法是每个题型都从同一副 dailyDeck 里重新抽一遍（只是换了随机种子），
+   * 于是同一个词必然在拼写/选择/连连看/两种翻译里反复出现 —— 这就是「老做重复题」的根因。
+   */
+  const MODULE_SPECS: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = [
+    { key: 'matching', want: 40, ok: w => String(w.word_greek || '').length <= 25 },
+    { key: 'spelling', want: 40, ok: w => !String(w.word_greek || '').includes(' ') && String(w.word_greek || '').length <= 15 },
+    { key: 'quiz',     want: 30 },
+    { key: 'grzh',     want: 20 },
+    { key: 'zhgr',     want: 20 },
+    { key: 'tf',       want: 40 },
+  ];
+
+  const modulePartition = useMemo(() => {
+    const res: Record<string, any[]> = {};
+    MODULE_SPECS.forEach(m => { res[m.key] = []; });
+
+    const parts = selectedDateStr.split('-');
+    const y = parseInt(parts[0], 10) || 2026;
+    const mo = parseInt(parts[1], 10) || 7;
+    const da = parseInt(parts[2], 10) || 5;
+    const daySeed = (y * 372 + mo * 31 + da) * 101;
+    const dayCount = Math.floor(new Date(y, mo - 1, da).getTime() / 86400000);
+
+    const shuffled = filterDuplicateTranslations([...dailyDeck])
+      .sort((a, b) => ((a.id * 137 + daySeed) % 10007) - ((b.id * 137 + daySeed) % 10007));
+
+    // 每天轮换"谁先挑"，避免同一个题型总是吃到最新学的词
+    const rot = dayCount % MODULE_SPECS.length;
+    const order = [...MODULE_SPECS.slice(rot), ...MODULE_SPECS.slice(0, rot)];
+
+    // 贪心均衡分配：每个词只进一个题型，优先给填充率最低的
+    shuffled.forEach(w => {
+      const cands = order.filter(m => res[m.key].length < m.want && (!m.ok || m.ok(w)));
+      if (cands.length === 0) return;
+      cands.sort((a, b) => (res[a.key].length / a.want) - (res[b.key].length / b.want));
+      res[cands[0].key].push(w);
+    });
+
+    // 还没填满的，从「已解锁但今天没进 deck」的词里补，仍然不重复
+    const used = new Set<number>();
+    Object.values(res).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
+    const extra = filterDuplicateTranslations(unlockedVocab.filter(w => !used.has(w.id)))
+      .sort((a, b) => ((a.id * 197 + daySeed) % 10007) - ((b.id * 197 + daySeed) % 10007));
+    MODULE_SPECS.forEach(m => {
+      for (const w of extra) {
+        if (res[m.key].length >= m.want) break;
+        if (used.has(w.id)) continue;
+        if (m.ok && !m.ok(w)) continue;
+        used.add(w.id);
+        res[m.key].push(w);
+      }
+    });
+
+    return res;
+  }, [dailyDeck, unlockedVocab, selectedDateStr]);
+
   const spellingPool = useMemo(() => {
-    const spellingDeck = dailyDeck.filter(w => !w.word_greek.includes(' ') && w.word_greek.length <= 15);
-    const pool = getRotatedModulePool(spellingDeck, 40, 1);
+    const pool = modulePartition.spelling || [];
     const spellingItems = pool.map(w => ({
       ...w,
       isExam: false,
@@ -1900,7 +1977,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...spellingItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
@@ -1966,7 +2043,7 @@ export default function StudentApp() {
   };
 
   const translationGrZhPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 20, 4);
+    const pool = modulePartition.grzh || [];
     const transItems = pool.map(word => {
       const isSentence = isSentenceItem(word);
       return {
@@ -2005,10 +2082,10 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const translationZhGrPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 20, 5);
+    const pool = modulePartition.zhgr || [];
     const transItems = pool.map(word => {
       const isSentence = isSentenceItem(word);
       return {
@@ -2047,7 +2124,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
   const glossaryReviewPool = useMemo(() => {
@@ -2105,23 +2182,43 @@ export default function StudentApp() {
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
 
-  const handleReportFeedback = async (questionId: any, greek: string, expected: string, userTyped: string) => {
+  /** 点「一键报错」不再直接提交，而是先问清楚是哪种情况 */
+  const handleReportFeedback = (questionId: any, greek: string, expected: string, userTyped: string) => {
     if (!greek || !expected) return;
-    const qKey = String(questionId || Date.now());
-    const newFeedbackItem = {
+    setFeedbackCtx({
+      questionId: String(questionId || Date.now()),
+      greek,
+      expected,
+      userTyped: (userTyped || '').trim(),
+    });
+  };
+
+  /** 学生输入是否是真答案（排除占位符，避免把「(学生一键报错)」批准成正确答案） */
+  const isRealTypedAnswer = (t: string) =>
+    !!t && !/^\(.*\)$/.test(t.trim()) && t.trim().length > 0;
+
+  const submitFeedback = async (reason: 'alt_answer' | 'bad_word') => {
+    if (!feedbackCtx) return;
+    const { questionId, greek, expected, userTyped } = feedbackCtx;
+    const item = {
       id: Date.now().toString(),
-      questionId: qKey,
-      greek: greek,
-      expected: expected,
-      userTyped: userTyped ? userTyped.trim() : '(查看提示/报错纠偏)',
+      questionId,
+      greek,
+      expected,
+      userTyped: reason === 'alt_answer' ? userTyped : '',
+      wordKey: greek,
+      reason,
       date: getGreeceDateString(),
-      status: 'pending' as const
+      status: 'pending' as const,
     };
-    const updatedFeedback = [...userFeedbackList, newFeedbackItem];
-    setUserFeedbackList(updatedFeedback);
-    await saveSharedState({ user_feedback: updatedFeedback });
-    setSubmittedFeedbackIds(prev => ({ ...prev, [qKey]: true }));
-    alert("您的报错与纠偏反馈已提交给家长！可以在家长控制中心进行审核，一键添加为备选翻译或纠正，Leon Coach 会自我成长哦！");
+    const updated = [...userFeedbackList, item];
+    setUserFeedbackList(updated);
+    await saveSharedState({ user_feedback: updated });
+    setSubmittedFeedbackIds(prev => ({ ...prev, [questionId]: true }));
+    setFeedbackCtx(null);
+    alert(reason === 'alt_answer'
+      ? '已提交：爸爸妈妈会看一下你的答案是不是也对。可以继续下一题啦！'
+      : '已提交：这道题会交给爸爸妈妈检查。可以继续下一题啦！');
   };
 
   const handleLetterClick = (letter: string, idx: number) => {
@@ -2167,7 +2264,7 @@ export default function StudentApp() {
   const [answerChecked, setAnswerChecked] = useState(false);
 
   const quizPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 30, 2);
+    const pool = modulePartition.quiz || [];
     const quizItems = pool.map(w => ({
       ...w,
       isExam: false,
@@ -2187,7 +2284,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...quizItems];
     return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
@@ -2299,7 +2396,7 @@ export default function StudentApp() {
   const [tfIsCorrect, setTfIsCorrect] = useState(false);
 
   const tfPool = useMemo(() => {
-    const pool = getRotatedModulePool(dailyDeck, 40, 3);
+    const pool = modulePartition.tf || [];
     const tfItems = pool.map((word, idx) => {
       const hasSentence = word.example_greek && word.example_greek.trim().length > 0;
       const testSentence = hasSentence && (idx % 2 === 1);
@@ -2337,7 +2434,7 @@ export default function StudentApp() {
 
     const combined = [...examItems, ...tfItems];
     return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [dailyDeck, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
   // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
   const grammarDrillPool = useMemo(() => {
@@ -2804,8 +2901,7 @@ export default function StudentApp() {
       setSelectedChineseId(null);
       setMatchErrors({});
       
-      const matchingDeck = dailyDeck.filter(w => w.word_greek.length <= 25);
-      const pool = getRotatedModulePool(matchingDeck, 40, 6);
+      const pool = modulePartition.matching || [];
       const matchingItems = pool.map(w => ({
         ...w,
         isExam: false,
@@ -7001,6 +7097,66 @@ export default function StudentApp() {
           </div>
         );
       })()}
+
+      {/* ===== 报错弹窗：先分清是哪种情况，再决定怎么处理 ===== */}
+      {feedbackCtx && (
+        <div
+          onClick={() => setFeedbackCtx(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 9999,
+                   display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+        >
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: '#FFF', borderRadius: '18px', padding: '22px', maxWidth: '420px', width: '100%',
+                     boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', marginBottom: '6px' }}>
+              🚩 这道题怎么了？
+            </div>
+            <div style={{ fontSize: '13px', color: '#86868B', marginBottom: '16px', lineHeight: 1.6 }}>
+              题目：<b style={{ color: '#1D1D1F' }}>{feedbackCtx.greek}</b>
+              <br />标准答案：<b style={{ color: '#1D1D1F' }}>{feedbackCtx.expected}</b>
+              {isRealTypedAnswer(feedbackCtx.userTyped) && (
+                <><br />你填的：<b style={{ color: '#FF9500' }}>{feedbackCtx.userTyped}</b></>
+              )}
+            </div>
+
+            <button
+              onClick={() => submitFeedback('alt_answer')}
+              disabled={!isRealTypedAnswer(feedbackCtx.userTyped)}
+              style={{ width: '100%', textAlign: 'left', padding: '14px', marginBottom: '10px',
+                       borderRadius: '12px', border: '1px solid #D2D2D7',
+                       background: isRealTypedAnswer(feedbackCtx.userTyped) ? '#FFF' : '#F5F5F7',
+                       cursor: isRealTypedAnswer(feedbackCtx.userTyped) ? 'pointer' : 'not-allowed',
+                       opacity: isRealTypedAnswer(feedbackCtx.userTyped) ? 1 : 0.55 }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1D1D1F' }}>✅ 我的答案也是对的</div>
+              <div style={{ fontSize: '12px', color: '#86868B', marginTop: '3px' }}>
+                {isRealTypedAnswer(feedbackCtx.userTyped)
+                  ? '交给爸爸妈妈确认，通过后这个说法也算对'
+                  : '你还没填答案，先写上再选这一项'}
+              </div>
+            </button>
+
+            <button
+              onClick={() => submitFeedback('bad_word')}
+              style={{ width: '100%', textAlign: 'left', padding: '14px', marginBottom: '10px',
+                       borderRadius: '12px', border: '1px solid #D2D2D7', background: '#FFF', cursor: 'pointer' }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1D1D1F' }}>⚠️ 这道题本身有问题</div>
+              <div style={{ fontSize: '12px', color: '#86868B', marginTop: '3px' }}>
+                单词是乱码、中文翻译不对、或者题目看不懂 —— 爸爸妈妈可以直接停用这个词
+              </div>
+            </button>
+
+            <button
+              onClick={() => setFeedbackCtx(null)}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
+                       background: '#F5F5F7', color: '#86868B', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
+              先不报，我再想想
+            </button>
+            <div style={{ fontSize: '11px', color: '#AEAEB2', textAlign: 'center', marginTop: '10px' }}>
+              不会做也没关系，直接点题目下面的「跳过 / 下一题」就行
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -527,6 +527,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [editingDates, setEditingDates] = useState<Record<string, string>>({});
   const [alternativeTranslations, setAlternativeTranslations] = useState<Record<string, string[]>>({});
   const [userFeedbackList, setUserFeedbackList] = useState<any[]>([]);
+  const [disabledWords, setDisabledWords] = useState<string[]>([]);
   const [selectedUnitKnowledge, setSelectedUnitKnowledge] = useState<any | null>(null);
 
   // Database sync states
@@ -580,6 +581,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         };
         setAlternativeTranslations(mergedAlts);
         setUserFeedbackList(state.user_feedback || []);
+        setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
       },
       (status, error) => {
         setDbStatus(status);
@@ -1351,6 +1353,26 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     alert(`已将 “${feedbackItem.userTyped}” 批准为 “${feedbackItem.greek}” 的备选翻译！`);
   };
 
+  /** 停用这个词：从此不再出现在任何题目里 */
+  const handleDisableWord = async (feedbackItem: any) => {
+    const key = (feedbackItem.wordKey || feedbackItem.greek || '').trim();
+    if (!key) return;
+    if (!window.confirm(`停用「${key}」？\n这个词从此不会再出现在 Leon 的任何题目里（可在下方停用清单里恢复）。`)) return;
+    const nextDisabled = Array.from(new Set([...disabledWords, key]));
+    const updatedFeedback = userFeedbackList.map(it =>
+      it.id === feedbackItem.id ? { ...it, status: 'approved' as const } : it);
+    setDisabledWords(nextDisabled);
+    setUserFeedbackList(updatedFeedback);
+    await saveSharedState({ disabled_words: nextDisabled, user_feedback: updatedFeedback });
+    alert(`已停用「${key}」，之后不会再出这个词的题。`);
+  };
+
+  const handleRestoreWord = async (key: string) => {
+    const next = disabledWords.filter(w => w !== key);
+    setDisabledWords(next);
+    await saveSharedState({ disabled_words: next });
+  };
+
   const handleRejectFeedback = async (feedbackItem: any) => {
     const updatedFeedback = userFeedbackList.map(item => {
       if (item.id === feedbackItem.id) {
@@ -1387,16 +1409,45 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     });
   };
 
+  const renderDisabledWordsPanel = () => (
+    <div className="admin-panel mb-8">
+      <h3 className="admin-panel-title" style={{ marginBottom: '4px' }}>已停用的词（{disabledWords.length}）</h3>
+      <p style={{ fontSize: '13px', color: '#86868B', marginBottom: '14px' }}>
+        这些词不会出现在 Leon 的任何题目里。点「恢复」可以让它重新参与出题。
+      </p>
+      {disabledWords.length === 0 ? (
+        <div style={{ fontSize: '13px', color: '#AEAEB2' }}>暂无停用的词。</div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {disabledWords.map(w => (
+            <span key={w} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: '#F5F5F7', border: '1px solid #E5E5EA', borderRadius: '99px', padding: '6px 12px', fontSize: '13px' }}>
+              <b style={{ color: '#1D1D1F' }}>{w}</b>
+              <button onClick={() => handleRestoreWord(w)}
+                style={{ background: 'none', border: 'none', color: '#0071E3', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                恢复
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const renderFeedbackTab = () => {
     const pendingFeedback = userFeedbackList.filter(item => item.status === 'pending');
     const processedFeedback = userFeedbackList.filter(item => item.status !== 'pending');
     
     return (
       <div className="animate-fade-in">
+        {renderDisabledWordsPanel()}
         <div className="admin-panel mb-8">
           <h3 className="admin-panel-title">Leon 答题纠偏与系统成长中心</h3>
           <p style={{ fontSize: '14px', color: '#86868B', marginBottom: '24px', lineHeight: '1.6' }}>
-            当 Leon 在做翻译练习时，如果他的翻译正确但因为格式与标准答案不同（如“四个”与“4个”），他可以通过点击“我写的对，反馈报错”向您提交审核。您在此批准后，系统会实时记录该词条作为备选标准答案，Leon 再次答题时便能顺利通过，实现系统自适应自我成长。
+            Leon 点「一键报错」时会先被问清楚是哪种情况，您在这里按情况处理：
+            <br />· <b style={{ color: '#0071E3' }}>我的答案也对</b> → 采纳后，这个说法以后也算正确（判题更宽容）
+            <br />· <b style={{ color: '#FF9500' }}>这道题本身有问题</b> → 可直接<b>停用这个词</b>，它从此不再出任何题
+            <br />不会做而已的题，Leon 直接点「跳过 / 下一题」即可，不会留记录，也不会被卡住。
           </p>
 
           <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#1D1D1F', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1422,14 +1473,34 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <p style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#1D1D1F' }}>标准答案: <span style={{ fontWeight: 600 }}>{item.expected}</span></p>
                       <p style={{ margin: 0, fontSize: '14px', color: '#FF9500' }}>Leon 翻译: <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{item.userTyped}</span></p>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignSelf: 'center', justifyContent: 'flex-end' }}>
-                      <button 
-                        onClick={() => handleApproveFeedback(item)}
-                        className="btn-premium btn-blue-filled"
-                        style={{ padding: '6px 12px', fontSize: '12px', width: 'auto' }}
-                      >
-                        批准为备选
-                      </button>
+                    <div style={{ display: 'flex', gap: '8px', alignSelf: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <span style={{
+                        fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '99px',
+                        background: item.reason === 'bad_word' ? 'rgba(255,149,0,0.12)' : item.reason === 'alt_answer' ? 'rgba(0,113,227,0.1)' : 'rgba(142,142,147,0.12)',
+                        color: item.reason === 'bad_word' ? '#FF9500' : item.reason === 'alt_answer' ? '#0071E3' : '#86868B',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        {item.reason === 'bad_word' ? '题目有问题' : item.reason === 'alt_answer' ? '我的答案也对' : '旧版反馈'}
+                      </span>
+                      {item.reason === 'bad_word' ? (
+                        <button
+                          onClick={() => handleDisableWord(item)}
+                          className="btn-premium"
+                          style={{ padding: '6px 12px', fontSize: '12px', width: 'auto', border: '1px solid #FF9500', color: '#FF9500', background: 'rgba(255,149,0,0.06)' }}
+                        >
+                          停用这个词
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleApproveFeedback(item)}
+                          className="btn-premium btn-blue-filled"
+                          style={{ padding: '6px 12px', fontSize: '12px', width: 'auto' }}
+                          disabled={!item.userTyped || /^\(.*\)$/.test(String(item.userTyped).trim())}
+                          title={!item.userTyped ? '这条没有学生答案，不能当备选答案' : ''}
+                        >
+                          采纳为备选答案
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleRejectFeedback(item)}
                         className="btn-premium"
