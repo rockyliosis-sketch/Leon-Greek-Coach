@@ -542,15 +542,26 @@ const ALL_GRAMMAR_DRILLS: any[] = (() => {
   return out;
 })();
 
-/** 某一天该按什么顺序出语法题。纯函数, 可用来重算过去几天出过什么 */
-const orderDrillsForDay = (dateStr: string, planKeys: Set<string>, unlockedKeys: Set<string> | null): any[] => {
+/**
+ * 某一天该按什么顺序出语法题。纯函数, 可用来重算过去几天出过什么。
+ *
+ * `bFrontier` 是 B 本上到第几页。**必须按页卡住, 不能只按单元放行**:
+ * B 第 1 单元横跨第 8–25 页, 课上到第 11 页时这个单元还没学完,
+ * 而它名下 46 道语法题里有 38 道出自 12–25 页 —— 全是还没教过的内容。
+ * A1/A2 三本已经学完(走内置学习时间轴), 不受这条限制。
+ */
+const orderDrillsForDay = (
+  dateStr: string, planKeys: Set<string>, unlockedKeys: Set<string> | null, bFrontier: number
+): any[] => {
   let hash = 0;
   for (let i = 0; i < dateStr.length; i++) { hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0; }
   hash = Math.abs(hash) + 42;
+  const taught = (d: any) =>
+    String(d.book_id || '').toLowerCase() !== 'b1' || !d.page || d.page <= bFrontier;
   const pool = unlockedKeys && unlockedKeys.size
-    ? ALL_GRAMMAR_DRILLS.filter(d => unlockedKeys.has(d._key))
-    : ALL_GRAMMAR_DRILLS;
-  const base = pool.length ? pool : ALL_GRAMMAR_DRILLS;
+    ? ALL_GRAMMAR_DRILLS.filter(d => unlockedKeys.has(d._key) && taught(d))
+    : ALL_GRAMMAR_DRILLS.filter(taught);
+  const base = pool.length ? pool : ALL_GRAMMAR_DRILLS.filter(taught);
   const shuffled = [...base].sort((a, b) =>
     ((a.id * 137 + hash) % 9973) - ((b.id * 137 + hash) % 9973));
   // 今天复习计划里的单元排最前, 和首页的任务分解对得上
@@ -2648,6 +2659,8 @@ export default function StudentApp() {
 
   // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
   const grammarDrillPool = useMemo(() => {
+    // B 本上到第几页 —— 语法题必须按页卡住, 不能按整个单元放行
+    const bFrontier = getBookFrontier(pageMarksState, 'b1');
     // 已经学过的单元(按旧的单元解锁表; B 本另按页码进度判断)
     const unlocked = new Set<string>();
     (unitKnowledgeData as any[]).forEach(u => {
@@ -2665,16 +2678,16 @@ export default function StudentApp() {
     for (let back = 1; back <= LOOKBACK_DAYS; back++) {
       const dstr = shiftDateStr(selectedDateStr, -back);
       const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
-      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked)
+      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier)
         .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
     }
 
-    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked);
+    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier);
     // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
     const fresh = ordered.filter(d => !avoid.has(d.id));
     const reused = ordered.filter(d => avoid.has(d.id));
     return [...fresh, ...reused].slice(0, DRILLS_PER_DAY);
-  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits]);
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState]);
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
 

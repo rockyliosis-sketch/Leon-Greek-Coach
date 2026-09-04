@@ -254,8 +254,12 @@ export const pickDailyReviewUnits = (
   // 没有「在学」标记时，退回最近学完的那个
   if (picked.length === 0) take(byDate[byDate.length - 1]);
 
-  // 2. 最近学完的那个单元 —— 刚学完的东西忘得最快, 必须占一席
-  take(byDate.filter(u => u.kind !== 'current' && !picked.some(p => p.key === u.key)).pop());
+  // 2. 最近学完的那个单元 —— 刚学完的东西忘得最快, 必须占一席。
+  //    但只在它**确实还新鲜**(30 天内)时才霸这个位置; 否则它会永远赖着不走 ——
+  //    比如 B 本刚开课时, 最近学完的一直是 A2 最后一个单元, 天天都在,
+  //    A2 就吃掉三个席位了。过了 30 天就让它回到正常轮换里去竞争。
+  const lastDone = byDate.filter(u => u.kind !== 'current' && !picked.some(p => p.key === u.key)).pop();
+  if (lastDone && daysBetween(lastDone.studyDate, today) <= 30) take(lastDone);
 
   // 3. A2 固定两席（刚学完、难度最大, 家长指定优先）
   take(rotate(byDate.filter(isA2), 7));
