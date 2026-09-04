@@ -37,7 +37,10 @@ LABELS = {
     'ΛΕΙΤΟΥΡΓΙΚΑ ΣΤΟΙΧΕΙΑ': 'exponents',
     'ΓΡΑΜΜΑΤΙΚΗ': 'grammar',
 }
-NOISE = re.compile(r'^(\d+|ΕΛΛΗΝΙΚΑ Β’|.*:Layout \d.*Page \d+)\s*$')
+NOISE = re.compile(r'^(\d+|ΕΛΛΗΝΙΚΑ Β’|περιεχόμενα|.*:Layout \d.*Page \d+)\s*$')
+# 目录的页眉「περιεχόμενα」会被吸进上一条语法点里
+# (U14 曾变成 "Φωνητική: Ουράνωση περιεχόμενα"), 单独剔掉。
+TAIL_NOISE = re.compile(r'\s*περιεχόμενα\s*$')
 
 units, cur, sec = {}, None, None
 for raw in TOC:
@@ -67,7 +70,7 @@ for raw in TOC:
         cur[sec] += ' ' + ln
 
 def clean(s):
-    return re.sub(r'\s+', ' ', s).strip(' •·-')
+    return TAIL_NOISE.sub('', re.sub(r'\s+', ' ', s)).strip(' •·-')
 
 def bullets(s):
     return [b for b in (clean(x) for x in clean(s).split('•')) if b]

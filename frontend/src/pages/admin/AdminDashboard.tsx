@@ -24,6 +24,7 @@ import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
 import sentencesData from '../../data/sentences.json';
 import glossaryV2 from '../../data/glossary_v2.json';
+import bSyllabus from '../../data/b_syllabus.json';
 import {
   type PageMark, type V2Word,
   normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
@@ -284,6 +285,11 @@ const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
 const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
 const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
 const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2', 'glossary-b1': 'B1' };
+
+/** B 本教学大纲(课本目录原印的语法点), 用来告诉家长「现在这一页在学什么」 */
+const B_SYLLABUS: any[] = (bSyllabus as any).units || [];
+const bUnitOfPage = (page: number) =>
+  B_SYLLABUS.find(u => page >= u.pages[0] && page <= u.pages[1]) || null;
 
 const START_DATE = "2025-09-06";
 
@@ -1005,6 +1011,35 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                     </button>
                   )}
                 </div>
+
+                {/* B 本: 按当前页码告诉家长「现在在学哪个单元、这单元的语法点是什么」。
+                    语法点来自课本目录原印的教学大纲, 中文是术语对译。 */}
+                {b === 'b1' && front > 0 && (() => {
+                  const u = bUnitOfPage(front);
+                  if (!u) return null;
+                  return (
+                    <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #E5E5EA' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: '#0071E3', marginBottom: '2px' }}>
+                        现在在学 · 第 {u.unit} 单元（课本 p{u.pages[0]}–{u.pages[1]}）
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1D1D1F' }}>{u.title}</div>
+                      {u.theme_zh && (
+                        <div style={{ fontSize: '11px', color: '#86868B', marginBottom: '6px' }}>{u.theme_zh}</div>
+                      )}
+                      {u.is_review ? (
+                        <div style={{ fontSize: '11px', color: '#86868B' }}>这是复习单元，课本本身没有新语法点</div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          {u.grammar.map((g: any, i: number) => (
+                            <div key={i} style={{ fontSize: '11px', color: '#48484A', lineHeight: 1.45 }}>
+                              <span style={{ color: '#AF52DE', fontWeight: 800 }}>·</span> {g.zh || g.greek}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
