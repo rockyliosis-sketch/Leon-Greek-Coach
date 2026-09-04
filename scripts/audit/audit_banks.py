@@ -80,12 +80,16 @@ for d in bg:
     qid = f"B U{d['unit']-39} p{d['page']} #{d['id']}"
     q, ans, opts = d.get('question',''), d.get('answer',''), d.get('options') or []
     if '___' not in q:              bad('B语法题', '没有空位', qid, q[:60])
-    if ans not in opts:             bad('B语法题', '答案不在选项里', qid, f'{ans} / {opts}')
-    if len(opts) != len(set(opts)): bad('B语法题', '选项重复', qid, f'{opts}')
-    if len(opts) != 4:              bad('B语法题', '选项不是4个', qid, f'{opts}')
-    # 归一化后重合 = 有两个正确答案
-    nn = [norm_gr(o) for o in opts]
-    if len(nn) != len(set(nn)):     bad('B语法题', '选项去重音后重合', qid, f'{opts}')
+    if d.get('drill_type') == 'choice':
+        if ans not in opts:             bad('B语法题', '答案不在选项里', qid, f'{ans} / {opts}')
+        if len(opts) != len(set(opts)): bad('B语法题', '选项重复', qid, f'{opts}')
+        if len(opts) != 4:              bad('B语法题', '选项不是4个', qid, f'{opts}')
+        nn = [norm_gr(o) for o in opts]
+        if len(nn) != len(set(nn)):     bad('B语法题', '选项去重音后重合', qid, f'{opts}')
+    else:
+        acc = d.get('acceptable_answers') or []
+        if not acc:                     bad('B语法题', '手打题没有可接受答案表', qid, ans)
+        if ans not in acc:              bad('B语法题', '标准答案不在可接受答案表里', qid, f'{ans} / {acc}')
     # 答案填回去必须还原成原句
     src = d.get('detailed_tip','')
     m2 = re.search(r'【课本原句】(.+)', src)
@@ -95,9 +99,9 @@ for d in bg:
         if norm_gr(restored) != norm_gr(orig):
             bad('B语法题', '答案填回去还原不出原句', qid, f'{orig[:45]} / {restored[:45]}')
     if LATIN.search(q):             bad('B语法题', '题干混了拉丁字母', qid, q[:60])
-    seen_pair[norm_gr(q)] += 1
+    seen_pair[(d.get('drill_type'), norm_gr(q))] += 1
 for k, v in seen_pair.items():
-    if v > 1: bad('B语法题', '同一道题出现多次', k[:40], f'{v} 次')
+    if v > 1: bad('B语法题', '同题型下同一道题出现多次', str(k)[:40], f'{v} 次')
 
 # ─────────────────────────────────────────── 2. 课本原句填空
 sents = json.load(open(D + 'sentences.json'))['sentences']

@@ -31,13 +31,15 @@ import {
   resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
 } from '../../lib/pageProgress';
 import {
-  type ReviewUnit,
+  type ReviewUnit, type UnitBand,
   buildReviewUnits, pickDailyReviewUnits, isUnitDue, daysBetween,
 } from '../../lib/reviewUnits';
+import { builtinPageDate, hasBuiltinCalendar, BOOK_WINDOW } from '../../lib/studyCalendar';
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import bGrammarDrills from '../../data/b_grammar_drills.json';
+import a1UnitMap from '../../data/a1_unit_map.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 const speakGreek = (text: string) => {
@@ -113,9 +115,43 @@ const describeReviewUnit = (u: ReviewUnit): { tag: string; title: string; sub: s
     };
   }
 
+  // A1 第一分册: 课本自己的 15 个单元。主题名已逐单元用词库内容核对过
+  // (U1 人名/你好、U4 课桌/学生、U7 奶奶/父母、U8 眼睛/头发、U9 宝藏/骑士、
+  //  U12 书桌/椅子、U13 邮局/银行、U15 小丑/气球 —— 都对得上)
+  if (BOOK === 'A1-A' && u.kind === 'unit' && u.unitNo) {
+    const full = getUnitChineseName('A1-A', u.unitNo);
+    const m = full.match(/^(.*?)\s*\((.*?)\)\s*$/);
+    return {
+      tag: `A1-A U${u.unitNo}`,
+      title: `第 ${u.unitNo} 单元 · ${m ? m[1].trim() : full.trim()}`,
+      sub: u.pages ? `A1 第一分册 · 课本第 ${u.pages[0]}–${u.pages[1]} 页` : '',
+      grammar: getUnitGrammarPoints('A1-A', u.unitNo),
+    };
+  }
+
+  // A1 第二分册: 课本实际是第 16–33 单元, 而应用里那份单元名只列到 30,
+  // 且主题与实际页码内容对不上(应用说 U24 是「大自然动植物」, 那几页实际在讲天气)。
+  // 所以只报真实单元号和页码, 不套用那份对不上的主题名 —— 宁可少说, 不说错。
+  if (BOOK === 'A1-B' && u.kind === 'unit' && u.unitNo) {
+    return {
+      tag: `A1-B U${u.unitNo}`,
+      title: `第 ${u.unitNo} 单元`,
+      sub: u.pages ? `A1 第二分册 · 课本第 ${u.pages[0]}–${u.pages[1]} 页` : '',
+      grammar: '这一单元按课本页码复习词汇。这本教材的单元主题名尚未逐单元核对，先不标，避免标错。',
+    };
+  }
+
   // A1 儿童版(以及任何只有页码的书): 按页码区块, 如实写页码
   if (u.kind === 'block' && u.pages) {
     const name = BOOK === 'A1-A' ? 'A1 第一分册' : BOOK === 'A1-B' ? 'A1 第二分册' : BOOK;
+    if (BOOK === 'A1-A' && u.unitNo === null && u.pages[0] <= 12) {
+      return {
+        tag: 'A1-A 字母表',
+        title: `字母表教学区 · 课本第 ${u.pages[0]}–${u.pages[1]} 页`,
+        sub: 'A1 第一分册 · 第 1 单元之前的部分',
+        grammar: '这一段是希腊语字母的认读与书写，课本在正式分单元之前先教完 24 个字母。',
+      };
+    }
     return {
       tag: `${BOOK} p${u.pages[0]}–${u.pages[1]}`,
       title: `课本第 ${u.pages[0]}–${u.pages[1]} 页`,
@@ -137,6 +173,9 @@ const describeReviewUnit = (u: ReviewUnit): { tag: string; title: string; sub: s
 
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
+
+/** A1 两册的真实单元页码带, 由 scripts/ocr/build_a1_unit_map.py 从课本文本还原 */
+const A1_UNIT_BANDS: Record<string, UnitBand[]> = ((a1UnitMap as any).books || {}) as any;
 const v2ToWord = (w: V2Word): any => ({
   id: 100000 + w.id,
   book_id: w.book_id,
@@ -1602,8 +1641,14 @@ export default function StudentApp() {
         // 只有「新词库里确实有这本书的词」才做替换。
         // B本(b1)目前只有真句子填空题、没有重建词库, 若也替换会让B词汇整本消失。
         const v2Books = new Set(V2_WORDS.map(w => w.book_id));
+        // A1 两册和 A2 已经学完, 走**内置学习时间轴**(lib/studyCalendar.ts):
+        // 家长口述「2025-09-10 开课, 每周 4 节, 2026-08-25 A2 彻底学完, 时间比较平均」,
+        // 这三本的每一页是哪天学的直接算出来, 不需要任何人在后台补记。
+        // 从前必须先在后台记一笔页码进度才会启用新词库, 否则整本书按旧的
+        // 「单元解锁表」走 —— A2 那张表默认返回 LOCKED, 所以 A2 根本不会出现。
         const pageBooks = new Set(
-          pageMarks.map(m => String(m.bookId).toLowerCase()).filter(b => v2Books.has(b))
+          [...pageMarks.map(m => String(m.bookId).toLowerCase()),
+           ...Object.keys(BOOK_WINDOW)].filter(b => v2Books.has(b))
         );
         // 家长已按页码记录进度的书 -> 换成教材重建产出的真词库; 其余书维持原样, 不影响现有进度
         const oldKept = (staticVocabData.textbook_vocabulary || [])
@@ -1651,6 +1696,20 @@ export default function StudentApp() {
           V2_WORDS.filter(w => pageBooks.has(w.book_id)), pageMarks);
         Object.keys(byPage).forEach(k => {
           finalActivated[100000 + Number(k)] = byPage[Number(k)];
+        });
+        // 已学完的三本书: 家长真的一次课一次课记过(>=3 笔)就以他的记录为准,
+        // 否则一律用内置时间轴 —— 包括「整本学完」那种只有一笔的情况,
+        // 那一笔会把整本书几百个词全压成同一天, 艾宾浩斯就废了。
+        const markCount: Record<string, number> = {};
+        pageMarks.forEach(m => {
+          const b = String(m.bookId).toLowerCase();
+          markCount[b] = (markCount[b] || 0) + 1;
+        });
+        V2_WORDS.forEach(w => {
+          if (!hasBuiltinCalendar(w.book_id)) return;
+          if ((markCount[w.book_id] || 0) >= 3) return;
+          const d = builtinPageDate(w.book_id, w.page_number);
+          if (d) finalActivated[100000 + w.id] = d;
         });
         setActivatedDates(finalActivated);
 
@@ -1711,6 +1770,7 @@ export default function StudentApp() {
     activatedDates,
     marks: pageMarksState,
     syllabusB: B_SYLLABUS,
+    unitBands: A1_UNIT_BANDS,
     today: selectedDateStr,
   }), [unlockedVocab, activatedDates, pageMarksState, selectedDateStr]);
 

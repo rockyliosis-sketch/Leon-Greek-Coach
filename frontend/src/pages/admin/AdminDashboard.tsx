@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
+import { BOOK_WINDOW } from '../../lib/studyCalendar';
 import sentencesData from '../../data/sentences.json';
 import glossaryV2 from '../../data/glossary_v2.json';
 import bSyllabus from '../../data/b_syllabus.json';
@@ -536,9 +537,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [pmBook, setPmBook] = useState<string>('a1-b');
   const [pmPage, setPmPage] = useState<string>('');
   const [pmDate, setPmDate] = useState<string>('');
-  /** 「按学习时间轴补填」的起止日期。默认值来自家长口述：2025-09-10 开课，2026-08-25 A2 学完 */
-  const [tlStart, setTlStart] = useState<string>('2025-09-10');
-  const [tlEnd, setTlEnd] = useState<string>('2026-08-25');
   const [showLegacyUnits, setShowLegacyUnits] = useState(false);
   // 单词表折叠面板：当前展开的是哪张表 / 哪个字母 / 搜索词
   const [glossOpen, setGlossOpen] = useState<string | null>(null);
@@ -679,62 +677,6 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       `确定要这样记吗？（回退不会删掉已有记录，只是多一个更早的进度点）`)) return;
     persistPageMarks([...pageMarks, { id: makeMarkId(), date, bookId: pmBook, upToPage: page }]);
     setPmPage(''); setPmDate('');
-  };
-
-  /**
-   * 按学习时间轴，把 A1 两册 + A2 的进度**摊回真实时间**。
-   *
-   * 为什么需要它：点一次「整本学完」只会记下一条进度，于是整本书几百个词
-   * 都被认成**那一天**学的。艾宾浩斯唯一的输入就是「这一页是哪天讲的」，
-   * 一压平，复习周期就全错了（首页会算出「记忆横跨 ~1 个月」）。
-   *
-   * 做法：把三本书按页数占比铺进起止日期之间，每周记一笔。整体匀速——
-   * 家长口述「每周 4 节课，时间比较平均」，所以不做加速减速。
-   */
-  const handleBackfillTimeline = () => {
-    const ORDER: string[] = ['a1-a', 'a1-b', 'a2'];
-    const s0 = new Date(tlStart + 'T00:00:00');
-    const s1 = new Date(tlEnd + 'T00:00:00');
-    const totalDays = Math.round((s1.getTime() - s0.getTime()) / 86400000);
-    if (!(totalDays > 30)) { alert('起止日期不对：结束日期要比开始日期晚至少一个月。'); return; }
-
-    const pages = ORDER.map(b => {
-      const r = BOOK_PAGE_RANGE[b];
-      return { book: b, lo: r.min, hi: r.max, n: r.max - r.min + 1, name: r.name };
-    });
-    const totalPages = pages.reduce((a, c) => a + c.n, 0);
-
-    const fmt = (d: Date) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-    const made: PageMark[] = [];
-    const plan: string[] = [];
-    let cursor = 0;   // 距开课第几天
-    pages.forEach(bk => {
-      const span = Math.round(totalDays * bk.n / totalPages);
-      const weeks = Math.max(1, Math.round(span / 7));
-      const from = new Date(s0.getTime() + cursor * 86400000);
-      const to = new Date(s0.getTime() + (cursor + span) * 86400000);
-      plan.push(`  ${bk.name}\n    ${fmt(from)} → ${fmt(to)}（${bk.n} 页 / 约 ${weeks} 周）`);
-      for (let w = 1; w <= weeks; w++) {
-        const d = new Date(s0.getTime() + (cursor + Math.round(span * w / weeks)) * 86400000);
-        const page = bk.lo - 1 + Math.max(1, Math.round(bk.n * w / weeks));
-        made.push({ id: makeMarkId() + '_tl', date: fmt(d), bookId: bk.book,
-                    upToPage: Math.min(bk.hi, page), note: '按学习时间轴补填' });
-      }
-      cursor += span;
-    });
-
-    const removing = pageMarks.filter(m => ORDER.includes(m.bookId)).length;
-    if (!window.confirm(
-      `按学习时间轴补填 A1 两册 + A2 的进度？\n\n` +
-      plan.join('\n') + `\n\n` +
-      `会新建 ${made.length} 条每周进度记录，` +
-      (removing ? `并**删掉这三本书现有的 ${removing} 条记录**（B 本不动）。\n` : `B 本不动。\n`) +
-      `\n这不改动任何词，只是把「哪一页是哪天学的」摊回真实时间，\n` +
-      `艾宾浩斯复习周期才算得对。记错了可以再点一次覆盖。`)) return;
-
-    persistPageMarks([...pageMarks.filter(m => !ORDER.includes(m.bookId)), ...made]);
   };
 
   /** 一键标记「这本整本已学完」 */
@@ -1117,34 +1059,28 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         )}
 
-        {/* 按学习时间轴补填（修「整本学完把一年压成一天」） */}
-        <div style={{ background: 'rgba(255,149,0,0.06)', border: '1px solid rgba(255,149,0,0.2)',
+        {/* 内置学习时间轴（只读）—— 不需要家长填任何东西 */}
+        <div style={{ background: 'rgba(52,199,89,0.06)', border: '1px solid rgba(52,199,89,0.2)',
                       borderRadius: '12px', padding: '14px', marginBottom: '12px' }}>
           <div style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', marginBottom: '4px' }}>
-            按学习时间轴补填 A1 两册 + A2
+            内置学习时间轴 · 已写进系统，无需操作
           </div>
           <div style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.6, marginBottom: '10px' }}>
-            点「✓ 整本学完」只会记下<b>一条</b>进度，整本书几百个词都被当成那一天学的，
-            艾宾浩斯就没法算了（首页会显示「记忆横跨 ~1 个月」）。
-            填上真实的起止日期，系统按页数把三本书匀速铺进这段时间，每周记一笔。<b>B 本不动。</b>
+            A1 两册和 A2 已经学完，每一页是哪天学的由系统直接算出来
+            （2025-09-10 开课、每周 4 节、2026-08-25 A2 彻底学完，按页数匀速铺开）。
+            艾宾浩斯复习周期就是从「这个单元学完那天」开始算的。<b>B 本还在学，仍以下面每次课记的页码为准。</b>
           </div>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>开始学希腊语</label>
-              <input type="date" value={tlStart} onChange={e => setTlStart(e.target.value)}
-                style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600 }} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>A2 彻底学完</label>
-              <input type="date" value={tlEnd} onChange={e => setTlEnd(e.target.value)}
-                style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600 }} />
-            </div>
-            <button onClick={handleBackfillTimeline}
-              style={{ padding: '10px 16px', borderRadius: '9px', border: '1px solid rgba(255,149,0,0.35)',
-                       background: 'rgba(255,149,0,0.12)', color: '#C2185B', fontSize: '13px',
-                       fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-              📅 补填学习时间轴
-            </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {Object.entries(BOOK_WINDOW).map(([bid, w]: any) => (
+              <div key={bid} style={{ background: '#FFF', border: '1px solid #E5E5EA', borderRadius: '10px',
+                                      padding: '8px 12px', fontSize: '12px' }}>
+                <div style={{ fontWeight: 800, color: '#1D1D1F' }}>{BOOK_PAGE_RANGE[bid]?.name || bid}</div>
+                <div style={{ color: '#34C759', fontWeight: 700, fontFamily: 'monospace' }}>{w.start} → {w.end}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: '11.5px', color: '#86868B', marginTop: '10px' }}>
+            想改？在下面按这本书<b>真的记满 3 次以上的课</b>，系统就以你的记录为准，不再用内置时间轴。
           </div>
         </div>
 

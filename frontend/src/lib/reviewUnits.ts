@@ -17,8 +17,11 @@
 import type { PageMark } from './pageProgress';
 import { getPageDate, getBookFrontier } from './pageProgress';
 
-/** A1 儿童版没有单元结构，按多少页切一块 */
+/** 实在拿不到单元结构时的兜底：按多少页切一块 */
 export const A1_BLOCK_SIZE = 20;
+
+/** 某本书的单元页码带（A1 两册来自 a1_unit_map.json，A2 来自词库自带的真实单元号） */
+export interface UnitBand { unit: number; pages: [number, number]; preface?: boolean }
 
 /** 艾宾浩斯复习节点（天） */
 export const EBBINGHAUS_DAYS = [0, 1, 2, 3, 4, 5, 7, 10, 15, 30, 60, 90];
@@ -69,6 +72,8 @@ export interface BuildInput {
   marks: PageMark[];
   /** B 本教学大纲（单元号 + 页码区间） */
   syllabusB: any[];
+  /** A1 两册的真实单元页码带（从课本文本还原）*/
+  unitBands?: Record<string, UnitBand[]>;
   today: string;
 }
 
@@ -76,7 +81,12 @@ export interface BuildInput {
  * 把已解锁的词归拢成「复习单位」。
  * 只产出**已经学过**的单位；正在学的那个单元单独标成 kind='current'。
  */
-export const buildReviewUnits = ({ words, activatedDates, marks, syllabusB, today }: BuildInput): ReviewUnit[] => {
+export const buildReviewUnits = ({ words, activatedDates, marks, syllabusB, unitBands, today }: BuildInput): ReviewUnit[] => {
+  const bandOf = (book: string, page: number): UnitBand | null => {
+    const list = unitBands?.[book.toLowerCase()];
+    if (!list) return null;
+    return list.find(b => page >= b.pages[0] && page <= b.pages[1]) || null;
+  };
   const buckets = new Map<string, { u: Omit<ReviewUnit, 'studyDate' | 'wordIds'>; ids: number[]; dates: string[] }>();
 
   const push = (
@@ -127,9 +137,21 @@ export const buildReviewUnits = ({ words, activatedDates, marks, syllabusB, toda
       return;
     }
 
-    // --- A1 儿童版（以及任何只有页码的书）：按页码区块 ---
-    // 页码区间取「这一块里真正有词的那些页」, 不写死成整 20 页 ——
-    // 否则最后一块会标出「第 181–200 页」, 而课本只到 191 页。
+    // --- A1 儿童版：用从课本文本还原出来的真实单元 ---
+    // 从前这里只能按「20 页一块」切, 是因为照片 OCR 只认出零星几个单元锚点。
+    // 现在压缩版教材里逐页保留的 Ενότητα 标题已经还原出完整的单元页码带
+    // (scripts/ocr/build_a1_unit_map.py), 所以可以按真单元复习了。
+    if (page !== null) {
+      const band = bandOf(BOOK, page);
+      if (band) {
+        // unit=0 是单元 1 之前的部分(A1-A 前 48 页是字母表教学区), 单独成段
+        push(`${BOOK}#u#${band.unit}`, BOOK, band.preface ? 'block' : 'unit',
+             band.preface ? null : band.unit, [band.pages[0], band.pages[1]], w.id, date);
+        return;
+      }
+    }
+
+    // --- 兜底：连单元页码带都没有的书, 按页码区块 ---
     if (page !== null) {
       const bi = Math.floor((page - 1) / A1_BLOCK_SIZE);
       push(`${BOOK}#b#${bi}`, BOOK, 'block', null, [page, page], w.id, date);

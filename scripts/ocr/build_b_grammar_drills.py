@@ -184,16 +184,15 @@ for s in SENT:
         # 同一个搭配最多出两道(用不同的原句), 再多就重样了
         h = (key, low)
         seen_blank[h] = seen_blank.get(h, 0) + 1
-        if seen_blank[h] > 2:
-            skipped['同搭配已够两道'] += 1; continue
+        if seen_blank[h] > 3:
+            skipped['同搭配已够三道'] += 1; continue
 
         st, en = words[i].span()
         cloze = text[:st] + '______' + text[en:]
         picks = sorted(pool, key=lambda a: (abs(len(a)-len(low)), a))[:3]
         options = sorted([art] + picks, key=lambda x: norm(x))
         kind = '介词+冠词缩合' if low in CONTRACT else '冠词'
-        drills.append({
-            'id': 320000 + len(drills),
+        base = {
             'drill_type': 'choice',
             'skill_type': 'article' if low in ARTICLES else 'contraction',
             'book_id': 'b1',
@@ -210,8 +209,19 @@ for s in SENT:
                 f"【出处】第 {s['unit']-39} 单元 {theme(s['unit'])} · 课本第 {s['page']} 页\n"
                 f"（全书 {obs[low]} 次都用这个搭配，其余选项一次也没出现过。）"
             ),
+        }
+        drills.append({'id': 320000 + len(drills), **base})
+        # 同一句再出一道**手打填空**: 认得出 ≠ 写得出, 换个技能再练一遍。
+        # 家长原话:「并不是说我一定要完全不能重复，可以让它出现好几种题目类型。」
+        drills.append({
+            'id': 320000 + len(drills),
+            **base,
+            'drill_type': 'cloze',
+            'options': None,
+            'acceptable_answers': sorted({art, art.lower(), norm(art)}),
+            'translation': f"{kind}练习（手写）· 课本第 {s['page']} 页",
         })
-        per_unit[s['unit']] += 1
+        per_unit[s['unit']] += 2
 
 os.makedirs(f'{ROOT}/frontend/src/data', exist_ok=True)
 out = {
