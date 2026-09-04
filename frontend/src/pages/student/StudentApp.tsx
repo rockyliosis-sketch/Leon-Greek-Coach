@@ -30,6 +30,10 @@ import {
   type PageMark, type V2Word,
   resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
 } from '../../lib/pageProgress';
+import {
+  type ReviewUnit,
+  buildReviewUnits, pickDailyReviewUnits, isUnitDue, daysBetween,
+} from '../../lib/reviewUnits';
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
@@ -65,9 +69,70 @@ const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 
 
 /** B 本教学大纲(单元号 / 页码区间 / 标题 / 中文主题 / 语法点), 与家长端同一份数据 */
 const B_SYLLABUS: any[] = (bSyllabus as any).units || [];
-/** 课本页码 -> 它属于第几单元。B 本按页解锁, 但展示上要能说回「第几单元」 */
-const bUnitOfPage = (page: number) =>
-  B_SYLLABUS.find(u => page >= u.pages[0] && page <= u.pages[1]) || null;
+
+/**
+ * 一个复习单位在界面上怎么称呼。
+ *
+ * 家长定的口径: 正在学的那个单元报页码, 已经学过的一律只说单元。
+ * A1 儿童版两册教材本身没有可靠的单元页码带(OCR 只认出零星几个锚点),
+ * 所以如实写「第 X–Y 页」, 不编造单元号。
+ */
+const describeReviewUnit = (u: ReviewUnit): { tag: string; title: string; sub: string; grammar: string } => {
+  const BOOK = u.bookId.toUpperCase();
+
+  // B 本: 用课本目录原印的教学大纲
+  if ((BOOK === 'B1' || BOOK === 'B') && u.unitNo) {
+    const su = B_SYLLABUS.find((x: any) => x.unit === u.unitNo);
+    const learning = u.kind === 'current';
+    const theme = su ? (su.theme_zh || su.title) : '';
+    const gram = su && Array.isArray(su.grammar) && su.grammar.length
+      ? su.grammar.map((g: any) => g.zh || g.greek).filter(Boolean).join('；')
+      : (su && su.is_review
+          ? '这是复习单元，课本本身没有新语法点，重点是把前面几个单元的内容合起来练。'
+          : getUnitGrammarPoints('B', 39 + u.unitNo));
+    return {
+      tag: `B U${u.unitNo}`,
+      title: learning && u.pages
+        ? `第 ${u.unitNo} 单元 · ${theme}（正在学，已上到第 ${u.pages[1]} 页）`
+        : `第 ${u.unitNo} 单元 · ${theme}`,
+      sub: su ? su.title : '',
+      grammar: gram,
+    };
+  }
+
+  // A2: 词库里已带真实单元号 31–36, 对应课本第 1–6 单元
+  if (BOOK === 'A2' && u.unitNo) {
+    const full = getUnitChineseName('A2', u.unitNo);
+    const m = full.match(/^(.*?)\s*\((.*?)\)\s*$/);
+    return {
+      tag: `A2 U${u.unitNo - 30}`,
+      title: m ? m[1].trim() : full.trim(),
+      sub: m ? m[2].trim() : '',
+      grammar: getUnitGrammarPoints('A2', u.unitNo),
+    };
+  }
+
+  // A1 儿童版(以及任何只有页码的书): 按页码区块, 如实写页码
+  if (u.kind === 'block' && u.pages) {
+    const name = BOOK === 'A1-A' ? 'A1 第一分册' : BOOK === 'A1-B' ? 'A1 第二分册' : BOOK;
+    return {
+      tag: `${BOOK} p${u.pages[0]}–${u.pages[1]}`,
+      title: `课本第 ${u.pages[0]}–${u.pages[1]} 页`,
+      sub: `${name} · 词汇复习`,
+      grammar: '这一段是按课本页码复习词汇。儿童版 A1 没有按单元编排的语法专题，重点是把这些页上的词认熟、拼对。',
+    };
+  }
+
+  // 兜底: 还在用旧的「按单元解锁」的书
+  const full = getUnitChineseName(BOOK, u.unitNo || 0);
+  const m = full.match(/^(.*?)\s*\((.*?)\)\s*$/);
+  return {
+    tag: `${BOOK} U${u.unitNo ?? '?'}`,
+    title: m ? m[1].trim() : full.trim(),
+    sub: m ? m[2].trim() : '',
+    grammar: getUnitGrammarPoints(BOOK, u.unitNo || 0),
+  };
+};
 
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
@@ -1400,228 +1465,75 @@ export default function StudentApp() {
    * 从前这里回一个假字符串 'PAGE', 一路漏进日期计算 ——
    * 首页「记忆横跨周期」算出 ~NaN 个月、复习卡片的日期区间是空的, 根子都在这。
    */
-  const unitDateOf = useMemo(() => (bookId: string, unitNum: number): string => {
-    if (unitNum >= PAGE_UNIT_BASE) {
-      return getPageDate(pageMarksState, bookId.toLowerCase(), unitNum - PAGE_UNIT_BASE) || 'LOCKED';
-    }
-    return getUnitStudyDate(bookId, unitNum, unitStudyDates);
-  }, [pageMarksState, unitStudyDates]);
 
-  const selectedUnitKeys = useMemo(() => {
-    // 1. Get the list of all unique unit keys that have unlocked words as of selectedDateStr
-    // A unit key is represented as "BOOK_UNIT", e.g. "A1-A_1", "A2_31"
-    const availableUnitKeys = Array.from(
-      new Set(unlockedVocab.map(w => `${w.book_id.toUpperCase()}_${w.unit}`))
-    ).filter(key => {
-      const [book, unitStr] = key.split('_');
-      const studyDate = unitDateOf(book, parseInt(unitStr, 10));
-      return studyDate !== 'LOCKED' && studyDate !== '';
+  /**
+   * 今天要复习哪几个「单元」。
+   *
+   * 从前这里选的是**页**：一页平均 3–4 个词, 选 6 页只有 20 多个词,
+   * 却要支撑 260 道题, 于是八成题目只能从全库随机补 —— 首页说的和实际做的对不上。
+   * 现在改成按单元选(A2 用教材真单元, B 已学完的用真单元、在学的按页,
+   * A1 儿童版教材没有可靠单元页码带, 按 20 页一块), 6 个单位能供 400+ 个词。
+   *
+   * 选谁也不再看「在列表里排第几」, 而是先看**今天到没到艾宾浩斯的复习节点**,
+   * 并且 A2 每天保底占一席(刚学完、难度最大, 家长指定优先)。
+   */
+  const todayReviewUnits = useMemo(() => {
+    const all = buildReviewUnits({
+      words: unlockedVocab,
+      activatedDates,
+      marks: pageMarksState,
+      syllabusB: B_SYLLABUS,
+      today: selectedDateStr,
     });
+    return pickDailyReviewUnits(all, selectedDateStr, 6);
+  }, [unlockedVocab, activatedDates, pageMarksState, selectedDateStr]);
 
-    if (availableUnitKeys.length === 0) {
-      return ["A1-A_1"];
-    }
+  /** 今天这批复习覆盖到的词 id, 供出题时快速判断 */
+  const todayUnitOfWord = useMemo(() => {
+    const m: Record<number, ReviewUnit> = {};
+    todayReviewUnits.forEach(u => u.wordIds.forEach(id => { m[id] = u; }));
+    return m;
+  }, [todayReviewUnits]);
 
-    // Sort all available unit keys chronologically based on their study dates.
-    // The study date comes from getUnitStudyDate(bookId, unitNum, unitStudyDates).
-    // Earlier study dates will be at the beginning of the list, more recent ones at the end.
-    availableUnitKeys.sort((keyA, keyB) => {
-      const [bookA, unitNumStrA] = keyA.split('_');
-      const unitNumA = parseInt(unitNumStrA, 10);
-      let dateA = unitDateOf(bookA, unitNumA);
-      if (dateA === 'LOCKED') dateA = '0000-00-00';
-      
-      const [bookB, unitNumStrB] = keyB.split('_');
-      const unitNumB = parseInt(unitNumStrB, 10);
-      let dateB = unitDateOf(bookB, unitNumB);
-      if (dateB === 'LOCKED') dateB = '0000-00-00';
-      
-      if (dateA !== dateB) {
-        return dateA.localeCompare(dateB);
-      }
-      return keyA.localeCompare(keyB);
-    });
 
-    const N = availableUnitKeys.length;
-    
-    // We select up to 4 unique unit keys to represent the 4 tiers of temporal distance:
-    // 1. Most Recent (最近)
-    // 2. Earliest (最早)
-    // 3. Recent (较近)
-    // 4. Earlier (较早)
-    const selected: string[] = [];
-    const addUnitKey = (key: string) => {
-      if (!selected.includes(key)) {
-        selected.push(key);
-      }
-    };
-
-    if (N >= 6) {
-      // Calculate day offset from selectedDateStr to drive dynamic daily rotation
-      const parts = selectedDateStr.split('-');
-      const y = parseInt(parts[0], 10) || 2026;
-      const m = parseInt(parts[1], 10) || 7;
-      const d = parseInt(parts[2], 10) || 5;
-      const dayCount = Math.floor(new Date(y, m - 1, d).getTime() / (1000 * 60 * 60 * 24));
-
-      // 1. Most Recent (最近): ALWAYS the last element in chronological order (N - 1)
-      addUnitKey(availableUnitKeys[N - 1]);
-      
-      // 2. Recent (较近): rotate among recent content (e.g., the 5 units before N-1)
-      const recentPoolSize = Math.min(5, N - 1);
-      if (recentPoolSize > 0) {
-        const recentIdx = (N - 2) - (dayCount % recentPoolSize);
-        addUnitKey(availableUnitKeys[recentIdx]);
-      } else {
-        addUnitKey(availableUnitKeys[N - 2]);
-      }
-
-      // 3. Distant (稍远): rotate among middle-timeline units (e.g., 25% to 75% of timeline), selecting 2 units
-      const distantStart = Math.floor(N * 0.25);
-      const distantEnd = Math.max(distantStart, Math.floor(N * 0.75));
-      const distantPoolSize = (distantEnd - distantStart) + 1;
-      const dist1 = distantStart + ((dayCount * 2) % distantPoolSize);
-      addUnitKey(availableUnitKeys[dist1]);
-      if (distantPoolSize > 1) {
-        const dist2 = distantStart + ((dayCount * 2 + 1) % distantPoolSize);
-        addUnitKey(availableUnitKeys[dist2]);
-      }
-
-      // 4. Earliest (最远): rotate among oldest units (e.g., 0 to 25% of timeline), selecting 2 units
-      // Fulfills requirement: "最远的是包含两个单元"
-      const earliestEnd = Math.max(0, Math.floor(N * 0.25) - 1);
-      const earliestPoolSize = earliestEnd + 1;
-      const earl1 = (dayCount * 2) % earliestPoolSize;
-      addUnitKey(availableUnitKeys[earl1]);
-      if (earliestPoolSize > 1) {
-        const earl2 = (dayCount * 2 + 1) % earliestPoolSize;
-        addUnitKey(availableUnitKeys[earl2]);
-      }
-
-      // Safety fallback: fill from recent downwards up to 6 units
-      let fillIdx = N - 2;
-      while (selected.length < 6 && fillIdx >= 0) {
-        addUnitKey(availableUnitKeys[fillIdx]);
-        fillIdx--;
-      }
-    } else if (N >= 4) {
-      // Calculate day offset from selectedDateStr to drive dynamic daily rotation
-      const parts = selectedDateStr.split('-');
-      const y = parseInt(parts[0], 10) || 2026;
-      const m = parseInt(parts[1], 10) || 7;
-      const d = parseInt(parts[2], 10) || 5;
-      const dayCount = Math.floor(new Date(y, m - 1, d).getTime() / (1000 * 60 * 60 * 24));
-
-      addUnitKey(availableUnitKeys[N - 1]);
-      
-      const recentPoolSize = Math.min(5, N - 1);
-      if (recentPoolSize > 0) {
-        const recentIdx = (N - 2) - (dayCount % recentPoolSize);
-        addUnitKey(availableUnitKeys[recentIdx]);
-      } else {
-        addUnitKey(availableUnitKeys[N - 2]);
-      }
-
-      const distantStart = Math.floor(N * 0.25);
-      const distantEnd = Math.max(distantStart, Math.floor(N * 0.75));
-      const distantPoolSize = (distantEnd - distantStart) + 1;
-      const distantIdx = distantStart + ((dayCount * 2) % distantPoolSize);
-      addUnitKey(availableUnitKeys[distantIdx]);
-
-      const earliestEnd = Math.max(0, Math.floor(N * 0.25) - 1);
-      const earliestPoolSize = earliestEnd + 1;
-      const earliestIdx = (dayCount * 3) % earliestPoolSize;
-      addUnitKey(availableUnitKeys[earliestIdx]);
-
-      let fillIdx = N - 2;
-      while (selected.length < 4 && fillIdx >= 0) {
-        addUnitKey(availableUnitKeys[fillIdx]);
-        fillIdx--;
-      }
-    } else {
-      // Less than 4 unit keys available: add all of them
-      availableUnitKeys.forEach(key => addUnitKey(key));
-    }
-
-    // Sort selected unit keys in descending chronological order (Most Recent -> Earliest)
-    // to match the student app layout structure (Recent -> Remote)
-    return selected.sort((keyA, keyB) => {
-      const [bookA, unitNumStrA] = keyA.split('_');
-      const unitNumA = parseInt(unitNumStrA, 10);
-      let dateA = unitDateOf(bookA, unitNumA);
-      if (dateA === 'LOCKED') dateA = '0000-00-00';
-      
-      const [bookB, unitNumStrB] = keyB.split('_');
-      const unitNumB = parseInt(unitNumStrB, 10);
-      let dateB = unitDateOf(bookB, unitNumB);
-      if (dateB === 'LOCKED') dateB = '0000-00-00';
-      
-      if (dateA !== dateB) {
-        return dateB.localeCompare(dateA); // Descending chronological order
-      }
-      return keyB.localeCompare(keyA);
-    });
-  }, [unlockedVocab, unitDateOf, selectedDateStr]);
-
-  // Compute daily deck based on selected date (integrating early review rotation)
+  // 今天的卡组 = 今天这几个复习单元里的词
   const dailyDeck = useMemo(() => {
-    if (allVocab.length === 0 || selectedUnitKeys.length === 0) return [];
+    if (todayReviewUnits.length === 0) return [];
+    const byId = new Map<number, Word>();
+    unlockedVocab.forEach(w => byId.set(w.id, w));
 
     const deck: Word[] = [];
-
-    selectedUnitKeys.forEach(gUnitKey => {
-      const [bookId, unitNumStr] = gUnitKey.split('_');
-      const unitNum = parseInt(unitNumStr, 10);
-      
-      // Find all words in unlockedVocab belonging to this book and unit
-      const unitWords = unlockedVocab.filter(w => w.book_id.toUpperCase() === bookId.toUpperCase() && w.unit === unitNum);
-      
-      // Sort unit words by ID
-      const sortedUnitWords = [...unitWords].sort((a, b) => a.id - b.id);
-      
-      deck.push(...sortedUnitWords);
+    todayReviewUnits.forEach(u => {
+      u.wordIds.forEach(id => {
+        const w = byId.get(id);
+        if (w && !deck.some(d => d.id === w.id)) deck.push(w);
+      });
     });
 
-    // Unconditionally add recent note words (diffDays <= 7) to daily deck to guarantee review
+    // 最近一周记的笔记词, 无条件加入, 保证一定复习到
     const recentNoteWords = unlockedVocab.filter(w => {
       if (!w.note_date) return false;
-      const partsAct = w.note_date.split('-');
-      const partsTgt = selectedDateStr.split('-');
-      if (partsAct.length !== 3 || partsTgt.length !== 3) return false;
-      const actD = new Date(parseInt(partsAct[0], 10), parseInt(partsAct[1], 10) - 1, parseInt(partsAct[2], 10), 0, 0, 0, 0);
-      const tgtD = new Date(parseInt(partsTgt[0], 10), parseInt(partsTgt[1], 10) - 1, parseInt(partsTgt[2], 10), 0, 0, 0, 0);
-      if (isNaN(actD.getTime()) || isNaN(tgtD.getTime())) return false;
-      const diffTime = tgtD.getTime() - actD.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      const diffDays = daysBetween(w.note_date, selectedDateStr);
       return diffDays >= 0 && diffDays <= 7;
     });
-
     recentNoteWords.forEach(w => {
-      if (!deck.some(d => d.id === w.id)) {
-        deck.push(w);
-      }
+      if (!deck.some(d => d.id === w.id)) deck.push(w);
     });
 
-    // Sort so that:
-    // 1. Words due today are at the very beginning of the daily deck
-    // 2. Then sort strictly by sequence: A1-A -> A1-B -> A2, then unit number, then ID
+    // 排序: 今天到期的排最前, 其余按 A1-A -> A1-B -> A2 -> B 的学习顺序
     const sortBooks = (a: Word, b: Word) => {
       const dueA = isWordDueToday(a.id, selectedDateStr, activatedDates);
       const dueB = isWordDueToday(b.id, selectedDateStr, activatedDates);
-      
       if (dueA && !dueB) return -1;
       if (!dueA && dueB) return 1;
 
-      // Deterministic shuffle for "due today" words based on dateSeed
       if (dueA && dueB) {
         const dateParts = selectedDateStr.split('-');
         const y = parseInt(dateParts[0], 10) || 2026;
         const m = parseInt(dateParts[1], 10) || 6;
         const d = parseInt(dateParts[2], 10) || 20;
         const dateSeed = y * 372 + m * 31 + d;
-        const hashA = (a.id * 137 + dateSeed) % 1000;
-        const hashB = (b.id * 137 + dateSeed) % 1000;
-        return hashA - hashB;
+        return ((a.id * 137 + dateSeed) % 1000) - ((b.id * 137 + dateSeed) % 1000);
       }
 
       const order: Record<string, number> = { 'A1-A': 1, 'A1-B': 2, 'A2': 3, 'B1': 4, 'B': 4 };
@@ -1633,7 +1545,8 @@ export default function StudentApp() {
     };
 
     return deck.sort(sortBooks);
-  }, [allVocab, selectedUnitKeys, activatedDates, selectedDateStr]);
+  }, [todayReviewUnits, unlockedVocab, activatedDates, selectedDateStr]);
+
 
   // Determine if active level is A1 or A2 based on current active vocabulary
   const activeExamLevel = useMemo(() => {
@@ -1737,105 +1650,60 @@ export default function StudentApp() {
 
     return { newWords: newW, reviewWords: revW };
   }, [allVocab, activatedDates, selectedDateStr]);
-
   const spannedMonths = useMemo(() => {
-    if (selectedUnitKeys.length === 0) return 0;
-
-    // 今天这批复习里, 最早的那一课是哪天上的
-    let oldest: Date | null = null;
-    selectedUnitKeys.forEach(key => {
-      const [bookId, unitNumStr] = key.split('_');
-      const d = parseLocalDate(unitDateOf(bookId, parseInt(unitNumStr, 10)));
-      if (d && (!oldest || d < oldest)) oldest = d;
-    });
-
-    const target = parseLocalDate(selectedDateStr);
-    if (!oldest || !target) return 1;
-
-    const diffDays = Math.round((target.getTime() - (oldest as Date).getTime()) / (1000 * 60 * 60 * 24));
-    if (!isFinite(diffDays)) return 1;
+    if (todayReviewUnits.length === 0) return 0;
+    // 今天这批复习里, 最早的那个单元是哪天学完的
+    const oldest = todayReviewUnits
+      .map(u => u.studyDate)
+      .filter(Boolean)
+      .reduce((a, c) => (c < a ? c : a), '9999-99-99');
+    const diffDays = daysBetween(oldest, selectedDateStr);
+    if (diffDays < 0) return 1;
     return Math.max(1, Math.round(diffDays / 30.4));
-  }, [selectedUnitKeys, selectedDateStr, unitDateOf]);
+  }, [todayReviewUnits, selectedDateStr]);
 
-  // Group unique units and pad to at least 4 units (Most Recent -> Most Remote)
   /**
    * 六张复习卡片的展示口径(家长定的):
-   *   「最近的复习」  —— 精确到课本第几页, 课刚上完, 页码对得上课堂
-   *   其余四档       —— 只说第几单元, 隔了这么久, 不必精确到页
-   * 从前这里直接把合成单元号(1000+页码)当单元号印出来, 于是显示成「B1 U1186」。
+   *   正在学的那个单元 —— 精确到课本第几页, 页码对得上课堂
+   *   已经学过的      —— 一律只说第几单元, 不再报页码
+   *   A1 儿童版       —— 教材没有可靠的单元页码带, 如实写「第 X–Y 页」, 不假装成单元
+   *
+   * 从前这里有两个坑, 一并修掉:
+   *   1. 把合成单元号(1000+页码)当单元号印出来 -> 显示成「B1 U1186」
+   *   2. 拿 B 本的目录去解释任何一本书的页码 ->「A1 第一分册第 174 页」
+   *      被标成 B 本的「第 11 单元 旅行·假期」, 语法点也一起串台
    */
   const uniqueUnitsList = useMemo(() => {
-    const N = selectedUnitKeys.length;
-    const usedUnitTags = new Set<string>();
+    const N = todayReviewUnits.length;
 
-    return selectedUnitKeys.map((unitKey, i) => {
-      let labelCn = "";
-      let labelGr = "";
-      if (i === 0) {
-        labelCn = "最近的复习";
-        labelGr = "Νεότερη Επανάληψη";
-      } else if (i === 1) {
-        labelCn = "稍近的复习";
-        labelGr = "Πρόσφατη Επανάληψη";
-      } else if (i >= N - 2 && N >= 5) {
-        labelCn = "最遥远的复习";
-        labelGr = "Αρχική Επανάληψη";
-      } else if (i === N - 1) {
-        labelCn = "最遥远的复习";
-        labelGr = "Αρχική Επανάληψη";
-      } else {
-        labelCn = "稍远的复习";
-        labelGr = "Παλαιότερη Επανάληψη";
-      }
+    return todayReviewUnits.map((u, i) => {
+      let labelCn = '', labelGr = '';
+      if (i === 0) { labelCn = '最近的复习'; labelGr = 'Νεότερη Επανάληψη'; }
+      else if (i === 1) { labelCn = '稍近的复习'; labelGr = 'Πρόσφατη Επανάληψη'; }
+      else if (i >= N - 2 && N >= 5) { labelCn = '最遥远的复习'; labelGr = 'Αρχική Επανάληψη'; }
+      else if (i === N - 1) { labelCn = '最遥远的复习'; labelGr = 'Αρχική Επανάληψη'; }
+      else { labelCn = '稍远的复习'; labelGr = 'Παλαιότερη Επανάληψη'; }
 
-      const [bookId, unitNumStr] = unitKey.split('_');
-      const unitNum = parseInt(unitNumStr, 10);
-      const count = dailyDeck.filter((w: any) => w.book_id.toUpperCase() === bookId.toUpperCase() && w.unit === unitNum).length;
-      const dateRange = getWeekRangeStr(unitDateOf(bookId, unitNum));
-
-      let displayUnit = `${bookId} U${unitNum}`;
-      let mainTitle = '';
-      let translationText = '';
-
-      const page = unitNum >= PAGE_UNIT_BASE ? unitNum - PAGE_UNIT_BASE : null;
-      if (page !== null) {
-        const bookTag = bookId.toUpperCase() === 'B1' ? 'B' : bookId.toUpperCase();
-        const u = bUnitOfPage(page);
-        // 只有「最近的复习」才精确到页; 单元查不到时也退回按页显示
-        if (i === 0 || !u) {
-          displayUnit = `${bookTag} p${page}`;
-          mainTitle = u ? `课本第 ${page} 页 · ${u.theme_zh || u.title}` : `课本第 ${page} 页`;
-          translationText = u ? `第 ${u.unit} 单元 ${u.title}` : '';
-        } else {
-          let tag = `${bookTag} U${u.unit}`;
-          // 两张卡片落进同一单元时才补页码, 否则会出现两个一模一样的标题
-          if (usedUnitTags.has(tag)) tag = `${tag}·p${page}`;
-          usedUnitTags.add(tag);
-          displayUnit = tag;
-          mainTitle = `第 ${u.unit} 单元 · ${u.theme_zh || u.title}`;
-          translationText = u.title;
-        }
-      } else {
-        const fullName = getUnitChineseName(bookId, unitNum);
-        const match = fullName.match(/^(.*?)\s*\((.*?)\)\s*$/);
-        mainTitle = match ? match[1].trim() : fullName.trim();
-        translationText = match ? match[2].trim() : "";
-      }
+      const info = describeReviewUnit(u);
+      const days = daysBetween(u.studyDate, selectedDateStr);
 
       return {
-        unitKey,
-        bookId,
-        unitNum,
-        displayUnit,
-        dateRange,
-        mainTitle,
-        translationText,
+        unitKey: u.key,
+        bookId: u.bookId,
+        unitNum: u.unitNo ?? 0,
+        displayUnit: info.tag,
+        dateRange: getWeekRangeStr(getMondayDateStr(u.studyDate)),
+        mainTitle: info.title,
+        translationText: info.sub,
         labelCn,
         labelGr,
-        count
+        count: u.wordIds.length,
+        isDue: isUnitDue(u, selectedDateStr),
+        daysAgo: days,
       };
     });
-  }, [selectedUnitKeys, dailyDeck, unitDateOf]);
+  }, [todayReviewUnits, selectedDateStr]);
+
 
 
 
@@ -2329,8 +2197,21 @@ export default function StudentApp() {
     }
     const parts = selectedDateStr.split('-');
     const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
-    return [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
-  }, [pageMarksState, unitStudyDates, selectedDateStr]);
+    const shuffled = [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
+
+    // 填空题也要跟着「今日复习任务分解」走: 今天复习哪几个 B 单元, 就先出哪几个单元的课本原句。
+    // 从前这里是从整本已上过的页里随机抽, 于是首页写的单元和实际做的题对不上。
+    // sentences.json 里的 unit 是系统单元号(40–59) = B 本第 1–20 单元 + 39
+    const todayB = new Set(
+      todayReviewUnits
+        .filter(u => ['B', 'B1'].includes(u.bookId.toUpperCase()) && u.unitNo)
+        .map(u => 39 + (u.unitNo as number))
+    );
+    if (todayB.size === 0) return shuffled;
+    const inPlan = shuffled.filter(s => todayB.has(s.unit));
+    const rest = shuffled.filter(s => !todayB.has(s.unit));
+    return [...inPlan, ...rest];   // 计划内的排前面, 不够时才用其余的补
+  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits]);
 
   const quizPool = useMemo(() => {
     const pool = modulePartition.quiz || [];
@@ -2525,7 +2406,16 @@ export default function StudentApp() {
       return sDate !== 'LOCKED' && sDate <= selectedDateStr;
     });
 
-    const candidateUnits = activeUnits.length > 0 ? activeUnits : (unitKnowledgeData as any[]);
+    // 语法特训也跟着「今日复习任务分解」走: 今天复习到哪几个单元, 就先出那几个单元的语法题。
+    // 注意: 这份题库(unit_knowledge_drills.json)只覆盖 A1-A/A1-B/A2 共 39 个单元、120 道题,
+    // **一道 B 本的都没有**。所以 B 单元今天即使在复习计划里, 这里也补不出对应的题,
+    // 只能退回 A1/A2 的语法复习 —— 这是题库缺口, 不是调度错误。
+    const planUnits = new Set(
+      todayReviewUnits.map(u => u.unitNo).filter((n): n is number => !!n)
+    );
+    const pool = activeUnits.length > 0 ? activeUnits : (unitKnowledgeData as any[]);
+    const inPlan = pool.filter(k => planUnits.has(k.unit));
+    const candidateUnits = inPlan.length > 0 ? [...inPlan, ...pool.filter(k => !planUnits.has(k.unit))] : pool;
 
     let hash = 0;
     for (let i = 0; i < selectedDateStr.length; i++) {
@@ -2568,9 +2458,22 @@ export default function StudentApp() {
       }
     }
     return selected;
-  }, [selectedDateStr, unitStudyDates]);
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits]);
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
+
+  /**
+   * 今天一共要做多少道题。
+   * 首页从前显示的是「今日卡组的词数」, 而实际八大模块出的题远不止那个数,
+   * 家长看着 26 却要做 260, 对不上。这里按各题池的真实长度加总。
+   */
+  const todayQuestionCount = useMemo(() =>
+    (modulePartition.matching || []).slice(0, 40).length +
+    spellingPool.length + quizPool.length + tfPool.length +
+    translationGrZhPool.length + translationZhGrPool.length +
+    glossaryReviewPool.length + grammarDrillPool.length,
+  [modulePartition, spellingPool, quizPool, tfPool, translationGrZhPool,
+   translationZhGrPool, glossaryReviewPool, grammarDrillPool]);
 
   // Randomized Options for choice questions (guarantees option 0 is NEVER predictable)
   const currentGrammarOptions = useMemo(() => {
@@ -3122,25 +3025,18 @@ export default function StudentApp() {
   };
 
   // --- Views ---
-
   const renderDashboard = () => {
-    // Group words in dailyDeck by book and unit for today's lesson plan overview
-    const todayUnitsMap: Record<string, { bookId: string; unit: number; unitKey: string; words: Word[] }> = {};
-    dailyDeck.forEach(word => {
-      const unitKey = `${word.book_id.toUpperCase()}_${word.unit}`;
-      if (!todayUnitsMap[unitKey]) {
-        todayUnitsMap[unitKey] = {
-          bookId: word.book_id,
-          unit: word.unit,
-          unitKey,
-          words: []
-        };
-      }
-      todayUnitsMap[unitKey].words.push(word);
-    });
-    const todayUnits = Object.values(todayUnitsMap).sort((a, b) => {
-      return selectedUnitKeys.indexOf(a.unitKey) - selectedUnitKeys.indexOf(b.unitKey);
-    });
+    // 今日学习导学: 一个复习单元一张卡, 和上面的「今日复习任务分解」是同一批单元
+    const byId = new Map<number, Word>();
+    dailyDeck.forEach(w => byId.set(w.id, w));
+    const todayUnits = todayReviewUnits.map(u => ({
+      unit: u,
+      unitKey: u.key,
+      bookId: u.bookId,
+      info: describeReviewUnit(u),
+      words: u.wordIds.map(id => byId.get(id)).filter(Boolean) as Word[],
+    }));
+
 
     return (
       <div className="dashboard-view animate-fade-in">
@@ -3307,9 +3203,11 @@ export default function StudentApp() {
               </div>
               <Clock size={16} className="text-blue" />
             </div>
-            <div className="stat-value">{dailyDeck.length}</div>
-            <div className="stat-desc">待复习/学习单词总量</div>
-            <div style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>Συνολικές λέξεις για μελέτη</div>
+            <div className="stat-value">{todayQuestionCount}</div>
+            <div className="stat-desc">今日八大模块题目总数</div>
+            <div style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>
+              取自今日 {todayReviewUnits.length} 个复习单元共 {dailyDeck.length} 词
+            </div>
           </div>
 
           <div className="stat-card">
@@ -3579,6 +3477,16 @@ export default function StudentApp() {
                         <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#1D1D1F' }}>
                           {item.displayUnit} - {item.mainTitle}
                         </span>
+                        {/* 为什么今天选中它: 到了艾宾浩斯的复习节点, 还是只是轮到它了 */}
+                        {item.isDue && (
+                          <span style={{
+                            fontSize: '9.5px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px',
+                            background: 'rgba(52,199,89,0.12)', color: '#34C759',
+                            border: '1px solid rgba(52,199,89,0.25)'
+                          }}>
+                            遗忘曲线第 {item.daysAgo} 天 · 今天该复习
+                          </span>
+                        )}
                       </div>
                       {item.translationText && (
                         <span style={{ fontSize: '11px', color: '#86868B', lineHeight: 1.3 }}>
@@ -3646,42 +3554,26 @@ export default function StudentApp() {
             <div className="today-units-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {todayUnits.map(unitGroup => {
                 const bookChinese = unitGroup.bookId.toUpperCase();
-                const unitNum = unitGroup.unit;
-                const unitName = getUnitChineseName(bookChinese, unitNum);
-                const grammar = getUnitGrammarPoints(bookChinese, unitNum);
+                const u = unitGroup.unit;
+                const info = unitGroup.info;
 
-                // B 本用「1000+页码」当合成单元号。直接印出来就是「第 1186 单元」,
-                // 学习区间也会被推算到四十多年后。这里换回页码 + 它所属的真单元。
-                const bPage = unitNum >= PAGE_UNIT_BASE ? unitNum - PAGE_UNIT_BASE : null;
-                const bUnit = bPage !== null ? bUnitOfPage(bPage) : null;
+                // 已学过的 -> 只说单元; 正在学的 -> 单元 + 上到第几页;
+                // A1 儿童版没有单元结构 -> 如实写页码区间。全部由 describeReviewUnit 统一口径,
+                // 不再拿 B 本目录去解释别的书的页码。
+                const headingCn = info.title;
+                const headingGr = info.sub;
+                const rangeStr = (() => {
+                  const w = getWeekRangeStr(getMondayDateStr(u.studyDate));
+                  if (!w) return '';
+                  const d = daysBetween(u.studyDate, selectedDateStr);
+                  const due = isUnitDue(u, selectedDateStr);
+                  const ago = d <= 0 ? '今天刚学' : `${d} 天前学的`;
+                  return `${u.kind === 'current' ? '本周课上到这里' : ago}${due ? ' · 今天该复习' : ''}`;
+                })();
 
-                const headingCn = bPage === null
-                  ? `第 ${unitNum} 单元: ${unitName}`
-                  : (bUnit
-                      ? `课本第 ${bPage} 页 · 第 ${bUnit.unit} 单元: ${bUnit.theme_zh || bUnit.title}`
-                      : `课本第 ${bPage} 页`);
-                const headingGr = bPage === null
-                  ? `Ενότητα ${unitNum}`
-                  : (bUnit ? `Ενότητα ${bUnit.unit} · σελ. ${bPage}` : `σελ. ${bPage}`);
-
-                // 按页解锁的, 学习区间就是家长记的那次课; 不再走 A1/A2 那套推算课表
-                const rangeStr = bPage === null
-                  ? `预估学习区间: ${getUnitDateRange(unitNum)}`
-                  : (() => {
-                      const w = getWeekRangeStr(unitDateOf(unitGroup.bookId, unitNum));
-                      return w ? `上课周: ${w}` : '';
-                    })();
-
-                // B 本语法点取课本目录原印的教学大纲(中文对译), 比笼统的兜底句有用
-                const grammarText = !bUnit
-                  ? grammar
-                  : (Array.isArray(bUnit.grammar) && bUnit.grammar.length
-                      ? bUnit.grammar.map((g: any) => g.zh || g.greek).filter(Boolean).join('；')
-                      : (bUnit.is_review
-                          ? '这是复习单元，课本本身没有新语法点，重点是把前面几个单元的内容合起来练。'
-                          : grammar));
+                const grammarText = info.grammar;
                 const wordsWithExamples = unitGroup.words.filter(w => w.example_greek);
-                const unitKey = `${unitGroup.bookId}-${unitGroup.unit}`;
+                const unitKey = unitGroup.unitKey;
                 const isUnitExpanded = expandedUnits[unitKey] || false;
 
                 return (
