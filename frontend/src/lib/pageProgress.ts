@@ -113,10 +113,18 @@ export const BOOK_PAGE_RANGE: Record<string, { min: number; max: number; name: s
   'a1-a': { min: 10, max: 191, name: 'A1 第一分册（儿童版）' },
 };
 
-/** 单词表背诵进度：与课堂进度同一套模型，upToPage 存的是「背到第几个词」 */
-export const GLOSSARY_RANGE: Record<string, { min: number; max: number; name: string }> = {
-  'glossary-a2': { min: 1, max: 1682, name: 'A2 单词表' },
-  'glossary-a1': { min: 1, max: 1313, name: 'A1 单词表' },
+/**
+ * 单词表背诵进度：与课堂进度同一套模型，upToPage 存的是「背到第几个词」
+ *
+ * groupBy 决定后台按什么折叠，必须和家长手上那份纸的编排一致：
+ *   - A1/A2 是希腊教育部官方词表，按首字母排 → 'letter'
+ *   - B1 是我们自己做的《Ellinika_B_Glossary_CN.pdf》，按单元排 → 'unit'
+ *     （家长原话：「按照单元把它入库」「不要再按照首字母来排了」）
+ */
+export const GLOSSARY_RANGE: Record<string, { min: number; max: number; name: string; groupBy: 'letter' | 'unit' }> = {
+  'glossary-b1': { min: 1, max: 967,  name: 'B 单词表',  groupBy: 'unit' },
+  'glossary-a2': { min: 1, max: 1682, name: 'A2 单词表', groupBy: 'letter' },
+  'glossary-a1': { min: 1, max: 1313, name: 'A1 单词表', groupBy: 'letter' },
 };
 
 /* ===================================================================
@@ -143,15 +151,19 @@ export const glossaryLetter = (entry: { word_greek?: string; entry?: string }): 
 
 export const GREEK_ALPHABET = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'.split('');
 
-export interface GlossaryLetterGroup {
-  letter: string;
-  words: any[];      // 该字母下的词条（保留原 idx）
+export interface GlossaryGroup {
+  key: string;       // 分组标识（字母，或 'u3' 这样的单元键）
+  label: string;     // 按钮上显示的字（'Α' 或 '3'）
+  title?: string;    // 悬停说明（单元标题等）
+  words: any[];      // 该组下的词条（保留原 idx）
   firstIdx: number;  // 组内最小 idx
   lastIdx: number;   // 组内最大 idx
 }
+/** @deprecated 旧名，保留以免外部引用断掉 */
+export type GlossaryLetterGroup = GlossaryGroup;
 
 /** 把整张词表按首字母分组，字母顺序按希腊字母表 */
-export const groupGlossaryByLetter = (list: any[]): GlossaryLetterGroup[] => {
+export const groupGlossaryByLetter = (list: any[]): GlossaryGroup[] => {
   const buckets = new Map<string, any[]>();
   list.forEach(w => {
     const L = glossaryLetter(w);
@@ -166,14 +178,49 @@ export const groupGlossaryByLetter = (list: any[]): GlossaryLetterGroup[] => {
     .map(([letter, words]) => {
       const sorted = [...words].sort((a, b) => a.idx - b.idx);
       return {
-        letter,
+        key: letter,
+        label: letter,
         words: sorted,
         firstIdx: sorted[0].idx,
         lastIdx: sorted[sorted.length - 1].idx,
       };
     })
-    .sort((a, b) => order(a.letter) - order(b.letter) || a.firstIdx - b.firstIdx);
+    .sort((a, b) => order(a.key) - order(b.key) || a.firstIdx - b.firstIdx);
 };
+
+/**
+ * 按单元折叠（B 本词表用）。词条里的 unit / unit_title 由
+ * scripts/glossary/build_glossary_b1.py 写入，与词表 PDF 同序同号。
+ */
+export const groupGlossaryByUnit = (list: any[]): GlossaryGroup[] => {
+  const buckets = new Map<number, any[]>();
+  list.forEach(w => {
+    const u = Number(w.unit) || 0;
+    if (!buckets.has(u)) buckets.set(u, []);
+    buckets.get(u)!.push(w);
+  });
+  return [...buckets.entries()]
+    .map(([u, words]) => {
+      const sorted = [...words].sort((a, b) => a.idx - b.idx);
+      const t = sorted[0]?.unit_title || '';
+      const pg = sorted[0]?.unit_pages ? ` · 课本 p${sorted[0].unit_pages}` : '';
+      return {
+        key: `u${u}`,
+        label: String(u),
+        title: `第 ${u} 单元 ${t}${pg} · ${sorted.length} 词`,
+        words: sorted,
+        firstIdx: sorted[0].idx,
+        lastIdx: sorted[sorted.length - 1].idx,
+      };
+    })
+    .sort((a, b) => a.firstIdx - b.firstIdx);
+};
+
+/** 按这张词表自己的编排方式折叠 */
+export const groupGlossary = (glossId: string, list: any[]): GlossaryGroup[] =>
+  GLOSSARY_RANGE[glossId]?.groupBy === 'unit'
+    ? groupGlossaryByUnit(list)
+    : groupGlossaryByLetter(list);
 
 /** 搜索词表：希腊语 / 中文 / 英文 / 拼音 任一命中即可 */
 export const searchGlossary = (list: any[], q: string, limit = 30): any[] => {

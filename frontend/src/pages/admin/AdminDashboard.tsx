@@ -28,7 +28,7 @@ import {
   type PageMark, type V2Word,
   normalizeMarks, getBookFrontier, getPageDate, unlockedWords,
   makeMarkId, BOOK_PAGE_RANGE, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED,
-  groupGlossaryByLetter, searchGlossary
+  groupGlossary, searchGlossary
 } from '../../lib/pageProgress';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
@@ -283,7 +283,7 @@ const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
 const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
 const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
 const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
-const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2' };
+const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2', 'glossary-b1': 'B1' };
 
 const START_DATE = "2025-09-06";
 
@@ -1057,7 +1057,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             📖 单词表背诵进度
           </div>
           <div style={{ fontSize: '12px', color: '#86868B', marginBottom: '12px' }}>
-            和课堂进度分开记。<b>不用数第几个</b>——展开一个字母，找到「背到的最后一个词」，点它就行。
+            和课堂进度分开记。<b>不用数第几个</b>——A1/A2 展开<b>字母</b>、B 本展开<b>单元</b>
+            （和手上那份词表 PDF 的编排一样），找到「背到的最后一个词」，点它就行。
             也可以直接在下面搜中文或希腊语。
           </div>
 
@@ -1066,7 +1067,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             const front = getBookFrontier(pageMarks, g);
             const pct = Math.min(100, Math.round(front / rng.max * 100));
             const list = GLOSS_LISTS[GLOSS_KEY[g]] || [];
-            const groups = groupGlossaryByLetter(list);
+            const groups = groupGlossary(g, list);
+            const byUnit = rng.groupBy === 'unit';
             const curWord = front > 0 ? list.find((w: any) => w.idx === front) : null;
             const isOpen = glossOpen === g;
             const hits = isOpen && glossSearch.trim() ? searchGlossary(list, glossSearch) : [];
@@ -1110,7 +1112,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         {hits.map((w: any) => renderGlossWordRow(g, w, front))}
                       </div>
                     ) : glossSearch.trim() ? (
-                      <div style={{ fontSize: '12px', color: '#86868B', padding: '8px 2px' }}>没找到「{glossSearch}」。换个说法试试，或用下面的字母翻。</div>
+                      <div style={{ fontSize: '12px', color: '#86868B', padding: '8px 2px' }}>没找到「{glossSearch}」。换个说法试试，或用下面的{byUnit ? '单元' : '字母'}翻。</div>
                     ) : (
                       <>
                         {/* 字母格 */}
@@ -1118,33 +1120,33 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           {groups.map(grp => {
                             const done = front >= grp.lastIdx;
                             const partial = !done && front >= grp.firstIdx;
-                            const active = glossLetter === grp.letter;
+                            const active = glossLetter === grp.key;
                             return (
-                              <button key={grp.letter}
-                                onClick={() => setGlossLetter(active ? null : grp.letter)}
-                                title={`${grp.words.length} 个词`}
+                              <button key={grp.key}
+                                onClick={() => setGlossLetter(active ? null : grp.key)}
+                                title={grp.title || `${grp.words.length} 个词`}
                                 style={{
-                                  minWidth: '38px', padding: '6px 8px', borderRadius: '8px', cursor: 'pointer',
+                                  minWidth: byUnit ? '46px' : '38px', padding: '6px 8px', borderRadius: '8px', cursor: 'pointer',
                                   fontSize: '13px', fontWeight: 800, lineHeight: 1.2,
                                   border: active ? '2px solid #AF52DE' : '1px solid #D2D2D7',
                                   background: done ? 'rgba(52,199,89,0.12)' : partial ? 'rgba(175,82,222,0.12)' : '#FFF',
                                   color: done ? '#248A3D' : partial ? '#AF52DE' : '#1D1D1F',
                                 }}>
-                                {grp.letter}
+                                {byUnit ? `U${grp.label}` : grp.label}
                                 <div style={{ fontSize: '9px', fontWeight: 600, color: '#86868B' }}>{grp.words.length}</div>
                               </button>
                             );
                           })}
                         </div>
                         <div style={{ fontSize: '11px', color: '#86868B', marginBottom: '8px' }}>
-                          <span style={{ color: '#248A3D', fontWeight: 700 }}>绿色</span> = 这个字母整段背完 ·
-                          <span style={{ color: '#AF52DE', fontWeight: 700 }}> 紫色</span> = 正背到这个字母 · 白色 = 还没到
+                          <span style={{ color: '#248A3D', fontWeight: 700 }}>绿色</span> = 这{byUnit ? '个单元' : '个字母'}整段背完 ·
+                          <span style={{ color: '#AF52DE', fontWeight: 700 }}> 紫色</span> = 正背到这{byUnit ? '个单元' : '个字母'} · 白色 = 还没到
                         </div>
 
                         {/* 展开的字母词条 */}
                         {glossLetter && (
                           <div style={{ maxHeight: '300px', overflowY: 'auto', border: '1px solid #E5E5EA', borderRadius: '9px', background: '#FFF' }}>
-                            {(groups.find(x => x.letter === glossLetter)?.words || []).map((w: any) => renderGlossWordRow(g, w, front))}
+                            {(groups.find(x => x.key === glossLetter)?.words || []).map((w: any) => renderGlossWordRow(g, w, front))}
                           </div>
                         )}
                       </>

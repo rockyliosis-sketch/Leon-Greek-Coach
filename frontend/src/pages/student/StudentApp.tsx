@@ -59,6 +59,8 @@ const V2_WORDS = ((vocabV2Data as any).entries || []) as V2Word[];
 const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
 /** 官方单词表(按字母序), 由家长在后台标「背到第几个」控制解锁 */
 const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
+/** 后台的进度键 -> glossary_v2.json 里的词表键 */
+const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2', 'glossary-b1': 'B1' };
 
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
@@ -2162,8 +2164,7 @@ export default function StudentApp() {
 
     const out: any[] = [];
     marked.forEach(g => {
-      const lvl = g === 'glossary-a1' ? 'A1' : 'A2';
-      const list = GLOSS_LISTS[lvl] || [];
+      const list = GLOSS_LISTS[GLOSS_KEY[g]] || [];
       const front = getBookFrontier(pageMarksState, g);
       list.slice(0, front).forEach((w: any) => {
         const d = getPageDate(pageMarksState, g, w.idx);
