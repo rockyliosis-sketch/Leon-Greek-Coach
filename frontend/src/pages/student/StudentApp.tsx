@@ -6723,7 +6723,8 @@ export default function StudentApp() {
                      currentGrammarDrill.skill_type === 'article' ? '冠词的性数格' :
                      currentGrammarDrill.skill_type === 'contraction' ? '介词+冠词缩合' :
                      currentGrammarDrill.skill_type === 'pronoun' ? '人称代词强式与弱式' :
-                     currentGrammarDrill.skill_type === 'fem_os' ? '-ος 结尾的阴性名词' : '微阅读理解'}
+                     currentGrammarDrill.skill_type === 'fem_os' ? '-ος 结尾的阴性名词' :
+                     currentGrammarDrill.skill_type === 'u1_exercise' ? '课本原题精练' : '微阅读理解'}
                   </span>
                 </div>
 
