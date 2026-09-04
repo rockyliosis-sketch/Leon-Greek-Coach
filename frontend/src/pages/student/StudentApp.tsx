@@ -25,6 +25,7 @@ import staticVocabData from '../../data/vocabulary.json';
 import vocabV2Data from '../../data/vocabulary_v2.json';
 import sentencesData from '../../data/sentences.json';
 import glossaryV2 from '../../data/glossary_v2.json';
+import bSyllabus from '../../data/b_syllabus.json';
 import {
   type PageMark, type V2Word,
   resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
@@ -61,6 +62,12 @@ const CLOZE_ALL: any[] = ((sentencesData as any).sentences || []);
 const GLOSS_LISTS: Record<string, any[]> = (glossaryV2 as any).lists || {};
 /** 后台的进度键 -> glossary_v2.json 里的词表键 */
 const GLOSS_KEY: Record<string, string> = { 'glossary-a1': 'A1', 'glossary-a2': 'A2', 'glossary-b1': 'B1' };
+
+/** B 本教学大纲(单元号 / 页码区间 / 标题 / 中文主题 / 语法点), 与家长端同一份数据 */
+const B_SYLLABUS: any[] = (bSyllabus as any).units || [];
+/** 课本页码 -> 它属于第几单元。B 本按页解锁, 但展示上要能说回「第几单元」 */
+const bUnitOfPage = (page: number) =>
+  B_SYLLABUS.find(u => page >= u.pages[0] && page <= u.pages[1]) || null;
 
 /** 按页解锁的词, 用「1000+页码」当合成单元号, 显示为「课本第 N 页」 */
 export const PAGE_UNIT_BASE = 1000;
@@ -1386,6 +1393,20 @@ export default function StudentApp() {
     });
   }, [allVocab, activatedDates, selectedDateStr, disabledSet]);
 
+  /**
+   * 某个单元(或按页解锁的那一页)是哪天学的。
+   *
+   * 合成单元号(1000+页码)走「课堂进度」: 家长记的「今天上到第几页」就是这一页的学习日期。
+   * 从前这里回一个假字符串 'PAGE', 一路漏进日期计算 ——
+   * 首页「记忆横跨周期」算出 ~NaN 个月、复习卡片的日期区间是空的, 根子都在这。
+   */
+  const unitDateOf = useMemo(() => (bookId: string, unitNum: number): string => {
+    if (unitNum >= PAGE_UNIT_BASE) {
+      return getPageDate(pageMarksState, bookId.toLowerCase(), unitNum - PAGE_UNIT_BASE) || 'LOCKED';
+    }
+    return getUnitStudyDate(bookId, unitNum, unitStudyDates);
+  }, [pageMarksState, unitStudyDates]);
+
   const selectedUnitKeys = useMemo(() => {
     // 1. Get the list of all unique unit keys that have unlocked words as of selectedDateStr
     // A unit key is represented as "BOOK_UNIT", e.g. "A1-A_1", "A2_31"
@@ -1393,7 +1414,7 @@ export default function StudentApp() {
       new Set(unlockedVocab.map(w => `${w.book_id.toUpperCase()}_${w.unit}`))
     ).filter(key => {
       const [book, unitStr] = key.split('_');
-      const studyDate = getUnitStudyDate(book, parseInt(unitStr, 10), unitStudyDates);
+      const studyDate = unitDateOf(book, parseInt(unitStr, 10));
       return studyDate !== 'LOCKED' && studyDate !== '';
     });
 
@@ -1407,15 +1428,13 @@ export default function StudentApp() {
     availableUnitKeys.sort((keyA, keyB) => {
       const [bookA, unitNumStrA] = keyA.split('_');
       const unitNumA = parseInt(unitNumStrA, 10);
-      let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      let dateA = unitDateOf(bookA, unitNumA);
       if (dateA === 'LOCKED') dateA = '0000-00-00';
-      if (dateA === 'PAGE') dateA = `9999-${String(unitNumA).padStart(5, '0')}`;
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
-      let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      let dateB = unitDateOf(bookB, unitNumB);
       if (dateB === 'LOCKED') dateB = '0000-00-00';
-      if (dateB === 'PAGE') dateB = `9999-${String(unitNumB).padStart(5, '0')}`;
       
       if (dateA !== dateB) {
         return dateA.localeCompare(dateB);
@@ -1529,22 +1548,20 @@ export default function StudentApp() {
     return selected.sort((keyA, keyB) => {
       const [bookA, unitNumStrA] = keyA.split('_');
       const unitNumA = parseInt(unitNumStrA, 10);
-      let dateA = getUnitStudyDate(bookA, unitNumA, unitStudyDates);
+      let dateA = unitDateOf(bookA, unitNumA);
       if (dateA === 'LOCKED') dateA = '0000-00-00';
-      if (dateA === 'PAGE') dateA = `9999-${String(unitNumA).padStart(5, '0')}`;
       
       const [bookB, unitNumStrB] = keyB.split('_');
       const unitNumB = parseInt(unitNumStrB, 10);
-      let dateB = getUnitStudyDate(bookB, unitNumB, unitStudyDates);
+      let dateB = unitDateOf(bookB, unitNumB);
       if (dateB === 'LOCKED') dateB = '0000-00-00';
-      if (dateB === 'PAGE') dateB = `9999-${String(unitNumB).padStart(5, '0')}`;
       
       if (dateA !== dateB) {
         return dateB.localeCompare(dateA); // Descending chronological order
       }
       return keyB.localeCompare(keyA);
     });
-  }, [unlockedVocab, unitStudyDates, selectedDateStr]);
+  }, [unlockedVocab, unitDateOf, selectedDateStr]);
 
   // Compute daily deck based on selected date (integrating early review rotation)
   const dailyDeck = useMemo(() => {
@@ -1723,48 +1740,34 @@ export default function StudentApp() {
 
   const spannedMonths = useMemo(() => {
     if (selectedUnitKeys.length === 0) return 0;
-    
-    // Find the oldest study date among all selected units
-    let oldestDateStr: string | null = null;
+
+    // 今天这批复习里, 最早的那一课是哪天上的
+    let oldest: Date | null = null;
     selectedUnitKeys.forEach(key => {
       const [bookId, unitNumStr] = key.split('_');
-      const unitNum = parseInt(unitNumStr, 10);
-      const studyDateStr = getUnitStudyDate(bookId, unitNum, unitStudyDates);
-      if (studyDateStr !== 'LOCKED') {
-        if (!oldestDateStr || studyDateStr < oldestDateStr) {
-          oldestDateStr = studyDateStr;
-        }
-      }
+      const d = parseLocalDate(unitDateOf(bookId, parseInt(unitNumStr, 10)));
+      if (d && (!oldest || d < oldest)) oldest = d;
     });
 
-    if (!oldestDateStr) return 1;
+    const target = parseLocalDate(selectedDateStr);
+    if (!oldest || !target) return 1;
 
-    const oldestStart = new Date(oldestDateStr);
-    const targetDate = new Date(selectedDateStr);
-    const diffDays = Math.round((targetDate.getTime() - oldestStart.getTime()) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.round((target.getTime() - (oldest as Date).getTime()) / (1000 * 60 * 60 * 24));
+    if (!isFinite(diffDays)) return 1;
     return Math.max(1, Math.round(diffDays / 30.4));
-  }, [selectedUnitKeys, selectedDateStr, unitStudyDates]);
+  }, [selectedUnitKeys, selectedDateStr, unitDateOf]);
 
   // Group unique units and pad to at least 4 units (Most Recent -> Most Remote)
+  /**
+   * 六张复习卡片的展示口径(家长定的):
+   *   「最近的复习」  —— 精确到课本第几页, 课刚上完, 页码对得上课堂
+   *   其余四档       —— 只说第几单元, 隔了这么久, 不必精确到页
+   * 从前这里直接把合成单元号(1000+页码)当单元号印出来, 于是显示成「B1 U1186」。
+   */
   const uniqueUnitsList = useMemo(() => {
-    const getUnitInfoFromKey = (unitKey: string) => {
-      const [bookId, unitNumStr] = unitKey.split('_');
-      const unitNum = parseInt(unitNumStr, 10);
-      
-      const studyDateStr = getUnitStudyDate(bookId, unitNum, unitStudyDates);
-      let dateRangeStr = '';
-      if (studyDateStr !== 'LOCKED') {
-        dateRangeStr = getWeekRangeStr(studyDateStr);
-      }
-      return {
-        bookId,
-        unitNum,
-        displayUnitName: `${bookId} U${unitNum}`,
-        dateRangeStr
-      };
-    };
-
     const N = selectedUnitKeys.length;
+    const usedUnitTags = new Set<string>();
+
     return selectedUnitKeys.map((unitKey, i) => {
       let labelCn = "";
       let labelGr = "";
@@ -1788,21 +1791,43 @@ export default function StudentApp() {
       const [bookId, unitNumStr] = unitKey.split('_');
       const unitNum = parseInt(unitNumStr, 10);
       const count = dailyDeck.filter((w: any) => w.book_id.toUpperCase() === bookId.toUpperCase() && w.unit === unitNum).length;
+      const dateRange = getWeekRangeStr(unitDateOf(bookId, unitNum));
 
-      const uInfo = getUnitInfoFromKey(unitKey);
-      const fullName = getUnitChineseName(bookId, unitNum);
-      
-      // Parse main title and parenthesized translation
-      const match = fullName.match(/^(.*?)\s*\((.*?)\)\s*$/);
-      const mainTitle = match ? match[1].trim() : fullName.trim();
-      const translationText = match ? match[2].trim() : "";
+      let displayUnit = `${bookId} U${unitNum}`;
+      let mainTitle = '';
+      let translationText = '';
+
+      const page = unitNum >= PAGE_UNIT_BASE ? unitNum - PAGE_UNIT_BASE : null;
+      if (page !== null) {
+        const bookTag = bookId.toUpperCase() === 'B1' ? 'B' : bookId.toUpperCase();
+        const u = bUnitOfPage(page);
+        // 只有「最近的复习」才精确到页; 单元查不到时也退回按页显示
+        if (i === 0 || !u) {
+          displayUnit = `${bookTag} p${page}`;
+          mainTitle = u ? `课本第 ${page} 页 · ${u.theme_zh || u.title}` : `课本第 ${page} 页`;
+          translationText = u ? `第 ${u.unit} 单元 ${u.title}` : '';
+        } else {
+          let tag = `${bookTag} U${u.unit}`;
+          // 两张卡片落进同一单元时才补页码, 否则会出现两个一模一样的标题
+          if (usedUnitTags.has(tag)) tag = `${tag}·p${page}`;
+          usedUnitTags.add(tag);
+          displayUnit = tag;
+          mainTitle = `第 ${u.unit} 单元 · ${u.theme_zh || u.title}`;
+          translationText = u.title;
+        }
+      } else {
+        const fullName = getUnitChineseName(bookId, unitNum);
+        const match = fullName.match(/^(.*?)\s*\((.*?)\)\s*$/);
+        mainTitle = match ? match[1].trim() : fullName.trim();
+        translationText = match ? match[2].trim() : "";
+      }
 
       return {
         unitKey,
         bookId,
         unitNum,
-        displayUnit: uInfo.displayUnitName,
-        dateRange: uInfo.dateRangeStr,
+        displayUnit,
+        dateRange,
         mainTitle,
         translationText,
         labelCn,
@@ -1810,7 +1835,7 @@ export default function StudentApp() {
         count
       };
     });
-  }, [selectedUnitKeys, dailyDeck, unitStudyDates]);
+  }, [selectedUnitKeys, dailyDeck, unitDateOf]);
 
 
 
@@ -3605,7 +3630,7 @@ export default function StudentApp() {
                 Καθημερινός Οδηγός Μελέτης & Λεξιλόγιο Επανάληψης
               </p>
               <p style={{ fontSize: '12px', color: '#86868B', margin: '2px 0 0 0' }}>
-                已按 A1-A → A1-B → A2 学习顺序智能编排，同步当前单元重点语法与词汇 | Έξυπνα οργανωμένα με σειρά εκμάθησης A1-A → A1-B → A2
+                已按 A1-A → A1-B → A2 → B 学习顺序智能编排，同步当前单元重点语法与词汇 | Έξυπνα οργανωμένα με σειρά εκμάθησης A1-A → A1-B → A2 → B
               </p>
             </div>
           </div>
@@ -3624,6 +3649,37 @@ export default function StudentApp() {
                 const unitNum = unitGroup.unit;
                 const unitName = getUnitChineseName(bookChinese, unitNum);
                 const grammar = getUnitGrammarPoints(bookChinese, unitNum);
+
+                // B 本用「1000+页码」当合成单元号。直接印出来就是「第 1186 单元」,
+                // 学习区间也会被推算到四十多年后。这里换回页码 + 它所属的真单元。
+                const bPage = unitNum >= PAGE_UNIT_BASE ? unitNum - PAGE_UNIT_BASE : null;
+                const bUnit = bPage !== null ? bUnitOfPage(bPage) : null;
+
+                const headingCn = bPage === null
+                  ? `第 ${unitNum} 单元: ${unitName}`
+                  : (bUnit
+                      ? `课本第 ${bPage} 页 · 第 ${bUnit.unit} 单元: ${bUnit.theme_zh || bUnit.title}`
+                      : `课本第 ${bPage} 页`);
+                const headingGr = bPage === null
+                  ? `Ενότητα ${unitNum}`
+                  : (bUnit ? `Ενότητα ${bUnit.unit} · σελ. ${bPage}` : `σελ. ${bPage}`);
+
+                // 按页解锁的, 学习区间就是家长记的那次课; 不再走 A1/A2 那套推算课表
+                const rangeStr = bPage === null
+                  ? `预估学习区间: ${getUnitDateRange(unitNum)}`
+                  : (() => {
+                      const w = getWeekRangeStr(unitDateOf(unitGroup.bookId, unitNum));
+                      return w ? `上课周: ${w}` : '';
+                    })();
+
+                // B 本语法点取课本目录原印的教学大纲(中文对译), 比笼统的兜底句有用
+                const grammarText = !bUnit
+                  ? grammar
+                  : (Array.isArray(bUnit.grammar) && bUnit.grammar.length
+                      ? bUnit.grammar.map((g: any) => g.zh || g.greek).filter(Boolean).join('；')
+                      : (bUnit.is_review
+                          ? '这是复习单元，课本本身没有新语法点，重点是把前面几个单元的内容合起来练。'
+                          : grammar));
                 const wordsWithExamples = unitGroup.words.filter(w => w.example_greek);
                 const unitKey = `${unitGroup.bookId}-${unitGroup.unit}`;
                 const isUnitExpanded = expandedUnits[unitKey] || false;
@@ -3662,21 +3718,23 @@ export default function StudentApp() {
                           letterSpacing: '0.05em'
                         }}>{bookChinese}</span>
                         <span style={{ fontSize: '16px', fontWeight: 800, color: '#1D1D1F' }}>
-                          第 {unitNum} 单元: {unitName}
+                          {headingCn}
                         </span>
                         <span style={{ fontSize: '13px', color: '#86868B', fontWeight: 650 }}>
-                          | Ενότητα {unitNum}
+                          | {headingGr}
                         </span>
-                        <span style={{
-                          fontSize: '11.5px',
-                          color: '#FF9500',
-                          background: 'rgba(255,149,0,0.08)',
-                          padding: '2px 8px',
-                          borderRadius: '6px',
-                          fontWeight: 600
-                        }}>
-                          预估学习区间: {getUnitDateRange(unitNum)}
-                        </span>
+                        {rangeStr && (
+                          <span style={{
+                            fontSize: '11.5px',
+                            color: '#FF9500',
+                            background: 'rgba(255,149,0,0.08)',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontWeight: 600
+                          }}>
+                            {rangeStr}
+                          </span>
+                        )}
                       </div>
                       <div>
                         {isUnitExpanded ? <ChevronDown size={20} style={{ color: '#86868B' }} /> : <ChevronRight size={20} style={{ color: '#86868B' }} />}
@@ -3710,7 +3768,7 @@ export default function StudentApp() {
                             {expandedSubsections[`${unitKey}-grammar`] && (
                               <div style={{ padding: '16px 20px', background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.02)' }}>
                                 <p style={{ fontSize: '13.5px', color: '#48484B', lineHeight: 1.6, margin: 0 }}>
-                                  {grammar}
+                                  {grammarText}
                                 </p>
                               </div>
                             )}
