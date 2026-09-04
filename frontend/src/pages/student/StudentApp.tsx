@@ -37,6 +37,7 @@ import {
 import examQuestionsData from '../../data/exam_questions.json';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
+import bGrammarDrills from '../../data/b_grammar_drills.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 
 const speakGreek = (text: string) => {
@@ -471,6 +472,66 @@ const orderClozeForDay = (
   if (todayB.size === 0) return shuffled;
   return [...shuffled.filter(s => todayB.has(s.unit)), ...shuffled.filter(s => !todayB.has(s.unit))];
 };
+
+
+/**
+ * 语法特训题库（统一表）。
+ *
+ * 两个来源:
+ *   ① unit_knowledge_drills.json —— A1-A / A1-B / A2 共 39 个单元、120 道
+ *   ② b_grammar_drills.json      —— B 本 201 道, 由 scripts/ocr/build_b_grammar_drills.py
+ *      从课本原文生成: 只挖冠词与「介词+冠词」缩合(答案由后接名词的性/数/格唯一确定),
+ *      干扰项经全书语料实证 —— 该冠词在整本书里从未跟过这个词。一个希腊语字符都不自造。
+ *
+ * 键用「书#单元」而不是单纯的单元号: B 本的单元号是 1–20, 会和 A1-A 的 1–15 撞车。
+ */
+const DRILL_KEY = (bookId: string, unit: number) => `${String(bookId).toLowerCase()}#${unit}`;
+
+const ALL_GRAMMAR_DRILLS: any[] = (() => {
+  const out: any[] = [];
+  (unitKnowledgeData as any[]).forEach(u => {
+    (u.drills || []).forEach((d: any) => out.push({
+      ...d, book_id: u.book_id, unit: u.unit,
+      book_title: u.book_title, unit_title: u.unit_title, badge: u.badge,
+      _key: DRILL_KEY(u.book_id, u.unit),
+    }));
+  });
+  ((bGrammarDrills as any).drills || []).forEach((d: any) => out.push({
+    ...d, book_title: 'Ελληνικά Β΄', badge: '📘 B',
+    _key: DRILL_KEY('b1', d.unit),
+  }));
+  return out;
+})();
+
+/** 某一天该按什么顺序出语法题。纯函数, 可用来重算过去几天出过什么 */
+const orderDrillsForDay = (dateStr: string, planKeys: Set<string>, unlockedKeys: Set<string> | null): any[] => {
+  let hash = 0;
+  for (let i = 0; i < dateStr.length; i++) { hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0; }
+  hash = Math.abs(hash) + 42;
+  const pool = unlockedKeys && unlockedKeys.size
+    ? ALL_GRAMMAR_DRILLS.filter(d => unlockedKeys.has(d._key))
+    : ALL_GRAMMAR_DRILLS;
+  const base = pool.length ? pool : ALL_GRAMMAR_DRILLS;
+  const shuffled = [...base].sort((a, b) =>
+    ((a.id * 137 + hash) % 9973) - ((b.id * 137 + hash) % 9973));
+  // 今天复习计划里的单元排最前, 和首页的任务分解对得上
+  return [...shuffled.filter(d => planKeys.has(d._key)), ...shuffled.filter(d => !planKeys.has(d._key))];
+};
+
+/** 今天这批复习单元, 对应语法题库里的哪些「书#单元」 */
+const drillKeysOfUnits = (units: ReviewUnit[]): Set<string> => {
+  const s = new Set<string>();
+  units.forEach(u => {
+    if (!u.unitNo) return;                       // A1 儿童版按页码区块, 没有单元号
+    const b = u.bookId.toLowerCase();
+    if (b === 'b1' || b === 'b') s.add(DRILL_KEY('b1', 39 + u.unitNo));
+    else s.add(DRILL_KEY(b, u.unitNo));
+  });
+  return s;
+};
+
+/** 每天出多少道语法题 */
+const DRILLS_PER_DAY = 30;
 
 interface Word {
   id: number;
@@ -2527,64 +2588,33 @@ export default function StudentApp() {
 
   // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
   const grammarDrillPool = useMemo(() => {
-    const activeUnits = (unitKnowledgeData as any[]).filter(k => {
-      const sDate = getUnitStudyDate(k.book_id, k.unit, unitStudyDates);
-      return sDate !== 'LOCKED' && sDate <= selectedDateStr;
+    // 已经学过的单元(按旧的单元解锁表; B 本另按页码进度判断)
+    const unlocked = new Set<string>();
+    (unitKnowledgeData as any[]).forEach(u => {
+      const d = getUnitStudyDate(u.book_id, u.unit, unitStudyDates);
+      if (d !== 'LOCKED' && d <= selectedDateStr) unlocked.add(DRILL_KEY(u.book_id, u.unit));
+    });
+    allReviewUnits.forEach(u => {
+      if (!u.unitNo) return;
+      const b = u.bookId.toLowerCase();
+      unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
     });
 
-    // 语法特训也跟着「今日复习任务分解」走: 今天复习到哪几个单元, 就先出那几个单元的语法题。
-    // 注意: 这份题库(unit_knowledge_drills.json)只覆盖 A1-A/A1-B/A2 共 39 个单元、120 道题,
-    // **一道 B 本的都没有**。所以 B 单元今天即使在复习计划里, 这里也补不出对应的题,
-    // 只能退回 A1/A2 的语法复习 —— 这是题库缺口, 不是调度错误。
-    const planUnits = new Set(
-      todayReviewUnits.map(u => u.unitNo).filter((n): n is number => !!n)
-    );
-    const pool = activeUnits.length > 0 ? activeUnits : (unitKnowledgeData as any[]);
-    const inPlan = pool.filter(k => planUnits.has(k.unit));
-    const candidateUnits = inPlan.length > 0 ? [...inPlan, ...pool.filter(k => !planUnits.has(k.unit))] : pool;
-
-    let hash = 0;
-    for (let i = 0; i < selectedDateStr.length; i++) {
-      hash = (hash << 5) - hash + selectedDateStr.charCodeAt(i);
-      hash = hash & hash;
+    // 前几天出过的题, 今天避开(同样靠「重算过去几天」, 不新建存储)
+    const avoid = new Set<number>();
+    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+      const dstr = shiftDateStr(selectedDateStr, -back);
+      const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
+      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked)
+        .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
     }
-    hash = Math.abs(hash) + 42;
 
-    const allDrills: any[] = [];
-    candidateUnits.forEach(u => {
-      if (u.drills && u.drills.length > 0) {
-        u.drills.forEach((d: any) => {
-          allDrills.push({
-            ...d,
-            book_title: u.book_title,
-            unit: u.unit,
-            unit_title: u.unit_title,
-            badge: u.badge
-          });
-        });
-      }
-    });
-
-    const targetCount = 30;
-    if (allDrills.length === 0) return [];
-    if (allDrills.length <= targetCount) return allDrills;
-
-    const selected: any[] = [];
-    const step = Math.max(1, Math.floor(allDrills.length / targetCount));
-    for (let i = 0; i < targetCount; i++) {
-      const idx = (hash + i * step) % allDrills.length;
-      if (!selected.some(s => s.id === allDrills[idx].id)) {
-        selected.push(allDrills[idx]);
-      }
-    }
-    for (let i = 0; i < allDrills.length && selected.length < targetCount; i++) {
-      const item = allDrills[(hash + i) % allDrills.length];
-      if (!selected.some(s => s.id === item.id)) {
-        selected.push(item);
-      }
-    }
-    return selected;
-  }, [selectedDateStr, unitStudyDates, todayReviewUnits]);
+    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked);
+    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
+    const fresh = ordered.filter(d => !avoid.has(d.id));
+    const reused = ordered.filter(d => avoid.has(d.id));
+    return [...fresh, ...reused].slice(0, DRILLS_PER_DAY);
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits]);
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
 

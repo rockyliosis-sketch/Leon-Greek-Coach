@@ -73,6 +73,32 @@ for k, v in seen_q.items():
     if len(v) > 1 and k.strip():
         bad('语法闯关', '重复题', v[0], f'与 {v[1:]} 完全相同')
 
+# ─────────────────────────────────────────── 1b. B 本语法题（新建）
+bg = json.load(open(D + 'b_grammar_drills.json'))['drills']
+seen_pair = Counter()
+for d in bg:
+    qid = f"B U{d['unit']-39} p{d['page']} #{d['id']}"
+    q, ans, opts = d.get('question',''), d.get('answer',''), d.get('options') or []
+    if '___' not in q:              bad('B语法题', '没有空位', qid, q[:60])
+    if ans not in opts:             bad('B语法题', '答案不在选项里', qid, f'{ans} / {opts}')
+    if len(opts) != len(set(opts)): bad('B语法题', '选项重复', qid, f'{opts}')
+    if len(opts) != 4:              bad('B语法题', '选项不是4个', qid, f'{opts}')
+    # 归一化后重合 = 有两个正确答案
+    nn = [norm_gr(o) for o in opts]
+    if len(nn) != len(set(nn)):     bad('B语法题', '选项去重音后重合', qid, f'{opts}')
+    # 答案填回去必须还原成原句
+    src = d.get('detailed_tip','')
+    m2 = re.search(r'【课本原句】(.+)', src)
+    if m2:
+        orig = m2.group(1).strip()
+        restored = re.sub(r'_+', ans, q, count=1)
+        if norm_gr(restored) != norm_gr(orig):
+            bad('B语法题', '答案填回去还原不出原句', qid, f'{orig[:45]} / {restored[:45]}')
+    if LATIN.search(q):             bad('B语法题', '题干混了拉丁字母', qid, q[:60])
+    seen_pair[norm_gr(q)] += 1
+for k, v in seen_pair.items():
+    if v > 1: bad('B语法题', '同一道题出现多次', k[:40], f'{v} 次')
+
 # ─────────────────────────────────────────── 2. 课本原句填空
 sents = json.load(open(D + 'sentences.json'))['sentences']
 for s in sents:
@@ -132,7 +158,7 @@ for w in v2:
 
 # ─────────────────────────────────────────── 汇总
 print('=' * 74)
-print(f'扫描：语法闯关 {n_drills} 题 · 课本填空 {len(sents)} 题 · 真题 {len(elist)} 题 · 词库 {len(v2)} 词')
+print(f'扫描：语法闯关 {n_drills} 题 · B语法题 {len(bg)} 题 · 课本填空 {len(sents)} 题 · 真题 {len(elist)} 题 · 词库 {len(v2)} 词')
 print('=' * 74)
 total = 0
 for k in sorted(issues, key=lambda x: -len(issues[x])):
