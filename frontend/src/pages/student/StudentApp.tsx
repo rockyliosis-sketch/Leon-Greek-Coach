@@ -349,6 +349,129 @@ const getUnitGrammarPoints = (bookId: string, unitNum: number): string => {
   return grammarData[bookKey]?.[unitNum] || "主要涵盖当前章节语法知识点及课后练习";
 };
 
+
+/** 前几天出过的题, 今天要避开。三天足以满足「至少连续三次不重样」 */
+const LOOKBACK_DAYS = 3;
+
+const MODULE_SPECS_CONST: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = [
+  { key: 'matching', want: 40, ok: w => String(w.word_greek || '').length <= 25 },
+  { key: 'spelling', want: 40, ok: w => !String(w.word_greek || '').includes(' ') && String(w.word_greek || '').length <= 15 },
+  { key: 'quiz',     want: 30 },
+  { key: 'grzh',     want: 20 },
+  { key: 'zhgr',     want: 20 },
+  { key: 'tf',       want: 40 },
+];
+
+/** 日期加减若干天, 返回 YYYY-MM-DD */
+const shiftDateStr = (dateStr: string, delta: number): string => {
+  const a = dateStr.split('-');
+  const d = new Date(parseInt(a[0], 10), parseInt(a[1], 10) - 1, parseInt(a[2], 10));
+  d.setDate(d.getDate() + delta);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * 把当天的词**分配**给各题型, 互不重叠。
+ *
+ * 旧做法是每个题型都从同一副牌里各抽一遍(只换随机种子), 于是同一个词必然在
+ * 拼写/选择/连连看/两种翻译里反复出现 —— 这是「老做重复题」的第一个根因。
+ *
+ * `avoid` 是前几天已经出过的词: 优先绕开, 但**只在还够用的时候绕**——
+ * 宁可重复一道题, 也不能让题目变少(家长明确要求题量不许减)。
+ */
+const partitionModules = (
+  deck: any[], fallbackPool: any[], dateStr: string, avoid: Set<number>
+): Record<string, any[]> => {
+  const res: Record<string, any[]> = {};
+  MODULE_SPECS_CONST.forEach(m => { res[m.key] = []; });
+
+  const parts = dateStr.split('-');
+  const y = parseInt(parts[0], 10) || 2026;
+  const mo = parseInt(parts[1], 10) || 7;
+  const da = parseInt(parts[2], 10) || 5;
+  const daySeed = (y * 372 + mo * 31 + da) * 101;
+  const dayCount = Math.floor(new Date(y, mo - 1, da).getTime() / 86400000);
+
+  // 前几天出过的排到最后 —— 够用就轮不到它们, 不够用时它们仍然顶得上
+  const order3 = (a: any, b: any) => {
+    const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
+    if (ra !== rb) return ra - rb;
+    return ((a.id * 137 + daySeed) % 10007) - ((b.id * 137 + daySeed) % 10007);
+  };
+  const shuffled = filterDuplicateTranslations([...deck]).sort(order3);
+
+  // 每天轮换「谁先挑」, 避免同一个题型总是吃到最新学的词
+  const rot = dayCount % MODULE_SPECS_CONST.length;
+  const order = [...MODULE_SPECS_CONST.slice(rot), ...MODULE_SPECS_CONST.slice(0, rot)];
+
+  // 贪心均衡分配: 每个词只进一个题型, 优先给填充率最低的
+  shuffled.forEach(w => {
+    const cands = order.filter(m => res[m.key].length < m.want && (!m.ok || m.ok(w)));
+    if (cands.length === 0) return;
+    cands.sort((a, b) => (res[a.key].length / a.want) - (res[b.key].length / b.want));
+    res[cands[0].key].push(w);
+  });
+
+  // 还没填满的, 从「已解锁但今天不在复习计划里」的词补齐, 仍然不重复
+  const used = new Set<number>();
+  Object.values(res).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
+  const extra = filterDuplicateTranslations(fallbackPool.filter(w => !used.has(w.id)))
+    .sort((a, b) => {
+      const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
+      if (ra !== rb) return ra - rb;
+      return ((a.id * 197 + daySeed) % 10007) - ((b.id * 197 + daySeed) % 10007);
+    });
+  MODULE_SPECS_CONST.forEach(m => {
+    for (const w of extra) {
+      if (res[m.key].length >= m.want) break;
+      if (used.has(w.id)) continue;
+      if (m.ok && !m.ok(w)) continue;
+      used.add(w.id);
+      res[m.key].push(w);
+    }
+  });
+
+  return res;
+};
+
+
+/** 选择题里每天掺多少道课本原句填空 */
+const CLOZE_PER_DAY = 15;
+
+/**
+ * 某一天该按什么顺序出「课本原句填空」。
+ * 纯函数 —— 只依赖日期和进度, 所以可以拿它重算过去几天出过什么, 用来避重复。
+ * 今天复习到的 B 单元排最前(和首页的任务分解对得上), 其余按当天种子轮转。
+ */
+const orderClozeForDay = (
+  all: any[], marks: PageMark[], unitStudyDates: Record<string, string>,
+  dateStr: string, units: ReviewUnit[]
+): any[] => {
+  const bm = (marks || []).filter(m => String(m.bookId).toLowerCase() === 'b1');
+  const frontier = bm.length ? Math.max(...bm.map(m => m.upToPage)) : 0;
+  let items = all;
+  if (frontier > 0) {
+    items = items.filter(s => s.page <= frontier);
+  } else {
+    items = items.filter(s => {
+      if (!s.unit) return false;
+      const d = getUnitStudyDate('B1', s.unit, unitStudyDates);
+      return d && d !== 'LOCKED';
+    });
+  }
+  const p = dateStr.split('-');
+  const seed = (parseInt(p[0], 10) || 2026) * 372 + (parseInt(p[1], 10) || 7) * 31 + (parseInt(p[2], 10) || 5);
+  const shuffled = [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
+
+  // sentences.json 的 unit 是系统单元号(40–59) = B 本第 1–20 单元 + 39
+  const todayB = new Set(
+    units.filter(u => ['B', 'B1'].includes(u.bookId.toUpperCase()) && u.unitNo)
+         .map(u => 39 + (u.unitNo as number))
+  );
+  if (todayB.size === 0) return shuffled;
+  return [...shuffled.filter(s => todayB.has(s.unit)), ...shuffled.filter(s => !todayB.has(s.unit))];
+};
+
 interface Word {
   id: number;
   book_id: string;
@@ -882,6 +1005,19 @@ const cleanChinese = (str: string): string => {
 
 // 把一条中文释义拆成若干「义项」：顿号/逗号/斜杠分隔的每一段都算一个可接受答案
 // 例：「顶部 / 陀螺」→ ["顶部","陀螺","顶部陀螺"]；「衣架、挂钩」→ ["衣架","挂钩","衣架挂钩"]
+/**
+ * 「汉译希」题面上该显示的中文。
+ *
+ * 词库里有 67 条释义把希腊语搭配写在括号里, 例如
+ *   πιστωτικός -> 信贷的（πιστωτική κάρτα 信用卡）
+ * 直接印在题面上等于把答案抄给学生看。这里只留中文, 括号内容挪到答对之后的释义区。
+ * 若去掉括号后什么都不剩(极少数纯希腊语释义), 就退回原文, 宁可泄题也不出空白题。
+ */
+const promptZhOnly = (raw: string): string => {
+  const stripped = removeBracketContents(String(raw || '')).trim();
+  return stripped || String(raw || '');
+};
+
 const splitChineseSenses = (raw: string): string[] => {
   if (!raw) return [];
   const senses = removeBracketContents(raw)
@@ -892,6 +1028,37 @@ const splitChineseSenses = (raw: string): string[] => {
   if (whole) senses.push(whole);
   return Array.from(new Set(senses));
 };
+
+/**
+ * 中文义项 -> 所有释义相同的希腊语词。
+ *
+ * 用来做「汉译希」的宽容判题: 题目问「但」, 学生打 όμως 而标准答案写的是 αλλά,
+ * 必须判对 —— 这是 AGENTS.md 里「广接受边界」那条硬规则的自然延伸。
+ * 只在整条义项**完全相等**时成族, 不做包含匹配, 避免「爱丁堡」触发 αγαπάω 那类误伤。
+ *
+ * 懒加载: 它依赖下面的 splitChineseSenses, 在模块顶层直接算会撞上 TDZ(用在定义之前),
+ * 整个应用会白屏。所以第一次判题时才建, 之后缓存。
+ */
+let _zhSenseIndex: Map<string, string[]> | null = null;
+const getZhSenseIndex = (): Map<string, string[]> => {
+  if (_zhSenseIndex) return _zhSenseIndex;
+  const m = new Map<string, Set<string>>();
+  const feed = (gr: string, zh: string) => {
+    if (!gr || !zh) return;
+    splitChineseSenses(zh).forEach(sense => {
+      if (!sense) return;
+      if (!m.has(sense)) m.set(sense, new Set());
+      m.get(sense)!.add(gr);
+    });
+  };
+  V2_WORDS.forEach(w => feed(w.headword, w.word_chinese));
+  (staticVocabData.textbook_vocabulary || []).forEach((w: any) => feed(w.word_greek, w.word_chinese));
+  const out = new Map<string, string[]>();
+  m.forEach((set, k) => { if (set.size > 1) out.set(k, [...set]); });
+  _zhSenseIndex = out;
+  return out;
+};
+
 
 // 中文答案判定：必须答出某一个完整义项，不再是「命中一个字就算对」
 const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => {
@@ -1477,23 +1644,18 @@ export default function StudentApp() {
    * 选谁也不再看「在列表里排第几」, 而是先看**今天到没到艾宾浩斯的复习节点**,
    * 并且 A2 每天保底占一席(刚学完、难度最大, 家长指定优先)。
    */
-  const todayReviewUnits = useMemo(() => {
-    const all = buildReviewUnits({
-      words: unlockedVocab,
-      activatedDates,
-      marks: pageMarksState,
-      syllabusB: B_SYLLABUS,
-      today: selectedDateStr,
-    });
-    return pickDailyReviewUnits(all, selectedDateStr, 6);
-  }, [unlockedVocab, activatedDates, pageMarksState, selectedDateStr]);
+  /** 全部已学过的复习单位（不分今天明天）—— 前几天出过什么, 也要拿它重算 */
+  const allReviewUnits = useMemo(() => buildReviewUnits({
+    words: unlockedVocab,
+    activatedDates,
+    marks: pageMarksState,
+    syllabusB: B_SYLLABUS,
+    today: selectedDateStr,
+  }), [unlockedVocab, activatedDates, pageMarksState, selectedDateStr]);
 
-  /** 今天这批复习覆盖到的词 id, 供出题时快速判断 */
-  const todayUnitOfWord = useMemo(() => {
-    const m: Record<number, ReviewUnit> = {};
-    todayReviewUnits.forEach(u => u.wordIds.forEach(id => { m[id] = u; }));
-    return m;
-  }, [todayReviewUnits]);
+  const todayReviewUnits = useMemo(
+    () => pickDailyReviewUnits(allReviewUnits, selectedDateStr, 6),
+    [allReviewUnits, selectedDateStr]);
 
 
   // 今天的卡组 = 今天这几个复习单元里的词
@@ -1822,58 +1984,39 @@ export default function StudentApp() {
    * 旧做法是每个题型都从同一副 dailyDeck 里重新抽一遍（只是换了随机种子），
    * 于是同一个词必然在拼写/选择/连连看/两种翻译里反复出现 —— 这就是「老做重复题」的根因。
    */
-  const MODULE_SPECS: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = [
-    { key: 'matching', want: 40, ok: w => String(w.word_greek || '').length <= 25 },
-    { key: 'spelling', want: 40, ok: w => !String(w.word_greek || '').includes(' ') && String(w.word_greek || '').length <= 15 },
-    { key: 'quiz',     want: 30 },
-    { key: 'grzh',     want: 20 },
-    { key: 'zhgr',     want: 20 },
-    { key: 'tf',       want: 40 },
-  ];
+  const MODULE_SPECS: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = MODULE_SPECS_CONST;
 
-  const modulePartition = useMemo(() => {
-    const res: Record<string, any[]> = {};
-    MODULE_SPECS.forEach(m => { res[m.key] = []; });
-
-    const parts = selectedDateStr.split('-');
-    const y = parseInt(parts[0], 10) || 2026;
-    const mo = parseInt(parts[1], 10) || 7;
-    const da = parseInt(parts[2], 10) || 5;
-    const daySeed = (y * 372 + mo * 31 + da) * 101;
-    const dayCount = Math.floor(new Date(y, mo - 1, da).getTime() / 86400000);
-
-    const shuffled = filterDuplicateTranslations([...dailyDeck])
-      .sort((a, b) => ((a.id * 137 + daySeed) % 10007) - ((b.id * 137 + daySeed) % 10007));
-
-    // 每天轮换"谁先挑"，避免同一个题型总是吃到最新学的词
-    const rot = dayCount % MODULE_SPECS.length;
-    const order = [...MODULE_SPECS.slice(rot), ...MODULE_SPECS.slice(0, rot)];
-
-    // 贪心均衡分配：每个词只进一个题型，优先给填充率最低的
-    shuffled.forEach(w => {
-      const cands = order.filter(m => res[m.key].length < m.want && (!m.ok || m.ok(w)));
-      if (cands.length === 0) return;
-      cands.sort((a, b) => (res[a.key].length / a.want) - (res[b.key].length / b.want));
-      res[cands[0].key].push(w);
-    });
-
-    // 还没填满的，从「已解锁但今天没进 deck」的词里补，仍然不重复
+  /**
+   * 前几天已经出过哪些词。
+   *
+   * 家长要求「至少连续三次不会碰见相同的题」。这里不新建任何存储 ——
+   * 每天出哪些题是「日期 + 已解锁内容」的**纯函数**, 所以把前 LOOKBACK_DAYS 天
+   * 原样重算一遍, 就精确知道那几天出过什么, 今天避开即可。
+   * 好处: 换设备、清缓存、家长改进度, 都不会算错; 也不会往云端多写一个字节。
+   */
+  const recentlyUsedWordIds = useMemo(() => {
     const used = new Set<number>();
-    Object.values(res).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
-    const extra = filterDuplicateTranslations(unlockedVocab.filter(w => !used.has(w.id)))
-      .sort((a, b) => ((a.id * 197 + daySeed) % 10007) - ((b.id * 197 + daySeed) % 10007));
-    MODULE_SPECS.forEach(m => {
-      for (const w of extra) {
-        if (res[m.key].length >= m.want) break;
-        if (used.has(w.id)) continue;
-        if (m.ok && !m.ok(w)) continue;
-        used.add(w.id);
-        res[m.key].push(w);
-      }
-    });
+    if (allReviewUnits.length === 0) return used;
+    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+      const d = shiftDateStr(selectedDateStr, -back);
+      const units = pickDailyReviewUnits(allReviewUnits, d, 6);
+      if (units.length === 0) continue;
+      const ids = new Set<number>();
+      units.forEach(u => u.wordIds.forEach(id => ids.add(id)));
+      const deck = unlockedVocab.filter(w => ids.has(w.id));
+      const pool = unlockedVocab.filter(w => {
+        const a = activatedDates[w.id];
+        return a && a !== 'LOCKED' && a <= d;
+      });
+      const part = partitionModules(deck, pool, d, new Set());
+      Object.values(part).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
+    }
+    return used;
+  }, [allReviewUnits, unlockedVocab, activatedDates, selectedDateStr]);
 
-    return res;
-  }, [dailyDeck, unlockedVocab, selectedDateStr]);
+  const modulePartition = useMemo(
+    () => partitionModules(dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds),
+    [dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds]);
 
   const spellingPool = useMemo(() => {
     const pool = modulePartition.spelling || [];
@@ -2183,35 +2326,18 @@ export default function StudentApp() {
 
   /** 已解锁的课本填空题：优先按 B 本页码进度，其次按单元解锁日期 */
   const clozePool = useMemo(() => {
-    const marks = (pageMarksState || []).filter(m => String(m.bookId).toLowerCase() === 'b1');
-    const frontier = marks.length ? Math.max(...marks.map(m => m.upToPage)) : 0;
-    let items = CLOZE_ALL;
-    if (frontier > 0) {
-      items = items.filter(s => s.page <= frontier);
-    } else {
-      items = items.filter(s => {
-        if (!s.unit) return false;
-        const d = getUnitStudyDate('B1', s.unit, unitStudyDates);
-        return d && d !== 'LOCKED';
-      });
+    // 前几天已经出过的填空题, 今天避开(同样用「重算过去几天」的办法, 不新建存储)
+    const avoid = new Set<number>();
+    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+      const d = shiftDateStr(selectedDateStr, -back);
+      const units = pickDailyReviewUnits(allReviewUnits, d, 6);
+      orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units)
+        .slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
     }
-    const parts = selectedDateStr.split('-');
-    const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
-    const shuffled = [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
-
-    // 填空题也要跟着「今日复习任务分解」走: 今天复习哪几个 B 单元, 就先出哪几个单元的课本原句。
-    // 从前这里是从整本已上过的页里随机抽, 于是首页写的单元和实际做的题对不上。
-    // sentences.json 里的 unit 是系统单元号(40–59) = B 本第 1–20 单元 + 39
-    const todayB = new Set(
-      todayReviewUnits
-        .filter(u => ['B', 'B1'].includes(u.bookId.toUpperCase()) && u.unitNo)
-        .map(u => 39 + (u.unitNo as number))
-    );
-    if (todayB.size === 0) return shuffled;
-    const inPlan = shuffled.filter(s => todayB.has(s.unit));
-    const rest = shuffled.filter(s => !todayB.has(s.unit));
-    return [...inPlan, ...rest];   // 计划内的排前面, 不够时才用其余的补
-  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits]);
+    const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits);
+    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
+    return [...ordered.filter((c: any) => !avoid.has(c.id)), ...ordered.filter((c: any) => avoid.has(c.id))];
+  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, allReviewUnits]);
 
   const quizPool = useMemo(() => {
     const pool = modulePartition.quiz || [];
@@ -2233,7 +2359,7 @@ export default function StudentApp() {
     }));
 
     // 课本真句子填空题：占选择题的一半，把「全是单词题」拉回到语境里
-    const clozeItems = clozePool.slice(0, 15).map((c: any) => ({
+    const clozeItems = clozePool.slice(0, CLOZE_PER_DAY).map((c: any) => ({
       id: c.id,
       isExam: true,
       isCloze: true,
@@ -2643,6 +2769,12 @@ export default function StudentApp() {
     senses.forEach(sense => {
       const family = ZH_SENSE_SYNONYMS[sense];
       if (family) list.push(...family);
+      // 手写的同义词表只覆盖了 9 组。词库里中文释义完全相同的词有 47 组
+      // (「但」= μα/όμως/αλλά, 「看」= βλέπω/κοιτώ, 「直到」= ως/μέχρι/έως/ώσπου …),
+      // 学生打出其中任何一个都是对的, 从前却只认题目那一个 —— 这就是「答案跟题目对不上」。
+      // 现在整个词库自动成族: 同一条中文义项下的希腊语词互相接受。
+      const auto = getZhSenseIndex().get(sense);
+      if (auto) list.push(...auto);
     });
     const grFamily = GR_LEMMA_SYNONYMS[cleanGr];
     if (grFamily) list.push(...grFamily);
@@ -5498,7 +5630,7 @@ export default function StudentApp() {
                   marginTop: '16px',
                   lineHeight: '1.4'
                 }}>
-                  {currentTransZhGr.chinese}
+                  {promptZhOnly(currentTransZhGr.chinese)}
                 </h3>
               </div>
 
