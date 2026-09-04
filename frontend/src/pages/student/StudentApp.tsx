@@ -6719,7 +6719,11 @@ export default function StudentApp() {
                     {currentGrammarDrill.skill_type === 'conjugation' ? '动词变位与时态' :
                      currentGrammarDrill.skill_type === 'declension' ? '名词/形容词变格' :
                      currentGrammarDrill.skill_type === 'dialogue' ? '情境交际金句' :
-                     currentGrammarDrill.skill_type === 'syntax' ? '句式从句结构' : '微阅读理解'}
+                     currentGrammarDrill.skill_type === 'syntax' ? '句式从句结构' :
+                     currentGrammarDrill.skill_type === 'article' ? '冠词的性数格' :
+                     currentGrammarDrill.skill_type === 'contraction' ? '介词+冠词缩合' :
+                     currentGrammarDrill.skill_type === 'pronoun' ? '人称代词强式与弱式' :
+                     currentGrammarDrill.skill_type === 'fem_os' ? '-ος 结尾的阴性名词' : '微阅读理解'}
                   </span>
                 </div>
 
