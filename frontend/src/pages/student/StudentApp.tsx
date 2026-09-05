@@ -1720,6 +1720,14 @@ export default function StudentApp() {
   const [transZhGrMistakes, setTransZhGrMistakes] = useState(0);
   const [transZhGrWrongAttempt, setTransZhGrWrongAttempt] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  /**
+   * 「看答案」是提示之外单独的一层。
+   * 家长反馈:「一键填入答案太简单了, 孩子全程不动脑子。」
+   * 规矩改成: 先自己试 -> 看提示(不含答案) -> 还是不会才点开答案。
+   * showAnswer 由拼写/选择/判断/两种翻译共用, 换题时和 showTip 一起收起。
+   */
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showGrammarAnswer, setShowGrammarAnswer] = useState(false);
 
   // Load vocabulary and activation history from Firestore
   useEffect(() => {
@@ -1974,6 +1982,208 @@ export default function StudentApp() {
     }
     return tip.replace(/\*\*/g, '');
   };
+
+  /** 是不是希腊/拉丁字母 —— 用来判断「词边界」, 中文没有这种边界 */
+  const isLetterChar = (ch: string) => !!ch && /[A-Za-z\u0370-\u03FF\u1F00-\u1FFF]/.test(ch);
+
+  /**
+   * 把文本里出现的标准答案全部盖成 ▢▢▢。
+   *
+   * 提示框里绝对不能露答案。希腊语/拉丁词按「词边界」匹配 ——
+   * 否则答案是 ο / η 这种冠词时, 会把整段解析打成马赛克;
+   * 中文没有空格边界, 直接按子串盖, 多盖一点不亏。
+   */
+  const maskAnswerInText = (text: string, answers: (string | undefined | null)[]): string => {
+    let out = String(text || '');
+    const list = Array.from(new Set(
+      (answers || [])
+        .filter(Boolean)
+        .flatMap(a => String(a).split(/[\/、，,;；|]/))
+        .map(a => a.trim())
+        .filter(a => a.length > 0)
+    )).sort((a, b) => b.length - a.length);   // 先盖长的, 免得长答案只被盖掉一半
+
+    // 去重音 + 转小写, 并记住每个字符原来在第几位 —— 全项目的规矩就是先归一化再比对,
+    // 否则 καμιά 和 καμία 会被当成两个词, 提示里照样把答案说出来。
+    const foldWithMap = (t: string) => {
+      const chars: string[] = [];
+      const map: number[] = [];
+      for (let k = 0; k < t.length; k++) {
+        const dec = t[k].normalize('NFD').replace(/[̀-ͯͅ]/g, '').toLowerCase();
+        for (const c of dec) { chars.push(c); map.push(k); }
+      }
+      return { folded: chars.join(''), map };
+    };
+
+    for (const ans of list) {
+      const foldedAns = foldWithMap(ans).folded;
+      if (!foldedAns) continue;
+      const hasCJK = /[一-龥]/.test(ans);
+      const { folded, map } = foldWithMap(out);
+
+      // 先在归一化后的文本上找出所有要盖掉的区间, 再回到原文一次性替换
+      const spans: Array<[number, number]> = [];
+      let i = 0;
+      while (i <= folded.length - foldedAns.length) {
+        if (folded.startsWith(foldedAns, i)) {
+          const from = map[i];
+          const to = map[i + foldedAns.length - 1] + 1;
+          const before = from > 0 ? out[from - 1] : '';
+          const after = out[to] || '';
+          if (hasCJK || (!isLetterChar(before) && !isLetterChar(after))) {
+            spans.push([from, to]);
+            i += foldedAns.length;
+            continue;
+          }
+        }
+        i++;
+      }
+      if (spans.length === 0) continue;
+
+      let res = '';
+      let cursor = 0;
+      for (const [from, to] of spans) {
+        if (from < cursor) continue;          // 区间重叠时以先找到的为准
+        res += out.slice(cursor, from) + '▢▢▢';
+        cursor = to;
+      }
+      res += out.slice(cursor);
+      out = res;
+    }
+    return out;
+  };
+
+  /**
+   * 「提示」= 引导他自己想出来, 里面绝不出现答案。
+   *
+   * answerSide 说明这道题要学生产出哪一边:
+   *   'greek'   -> 学生要写希腊语(拼写 / 汉译希), 希腊语是答案, 中文可以给
+   *   'chinese' -> 学生要写中文(选择 / 希译汉), 中文是答案, 希腊语本来就在题面上
+   *   'judge'   -> 判断题, 答案是「对/错」, 真实释义一律不能露
+   */
+  const getGuidingHint = (wordObj: any, answerSide: 'greek' | 'chinese' | 'judge'): string => {
+    if (!wordObj) return '';
+    const gr = String(wordObj.greek || wordObj.word_greek || '');
+    const zh = String(wordObj.chinese || wordObj.word_chinese || '');
+    const secret = answerSide === 'greek' ? [gr] : [zh];
+    const lines: string[] = [];
+
+    if (answerSide === 'greek') {
+      const letters = gr.replace(/[^\p{L}]/gu, '');
+      if (letters.length >= 2 && !wordObj.hideLetterHint) {
+        lines.push(`- 首字母是 ${letters[0]}，一共 ${letters.length} 个字母（不数空格和标点）。`);
+      }
+      if (zh && !wordObj.isGrammar) lines.push(`- 中文意思：${zh}`);
+    } else {
+      if (gr) lines.push(`- 希腊语原文：${gr}`);
+      if (wordObj.pronunciation) lines.push(`- 读音：${wordObj.pronunciation}`);
+      if (answerSide === 'chinese') {
+        const zhChars = zh.replace(/[^\u4e00-\u9fa5]/g, '');
+        if (zhChars.length > 0 && zhChars.length <= 8) {
+          lines.push(`- 中文答案是 ${zhChars.length} 个字，第一个字是「${zhChars[0]}」。`);
+        }
+      }
+    }
+
+    // 词形线索: 只说「这是什么词」, 不说是哪个词。整句题不给这条(词尾判断会误导)
+    const cleanGr = gr.toLowerCase().trim();
+    // 语法题的「答案」是冠词/动词形式, 拿词尾猜词性会猜出鬼话(把 έχει 说成中性名词), 一律不给
+    if (cleanGr && !/\s/.test(cleanGr) && !wordObj.isGrammar) {
+      if (cleanGr.endsWith('ω')) lines.push('- 词形线索：-ω 结尾，是第一类主动语态动词的现在时。');
+      else if (cleanGr.endsWith('ος') || cleanGr.endsWith('ης')) lines.push('- 词形线索：阳性名词，冠词一般配 ο。');
+      else if (cleanGr.endsWith('α') || cleanGr.endsWith('η')) lines.push('- 词形线索：阴性名词，冠词一般配 η。');
+      else if (cleanGr.endsWith('ο') || cleanGr.endsWith('ι') || cleanGr.endsWith('μα')) lines.push('- 词形线索：中性名词，冠词一般配 το。');
+    }
+
+    // 课本例句: 先把答案挖掉再给
+    if (wordObj.example_greek && wordObj.example_greek !== gr) {
+      lines.push(`- 课本例句：${maskAnswerInText(String(wordObj.example_greek), secret)}`);
+      if (wordObj.example_chinese) {
+        lines.push(`  （${maskAnswerInText(String(wordObj.example_chinese), secret)}）`);
+      }
+    }
+
+    // 语法题自带的解析删掉【课本原句】再盖掉答案, 就是一条很好的引导。
+    // 但 A1/A2 真题的 detailed_tip 是逐字母、逐词的答案详解(连 σ-χ-ο-λ-ε-ί-ο 都拆好了),
+    // 盖不干净 —— 那种整段只放进「查看答案」, 提示里一个字都不给。
+    if (wordObj.detailed_tip && wordObj.isGrammar) {
+      const stripped = String(wordObj.detailed_tip)
+        .split('\n')
+        .filter(l => l.indexOf('【课本原句】') === -1)
+        .join('\n')
+        .replace(/\*\*/g, '')
+        .trim();
+      if (stripped) {
+        const masked = maskAnswerInText(stripped, [...secret, wordObj.answer, gr, zh]);
+        lines.push('');
+        lines.push(masked);
+      }
+    }
+
+    if (wordObj.isExam && !wordObj.isGrammar) {
+      lines.push('');
+      lines.push('- 这题出自真题课文，先回想课文里出现过的那一句；实在想不起来再点下面的「查看答案」。');
+    }
+
+    // 兜底再盖一次: 上面任何一行(包括我们自己写的词形线索)都不许把答案说出来
+    const text = maskAnswerInText(lines.join('\n').trim(), secret);
+    return text || '这道题没有额外线索了，回想一下课本里出现过的那一句。';
+  };
+
+  /** 「查看答案」里展示什么: 标准答案 + 完整解析(含课本原句) */
+  const getAnswerReveal = (wordObj: any, answerSide: 'greek' | 'chinese' | 'judge'): string => {
+    if (!wordObj) return '';
+    const gr = String(wordObj.greek || wordObj.word_greek || '');
+    const zh = String(wordObj.chinese || wordObj.word_chinese || '');
+    const head = answerSide === 'greek' ? `标准答案：${gr}`
+      : answerSide === 'chinese' ? `标准答案：${zh}`
+      : `正确的释义是：${zh}`;
+    const full = getDynamicTip(wordObj);
+    return full ? `${head}\n\n${full}` : head;
+  };
+
+  /**
+   * 提示框的统一正文: 先给引导提示; 看完还不会, 再点一下才展开答案。
+   * 换题时 showAnswer 会被统一收起, 下一题不会带着答案进场。
+   */
+  const renderHintWithAnswer = (
+    hintText: string,
+    answerText: string,
+    revealed: boolean,
+    onReveal: () => void
+  ) => (
+    <>
+      <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+        {hintText}
+      </div>
+      {!revealed ? (
+        <button
+          type="button"
+          onClick={onReveal}
+          className="btn-premium"
+          style={{
+            marginTop: '12px', width: 'auto', padding: '8px 14px', fontSize: '13px', fontWeight: 700,
+            border: '1px dashed #D4380D', background: '#FFFFFF', color: '#D4380D'
+          }}
+          title="看完提示还是想不出来，才点这里"
+        >
+          🔑 还是不会？查看答案
+        </button>
+      ) : (
+        <div style={{
+          marginTop: '12px', padding: '12px 14px', background: '#FFFFFF',
+          border: '1px solid #FFD591', borderRadius: '10px'
+        }}>
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#D4380D', marginBottom: '6px' }}>
+            ✅ 标准答案 / Απάντηση
+          </div>
+          <div style={{ fontSize: '13.5px', color: '#1D1D1F', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontWeight: 600 }}>
+            {answerText}
+          </div>
+        </div>
+      )}
+    </>
+  );
 
   // Compute Ebbinghaus counts per interval dynamically for visualization
   const ebbinghausStats = useMemo(() => {
@@ -2637,7 +2847,7 @@ export default function StudentApp() {
       setSpellInput(newInput);
       if (newInput.length === target.length) {
         setSpellingCompleted(true);
-        logAnswer('spelling', currentSpellingWord?.word_greek || '', spellingMistakes === 0, showTip);
+        logAnswer('spelling', currentSpellingWord?.word_greek || '', spellingMistakes === 0, showTip || showAnswer);
       }
     } else {
       setSpellingWrongFlash(true);
@@ -2840,7 +3050,7 @@ export default function StudentApp() {
     setQuizScore(prev => prev + points);
     logAnswer((currentQuizWord as any)?.isGrammar ? 'grammar_drill'
         : (currentQuizWord?.isCloze ? 'cloze' : 'quiz'),
-      currentQuizWord?.word_greek || '', quizMistakes === 0, showTip);
+      currentQuizWord?.word_greek || '', quizMistakes === 0, showTip || showAnswer);
   };
 
   const nextQuiz = () => {
@@ -2957,7 +3167,7 @@ export default function StudentApp() {
     setTfChecked(true);
     const correct = choice === tfQuestionData.isCorrect;
     setTfIsCorrect(correct);
-    logAnswer('tf', currentTfWord?.word_greek || '', correct, showTip);
+    logAnswer('tf', currentTfWord?.word_greek || '', correct, showTip || showAnswer);
     if (correct) {
       setTfScore(prev => prev + 5);
     } else {
@@ -3001,8 +3211,10 @@ export default function StudentApp() {
    */
   useEffect(() => {
     setShowTip(false);
+    setShowAnswer(false);
     setShowGlossaryTip(false);
     setShowGrammarTip(false);
+    setShowGrammarAnswer(false);
   }, [activeModule, spellingIndex, quizIndex, tfIndex,
       transGrZhIndex, transZhGrIndex, glossaryIndex, grammarDrillIndex]);
 
@@ -3027,13 +3239,13 @@ export default function StudentApp() {
     }
 
     if (correct) {
-      logAnswer('grzh', currentTransGrZh?.greek || '', transGrZhMistakes === 0, showTip);
+      logAnswer('grzh', currentTransGrZh?.greek || '', transGrZhMistakes === 0, showTip || showAnswer);
       setTransGrZhChecked(true);
       setIsCorrectTransGrZh(true);
       setTransGrZhScore(prev => prev + 5);
       setTransGrZhWrongAttempt(false);
     } else {
-      if (transGrZhMistakes >= 1) logAnswer('grzh', currentTransGrZh?.greek || '', false, showTip);
+      if (transGrZhMistakes >= 1) logAnswer('grzh', currentTransGrZh?.greek || '', false, showTip || showAnswer);
       setTransGrZhWrongAttempt(true);
       setTransGrZhMistakes(prev => {
         const next = prev + 1;
@@ -5270,7 +5482,7 @@ export default function StudentApp() {
                                  color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                  cursor: tried ? 'pointer' : 'not-allowed' }}
                       >
-                        {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                        {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                       </button>
                     );
                   })()}
@@ -5317,9 +5529,12 @@ export default function StudentApp() {
               {(spellingMistakes >= 2 || showTip) && (
                 <div style={{ marginTop: '24px', padding: '16px', background: '#FFF2E8', border: '1px solid #FFD591', borderRadius: '16px', textAlign: 'left' }}>
                   <h5 style={{ margin: '0 0 8px 0', color: '#D4380D', fontWeight: 'bold', fontSize: '14px' }}>💡 拼字大作战提示 / Συμβουλή:</h5>
-                  <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
-                    {getDynamicTip(currentSpellingWord)}
-                  </div>
+                  {renderHintWithAnswer(
+                    getGuidingHint(currentSpellingWord, 'greek'),
+                    getAnswerReveal(currentSpellingWord, 'greek'),
+                    showAnswer || spellingCompleted,
+                    () => setShowAnswer(true)
+                  )}
                   <button
                     onClick={() => handleReportFeedback(
                       currentSpellingWord.id,
@@ -5454,7 +5669,7 @@ export default function StudentApp() {
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -5510,9 +5725,12 @@ export default function StudentApp() {
               {(quizMistakes >= 2 || showTip || answerChecked) && (
                 <div style={{ marginTop: '24px', padding: '16px', background: '#FFF2E8', border: '1px solid #FFD591', borderRadius: '16px', textAlign: 'left' }}>
                   <h5 style={{ margin: '0 0 8px 0', color: '#D4380D', fontWeight: 'bold', fontSize: '14px' }}>💡 选择题智能提示 / Συμβουλή:</h5>
-                  <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
-                    {getDynamicTip(currentQuizWord)}
-                  </div>
+                  {renderHintWithAnswer(
+                    getGuidingHint(currentQuizWord, 'chinese'),
+                    getAnswerReveal(currentQuizWord, 'chinese'),
+                    showAnswer || answerChecked,
+                    () => setShowAnswer(true)
+                  )}
                   <button
                     onClick={() => handleReportFeedback(
                       currentQuizWord.id,
@@ -5642,7 +5860,7 @@ export default function StudentApp() {
                   </div>
                 </div>
 
-                {currentTfWord.isExam && (
+                {currentTfWord.isExam && (showAnswer || tfChecked) && (
                   <div style={{ maxWidth: '480px', margin: '16px auto 0 auto' }}>
                     
                     <details style={{
@@ -5745,7 +5963,7 @@ export default function StudentApp() {
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -5834,9 +6052,12 @@ export default function StudentApp() {
               {(showTip || tfChecked) && (
                 <div style={{ marginTop: '24px', padding: '16px', background: '#FFF2E8', border: '1px solid #FFD591', borderRadius: '16px', textAlign: 'left' }}>
                   <h5 style={{ margin: '0 0 8px 0', color: '#D4380D', fontWeight: 'bold', fontSize: '14px' }}>💡 判断题智能提示 / Συμβουλή:</h5>
-                  <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
-                    {getDynamicTip(currentTfWord)}
-                  </div>
+                  {renderHintWithAnswer(
+                    getGuidingHint(currentTfWord, 'judge'),
+                    getAnswerReveal(currentTfWord, 'judge'),
+                    showAnswer || tfChecked,
+                    () => setShowAnswer(true)
+                  )}
                   <button
                     onClick={() => handleReportFeedback(
                       currentTfWord.id,
@@ -6009,7 +6230,7 @@ export default function StudentApp() {
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -6065,9 +6286,12 @@ export default function StudentApp() {
               {(transGrZhMistakes >= 2 || showTip || transGrZhChecked) && (
                 <div style={{ marginTop: '24px', padding: '16px', background: '#FFF2E8', border: '1px solid #FFD591', borderRadius: '16px', textAlign: 'left' }}>
                   <h5 style={{ margin: '0 0 8px 0', color: '#D4380D', fontWeight: 'bold', fontSize: '14px' }}>💡 翻译提示 / Συμβουλή:</h5>
-                  <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
-                    {getDynamicTip(currentTransGrZh)}
-                  </div>
+                  {renderHintWithAnswer(
+                    getGuidingHint(currentTransGrZh, 'chinese'),
+                    getAnswerReveal(currentTransGrZh, 'chinese'),
+                    showAnswer || transGrZhChecked,
+                    () => setShowAnswer(true)
+                  )}
                 </div>
               )}
             </div>
@@ -6221,7 +6445,7 @@ export default function StudentApp() {
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -6277,9 +6501,12 @@ export default function StudentApp() {
               {(transZhGrMistakes >= 2 || showTip || transZhGrChecked) && (
                 <div style={{ marginTop: '24px', padding: '16px', background: '#FFF2E8', border: '1px solid #FFD591', borderRadius: '16px', textAlign: 'left' }}>
                   <h5 style={{ margin: '0 0 8px 0', color: '#D4380D', fontWeight: 'bold', fontSize: '14px' }}>💡 翻译提示 / Συμβουλή:</h5>
-                  <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap' }}>
-                    {getDynamicTip(currentTransZhGr)}
-                  </div>
+                  {renderHintWithAnswer(
+                    getGuidingHint(currentTransZhGr, 'greek'),
+                    getAnswerReveal(currentTransZhGr, 'greek'),
+                    showAnswer || transZhGrChecked,
+                    () => setShowAnswer(true)
+                  )}
                 </div>
               )}
             </div>
@@ -6843,7 +7070,7 @@ export default function StudentApp() {
                         fontSize: '13.5px',
                         fontWeight: 650
                       }}>
-                        ⚠️ 拼写未完全匹配！您可以检查重音或词形并重试，也可以点击下方<strong>【💡 查看标准答案】</strong>或<strong>【⏭️ 跳过此题】</strong>继续学习。
+                        ⚠️ 拼写还没完全对上。可以检查重音或词形再试一次；实在想不起来，点下方<strong>【💡 查看提示】</strong>，提示里还有一个「查看答案」。
                       </div>
                     )}
 
@@ -6894,23 +7121,6 @@ export default function StudentApp() {
                           <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                             <button
                               type="button"
-                              onClick={() => {
-                                setUserGlossaryInput(cleanLemma);
-                              }}
-                              className="btn-premium"
-                              style={{
-                                padding: '6px 14px',
-                                fontSize: '12.5px',
-                                fontWeight: 700,
-                                background: '#FFFFFF',
-                                border: '1px solid #0071E3',
-                                color: '#0071E3'
-                              }}
-                            >
-                              ✍️ 一键填入标准拼写
-                            </button>
-                            <button
-                              type="button"
                               onClick={handleReportGlossaryProblem}
                               disabled={isFeedbackSent}
                               className="btn-premium"
@@ -6934,22 +7144,30 @@ export default function StudentApp() {
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                       {!glossaryChecked ? (
                         <>
-                          <button
-                            type="button"
-                            onClick={handleRevealGlossary}
-                            className="btn-premium"
-                            style={{ 
-                              background: '#F5F5F7',
-                              border: '1px solid rgba(0,0,0,0.12)',
-                              color: '#6B7280',
-                              padding: '12px 18px',
-                              fontSize: '14px',
-                              fontWeight: 700
-                            }}
-                            title="查看这道题的标准答案与多种合法拼写形式"
-                          >
-                            💡 查看标准答案
-                          </button>
+                          {(() => {
+                            // 和别的模块一个规矩: 本题至少认真试过一次才给看提示
+                            const tried = userGlossaryInput.trim().length > 0 || glossaryMistakes > 0;
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => tried && setShowGlossaryTip(prev => !prev)}
+                                disabled={!tried}
+                                className="btn-premium"
+                                title={tried ? '提示里想不出来，还有一个「查看答案」' : hintLockedNote}
+                                style={{
+                                  background: '#F5F5F7',
+                                  border: `1px solid ${tried ? 'rgba(0,0,0,0.12)' : '#E5E5EA'}`,
+                                  color: tried ? '#6B7280' : '#AEAEB2',
+                                  padding: '12px 18px',
+                                  fontSize: '14px',
+                                  fontWeight: 700,
+                                  cursor: tried ? 'pointer' : 'not-allowed'
+                                }}
+                              >
+                                {!tried ? `🔒 ${hintLockedNote}` : (showGlossaryTip ? '收起提示' : '💡 查看提示')}
+                              </button>
+                            );
+                          })()}
 
                           <button
                             type="button"
@@ -7006,9 +7224,25 @@ export default function StudentApp() {
                     {showGlossaryTip && !glossaryChecked && (
                       <div style={{ marginTop: '20px', padding: '16px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px' }}>
                         <h5 style={{ margin: '0 0 6px 0', color: '#9333EA', fontWeight: 'bold', fontSize: '13px' }}>💡 词汇提示 / Συμβουλή:</h5>
-                        <div style={{ fontSize: '13px', color: '#1D1D1F' }}>
+                        <div style={{ fontSize: '13px', color: '#1D1D1F', lineHeight: '1.6' }}>
                           首字母提示：<strong>{cleanLemma[0]}</strong> ...，标准总长度为 <strong>{letterCount}</strong> 个字母。
+                          {currentGlossaryWord.word_chinese && (
+                            <div style={{ marginTop: '4px' }}>中文意思：{currentGlossaryWord.word_chinese}</div>
+                          )}
                         </div>
+                        <button
+                          type="button"
+                          onClick={handleRevealGlossary}
+                          className="btn-premium"
+                          style={{
+                            marginTop: '12px', width: 'auto', padding: '8px 14px',
+                            fontSize: '13px', fontWeight: 700,
+                            border: '1px dashed #9333EA', background: '#FFFFFF', color: '#9333EA'
+                          }}
+                          title="看完提示还是想不出来，才点这里"
+                        >
+                          🔑 还是不会？查看答案
+                        </button>
                       </div>
                     )}
                   </div>
@@ -7477,7 +7711,7 @@ export default function StudentApp() {
                       }}
                     >
                       {!tried ? `🔒 ${hintLockedNote}`
-                        : `💡 ${showGrammarTip ? '收起解析' : '查看深度语法解析 / Detailed Tip'}`}
+                        : `💡 ${showGrammarTip ? '收起提示' : '查看提示 / Συμβουλή'}`}
                     </button>
                   );
                 })()}
@@ -7516,7 +7750,19 @@ export default function StudentApp() {
                   lineHeight: '1.5',
                   color: '#1D1D1F'
                 }}>
-                  {currentGrammarDrill.detailed_tip}
+                  {renderHintWithAnswer(
+                    getGuidingHint({
+                      greek: currentGrammarDrill.answer,
+                      chinese: currentGrammarDrill.translation,
+                      isGrammar: true,
+                      hideLetterHint: currentGrammarDrill.drill_type === 'choice',
+                      detailed_tip: currentGrammarDrill.detailed_tip,
+                      answer: currentGrammarDrill.answer,
+                    }, 'greek'),
+                    `标准答案：${currentGrammarDrill.answer}\n\n${currentGrammarDrill.detailed_tip || ''}`.trim(),
+                    showGrammarAnswer || isGrammarChecked,
+                    () => setShowGrammarAnswer(true)
+                  )}
                 </div>
               )}
             </div>
