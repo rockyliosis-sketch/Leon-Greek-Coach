@@ -98,9 +98,24 @@ export const unlockedWords = (words: V2Word[], marks: PageMark[], onDate: string
   });
 };
 
+/**
+ * 「今天」一律按**希腊时间**算, 不看设备在哪个时区。
+ *
+ * 全系统(解锁、打卡、复习排期)都以希腊日历日为准: 孩子在希腊上课,
+ * 家长可能在中国或美国登录, 三边必须看到同一个「今天」。
+ * 从前这里用的是设备本地日期 —— 谁在美国打开, 谁就跟系统差一天。
+ */
 export const todayStr = (): string => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Athens', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date());
+  } catch (e) {
+    const now = new Date();
+    const m = now.getUTCMonth() + 1;
+    const greece = new Date(now.getTime() + ((m >= 3 && m <= 10) ? 3 : 2) * 3600000);
+    return `${greece.getUTCFullYear()}-${String(greece.getUTCMonth() + 1).padStart(2, '0')}-${String(greece.getUTCDate()).padStart(2, '0')}`;
+  }
 };
 
 export const makeMarkId = () => `pm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;

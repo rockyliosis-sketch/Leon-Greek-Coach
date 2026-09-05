@@ -485,11 +485,12 @@ const CLOZE_PER_DAY = 15;
  */
 const orderClozeForDay = (
   all: any[], marks: PageMark[], unitStudyDates: Record<string, string>,
-  dateStr: string, units: ReviewUnit[]
+  dateStr: string, units: ReviewUnit[], disabledDrills: Set<string> = new Set()
 ): any[] => {
   const bm = (marks || []).filter(m => String(m.bookId).toLowerCase() === 'b1');
   const frontier = bm.length ? Math.max(...bm.map(m => m.upToPage)) : 0;
-  let items = all;
+  // 家长停用掉的课本原句, 不再出题(和语法题同一套判断)
+  let items = disabledDrills.size ? all.filter(c => !isDrillDisabled(c.text, disabledDrills)) : all;
   if (frontier > 0) {
     items = items.filter(s => s.page <= frontier);
   } else {
@@ -550,14 +551,29 @@ const ALL_GRAMMAR_DRILLS: any[] = (() => {
  * 而它名下 46 道语法题里有 38 道出自 12–25 页 —— 全是还没教过的内容。
  * A1/A2 三本已经学完(走内置学习时间轴), 不受这条限制。
  */
+/**
+ * 这道题是不是被家长停用了。
+ *
+ * 从前「停用」只作用在**单词**上(过滤 allVocab), 语法题和课本原句填空压根不在那条链路里 ——
+ * 孩子在语法特训里点「这道题有问题」, 家长在后台点了停用, 第二天这道题照样出。
+ * 报错在这两个模块里等于完全没用。现在按题面(去掉后面那行中文)比对停用清单。
+ */
+const isDrillDisabled = (text: string, disabled: Set<string>): boolean => {
+  if (!disabled.size) return false;
+  return disabled.has(grammarNormKey(String(text || '').split('\n')[0]));
+};
+
 const orderDrillsForDay = (
-  dateStr: string, planKeys: Set<string>, unlockedKeys: Set<string> | null, bFrontier: number
+  dateStr: string, planKeys: Set<string>, unlockedKeys: Set<string> | null, bFrontier: number,
+  disabledDrills: Set<string> = new Set()
 ): any[] => {
   let hash = 0;
   for (let i = 0; i < dateStr.length; i++) { hash = ((hash << 5) - hash + dateStr.charCodeAt(i)) | 0; }
   hash = Math.abs(hash) + 42;
   const taught = (d: any) =>
-    String(d.book_id || '').toLowerCase() !== 'b1' || !d.page || d.page <= bFrontier;
+    String(d.book_id || '').toLowerCase() !== 'b1' || !d.page || d.page <= bFrontier
+    ? !isDrillDisabled(d.question, disabledDrills)
+    : false;
   const pool = unlockedKeys && unlockedKeys.size
     ? ALL_GRAMMAR_DRILLS.filter(d => unlockedKeys.has(d._key) && taught(d))
     : ALL_GRAMMAR_DRILLS.filter(taught);
@@ -1345,10 +1361,16 @@ const getGreeceDateString = () => {
     });
     return formatter.format(new Date());
   } catch (e) {
-    const today = new Date();
-    const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
-    const greece = new Date(utc + (3600000 * 3));
-    return greece.toISOString().split('T')[0];
+    // 兜底路径。从前这里写的是 `getTime() + getTimezoneOffset()*60000`,
+    // 但 getTime() 本来就已经是 UTC 毫秒, 再加一次偏移等于按设备时区又挪了一遍 ——
+    // 中国的设备和美国的设备会算出不同的「今天」。而且希腊夏令时是 UTC+3、
+    // 冬令时是 UTC+2, 写死 +3 每年冬天都会错一个月。
+    // 现在: 先用 UTC 拿到绝对时刻, 再按当月实际的希腊偏移换算。
+    const now = new Date();
+    const m = now.getUTCMonth() + 1;          // 3 月底~10 月底是夏令时(EEST, +3), 其余 +2
+    const offsetHours = (m >= 4 && m <= 9) ? 3 : ((m === 3 || m === 10) ? 3 : 2);
+    const greece = new Date(now.getTime() + offsetHours * 3600000);
+    return `${greece.getUTCFullYear()}-${String(greece.getUTCMonth() + 1).padStart(2, '0')}-${String(greece.getUTCDate()).padStart(2, '0')}`;
   }
 };
 
@@ -1804,6 +1826,15 @@ export default function StudentApp() {
   /** 家长停用的词 —— 不再出现在任何题目里 */
   const disabledSet = useMemo(
     () => new Set(disabledWords.map(w => cleanGreekForComparison(String(w)))),
+    [disabledWords]
+  );
+
+  /**
+   * 同一张停用清单, 换一套归一化, 用来停语法题/课本原句填空。
+   * 单词按 cleanGreekForComparison 比, 整句题面按 grammarNormKey 比(去重音去标点压空格)。
+   */
+  const disabledDrillSet = useMemo(
+    () => new Set(disabledWords.map(w => grammarNormKey(String(w).split('\n')[0]))),
     [disabledWords]
   );
 
@@ -2337,16 +2368,16 @@ export default function StudentApp() {
     for (let back = 1; back <= LOOKBACK_DAYS; back++) {
       const dstr = shiftDateStr(selectedDateStr, -back);
       const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
-      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier)
+      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier, disabledDrillSet)
         .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
     }
 
-    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier);
+    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier, disabledDrillSet);
     // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
     const fresh = ordered.filter(d => !avoid.has(d.id));
     const reused = ordered.filter(d => avoid.has(d.id));
     return [...fresh, ...reused];
-  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState]);
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState, disabledDrillSet]);
 
   // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
   const grammarDrillPool = useMemo(
@@ -2547,12 +2578,17 @@ export default function StudentApp() {
     }, 4000);
   };
 
+  /** 孩子在报错弹窗里自己写的那句话 */
+  const [feedbackNote, setFeedbackNote] = useState('');
+
   /** 点「一键报错」不再直接提交，而是先问清楚是哪种情况 */
   const handleReportFeedback = (questionId: any, greek: string, expected: string, userTyped: string) => {
     if (!greek || !expected) return;
+    setFeedbackNote('');
     setFeedbackCtx({
       questionId: String(questionId || Date.now()),
-      greek,
+      // 语法题的题面现在带一行中文, 报到后台只留希腊语那一行, 免得清单里全是长段落
+      greek: String(greek).split('\n')[0].trim(),
       expected,
       userTyped: (userTyped || '').trim(),
     });
@@ -2562,7 +2598,7 @@ export default function StudentApp() {
   const isRealTypedAnswer = (t: string) =>
     !!t && !/^\(.*\)$/.test(t.trim()) && t.trim().length > 0;
 
-  const submitFeedback = async (reason: 'alt_answer' | 'bad_word') => {
+  const submitFeedback = async (reason: 'alt_answer' | 'bad_word' | 'other') => {
     if (!feedbackCtx) return;
     const { questionId, greek, expected, userTyped } = feedbackCtx;
     const item = {
@@ -2573,6 +2609,9 @@ export default function StudentApp() {
       userTyped: reason === 'alt_answer' ? userTyped : '',
       wordKey: greek,
       reason,
+      // 孩子自己描述的问题。家长后台光看「这题有问题」根本判断不了到底哪儿有问题,
+      // 有这一句才知道是乱码、翻译错、还是他压根没看懂题。
+      note: feedbackNote.trim().slice(0, 200),
       date: getGreeceDateString(),
       status: 'pending' as const,
     };
@@ -2581,6 +2620,7 @@ export default function StudentApp() {
     await saveSharedState({ user_feedback: updated });
     setSubmittedFeedbackIds(prev => ({ ...prev, [questionId]: true }));
     setFeedbackCtx(null);
+    setFeedbackNote('');
     alert(reason === 'alt_answer'
       ? '已提交：爸爸妈妈会看一下你的答案是不是也对。可以继续下一题啦！'
       : '已提交：这道题会交给爸爸妈妈检查。可以继续下一题啦！');
@@ -2637,13 +2677,13 @@ export default function StudentApp() {
     for (let back = 1; back <= LOOKBACK_DAYS; back++) {
       const d = shiftDateStr(selectedDateStr, -back);
       const units = pickDailyReviewUnits(allReviewUnits, d, 6);
-      orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units)
+      orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units, disabledDrillSet)
         .slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
     }
-    const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits);
+    const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, disabledDrillSet);
     // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
     return [...ordered.filter((c: any) => !avoid.has(c.id)), ...ordered.filter((c: any) => avoid.has(c.id))];
-  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, allReviewUnits]);
+  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, allReviewUnits, disabledDrillSet]);
 
   const quizPool = useMemo(() => {
     const pool = modulePartition.quiz || [];
@@ -2766,6 +2806,15 @@ export default function StudentApp() {
       Array.from(new Set(distractors)), optSeed + 7).slice(0, 3);
     return seededShuffle([correct, ...uniqueDistractors], optSeed);
   }, [quizIndex, currentQuizWord, allVocab]);
+
+  /**
+   * 「查看提示 / 答案」要不要放行。
+   *
+   * 家长反馈:「孩子就一直看着提示做题。」这些提示框里直接写着标准答案,
+   * 一进题就能点开, 等于抄。规则改成: **本题至少认真试过一次**才给看
+   * (填了字 / 选了选项 / 已提交都算)。真不会也永远不会卡死 —— 旁边一直有「跳过此题」。
+   */
+  const hintLockedNote = '先自己试一次，再看提示';
 
   const handleSelectOption = (opt: string) => {
     if (answerChecked) return;
@@ -2942,6 +2991,21 @@ export default function StudentApp() {
   const [isCorrectTransZhGrInput, setIsCorrectTransZhGrInput] = useState(false);
   const [transZhGrScore, setTransZhGrScore] = useState(0);
 
+  /**
+   * 只要换了题(或换了模块), 所有提示一律收起。
+   *
+   * 家长反馈:「提示只要打开一次, 后面每一题都默认是打开的, 孩子就一直看着提示做题。」
+   * 从前靠每个模块的「下一题」函数各自记得 setShowTip(false), 漏一个就粘住;
+   * 而 showTip 还是拼写/选择/判断/两种翻译**共用**的一个状态, 跨模块也会带过去。
+   * 这里改成由题号统一兜底: 题号一变就强制收起, 结构上不可能再粘。
+   */
+  useEffect(() => {
+    setShowTip(false);
+    setShowGlossaryTip(false);
+    setShowGrammarTip(false);
+  }, [activeModule, spellingIndex, quizIndex, tfIndex,
+      transGrZhIndex, transZhGrIndex, glossaryIndex, grammarDrillIndex]);
+
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
   const handleCheckTransGrZh = () => {
@@ -3064,9 +3128,16 @@ export default function StudentApp() {
     const acceptable = isGrammarItem
       ? [currentTransZhGr.greek, ...((currentTransZhGr as any).acceptableAnswers || [])]
       : getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
+    // 家长后台批准过的备选答案 —— 从前只有「希腊语翻译汉语」那个模块会查这张表,
+    // 汉译希批准了也没用, 孩子下次遇到同一道题照样判错。现在两边都查。
+    // 同一张表里既有中文备选(希译汉存的)也有希腊语备选(汉译希存的),
+    // 各按各的比法比, 语种对不上的天然匹配不到, 不会互相干扰。
+    const approvedAlts = alternativeTranslations[cleanGreekForComparison(currentTransZhGr.greek)] || [];
     const correct = isGrammarItem
-      ? acceptable.some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
-      : (acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)) || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek));
+      ? [...acceptable, ...approvedAlts].some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
+      : (acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans))
+         || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek)
+         || approvedAlts.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)));
     if (correct) {
       setTransZhGrChecked(true);
       setIsCorrectTransZhGrInput(true);
@@ -4309,6 +4380,11 @@ export default function StudentApp() {
                       <span style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
                         {isAllDone ? '已达成今日 +10 XP 积分大奖！' : '做完八项即可获得今日 10 分大奖'}
                       </span>
+                      {/* 打卡按希腊日历日清零。孩子在希腊、家长可能在中国或美国登录,
+                          三边看到的必须是同一个「今天」—— 索性直接写出来, 不让人猜。 */}
+                      <span style={{ fontSize: '10.5px', color: '#AEAEB2', marginTop: '1px' }}>
+                        🇬🇷 当前学习日（希腊时间）：{getGreeceDateString()} · 每天希腊午夜自动清零
+                      </span>
                       {doneCount > 0 && (
                         <button
                           type="button"
@@ -5181,13 +5257,23 @@ export default function StudentApp() {
                 <button onClick={resetSpell} className="btn-premium" style={{ width: 'auto', padding: '10px 18px', border: '1px solid rgba(0,0,0,0.15)', background: '#FFFFFF', color: '#86868B', fontWeight: 650 }}>
                   重置 / Επαναφορά
                 </button>
-                <button 
-                  onClick={() => setShowTip(!showTip)} 
-                  className="btn-premium" 
-                  style={{ width: 'auto', padding: '10px 18px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500', fontWeight: 700 }}
-                >
-                  {showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案'}
-                </button>
+                  {(() => {
+                    const tried = spellInput.length > 0 || spellingMistakes > 0 || spellingCompleted;
+                    return (
+                      <button
+                        onClick={() => tried && setShowTip(!showTip)}
+                        disabled={!tried}
+                        className="btn-premium"
+                        title={tried ? '' : hintLockedNote}
+                        style={{ width: 'auto', padding: '10px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
+                                 background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
+                                 color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
+                                 cursor: tried ? 'pointer' : 'not-allowed' }}
+                      >
+                        {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                      </button>
+                    );
+                  })()}
                 <button
                   type="button"
                   onClick={() => handleReportFeedback(
@@ -5353,13 +5439,25 @@ export default function StudentApp() {
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                 {!answerChecked ? (
                   <>
-                    <button 
-                      onClick={() => setShowTip(!showTip)} 
-                      className="btn-premium"
-                      style={{ width: 'auto', padding: '12px 18px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500', fontWeight: 700 }}
-                    >
-                      {showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案'}
-                    </button>
+                    {(() => {
+                      // 选了任意一个选项(哪怕选错)就算试过, 才给看提示
+                      const tried = !!selectedOption || wrongOptionsSelected.length > 0 || quizMistakes > 0;
+                      return (
+                        <button
+                          onClick={() => tried && setShowTip(!showTip)}
+                          disabled={!tried}
+                          className="btn-premium"
+                          title={tried ? '' : hintLockedNote}
+                          style={{ width: 'auto', padding: '12px 18px',
+                                   border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
+                                   background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
+                                   color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
+                                   cursor: tried ? 'pointer' : 'not-allowed' }}
+                        >
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                        </button>
+                      );
+                    })()}
                     <button
                       type="button"
                       onClick={() => handleReportFeedback(
@@ -5634,13 +5732,23 @@ export default function StudentApp() {
                     </button>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginTop: '8px' }}>
-                    <button 
-                      onClick={() => setShowTip(!showTip)} 
-                      className="btn-premium"
-                      style={{ width: 'auto', padding: '10px 18px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500', fontWeight: 700 }}
-                    >
-                      {showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案'}
-                    </button>
+                    {(() => {
+                      const tried = tfChecked || userTfChoice !== null;
+                      return (
+                        <button
+                          onClick={() => tried && setShowTip(!showTip)}
+                          disabled={!tried}
+                          className="btn-premium"
+                          title={tried ? '' : hintLockedNote}
+                          style={{ width: 'auto', padding: '10px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
+                                   background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
+                                   color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
+                                   cursor: tried ? 'pointer' : 'not-allowed' }}
+                        >
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                        </button>
+                      );
+                    })()}
                     <button
                       type="button"
                       onClick={() => handleReportFeedback(
@@ -5888,13 +5996,23 @@ export default function StudentApp() {
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                 {!transGrZhChecked ? (
                   <>
-                    <button 
-                      onClick={() => setShowTip(!showTip)} 
-                      className="btn-premium"
-                      style={{ width: 'auto', padding: '12px 18px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500', fontWeight: 700 }}
-                    >
-                      {showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案'}
-                    </button>
+                    {(() => {
+                      const tried = userTransGrZhInput.trim().length > 0 || transGrZhMistakes > 0;
+                      return (
+                        <button
+                          onClick={() => tried && setShowTip(!showTip)}
+                          disabled={!tried}
+                          className="btn-premium"
+                          title={tried ? '' : hintLockedNote}
+                          style={{ width: 'auto', padding: '12px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
+                                   background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
+                                   color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
+                                   cursor: tried ? 'pointer' : 'not-allowed' }}
+                        >
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                        </button>
+                      );
+                    })()}
                     <button
                       onClick={() => handleReportFeedback(
                         currentTransGrZh.id,
@@ -6090,13 +6208,23 @@ export default function StudentApp() {
               <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                 {!transZhGrChecked ? (
                   <>
-                    <button 
-                      onClick={() => setShowTip(!showTip)} 
-                      className="btn-premium"
-                      style={{ width: 'auto', padding: '12px 18px', border: '1px solid #FF9500', background: showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)', color: '#FF9500', fontWeight: 700 }}
-                    >
-                      {showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案'}
-                    </button>
+                    {(() => {
+                      const tried = userTransZhGrInput.trim().length > 0 || transZhGrMistakes > 0;
+                      return (
+                        <button
+                          onClick={() => tried && setShowTip(!showTip)}
+                          disabled={!tried}
+                          className="btn-premium"
+                          title={tried ? '' : hintLockedNote}
+                          style={{ width: 'auto', padding: '12px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
+                                   background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
+                                   color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
+                                   cursor: tried ? 'pointer' : 'not-allowed' }}
+                        >
+                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / 答案')}
+                        </button>
+                      );
+                    })()}
                     <button
                       onClick={() => handleReportFeedback(
                         currentTransZhGr.id,
@@ -7144,8 +7272,11 @@ export default function StudentApp() {
                           const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                           const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                           let correct = (normUser === normAns && normUser.length > 0);
-                          if (!correct && currentGrammarDrill.acceptable_answers) {
-                            for (const alt of currentGrammarDrill.acceptable_answers) {
+                          // 家长后台批准过的备选答案也要认 —— 否则「我的答案也对」批了等于白批
+                          const approved = alternativeTranslations[
+                            cleanGreekForComparison(currentGrammarDrill.answer || '')] || [];
+                          if (!correct && (currentGrammarDrill.acceptable_answers || approved.length)) {
+                            for (const alt of [...(currentGrammarDrill.acceptable_answers || []), ...approved]) {
                               const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                               if (normUser === normAlt && normUser.length > 0) {
                                 correct = true;
@@ -7249,8 +7380,11 @@ export default function StudentApp() {
                           const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                           const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                           correct = (normUser === normAns && normUser.length > 0);
-                          if (!correct && currentGrammarDrill.acceptable_answers) {
-                            for (const alt of currentGrammarDrill.acceptable_answers) {
+                          // 家长后台批准过的备选答案也要认 —— 否则「我的答案也对」批了等于白批
+                          const approved = alternativeTranslations[
+                            cleanGreekForComparison(currentGrammarDrill.answer || '')] || [];
+                          if (!correct && (currentGrammarDrill.acceptable_answers || approved.length)) {
+                            for (const alt of [...(currentGrammarDrill.acceptable_answers || []), ...approved]) {
                               const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
                               if (normUser === normAlt && normUser.length > 0) {
                                 correct = true;
@@ -7320,22 +7454,33 @@ export default function StudentApp() {
 
               {/* Detailed Grammar Tip & Error Report */}
               <div style={{ marginTop: '20px', borderTop: '1px solid #E5E5EA', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button
-                  onClick={() => setShowGrammarTip(prev => !prev)}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: '#0071E3',
-                    fontSize: '13px',
-                    fontWeight: 650,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  💡 {showGrammarTip ? '收起解析' : '查看深度语法解析 / Detailed Tip'}
-                </button>
+                {(() => {
+                  // 解析里写着【课本原句】(答案已经填好), 一进题就点开等于抄答案。
+                  // 选了选项 / 写了字 / 已提交, 才给看。答不出来还有「跳过此题」。
+                  const tried = isGrammarChecked || !!selectedGrammarOption
+                    || userGrammarInput.trim().length > 0;
+                  return (
+                    <button
+                      onClick={() => tried && setShowGrammarTip(prev => !prev)}
+                      disabled={!tried}
+                      title={tried ? '' : hintLockedNote}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: tried ? '#0071E3' : '#AEAEB2',
+                        fontSize: '13px',
+                        fontWeight: 650,
+                        cursor: tried ? 'pointer' : 'not-allowed',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {!tried ? `🔒 ${hintLockedNote}`
+                        : `💡 ${showGrammarTip ? '收起解析' : '查看深度语法解析 / Detailed Tip'}`}
+                    </button>
+                  );
+                })()}
 
                 <button
                   onClick={() => handleReportFeedback(
@@ -7658,12 +7803,48 @@ export default function StudentApp() {
                        borderRadius: '12px', border: '1px solid #D2D2D7', background: '#FFF', cursor: 'pointer' }}>
               <div style={{ fontSize: '15px', fontWeight: 700, color: '#1D1D1F' }}>⚠️ 这道题本身有问题</div>
               <div style={{ fontSize: '12px', color: '#86868B', marginTop: '3px' }}>
-                单词是乱码、中文翻译不对、或者题目看不懂 —— 爸爸妈妈可以直接停用这个词
+                单词是乱码、中文翻译不对、或者题目看不懂 —— 爸爸妈妈可以直接停用这道题
+              </div>
+            </button>
+
+            {/* 只按两个按钮, 家长后台只看到「这题有问题」四个字, 根本判断不了哪儿有问题。
+                让孩子自己写一句, 后台清单里直接显示出来。 */}
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#1D1D1F', marginBottom: '5px' }}>
+                ✏️ 哪儿不对？写一句话告诉爸爸妈妈（可以不写）
+              </div>
+              <textarea
+                value={feedbackNote}
+                onChange={e => setFeedbackNote(e.target.value.slice(0, 200))}
+                rows={2}
+                placeholder="例如：这个词是乱码 / 中文意思不对 / 题目我看不懂 / 空格前后都能填"
+                style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', fontSize: '13px',
+                         borderRadius: '10px', border: '1px solid #D2D2D7', resize: 'vertical',
+                         fontFamily: 'inherit', lineHeight: 1.5 }}
+              />
+              <div style={{ fontSize: '10.5px', color: '#AEAEB2', textAlign: 'right', marginTop: '2px' }}>
+                {feedbackNote.length} / 200
+              </div>
+            </div>
+
+            <button
+              onClick={() => submitFeedback('other')}
+              disabled={!feedbackNote.trim()}
+              style={{ width: '100%', textAlign: 'left', padding: '14px', marginBottom: '10px',
+                       borderRadius: '12px', border: '1px solid #D2D2D7',
+                       background: feedbackNote.trim() ? '#FFF' : '#F5F5F7',
+                       cursor: feedbackNote.trim() ? 'pointer' : 'not-allowed',
+                       opacity: feedbackNote.trim() ? 1 : 0.55 }}>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#1D1D1F' }}>💬 就照我写的这个报上去</div>
+              <div style={{ fontSize: '12px', color: '#86868B', marginTop: '3px' }}>
+                {feedbackNote.trim()
+                  ? '上面两种都不算 —— 把你写的这句话直接交给爸爸妈妈看'
+                  : '先在上面写一句话，再选这一项'}
               </div>
             </button>
 
             <button
-              onClick={() => setFeedbackCtx(null)}
+              onClick={() => { setFeedbackCtx(null); setFeedbackNote(''); }}
               style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none',
                        background: '#F5F5F7', color: '#86868B', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
               先不报，我再想想

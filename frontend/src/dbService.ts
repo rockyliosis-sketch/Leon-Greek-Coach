@@ -24,8 +24,10 @@ export interface SharedState {
     userTyped: string;
     date: string;
     status: 'pending' | 'approved' | 'rejected';
-    /** 报错原因：alt_answer=我的答案也对；bad_word=这道题/这个词有问题 */
-    reason?: 'alt_answer' | 'bad_word';
+    /** 报错原因：alt_answer=我的答案也对；bad_word=这道题/这个词有问题；other=孩子自己描述 */
+    reason?: 'alt_answer' | 'bad_word' | 'other';
+    /** 孩子自己写的一句话（最多 200 字），家长后台直接显示 */
+    note?: string;
     /** 出问题的词（希腊语原形），家长可据此停用该词 */
     wordKey?: string;
   }>;

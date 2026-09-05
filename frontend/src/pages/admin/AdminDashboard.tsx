@@ -329,12 +329,15 @@ const getGreeceDateString = () => {
     });
     return formatter.format(new Date());
   } catch (e) {
-    const today = new Date();
-    const utc = today.getTime() + (today.getTimezoneOffset() * 60000);
-    const greece = new Date(utc + (3600000 * 3));
-    const y = greece.getFullYear();
-    const m = String(greece.getMonth() + 1).padStart(2, '0');
-    const dd = String(greece.getDate()).padStart(2, '0');
+    // 兜底路径。从前 `getTime() + getTimezoneOffset()*60000` 是错的:
+    // getTime() 已经是 UTC 毫秒, 再加一次偏移等于按设备时区又挪一遍, 中国/美国设备会算出不同的「今天」。
+    // 而且希腊夏令时 UTC+3、冬令时 UTC+2, 写死 +3 每年冬天错一个月。
+    const now = new Date();
+    const m0 = now.getUTCMonth() + 1;
+    const greece = new Date(now.getTime() + ((m0 >= 3 && m0 <= 10) ? 3 : 2) * 3600000);
+    const y = greece.getUTCFullYear();
+    const m = String(greece.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(greece.getUTCDate()).padStart(2, '0');
     return `${y}-${m}-${dd}`;
   }
 };
@@ -1665,14 +1668,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleDisableWord = async (feedbackItem: any) => {
     const key = (feedbackItem.wordKey || feedbackItem.greek || '').trim();
     if (!key) return;
-    if (!window.confirm(`停用「${key}」？\n这个词从此不会再出现在 Leon 的任何题目里（可在下方停用清单里恢复）。`)) return;
+    if (!window.confirm(`停用「${key}」？\n单词题、语法特训、课本原句填空里都不会再出现它（可在下方停用清单里恢复）。`)) return;
     const nextDisabled = Array.from(new Set([...disabledWords, key]));
     const updatedFeedback = userFeedbackList.map(it =>
       it.id === feedbackItem.id ? { ...it, status: 'approved' as const } : it);
     setDisabledWords(nextDisabled);
     setUserFeedbackList(updatedFeedback);
     await saveSharedState({ disabled_words: nextDisabled, user_feedback: updatedFeedback });
-    alert(`已停用「${key}」，之后不会再出这个词的题。`);
+    alert(`已停用「${key}」，之后单词题、语法特训、课本原句填空里都不会再出现它。`);
   };
 
   const handleRestoreWord = async (key: string) => {
@@ -1910,6 +1913,14 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                       <p style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 'bold', color: '#0071E3' }}>希腊语: {item.greek}</p>
                       <p style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#1D1D1F' }}>标准答案: <span style={{ fontWeight: 600 }}>{item.expected}</span></p>
                       <p style={{ margin: 0, fontSize: '14px', color: '#FF9500' }}>Leon 翻译: <span style={{ fontWeight: 600, textDecoration: 'underline' }}>{item.userTyped}</span></p>
+                      {/* 孩子自己写的描述 —— 光看「题目有问题」四个字判断不了到底哪儿有问题 */}
+                      {item.note && (
+                        <p style={{ margin: '8px 0 0 0', fontSize: '13.5px', color: '#1D1D1F',
+                                    background: 'rgba(255,149,0,0.07)', border: '1px solid rgba(255,149,0,0.25)',
+                                    borderRadius: '8px', padding: '8px 10px', lineHeight: 1.5 }}>
+                          ✏️ Leon 说：<span style={{ fontWeight: 600 }}>{item.note}</span>
+                        </p>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignSelf: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', alignItems: 'center' }}>
                       <span style={{
@@ -1918,15 +1929,17 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                         color: item.reason === 'bad_word' ? '#FF9500' : item.reason === 'alt_answer' ? '#0071E3' : '#86868B',
                         whiteSpace: 'nowrap'
                       }}>
-                        {item.reason === 'bad_word' ? '题目有问题' : item.reason === 'alt_answer' ? '我的答案也对' : '旧版反馈'}
+                        {item.reason === 'bad_word' ? '题目有问题'
+                          : item.reason === 'alt_answer' ? '我的答案也对'
+                          : item.reason === 'other' ? 'Leon 自己描述' : '旧版反馈'}
                       </span>
-                      {item.reason === 'bad_word' ? (
+                      {(item.reason === 'bad_word' || item.reason === 'other') ? (
                         <button
                           onClick={() => handleDisableWord(item)}
                           className="btn-premium"
                           style={{ padding: '6px 12px', fontSize: '12px', width: 'auto', border: '1px solid #FF9500', color: '#FF9500', background: 'rgba(255,149,0,0.06)' }}
                         >
-                          停用这个词
+                          停用这道题 / 这个词
                         </button>
                       ) : (
                         <button
