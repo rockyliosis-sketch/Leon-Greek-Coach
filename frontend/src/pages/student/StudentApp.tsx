@@ -583,6 +583,22 @@ const drillKeysOfUnits = (units: ReviewUnit[]): Set<string> => {
 /** 每天出多少道语法题 */
 const DRILLS_PER_DAY = 30;
 
+/**
+ * 语法题库 2786 道, 从前只有「单元语法与情景特训」一个模块在消费,
+ * 每天 30 道要 93 天才轮一遍; 而 B 本每页只有 2.8 个新词, 纯单词模块反复出重复的词。
+ * 所以把语法题的一部分掺进另外两个已有模块 —— 数据结构本来就对得上:
+ *   choice 题 -> 智能选择题(和课本原句填空同一个通道)
+ *   cloze/translate 题 -> 汉译希(本来就是「给中文提示写希腊语」)
+ * 掺进去的题占用原模块的名额, 每日总题量不变, 只是把单词题换成语法题。
+ */
+const GRAMMAR_IN_QUIZ = 8;
+const GRAMMAR_IN_ZHGR = 6;
+
+/** 语法题按题面去重用的键(去重音、去标点、压空格) */
+const grammarNormKey = (str: string): string =>
+  String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+
 interface Word {
   id: number;
   book_id: string;
@@ -1267,7 +1283,19 @@ const filterDuplicateTranslations = <T extends { word_greek: string; word_chines
   const seenGreek = new Set<string>();
   const result: T[] = [];
   
+  const seenPrompt = new Set<string>();
+
   list.forEach(w => {
+    // 填空题 / 语法题的「答案」天然会重复(冠词 την 全书出现几十次),
+    // 拿答案去重会把它们几乎全删光。这类题只按题面自身去重。
+    if ((w as any).isCloze || (w as any).isGrammar) {
+      const key = grammarNormKey(w.word_greek);
+      if (!seenPrompt.has(key)) {
+        seenPrompt.add(key);
+        result.push(w);
+      }
+      return;
+    }
     const cleanZh = cleanChinese(w.word_chinese);
     const cleanGr = removeGreekAccents(w.word_greek);
     if (!seenChinese.has(cleanZh) && !seenGreek.has(cleanGr)) {
@@ -2228,6 +2256,78 @@ export default function StudentApp() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModule, currentSpellingWord, spellInput, spellingCompleted]);
 
+  /**
+   * 今天这一天, 整个语法题库该按什么顺序出。
+   * 从前这段代码长在「单元语法与情景特训」里, 只切前 30 道自己用;
+   * 现在抽出来放到最前面, 好让选择题、汉译希两个模块也能从同一条队列里取题 ——
+   * 同一条队列切分, 天生不会三个模块出同一道题。
+   */
+  const grammarOrderedForDay = useMemo(() => {
+    // B 本上到第几页 —— 语法题必须按页卡住, 不能按整个单元放行
+    const bFrontier = getBookFrontier(pageMarksState, 'b1');
+    // 已经学过的单元(按旧的单元解锁表; B 本另按页码进度判断)
+    const unlocked = new Set<string>();
+    (unitKnowledgeData as any[]).forEach(u => {
+      const d = getUnitStudyDate(u.book_id, u.unit, unitStudyDates);
+      if (d !== 'LOCKED' && d <= selectedDateStr) unlocked.add(DRILL_KEY(u.book_id, u.unit));
+    });
+    allReviewUnits.forEach(u => {
+      if (!u.unitNo) return;
+      const b = u.bookId.toLowerCase();
+      unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
+    });
+
+    // 前几天出过的题, 今天避开(同样靠「重算过去几天」, 不新建存储)
+    const avoid = new Set<number>();
+    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+      const dstr = shiftDateStr(selectedDateStr, -back);
+      const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
+      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier)
+        .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
+    }
+
+    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier);
+    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
+    const fresh = ordered.filter(d => !avoid.has(d.id));
+    const reused = ordered.filter(d => avoid.has(d.id));
+    return [...fresh, ...reused];
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState]);
+
+  // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
+  const grammarDrillPool = useMemo(
+    () => grammarOrderedForDay.slice(0, DRILLS_PER_DAY),
+    [grammarOrderedForDay]);
+
+  /**
+   * 语法特训模块每天只吃前 30 道, 后面那一大截原来是白排的。
+   * 这里从「没被特训模块用掉」的部分里再分两小撮出去:
+   *   choice -> 智能选择题;  cloze / translate -> 汉译希。
+   * 同一道题的选择版和填空版题面相同(题库里是成对生成的), 按题面去重, 免得同一句出两遍。
+   */
+  const grammarSpillover = useMemo(() => {
+    const usedId = new Set<number>(grammarDrillPool.map((d: any) => d.id));
+    const seen = new Set<string>(grammarDrillPool.map((d: any) => grammarNormKey(d.question)));
+    const choice: any[] = [];
+    const cloze: any[] = [];
+    for (const d of grammarOrderedForDay) {
+      if (choice.length >= GRAMMAR_IN_QUIZ && cloze.length >= GRAMMAR_IN_ZHGR) break;
+      if (usedId.has(d.id)) continue;
+      const key = grammarNormKey(d.question);
+      if (seen.has(key)) continue;
+      if (d.drill_type === 'choice' && Array.isArray(d.options) && d.options.length > 1) {
+        if (choice.length >= GRAMMAR_IN_QUIZ) continue;
+        choice.push(d);
+      } else if ((d.drill_type === 'cloze' || d.drill_type === 'translate') && d.answer) {
+        if (cloze.length >= GRAMMAR_IN_ZHGR) continue;
+        cloze.push(d);
+      } else {
+        continue;
+      }
+      seen.add(key);
+    }
+    return { choice, cloze };
+  }, [grammarOrderedForDay, grammarDrillPool]);
+
   const isSentenceItem = (item: any) => {
     if (!item) return false;
     if (item.type === 'sentence') return true;
@@ -2316,9 +2416,27 @@ export default function StudentApp() {
       };
     });
 
-    const combined = [...examItems, ...transItems];
+    // 语法填空/汉译希特训题: 本来就是「给提示写希腊语」, 跟这个模块干的是同一件事
+    const grammarItems = grammarSpillover.cloze.map((d: any) => ({
+      id: d.id,
+      isExam: true,          // 让提示框直接用题库自带的详细解析
+      isGrammar: true,
+      type: 'grammar',
+      greek: d.answer,
+      chinese: d.question,   // 题面: cloze 是挖空的希腊语句子, translate 是中文句子
+      hintZh: d.translation || '',
+      wordGreek: '',
+      wordChinese: '',
+      word_greek: d.question,
+      word_chinese: d.answer,
+      pronunciation: '',
+      detailed_tip: d.detailed_tip,
+      acceptableAnswers: d.acceptable_answers || [d.answer],
+    }));
+
+    const combined = [...examItems, ...grammarItems, ...transItems];
     return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, grammarSpillover]);
 
   // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
   const glossaryReviewPool = useMemo(() => {
@@ -2501,9 +2619,30 @@ export default function StudentApp() {
       detailed_tip: `【课本原句】${c.text}\n【出处】${c.unit_title || ''}（课本第 ${c.page} 页）`,
     }));
 
-    const combined = [...examItems, ...clozeItems, ...quizItems];
+    // 语法选择题: 冠词的性数格、动词变位、课本原题精练 ——
+    // 数据结构和上面的课本填空题完全一致(题面/选项/答案/解析), 直接掺进来。
+    // 两边都取材自课本原文, 同一句可能被挖了不同的空 —— 同一个模块里出两遍很怪, 去掉。
+    const clozeSrc = new Set(
+      clozePool.slice(0, CLOZE_PER_DAY).map((c: any) => grammarNormKey(c.text)));
+    const sourceSentenceOf = (d: any): string => {
+      const m = /【课本原句】(.+)/.exec(d.detailed_tip || '');
+      return m ? grammarNormKey(m[1]) : '';
+    };
+    const grammarItems = grammarSpillover.choice
+      .filter((d: any) => { const t = sourceSentenceOf(d); return !t || !clozeSrc.has(t); })
+      .map((d: any) => ({
+      id: d.id,
+      isExam: true,
+      isGrammar: true,
+      word_greek: d.question,
+      word_chinese: d.answer,
+      options: d.options,
+      detailed_tip: d.detailed_tip,
+    }));
+
+    const combined = [...examItems, ...clozeItems, ...grammarItems, ...quizItems];
     return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool]);
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool, grammarSpillover]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
@@ -2592,7 +2731,8 @@ export default function StudentApp() {
     setAnswerChecked(true);
     const points = quizMistakes === 0 ? 5 : (quizMistakes === 1 ? 3 : 1);
     setQuizScore(prev => prev + points);
-    logAnswer(currentQuizWord?.isCloze ? 'cloze' : 'quiz',
+    logAnswer((currentQuizWord as any)?.isGrammar ? 'grammar_drill'
+        : (currentQuizWord?.isCloze ? 'cloze' : 'quiz'),
       currentQuizWord?.word_greek || '', quizMistakes === 0, showTip);
   };
 
@@ -2657,37 +2797,6 @@ export default function StudentApp() {
     return filterDuplicateTranslations(combined).slice(0, 40);
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
 
-  // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
-  const grammarDrillPool = useMemo(() => {
-    // B 本上到第几页 —— 语法题必须按页卡住, 不能按整个单元放行
-    const bFrontier = getBookFrontier(pageMarksState, 'b1');
-    // 已经学过的单元(按旧的单元解锁表; B 本另按页码进度判断)
-    const unlocked = new Set<string>();
-    (unitKnowledgeData as any[]).forEach(u => {
-      const d = getUnitStudyDate(u.book_id, u.unit, unitStudyDates);
-      if (d !== 'LOCKED' && d <= selectedDateStr) unlocked.add(DRILL_KEY(u.book_id, u.unit));
-    });
-    allReviewUnits.forEach(u => {
-      if (!u.unitNo) return;
-      const b = u.bookId.toLowerCase();
-      unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
-    });
-
-    // 前几天出过的题, 今天避开(同样靠「重算过去几天」, 不新建存储)
-    const avoid = new Set<number>();
-    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
-      const dstr = shiftDateStr(selectedDateStr, -back);
-      const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
-      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier)
-        .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
-    }
-
-    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier);
-    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
-    const fresh = ordered.filter(d => !avoid.has(d.id));
-    const reused = ordered.filter(d => avoid.has(d.id));
-    return [...fresh, ...reused].slice(0, DRILLS_PER_DAY);
-  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState]);
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
 
@@ -2886,8 +2995,17 @@ export default function StudentApp() {
   };
 
   const handleCheckTransZhGr = () => {
-    const acceptable = getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
-    const correct = acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)) || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek);
+    const isGrammarItem = !!(currentTransZhGr as any).isGrammar;
+    // 语法题只认题库自带的 acceptable_answers, 归一化后精确比对 ——
+    // 和「单元语法与情景特训」模块的判法完全一致。
+    // 这里**不能**用 isFuzzyGreekMatch: 它有词干容忍(είμαι 和 είμαστε 词干相同),
+    // 而语法题考的正是词尾, 一模糊这道题就白出了。
+    const acceptable = isGrammarItem
+      ? [currentTransZhGr.greek, ...((currentTransZhGr as any).acceptableAnswers || [])]
+      : getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
+    const correct = isGrammarItem
+      ? acceptable.some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
+      : (acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)) || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek));
     if (correct) {
       setTransZhGrChecked(true);
       setIsCorrectTransZhGrInput(true);
@@ -5030,14 +5148,22 @@ export default function StudentApp() {
             </div>
             <div className="game-container-card" style={{ padding: '32px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <span style={{ fontSize: '14px', color: '#86868B', fontWeight: 'bold' }}>选择对应的中文释义</span>
+                <span style={{ fontSize: '14px', color: '#86868B', fontWeight: 'bold' }}>
+                  {((currentQuizWord as any).isCloze || (currentQuizWord as any).isGrammar) ? '选择正确的希腊语形式填空' : '选择对应的中文释义'}
+                </span>
                 <div style={{ fontSize: '11px', color: '#86868B', fontWeight: 700, textTransform: 'uppercase', marginTop: '2px' }}>
-                  Επιλέξτε την αντίστοιχη κινεζική μετάφραση
+                  {((currentQuizWord as any).isCloze || (currentQuizWord as any).isGrammar) ? 'Επιλέξτε τον σωστό τύπο' : 'Επιλέξτε την αντίστοιχη κινεζική μετάφραση'}
                 </div>
-                <h3 style={{ fontSize: '36px', fontWeight: 800, color: '#0071E3', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <span>{currentQuizWord.word_greek}</span>
+                {/* 填空题/语法题的题面是一整句, 36px 会撑爆手机屏, 降到 22px 并允许折行 */}
+                <h3 style={{ fontSize: ((currentQuizWord as any).isCloze || (currentQuizWord as any).isGrammar) ? '22px' : '36px', lineHeight: '1.5', fontWeight: 800, color: '#0071E3', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  {/* 语法题的题面自带换行和中文注释, 按原样折行显示(和语法特训模块一致) */}
+                  <span style={{ whiteSpace: 'pre-line' }}>{currentQuizWord.word_greek}</span>
                   <button 
-                    onClick={() => speakGreek(currentQuizWord.word_greek)}
+                    onClick={() => speakGreek(
+                      ((currentQuizWord as any).isCloze || (currentQuizWord as any).isGrammar)
+                        ? removeBracketContents(currentQuizWord.word_greek).replace(/\*\*/g, '')  // 别把中文注释也念出来
+                        : currentQuizWord.word_greek
+                    )}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0071E3', display: 'inline-flex', alignItems: 'center', padding: '4px' }}
                     title="播放读音"
                   >
@@ -5717,24 +5843,33 @@ export default function StudentApp() {
                 <span style={{ 
                   fontSize: '12px', 
                   fontWeight: 700, 
-                  background: isSentenceItem(currentTransZhGr) ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)',
-                  color: isSentenceItem(currentTransZhGr) ? '#FF9500' : '#0071E3',
+                  background: (currentTransZhGr as any).isGrammar ? 'rgba(88,86,214,0.10)' : (isSentenceItem(currentTransZhGr) ? 'rgba(255,149,0,0.08)' : 'rgba(0,113,227,0.08)'),
+                  color: (currentTransZhGr as any).isGrammar ? '#5856D6' : (isSentenceItem(currentTransZhGr) ? '#FF9500' : '#0071E3'),
                   padding: '4px 10px',
                   borderRadius: '6px',
                   textTransform: 'uppercase'
                 }}>
-                  {isSentenceItem(currentTransZhGr) ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)'}
+                  {(currentTransZhGr as any).isGrammar
+                    ? '语法特训 (Γραμματική)'
+                    : (isSentenceItem(currentTransZhGr) ? '句子 / 短语翻译 (Πρόταση)' : '单词翻译 (Λέξη)')}
                 </span>
                 
                 <h3 style={{ 
-                  fontSize: '28px', 
+                  fontSize: (currentTransZhGr as any).isGrammar ? '24px' : '28px', 
                   fontWeight: 800, 
                   color: '#1D1D1F', 
                   marginTop: '16px',
-                  lineHeight: '1.4'
+                  lineHeight: '1.5',
+                  whiteSpace: 'pre-wrap'
                 }}>
-                  {promptZhOnly(currentTransZhGr.chinese)}
+                  {/* 语法题的题面是希腊语挖空句, 不能拿「只留中文」那套去洗, 会把括号里的提示删掉 */}
+                  {(currentTransZhGr as any).isGrammar ? currentTransZhGr.chinese : promptZhOnly(currentTransZhGr.chinese)}
                 </h3>
+                {(currentTransZhGr as any).isGrammar && (currentTransZhGr as any).hintZh && (
+                  <div style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, marginTop: '10px' }}>
+                    中文：{(currentTransZhGr as any).hintZh}
+                  </div>
+                )}
               </div>
 
               <div className="admin-input-group" style={{ marginBottom: '32px' }}>
