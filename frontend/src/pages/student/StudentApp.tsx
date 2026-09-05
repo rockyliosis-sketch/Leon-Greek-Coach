@@ -594,6 +594,33 @@ const DRILLS_PER_DAY = 30;
 const GRAMMAR_IN_QUIZ = 8;
 const GRAMMAR_IN_ZHGR = 6;
 
+/**
+ * 按「种子」洗牌 —— 同一道题永远洗出同一个顺序。
+ *
+ * 从前选项用 `.sort(() => Math.random() - 0.5)` 洗, 只要页面重新渲染一次就重洗一次。
+ * 而云端每写一笔数据(例如作答记录 4 秒后回传)都会触发一次重算,
+ * 学生正盯着题看, 选项就当场自己调换位置。改成按题目 id 定死顺序后,
+ * 同一道题不管重算多少次, 选项都在原地不动。
+ */
+const seededShuffle = <T,>(list: T[], seed: number): T[] => {
+  const out = [...list];
+  let x = (Math.abs(Math.floor(seed)) % 2147483647) || 1;
+  for (let i = out.length - 1; i > 0; i--) {
+    x = (x * 48271) % 2147483647;          // 经典 Lehmer 伪随机数, 无状态、可复现
+    const j = x % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
+
+/** 把一段文字压成一个稳定的数字, 给 seededShuffle 当种子 */
+const textSeed = (str: string): number => {
+  let h = 0;
+  const t = String(str || '');
+  for (let i = 0; i < t.length; i++) h = ((h << 5) - h + t.charCodeAt(i)) | 0;
+  return Math.abs(h) + 1;
+};
+
 /** 语法题按题面去重用的键(去重音、去标点、压空格) */
 const grammarNormKey = (str: string): string =>
   String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
@@ -1727,7 +1754,16 @@ export default function StudentApp() {
         setUserFeedbackList(state.user_feedback || []);
         setDisabledWords(Array.isArray(state.disabled_words) ? state.disabled_words : []);
         setPageMarksState(pageMarks);
-        if (Array.isArray(state.answer_log)) answerLogRef.current = state.answer_log;
+        // 作答记录是「攒 4 秒再写一次」的, 快照回来时本地往往还有没写上去的几条。
+        // 从前这里直接 `= state.answer_log` 整个盖掉 —— 一个模块做完立刻写打卡记录,
+        // 那次写入的回声就把这个模块刚做的几十条作答记录全抹了(每周正确率报告因此是空的)。
+        // 改成按「日期+模块+题目+耗时」并集合并, 只补不删。
+        if (Array.isArray(state.answer_log)) {
+          const sig = (e: any) => `${e?.d}|${e?.m}|${e?.q}|${e?.ms}`;
+          const seen = new Set(state.answer_log.map(sig));
+          const pendingLocal = (answerLogRef.current || []).filter((e: any) => !seen.has(sig(e)));
+          answerLogRef.current = [...state.answer_log, ...pendingLocal].slice(-4000);
+        }
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
         // 按页码解锁的词, 用课堂进度覆盖掉按单元算出来的日期
@@ -2080,15 +2116,20 @@ export default function StudentApp() {
 
       const roundStartIdx = matchingRound * 5;
       const roundWords = matchingPool.slice(roundStartIdx, roundStartIdx + 5);
-      const allRoundMatched = roundWords.every(w => newMatched.includes(w.id));
+      // roundWords 为空时 `.every()` 恒为 true —— 词不够 40 个的日子, 空的那几轮
+      // 会一轮接一轮自动判定「本轮全配对」, 一路 600ms 跳到底并直接打卡,
+      // 学生根本没做, 首页却已经打上绿勾。所以先确认这一轮真的有词。
+      const allRoundMatched = roundWords.length > 0
+        && roundWords.every(w => newMatched.includes(w.id));
       
       if (allRoundMatched) {
         setTimeout(() => {
           if (matchingRound < 7) {
+            bumpModuleStep('matching');
             setMatchingRound(prev => prev + 1);
             setupMatchingRound(matchingPool, matchingRound + 1);
           } else {
-            handleGameComplete(40);
+            handleGameComplete(40, matchingPool.length);
           }
         }, 600);
       }
@@ -2203,24 +2244,38 @@ export default function StudentApp() {
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
+  /**
+   * 换到下一个词时, 重新打乱字母。
+   *
+   * 依赖项从前写的是 `currentSpellingWord`(整个对象)。云端每回声一次快照,
+   * 题池就会重建出一批**内容一样但身份全新**的对象, 这个 effect 于是又跑一遍 ——
+   * 字母重新洗牌, 而且 `setSpellInput([])` 把学生已经敲进去的字母清空。
+   * 现在只认「这是哪个词」这一个字符串, 词没换就绝不重跑;
+   * 打乱顺序也按词定死, 同一个词每次进来摆法一致。
+   */
+  const spellingWordKey = currentSpellingWord ? String(currentSpellingWord.word_greek || '') : '';
   useEffect(() => {
-    if (!currentSpellingWord) return;
-    const cleanWord = getCleanSpellingWord(currentSpellingWord.word_greek);
+    if (!spellingWordKey) return;
+    const cleanWord = getCleanSpellingWord(spellingWordKey);
     const chars = cleanWord.split('');
     const greekAlphabet = 'αβγδεζηθικλμνξοπρστυφχψω';
+    const seed = textSeed(cleanWord);
+    let k = 0;
     while (chars.length < Math.max(8, cleanWord.length + 3)) {
-      const randChar = greekAlphabet[Math.floor(Math.random() * greekAlphabet.length)];
+      const randChar = greekAlphabet[(seed + k * 31) % greekAlphabet.length];
+      k++;
       if (!chars.includes(randChar)) {
         chars.push(randChar);
       }
+      if (k > 200) break;                      // 兜底: 字母表用完也不能死循环
     }
-    setScrambledLetters(chars.sort(() => Math.random() - 0.5));
+    setScrambledLetters(seededShuffle(chars, seed));
     setSpellInput([]);
     setSpellingCompleted(false);
     setSpellingMistakes(0);
     setSpellingWrongFlash(false);
     setShowTip(false);
-  }, [currentSpellingWord]);
+  }, [spellingWordKey]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -2561,10 +2616,11 @@ export default function StudentApp() {
   };
 
   const nextSpelling = () => {
+    bumpModuleStep('spelling');
     if (spellingIndex < spellingPool.length - 1) {
       setSpellingIndex(prev => prev + 1);
     } else {
-      handleGameComplete(40);
+      handleGameComplete(40, spellingPool.length);
     }
   };
 
@@ -2647,8 +2703,11 @@ export default function StudentApp() {
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
     if (!currentQuizWord) return [];
+    // 种子只跟「这是哪一道题」有关, 跟渲染了几次无关 —— 选项因此不会自己乱跳
+    const optSeed = textSeed(
+      `${(currentQuizWord as any).id}|${currentQuizWord.word_greek}|${quizIndex}`);
     if (currentQuizWord.isExam) {
-      return [...(currentQuizWord as any).options].sort(() => Math.random() - 0.5);
+      return seededShuffle([...(currentQuizWord as any).options], optSeed);
     }
     const correct = currentQuizWord.word_chinese;
     const targetIsProper = isGreekProperNoun(currentQuizWord.word_greek);
@@ -2703,10 +2762,9 @@ export default function StudentApp() {
     }
 
     const distractors = candidates.map(w => w.word_chinese);
-    const uniqueDistractors = Array.from(new Set(distractors))
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
-    return [correct, ...uniqueDistractors].sort(() => Math.random() - 0.5);
+    const uniqueDistractors = seededShuffle(
+      Array.from(new Set(distractors)), optSeed + 7).slice(0, 3);
+    return seededShuffle([correct, ...uniqueDistractors], optSeed);
   }, [quizIndex, currentQuizWord, allVocab]);
 
   const handleSelectOption = (opt: string) => {
@@ -2737,6 +2795,7 @@ export default function StudentApp() {
   };
 
   const nextQuiz = () => {
+    bumpModuleStep('quiz');
     if (quizIndex < quizPool.length - 1) {
       setQuizIndex(prev => prev + 1);
       setSelectedOption(null);
@@ -2745,7 +2804,7 @@ export default function StudentApp() {
       setWrongOptionsSelected([]);
       setShowTip(false);
     } else {
-      handleGameComplete(quizScore);
+      handleGameComplete(quizScore, quizPool.length);
     }
   };
 
@@ -2858,13 +2917,14 @@ export default function StudentApp() {
   };
 
   const nextTf = () => {
+    bumpModuleStep('truefalse');
     if (tfIndex < tfPool.length - 1) {
       setTfIndex(prev => prev + 1);
       setUserTfChoice(null);
       setTfChecked(false);
       setShowTip(false);
     } else {
-      handleGameComplete(tfScore);
+      handleGameComplete(tfScore, tfPool.length);
     }
   };
 
@@ -2920,6 +2980,7 @@ export default function StudentApp() {
   };
 
   const handleNextTransGrZh = () => {
+    bumpModuleStep('translation_gr_zh');
     if (transGrZhIndex < translationGrZhPool.length - 1) {
       setTransGrZhIndex(prev => prev + 1);
       setUserTransGrZhInput('');
@@ -2928,7 +2989,7 @@ export default function StudentApp() {
       setTransGrZhMistakes(0);
       setShowTip(false);
     } else {
-      handleGameComplete(transGrZhScore);
+      handleGameComplete(transGrZhScore, translationGrZhPool.length);
     }
   };
 
@@ -3022,6 +3083,7 @@ export default function StudentApp() {
   };
 
   const handleNextTransZhGr = () => {
+    bumpModuleStep('translation_zh_gr');
     if (transZhGrIndex < translationZhGrPool.length - 1) {
       setTransZhGrIndex(prev => prev + 1);
       setUserTransZhGrInput('');
@@ -3030,7 +3092,7 @@ export default function StudentApp() {
       setTransZhGrMistakes(0);
       setShowTip(false);
     } else {
-      handleGameComplete(transZhGrScore);
+      handleGameComplete(transZhGrScore, translationZhGrPool.length);
     }
   };
 
@@ -3159,6 +3221,7 @@ export default function StudentApp() {
   };
 
   const handleNextGlossary = () => {
+    bumpModuleStep('glossary_review');
     if (glossaryIndex < glossaryReviewPool.length - 1) {
       setGlossaryIndex(prev => prev + 1);
       setUserGlossaryInput('');
@@ -3169,18 +3232,19 @@ export default function StudentApp() {
       setGlossaryMistakes(0);
       setShowGlossaryTip(false);
     } else {
-      handleGameComplete(glossaryScore);
+      handleGameComplete(glossaryScore, glossaryReviewPool.length);
     }
   };
 
   const handleSkipMatching = () => {
+    bumpModuleStep('matching');
     if (matchingRound < 7) {
       setMatchingRound(prev => prev + 1);
       setSelectedGreekId(null);
       setSelectedChineseId(null);
       setMatchErrors({});
     } else {
-      handleGameComplete(40);
+      handleGameComplete(40, matchingPool.length);
       setActiveModule('dashboard');
     }
   };
@@ -3206,6 +3270,7 @@ export default function StudentApp() {
   };
 
   const handleSkipGrammarDrill = () => {
+    bumpModuleStep('grammar_drill');
     if (grammarDrillIndex + 1 < grammarDrillPool.length) {
       setGrammarDrillIndex(prev => prev + 1);
       setSelectedGrammarOption(null);
@@ -3214,7 +3279,7 @@ export default function StudentApp() {
       setIsGrammarCorrect(false);
       setShowGrammarTip(false);
     } else {
-      handleGameComplete(grammarDrillScore * 15);
+      handleGameComplete(grammarDrillScore * 15, grammarDrillPool.length);
       setActiveModule('dashboard');
     }
   };
@@ -3323,8 +3388,57 @@ export default function StudentApp() {
     }
   };
 
-  const handleGameComplete = (earnedPoints: number) => {
+  /**
+   * 打卡闸门。
+   *
+   * 每个模块都是「index 走到题池最后一道」就调用 handleGameComplete。
+   * 万一题池是空的或者只有一两道(词不够、筛重把题删光、数据没加载完),
+   * 学生一进来点一下就直接「完成」, 首页立刻打上绿勾 —— 事实上一道题没做。
+   * 这里记下本次进入模块后真正走过几道题, 没走够就只回主页、不打卡。
+   */
+  const moduleStepsRef = React.useRef<{ mod: string; steps: number }>({ mod: '', steps: 0 });
+  const bumpModuleStep = (mod: string) => {
+    if (moduleStepsRef.current.mod !== mod) moduleStepsRef.current = { mod, steps: 0 };
+    moduleStepsRef.current.steps += 1;
+  };
+
+  /**
+   * 清掉今天的打卡记录。
+   *
+   * 打卡是存在云端的一个标记, 一旦因为任何原因被误打上, 首页九张卡片就一直
+   * 挂着绿勾, 学生和家长都没有办法自己弄掉。这里给一个出口:
+   * 只清今天这一天的记录和今天的 10 分大奖标记, 不动历史、不动积分总数。
+   */
+  const handleResetTodayCheckins = () => {
     const dateStr = getGreeceDateString();
+    if (!window.confirm(`确定要清除 ${dateStr} 的全部打卡记录吗？\n（只清今天，历史记录和总积分都不动。清完可以重新做。）`)) return;
+    let completed: any = {};
+    let rewards: any = {};
+    try { completed = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}'); } catch (e) {}
+    try { rewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}'); } catch (e) {}
+    delete completed[dateStr];
+    delete rewards[dateStr];
+    setCompletedModulesForDate([]);
+    moduleStepsRef.current = { mod: '', steps: 0 };
+    saveSharedState({ completed_date_modules: completed, daily_rewards_awarded: rewards });
+  };
+
+  /**
+   * @param poolSize 这个模块今天一共几道题。题池是空的、或者学生实际走过的题数
+   *                 远少于题池, 就说明这次「完成」不是真做完的, 不给打卡。
+   *                 题池本来就只有两三道的日子照样能打卡, 不会误伤。
+   */
+  const handleGameComplete = (earnedPoints: number, poolSize?: number) => {
+    const dateStr = getGreeceDateString();
+    const walked = moduleStepsRef.current.mod === activeModule ? moduleStepsRef.current.steps : 0;
+    const need = poolSize === undefined ? 1 : Math.min(poolSize, 5);
+    if (poolSize === 0 || walked < need) {
+      alert('这个模块今天没有题可做（或者还没真正做起来），先不给你算打卡，等有题了再来。');
+      moduleStepsRef.current = { mod: '', steps: 0 };
+      setActiveModule('dashboard');
+      return;
+    }
+    moduleStepsRef.current = { mod: '', steps: 0 };
     const currentCompleted = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}');
     const completedForToday = currentCompleted[dateStr] || [];
     
@@ -4195,6 +4309,20 @@ export default function StudentApp() {
                       <span style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
                         {isAllDone ? '已达成今日 +10 XP 积分大奖！' : '做完八项即可获得今日 10 分大奖'}
                       </span>
+                      {doneCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleResetTodayCheckins}
+                          style={{
+                            marginTop: '3px', padding: 0, border: 'none', background: 'none',
+                            color: '#FF9500', fontSize: '11px', fontWeight: 700,
+                            cursor: 'pointer', textAlign: 'left', textDecoration: 'underline'
+                          }}
+                          title="今天其实没做，却被打上了勾？点这里清掉今天的打卡重来"
+                        >
+                          其实还没做？清除今日打卡
+                        </button>
+                      )}
                     </div>
                     {/* Mini Progress Bar */}
                     <div style={{
@@ -5867,7 +5995,7 @@ export default function StudentApp() {
                 </h3>
                 {(currentTransZhGr as any).isGrammar && (currentTransZhGr as any).hintZh && (
                   <div style={{ fontSize: '14px', color: '#86868B', fontWeight: 600, marginTop: '10px' }}>
-                    中文：{(currentTransZhGr as any).hintZh}
+                    考点：{(currentTransZhGr as any).hintZh}
                   </div>
                 )}
               </div>
@@ -6873,8 +7001,11 @@ export default function StudentApp() {
                 }}>
                   {currentGrammarDrill.question}
                 </div>
+                {/* 这一行装的是「考点名 · 课本页码」, 从前写成「中文：」,
+                    学生以为是这句话的意思, 结果什么信息也没得到。句子的中文意思
+                    在题面里(题面第二行的括号), 没有中文的那批题已在题库里补齐。 */}
                 <div style={{ fontSize: '14.5px', color: '#86868B', fontWeight: 550 }}>
-                  中文：{currentGrammarDrill.translation}
+                  考点：{currentGrammarDrill.translation}
                 </div>
               </div>
 
@@ -7160,6 +7291,7 @@ export default function StudentApp() {
                 ) : (
                   <button
                     onClick={() => {
+                      bumpModuleStep('grammar_drill');
                       if (grammarDrillIndex + 1 < grammarDrillPool.length) {
                         setGrammarDrillIndex(prev => prev + 1);
                         setSelectedGrammarOption(null);
@@ -7168,7 +7300,7 @@ export default function StudentApp() {
                         setIsGrammarCorrect(false);
                         setShowGrammarTip(false);
                       } else {
-                        handleGameComplete(grammarDrillScore * 15);
+                        handleGameComplete(grammarDrillScore * 15, grammarDrillPool.length);
                         setActiveModule('dashboard');
                       }
                     }}

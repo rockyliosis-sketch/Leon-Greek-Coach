@@ -131,6 +131,13 @@ export const subscribeToSharedState = (
   onUpdate(localCache);
   if (onStatusChange) onStatusChange('connecting');
 
+  // 上一次真正推给页面的内容指纹。
+  // Firestore 每写一次就会回声一次快照(本地待写 + 服务端确认各一次),
+  // 从前每回声一次就 onUpdate 一次全新对象, 页面所有 useMemo 全部重算 ——
+  // 于是选择题的选项当场重新洗牌、拼字模块把已经敲进去的字母清空。
+  // 内容没变就不再往上推, 这些「自己写自己触发」的重算全部消失。
+  let lastSignature = '';
+
   return onSnapshot(
     docRef,
     (snapshot) => {
@@ -150,7 +157,7 @@ export const subscribeToSharedState = (
           localStorage.setItem("leon_user_feedback", JSON.stringify(data.user_feedback || []));
         } catch (e) {}
         
-        onUpdate({
+        const next: SharedState = {
           unit_study_dates: data.unit_study_dates || {},
           page_progress: data.page_progress || [],
           disabled_words: data.disabled_words || [],
@@ -161,7 +168,15 @@ export const subscribeToSharedState = (
           daily_rewards_awarded: data.daily_rewards_awarded || {},
           alternative_translations: data.alternative_translations || {},
           user_feedback: data.user_feedback || [],
-        });
+        };
+
+        // 内容一模一样就不往上推(见上面 lastSignature 的说明)
+        let signature = '';
+        try { signature = JSON.stringify(next); } catch (e) { signature = ''; }
+        if (!signature || signature !== lastSignature) {
+          lastSignature = signature;
+          onUpdate(next);
+        }
 
         if (onStatusChange) {
           onStatusChange(snapshot.metadata.fromCache ? 'connected-cache' : 'connected-server');
