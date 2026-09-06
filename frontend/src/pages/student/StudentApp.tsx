@@ -1704,6 +1704,11 @@ export default function StudentApp() {
   const [selectedGreekId, setSelectedGreekId] = useState<number | null>(null);
   const [selectedChineseId, setSelectedChineseId] = useState<number | null>(null);
   const [matchingPool, setMatchingPool] = useState<Word[]>([]);
+  /**
+   * 补做模式下「屏幕上这是第几组」对应「原本是第几组」的对照表。
+   * 补做时组号从 0 重新数, 没有这张表就会拿新组号去销账, 销错人。
+   */
+  const [matchingRoundMap, setMatchingRoundMap] = useState<number[] | null>(null);
   const [matchingGreek, setMatchingGreek] = useState<Word[]>([]);
   const [matchingChinese, setMatchingChinese] = useState<Word[]>([]);
   const [wrongMatch, setWrongMatch] = useState(false);
@@ -1719,6 +1724,159 @@ export default function StudentApp() {
   
   const [transZhGrMistakes, setTransZhGrMistakes] = useState(0);
   const [transZhGrWrongAttempt, setTransZhGrWrongAttempt] = useState(false);
+
+  /* ============================================================
+   * 「提示要熬出来，答案要更熬」—— 分级解锁 (v2.6.0)
+   *
+   * 家长要求: 不许一进题就点提示。必须
+   *   1) 在这道题上**真的答错够次数**, 而且
+   *   2) 在这道题上**待够 10 秒**,
+   * 才给看提示; 看完提示之后, 还要再错够次数、再等 10 秒, 才给看答案。
+   *
+   * 第 2 条是专门防「乱敲几个错答案骗提示」的 —— 错得再快也绕不过秒表。
+   * ============================================================ */
+  /** 看提示前, 这道题至少要待满多少毫秒 */
+  const HINT_MIN_MS = 10000;
+  /** 看完提示之后, 再等多少毫秒才给看答案 */
+  const ANSWER_MIN_MS = 10000;
+  /** 自己打字的开放题(拼写/两种翻译/单词表): 要错满几次 */
+  const OPEN_TRY_NEED = 5;
+
+  /** 本题是什么时候出现在屏幕上的 —— 题号一变就重置(见下面那个统一 effect) */
+  const [qStartAt, setQStartAt] = useState<number>(() => Date.now());
+  /** 本题的提示是什么时候点开的; null = 还没看过提示 */
+  const [hintOpenedAt, setHintOpenedAt] = useState<number | null>(null);
+  /** 点开提示那一刻已经错了几次 —— 用来算「看完提示之后又错了几次」 */
+  const [mistakesAtHint, setMistakesAtHint] = useState(0);
+  /** 每半秒跳一下, 好让按钮上的倒计时真的在走 */
+  const [gateTick, setGateTick] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    if (activeModule === 'dashboard') return;
+    const t = setInterval(() => setGateTick(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [activeModule]);
+
+  // 一回首页就撤掉补做快照: 否则首页统计的「今天一共多少题」会跟着补做子集缩水。
+  // 快照在下次 startModule 时按当时的欠账重新算, 不会丢。
+  useEffect(() => {
+    if (activeModule === 'dashboard') setMakeupSnapshot(null);
+  }, [activeModule]);
+
+  /**
+   * 「看提示」放不放行。
+   * @param wrongTries 本题已经答错几次
+   * @param need       这类题要错几次才够: 开放输入题 5 次;
+   *                   选项题 = 选项数 - 1(把错的选项都试一遍);
+   *                   只能提交一次的题(判断题/语法题)传 0, 只剩时间这一道锁。
+   */
+  const hintGate = (wrongTries: number, need: number) => {
+    const secLeft = Math.max(0, Math.ceil((HINT_MIN_MS - (gateTick - qStartAt)) / 1000));
+    const tryLeft = Math.max(0, need - wrongTries);
+    return { unlocked: tryLeft === 0 && secLeft === 0, secLeft, tryLeft };
+  };
+
+  /**
+   * 「看答案」放不放行 —— 比提示还严一层:
+   * 必须先看过提示, 看完之后再错够次数, 并且从点开提示那一刻起再等满 10 秒。
+   * @param wrongTries 本题到现在一共错了几次(函数内部会自己减掉看提示前的那些)
+   */
+  const answerGate = (wrongTries: number, need: number) => {
+    if (hintOpenedAt === null) {
+      return { unlocked: false, secLeft: Math.ceil(ANSWER_MIN_MS / 1000), tryLeft: need, noHint: true };
+    }
+    const secLeft = Math.max(0, Math.ceil((ANSWER_MIN_MS - (gateTick - hintOpenedAt)) / 1000));
+    const tryLeft = Math.max(0, need - Math.max(0, wrongTries - mistakesAtHint));
+    return { unlocked: tryLeft === 0 && secLeft === 0, secLeft, tryLeft, noHint: false };
+  };
+
+  /** 锁着的时候按钮上写什么 —— 把「还差几次、还差几秒」明明白白摆出来 */
+  const gateLabel = (g: { tryLeft: number; secLeft: number }, what: string) => {
+    if (g.tryLeft > 0 && g.secLeft > 0) return `🔒 再试 ${g.tryLeft} 次 · 还要 ${g.secLeft} 秒`;
+    if (g.tryLeft > 0) return `🔒 再试 ${g.tryLeft} 次才能看${what}`;
+    return `🔒 还要 ${g.secLeft} 秒才能看${what}`;
+  };
+
+  /** 点开提示: 记下时刻和当时的错误数, 后面「看答案」按这个起算 */
+  const openHint = (currentMistakes: number, setter: (v: boolean) => void) => {
+    setHintOpenedAt(Date.now());
+    setMistakesAtHint(currentMistakes);
+    setter(true);
+  };
+
+  /* ============================================================
+   * 今日欠账: 点了「跳过此题」的题, 记在账上。
+   *
+   * 欠账没销完, 这个模块首页就不给绿勾, 只挂一个红点 + 还欠几道的数字。
+   * 账本按希腊日期存云端(skipped_date_modules), 刷新/换设备都还在。
+   * ============================================================ */
+  const [skippedForDate, setSkippedForDate] = useState<Record<string, string[]>>({});
+  /**
+   * 账本的同步副本。
+   * 走到最后一题时「销账」和「结算打卡」几乎同一瞬间发生, 只读 state 会读到上一拍的
+   * 旧账本 —— 明明刚把最后一道补完, 却还判他欠着、不给绿勾。ref 是同步的, 不会错拍。
+   */
+  const skippedRef = React.useRef<Record<string, string[]>>({});
+
+  const writeSkipped = (next: Record<string, string[]>) => {
+    const dateStr = getGreeceDateString();
+    let all: any = {};
+    try { all = JSON.parse(localStorage.getItem('leon_skipped_date_modules') || '{}'); } catch (e) {}
+    all[dateStr] = next;
+    skippedRef.current = next;
+    setSkippedForDate(next);
+    saveSharedState({ skipped_date_modules: all });
+  };
+
+  /** 记一笔: 这道题他跳过了, 欠着 */
+  const markSkipped = (mod: string, qid: string | number | null | undefined) => {
+    if (qid === null || qid === undefined || qid === '') return;
+    const key = String(qid);
+    const cur = skippedRef.current[mod] || [];
+    if (cur.includes(key)) return;
+    writeSkipped({ ...skippedRef.current, [mod]: [...cur, key] });
+  };
+
+  /** 销一笔: 这道题他补做了 */
+  const clearSkipped = (mod: string, qid: string | number | null | undefined) => {
+    if (qid === null || qid === undefined || qid === '') return;
+    const key = String(qid);
+    const cur = skippedRef.current[mod] || [];
+    if (!cur.includes(key)) return;
+    const rest = cur.filter(x => x !== key);
+    const next = { ...skippedRef.current };
+    if (rest.length === 0) delete next[mod]; else next[mod] = rest;
+    writeSkipped(next);
+  };
+
+  const skippedCount = (mod: string) => (skippedForDate[mod] || []).length;
+
+  /**
+   * 一道题翻篇了。
+   * 正常做完 -> 销账(哪怕答错, 只要他做了就算数);
+   * 点了「跳过此题」-> 记账, 这个模块今天就欠着, 首页不给绿勾。
+   */
+  const noteQuestionDone = (mod: string, qid: any, skipped?: boolean) => {
+    if (skipped) markSkipped(mod, qid);
+    else clearSkipped(mod, qid);
+  };
+
+  /**
+   * 补做模式的快照。
+   *
+   * 进模块那一刻把「今天欠哪几道」冻结下来, 这一趟就**只发这几道题**。
+   * 之所以要冻结: 补一道就销一笔账, 账本会边做边变短 —— 直接拿账本当题池,
+   * 题池会在做题过程中自己缩水, 当前题号立刻越界, 学生会莫名其妙被弹出去。
+   */
+  const [makeupSnapshot, setMakeupSnapshot] = useState<{ mod: string; ids: string[] } | null>(null);
+  const isMakeup = (mod: string) => !!makeupSnapshot && makeupSnapshot.mod === mod && makeupSnapshot.ids.length > 0;
+  const applyMakeup = <T,>(mod: string, pool: T[], idOf: (x: T) => string): T[] => {
+    if (!isMakeup(mod)) return pool;
+    const want = new Set(makeupSnapshot!.ids);
+    const sub = pool.filter(x => want.has(idOf(x)));
+    return sub.length > 0 ? sub : pool;
+  };
+
   const [showTip, setShowTip] = useState(false);
   /**
    * 「看答案」是提示之外单独的一层。
@@ -1821,6 +1979,9 @@ export default function StudentApp() {
         const dateStr = getGreeceDateString();
         const currentCompleted = state.completed_date_modules || {};
         setCompletedModulesForDate(currentCompleted[dateStr] || []);
+        const currentSkipped = state.skipped_date_modules || {};
+        skippedRef.current = currentSkipped[dateStr] || {};
+        setSkippedForDate(currentSkipped[dateStr] || {});
       },
       (status) => {
         setDbStatus(status);
@@ -2150,8 +2311,15 @@ export default function StudentApp() {
     hintText: string,
     answerText: string,
     revealed: boolean,
-    onReveal: () => void
-  ) => (
+    onReveal: () => void,
+    /**
+     * 答案的第二道闸门(不传就是不设限, 给「已经提交过」的题用)。
+     * 传进来的话: 看完提示还得再错够次数、再等满 10 秒, 才点得开。
+     */
+    gate?: { unlocked: boolean; secLeft: number; tryLeft: number }
+  ) => {
+    const locked = !!gate && !gate.unlocked;
+    return (
     <>
       <div style={{ fontSize: '13px', color: '#1D1D1F', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
         {hintText}
@@ -2159,15 +2327,19 @@ export default function StudentApp() {
       {!revealed ? (
         <button
           type="button"
-          onClick={onReveal}
+          onClick={() => { if (!locked) onReveal(); }}
+          disabled={locked}
           className="btn-premium"
           style={{
             marginTop: '12px', width: 'auto', padding: '8px 14px', fontSize: '13px', fontWeight: 700,
-            border: '1px dashed #D4380D', background: '#FFFFFF', color: '#D4380D'
+            border: `1px dashed ${locked ? '#D2D2D7' : '#D4380D'}`,
+            background: locked ? '#F5F5F7' : '#FFFFFF',
+            color: locked ? '#AEAEB2' : '#D4380D',
+            cursor: locked ? 'not-allowed' : 'pointer'
           }}
-          title="看完提示还是想不出来，才点这里"
+          title={locked ? '答案要再熬一会儿：提示看完还得再试几次、再等几秒' : '看完提示还是想不出来，才点这里'}
         >
-          🔑 还是不会？查看答案
+          {locked ? gateLabel(gate!, '答案') : '🔑 还是不会？查看答案'}
         </button>
       ) : (
         <div style={{
@@ -2183,7 +2355,8 @@ export default function StudentApp() {
         </div>
       )}
     </>
-  );
+    );
+  };
 
   // Compute Ebbinghaus counts per interval dynamically for visualization
   const ebbinghausStats = useMemo(() => {
@@ -2330,7 +2503,10 @@ export default function StudentApp() {
    * 进入下一组 (最后一组则收尾)。
    * 自动推进和「跳过本组」都走这一个出口, 免得两边各写各的、其中一边漏了发牌。
    */
-  const goToNextMatchingRound = () => {
+  const goToNextMatchingRound = (opt?: { skipped?: boolean }) => {
+    // 连连看没有「单题」, 一组就是一笔账。跳过本组 = 欠一组, 全连完 = 销一组。
+    const realRound = matchingRoundMap ? (matchingRoundMap[matchingRound] ?? matchingRound) : matchingRound;
+    noteQuestionDone('matching', `r${realRound}`, opt?.skipped);
     if (matchingRound + 1 < matchingTotalRounds) {
       const next = matchingRound + 1;
       setMatchingRound(next);
@@ -2535,8 +2711,8 @@ export default function StudentApp() {
     }));
 
     const combined = [...examItems, ...spellingItems];
-    return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
+    return applyMakeup('spelling', filterDuplicateTranslations(combined).slice(0, 40), (x: any) => String(x.id));
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
@@ -2596,7 +2772,6 @@ export default function StudentApp() {
         setSpellingWrongFlash(true);
         setSpellingMistakes(prev => {
           const next = prev + 1;
-          if (next >= 2) setShowTip(true);
           return next;
         });
         setTimeout(() => setSpellingWrongFlash(false), 500);
@@ -2645,9 +2820,13 @@ export default function StudentApp() {
   }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState, disabledDrillSet]);
 
   // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
-  const grammarDrillPool = useMemo(
+  const grammarDrillPoolAll = useMemo(
     () => grammarOrderedForDay.slice(0, DRILLS_PER_DAY),
     [grammarOrderedForDay]);
+  /** 学生这一趟真正要做的语法题(补做模式下只剩欠的那几道) */
+  const grammarDrillPool = useMemo(
+    () => applyMakeup('grammar_drill', grammarDrillPoolAll, (x: any) => String(x.id)),
+    [grammarDrillPoolAll, makeupSnapshot]);
 
   /**
    * 语法特训模块每天只吃前 30 道, 后面那一大截原来是白排的。
@@ -2656,8 +2835,8 @@ export default function StudentApp() {
    * 同一道题的选择版和填空版题面相同(题库里是成对生成的), 按题面去重, 免得同一句出两遍。
    */
   const grammarSpillover = useMemo(() => {
-    const usedId = new Set<number>(grammarDrillPool.map((d: any) => d.id));
-    const seen = new Set<string>(grammarDrillPool.map((d: any) => grammarNormKey(d.question)));
+    const usedId = new Set<number>(grammarDrillPoolAll.map((d: any) => d.id));
+    const seen = new Set<string>(grammarDrillPoolAll.map((d: any) => grammarNormKey(d.question)));
     const choice: any[] = [];
     const cloze: any[] = [];
     for (const d of grammarOrderedForDay) {
@@ -2677,7 +2856,7 @@ export default function StudentApp() {
       seen.add(key);
     }
     return { choice, cloze };
-  }, [grammarOrderedForDay, grammarDrillPool]);
+  }, [grammarOrderedForDay, grammarDrillPoolAll]);
 
   const isSentenceItem = (item: any) => {
     if (!item) return false;
@@ -2726,8 +2905,8 @@ export default function StudentApp() {
     });
 
     const combined = [...examItems, ...transItems];
-    return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
+    return applyMakeup('translation_gr_zh', filterDuplicateTranslations(combined).slice(0, 20), (x: any) => String(x.id));
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
   const translationZhGrPool = useMemo(() => {
     const pool = modulePartition.zhgr || [];
@@ -2786,8 +2965,8 @@ export default function StudentApp() {
     }));
 
     const combined = [...examItems, ...grammarItems, ...transItems];
-    return filterDuplicateTranslations(combined).slice(0, 20);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, grammarSpillover]);
+    return applyMakeup('translation_zh_gr', filterDuplicateTranslations(combined).slice(0, 20), (x: any) => String(x.id));
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, grammarSpillover, makeupSnapshot]);
 
   // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
   const glossaryReviewPool = useMemo(() => {
@@ -2796,7 +2975,8 @@ export default function StudentApp() {
     const marked = gKeys.filter(g => getBookFrontier(pageMarksState, g) > 0);
     if (marked.length === 0) {
       const masterList: any[] = (staticVocabData as any).master_glossary || [];
-      return masterList.filter((w: any) => w.scheduled_date === selectedDateStr).slice(0, 40);
+      return applyMakeup('glossary_review',
+        masterList.filter((w: any) => w.scheduled_date === selectedDateStr).slice(0, 40), (x: any) => String(x.id));
     }
 
     const out: any[] = [];
@@ -2814,7 +2994,7 @@ export default function StudentApp() {
     const parts = selectedDateStr.split('-');
     const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
     const due = (w: any) => isWordDueToday(w.id, selectedDateStr, { [w.id]: w.activated_on });
-    return out
+    const ranked = out
       .sort((a, b) => {
         const da = due(a) ? 0 : 1, db = due(b) ? 0 : 1;
         if (da !== db) return da - db;
@@ -2822,7 +3002,8 @@ export default function StudentApp() {
       })
       .slice(0, 40)
       .map((w: any) => ({ ...w, status: due(w) ? 'upcoming' : 'mastered' }));
-  }, [pageMarksState, selectedDateStr]);
+    return applyMakeup('glossary_review', ranked, (x: any) => String(x.id));
+  }, [pageMarksState, selectedDateStr, makeupSnapshot]);
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
 
@@ -2908,7 +3089,6 @@ export default function StudentApp() {
       setSpellingWrongFlash(true);
       setSpellingMistakes(prev => {
         const next = prev + 1;
-        if (next >= 2) setShowTip(true);
         return next;
       });
       setTimeout(() => setSpellingWrongFlash(false), 500);
@@ -2920,7 +3100,8 @@ export default function StudentApp() {
     setSpellingCompleted(false);
   };
 
-  const nextSpelling = () => {
+  const nextSpelling = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('spelling', currentSpellingWord?.id, opt?.skipped);
     bumpModuleStep('spelling');
     if (spellingIndex < spellingPool.length - 1) {
       setSpellingIndex(prev => prev + 1);
@@ -3002,8 +3183,8 @@ export default function StudentApp() {
     }));
 
     const combined = [...examItems, ...clozeItems, ...grammarItems, ...quizItems];
-    return filterDuplicateTranslations(combined).slice(0, 30);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool, grammarSpillover]);
+    return applyMakeup('quiz', filterDuplicateTranslations(combined).slice(0, 30), (x: any) => String(x.id));
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool, grammarSpillover, makeupSnapshot]);
 
   const currentQuizWord = quizPool[quizIndex] || null;
   const quizOptions = useMemo(() => {
@@ -3079,7 +3260,7 @@ export default function StudentApp() {
    * 一进题就能点开, 等于抄。规则改成: **本题至少认真试过一次**才给看
    * (填了字 / 选了选项 / 已提交都算)。真不会也永远不会卡死 —— 旁边一直有「跳过此题」。
    */
-  const hintLockedNote = '先自己试一次，再看提示';
+  // (旧的 hintLockedNote 已废弃: 从「试过一次就给看」升级成 hintGate —— 错够次数 + 待够 10 秒)
 
   const handleSelectOption = (opt: string) => {
     if (answerChecked) return;
@@ -3091,7 +3272,6 @@ export default function StudentApp() {
         setWrongOptionsSelected(prev => [...prev, opt]);
         setQuizMistakes(prev => {
           const next = prev + 1;
-          if (next >= 2) setShowTip(true);
           return next;
         });
       }
@@ -3108,7 +3288,8 @@ export default function StudentApp() {
       currentQuizWord?.word_greek || '', quizMistakes === 0, showTip || showAnswer);
   };
 
-  const nextQuiz = () => {
+  const nextQuiz = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('quiz', currentQuizWord?.id, opt?.skipped);
     bumpModuleStep('quiz');
     if (quizIndex < quizPool.length - 1) {
       setQuizIndex(prev => prev + 1);
@@ -3167,8 +3348,8 @@ export default function StudentApp() {
     }));
 
     const combined = [...examItems, ...tfItems];
-    return filterDuplicateTranslations(combined).slice(0, 40);
-  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr]);
+    return applyMakeup('truefalse', filterDuplicateTranslations(combined).slice(0, 40), (x: any) => String(x.id));
+  }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
 
   const currentGrammarDrill = grammarDrillPool[grammarDrillIndex] || null;
@@ -3230,7 +3411,8 @@ export default function StudentApp() {
     }
   };
 
-  const nextTf = () => {
+  const nextTf = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('truefalse', currentTfWord?.id, opt?.skipped);
     bumpModuleStep('truefalse');
     if (tfIndex < tfPool.length - 1) {
       setTfIndex(prev => prev + 1);
@@ -3270,6 +3452,12 @@ export default function StudentApp() {
     setShowGlossaryTip(false);
     setShowGrammarTip(false);
     setShowGrammarAnswer(false);
+    // 秒表也在这里归零: 新的一道题, 10 秒重新数起, 「看过提示」的记录也清掉。
+    // 挂在题号上而不是各模块的「下一题」函数里 —— 漏写一处就等于白锁。
+    setQStartAt(Date.now());
+    setHintOpenedAt(null);
+    setMistakesAtHint(0);
+    setGateTick(Date.now());
   }, [activeModule, spellingIndex, quizIndex, tfIndex,
       transGrZhIndex, transZhGrIndex, glossaryIndex, grammarDrillIndex]);
 
@@ -3304,13 +3492,13 @@ export default function StudentApp() {
       setTransGrZhWrongAttempt(true);
       setTransGrZhMistakes(prev => {
         const next = prev + 1;
-        if (next >= 2) setShowTip(true);
         return next;
       });
     }
   };
 
-  const handleNextTransGrZh = () => {
+  const handleNextTransGrZh = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('translation_gr_zh', currentTransGrZh?.id, opt?.skipped);
     bumpModuleStep('translation_gr_zh');
     if (transGrZhIndex < translationGrZhPool.length - 1) {
       setTransGrZhIndex(prev => prev + 1);
@@ -3414,13 +3602,13 @@ export default function StudentApp() {
       setTransZhGrWrongAttempt(true);
       setTransZhGrMistakes(prev => {
         const next = prev + 1;
-        if (next >= 2) setShowTip(true);
         return next;
       });
     }
   };
 
-  const handleNextTransZhGr = () => {
+  const handleNextTransZhGr = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('translation_zh_gr', currentTransZhGr?.id, opt?.skipped);
     bumpModuleStep('translation_zh_gr');
     if (transZhGrIndex < translationZhGrPool.length - 1) {
       setTransZhGrIndex(prev => prev + 1);
@@ -3523,7 +3711,6 @@ export default function StudentApp() {
       setGlossaryWrongAttempt(true);
       setGlossaryMistakes(prev => {
         const next = prev + 1;
-        if (next >= 2) setShowGlossaryTip(true);
         return next;
       });
     }
@@ -3540,7 +3727,7 @@ export default function StudentApp() {
   const handleSkipGlossary = () => {
     if (!currentGlossaryWord) return;
     setGlossarySkippedIds(prev => [...prev, String(currentGlossaryWord.id)]);
-    handleNextGlossary();
+    handleNextGlossary({ skipped: true });
   };
 
   const handleReportGlossaryProblem = async () => {
@@ -3558,7 +3745,8 @@ export default function StudentApp() {
     setGlossaryWrongAttempt(false);
   };
 
-  const handleNextGlossary = () => {
+  const handleNextGlossary = (opt?: { skipped?: boolean }) => {
+    noteQuestionDone('glossary_review', currentGlossaryWord?.id, opt?.skipped);
     bumpModuleStep('glossary_review');
     if (glossaryIndex < glossaryReviewPool.length - 1) {
       setGlossaryIndex(prev => prev + 1);
@@ -3576,33 +3764,34 @@ export default function StudentApp() {
 
   const handleSkipMatching = () => {
     bumpModuleStep('matching');
-    // 老版本这里只把组号 +1, 忘了重新发牌 —— 屏幕上还是上一组那五张牌,
-    // 连完之后全变灰, 点「跳过本组」也只是数字往上跳, 学生直接卡死在这一屏。
-    goToNextMatchingRound();
+    // 出口只有 goToNextMatchingRound 一个 —— 它负责重新发牌。
+    // 老版本这里只把组号 +1、忘了发牌, 屏幕上还是上一组的牌, 学生直接卡死在这一屏。
+    goToNextMatchingRound({ skipped: true });
   };
 
   const handleSkipSpelling = () => {
-    nextSpelling();
+    nextSpelling({ skipped: true });
   };
 
   const handleSkipQuiz = () => {
-    nextQuiz();
+    nextQuiz({ skipped: true });
   };
 
   const handleSkipTf = () => {
-    nextTf();
+    nextTf({ skipped: true });
   };
 
   const handleSkipTransGrZh = () => {
-    handleNextTransGrZh();
+    handleNextTransGrZh({ skipped: true });
   };
 
   const handleSkipTransZhGr = () => {
-    handleNextTransZhGr();
+    handleNextTransZhGr({ skipped: true });
   };
 
   const handleSkipGrammarDrill = () => {
     bumpModuleStep('grammar_drill');
+    noteQuestionDone('grammar_drill', currentGrammarDrill?.id, true);
     if (grammarDrillIndex + 1 < grammarDrillPool.length) {
       setGrammarDrillIndex(prev => prev + 1);
       setSelectedGrammarOption(null);
@@ -3628,6 +3817,11 @@ export default function StudentApp() {
 
   // Switch Module handler
   const startModule = (module: 'matching' | 'spelling' | 'quiz' | 'truefalse' | 'translation_gr_zh' | 'translation_zh_gr' | 'glossary_review' | 'grammar_drill') => {
+    /* 今天在这个模块里欠着题 -> 进补做模式: 这一趟**只发欠的那几道**,
+     * 学生一进来看到的就是刚才跳过的那题, 不用自己翻。做完账清空, 绿勾立刻到手。 */
+    const owedIds = skippedRef.current[module] || [];
+    setMakeupSnapshot(owedIds.length > 0 ? { mod: module, ids: [...owedIds] } : null);
+
     setActiveModule(module);
     setShowTip(false);
     
@@ -3661,8 +3855,27 @@ export default function StudentApp() {
 
       let combined = [...examItems, ...matchingItems];
       combined = filterDuplicateTranslations(combined).slice(0, 40);
-      setMatchingPool(combined);
-      setupMatchingRound(combined, 0);
+
+      const owedRounds = owedIds
+        .map(k => parseInt(String(k).replace(/^r/, ''), 10))
+        .filter(n => !isNaN(n) && n >= 0)
+        .sort((a, b) => a - b);
+      if (owedRounds.length > 0) {
+        const sub = owedRounds.flatMap(r => combined.slice(r * 5, r * 5 + 5));
+        if (sub.length > 0) {
+          setMatchingRoundMap(owedRounds);
+          setMatchingPool(sub);
+          setupMatchingRound(sub, 0);
+        } else {
+          setMatchingRoundMap(null);
+          setMatchingPool(combined);
+          setupMatchingRound(combined, 0);
+        }
+      } else {
+        setMatchingRoundMap(null);
+        setMatchingPool(combined);
+        setupMatchingRound(combined, 0);
+      }
     }
     else if (module === 'spelling') {
       setSpellingIndex(0);
@@ -3743,16 +3956,22 @@ export default function StudentApp() {
    */
   const handleResetTodayCheckins = () => {
     const dateStr = getGreeceDateString();
-    if (!window.confirm(`确定要清除 ${dateStr} 的全部打卡记录吗？\n（只清今天，历史记录和总积分都不动。清完可以重新做。）`)) return;
+    if (!window.confirm(`确定要清除 ${dateStr} 的全部打卡记录吗？\n（连同「跳过没做」的欠账一起清，红圈会消失。历史记录和总积分都不动，清完可以重新做。）`)) return;
     let completed: any = {};
     let rewards: any = {};
     try { completed = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}'); } catch (e) {}
     try { rewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}'); } catch (e) {}
     delete completed[dateStr];
     delete rewards[dateStr];
+    let skipped: any = {};
+    try { skipped = JSON.parse(localStorage.getItem('leon_skipped_date_modules') || '{}'); } catch (e) {}
+    delete skipped[dateStr];
+    skippedRef.current = {};
+    setSkippedForDate({});
+    setMakeupSnapshot(null);
     setCompletedModulesForDate([]);
     moduleStepsRef.current = { mod: '', steps: 0 };
-    saveSharedState({ completed_date_modules: completed, daily_rewards_awarded: rewards });
+    saveSharedState({ completed_date_modules: completed, daily_rewards_awarded: rewards, skipped_date_modules: skipped });
   };
 
   /**
@@ -3771,6 +3990,22 @@ export default function StudentApp() {
       return;
     }
     moduleStepsRef.current = { mod: '', steps: 0 };
+
+    /* 跳过的题不算做完。
+     * 走完一轮但账上还欠着几道 -> 这个模块今天不给绿勾, 首页改挂红点 + 还欠几道。
+     * (真题「写作与口语」不在八大核心里, 本来就不受这条管。) */
+    const owed = (skippedRef.current[activeModule] || []).length;
+    if (owed > 0) {
+      setMakeupSnapshot(null);
+      alert(
+        `这一轮走完了，但你跳过了 ${owed} 道没做。\n\n` +
+        `跳过的题不算做完，所以这个模块今天还不能打绿勾 —— 首页上它会挂一个红圈，里面写着还欠几道。\n\n` +
+        `再点进这个模块，会直接把这 ${owed} 道端到你面前；做完，红圈就变成绿对勾。`
+      );
+      setActiveModule('dashboard');
+      return;
+    }
+
     const currentCompleted = JSON.parse(localStorage.getItem('leon_completed_date_modules') || '{}');
     const completedForToday = currentCompleted[dateStr] || [];
     
@@ -3819,8 +4054,65 @@ export default function StudentApp() {
       saveSharedState(updates);
     }
 
+    setMakeupSnapshot(null);
     alert(`🎉 恭喜完成本模块练习！${pointsEarnedText}`);
     setActiveModule('dashboard');
+  };
+
+  /**
+   * 首页卡片右上角的状态圈。
+   *   欠着题(跳过没做)  -> 红圈, 里面是还欠几道, 点进去直接补;
+   *   干干净净做完      -> 绿对勾;
+   *   还没做            -> 什么都不显示。
+   * 红圈优先于绿勾 —— 打过勾之后又跳过了题, 也要退回红圈。
+   */
+  const renderModuleBadge = (mod: string) => {
+    const owed = skippedCount(mod);
+    if (owed > 0) {
+      return (
+        <div style={{
+          position: 'absolute',
+          top: '16px',
+          right: '16px',
+          background: '#FF3B30',
+          color: '#FFFFFF',
+          borderRadius: '50%',
+          width: '24px',
+          height: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(255,59,48,0.35)',
+          fontWeight: 'bold',
+          fontSize: '12px',
+          zIndex: 3
+        }} title={`还有 ${owed} 道跳过了没做。点「开始」会直接把这几道端出来，做完才变绿对勾。`}>
+          {owed}
+        </div>
+      );
+    }
+    if (!completedModulesForDate.includes(mod)) return null;
+    return (
+      <div style={{
+        position: 'absolute',
+        top: '16px',
+        right: '16px',
+        background: '#34C759',
+        color: '#FFFFFF',
+        borderRadius: '50%',
+        width: '24px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
+        fontWeight: 'bold',
+        fontSize: '12px',
+        zIndex: 3
+      }} title="今日已完成">
+        ✓
+      </div>
+    );
   };
 
   // --- Views ---
@@ -4641,6 +4933,10 @@ export default function StudentApp() {
                       <span style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
                         {isAllDone ? '已达成今日 +10 XP 积分大奖！' : '做完八项即可获得今日 10 分大奖'}
                       </span>
+                      {/* 跳过的题不算做完 —— 这条规矩要写在孩子看得见的地方, 否则红圈冒出来他不知道为什么 */}
+                      <span style={{ fontSize: '10.5px', color: '#FF9500', marginTop: '1px', fontWeight: 650 }}>
+                        🔴 红圈 = 有题跳过没做，补完才变绿勾（真题模块除外）
+                      </span>
                       {/* 打卡按希腊日历日清零。孩子在希腊、家长可能在中国或美国登录,
                           三边看到的必须是同一个「今天」—— 索性直接写出来, 不让人猜。 */}
                       <span style={{ fontSize: '10.5px', color: '#AEAEB2', marginTop: '1px' }}>
@@ -4686,27 +4982,7 @@ export default function StudentApp() {
             
             {/* Card Matching */}
             <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('matching') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('matching')}
               <img 
                 src="/hephaestus.png" 
                 alt="Hephaestus" 
@@ -4735,27 +5011,7 @@ export default function StudentApp() {
 
             {/* Spelling */}
             <div className="game-card border-green" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('spelling') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('spelling')}
               <img 
                 src="/athena.png" 
                 alt="Athena" 
@@ -4784,27 +5040,7 @@ export default function StudentApp() {
 
             {/* MCQ */}
             <div className="game-card border-orange" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('quiz') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('quiz')}
               <img 
                 src="/apollo.png" 
                 alt="Apollo" 
@@ -4833,27 +5069,7 @@ export default function StudentApp() {
 
             {/* True/False */}
             <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('truefalse') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('truefalse')}
               <img 
                 src="/ares.png" 
                 alt="Ares" 
@@ -4882,27 +5098,7 @@ export default function StudentApp() {
 
             {/* Greek to Chinese Translation */}
             <div className="game-card border-green" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('translation_gr_zh') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('translation_gr_zh')}
               <img 
                 src="/hermes.png" 
                 alt="Hermes" 
@@ -4931,27 +5127,7 @@ export default function StudentApp() {
 
             {/* Chinese to Greek Translation */}
             <div className="game-card border-orange" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('translation_zh_gr') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('translation_zh_gr')}
               <img 
                 src="/artemis.png" 
                 alt="Artemis" 
@@ -5045,27 +5221,7 @@ export default function StudentApp() {
 
             {/* 8. Glossary Knowledge Base Daily Review (单词表每日必做复习) */}
             <div className="game-card border-purple" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('glossary_review') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('glossary_review')}
               <img 
                 src="/athena.png" 
                 alt="Athena" 
@@ -5106,27 +5262,7 @@ export default function StudentApp() {
 
             {/* 9. Daily Grammar & Communicative Drills (v2.0 单元语法与情景特训) */}
             <div className="game-card border-blue" style={{ position: 'relative', paddingRight: '90px' }}>
-              {completedModulesForDate.includes('grammar_drill') && (
-                <div style={{
-                  position: 'absolute',
-                  top: '16px',
-                  right: '16px',
-                  background: '#34C759',
-                  color: '#FFFFFF',
-                  borderRadius: '50%',
-                  width: '24px',
-                  height: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(52,199,89,0.3)',
-                  fontWeight: 'bold',
-                  fontSize: '12px',
-                  zIndex: 3
-                }} title="今日已完成">
-                  ✓
-                </div>
-              )}
+              {renderModuleBadge('grammar_drill')}
               <img 
                 src="/poseidon.png" 
                 alt="Poseidon" 
@@ -5519,19 +5655,26 @@ export default function StudentApp() {
                   重置 / Επαναφορά
                 </button>
                   {(() => {
-                    const tried = spellInput.length > 0 || spellingMistakes > 0 || spellingCompleted;
+                    // 拼写是自己敲字母的开放题 -> 要错满 5 次, 还要在这道题上待够 10 秒
+                    const gate = hintGate(spellingMistakes, OPEN_TRY_NEED);
+                    const tried = gate.unlocked || spellingCompleted;
+                    const lockLabel = gateLabel(gate, '提示');
                     return (
                       <button
-                        onClick={() => tried && setShowTip(!showTip)}
+                        onClick={() => {
+                          if (!tried) return;
+                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          if (showTip) setShowTip(false); else openHint(spellingMistakes, setShowTip);
+                        }}
                         disabled={!tried}
                         className="btn-premium"
-                        title={tried ? '' : hintLockedNote}
+                        title={tried ? '' : lockLabel}
                         style={{ width: 'auto', padding: '10px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
                                  background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
                                  color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                  cursor: tried ? 'pointer' : 'not-allowed' }}
                       >
-                        {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
+                        {!tried ? lockLabel : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                       </button>
                     );
                   })()}
@@ -5563,12 +5706,12 @@ export default function StudentApp() {
                   onClick={handleSkipSpelling} 
                   className="btn-premium" 
                   style={{ width: 'auto', padding: '10px 18px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.12)', color: '#515154', fontWeight: 700 }}
-                  title="跳过当前拼写题，进入下一题"
+                  title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                 >
                   ⏭️ 跳过此题
                 </button>
                 {spellingCompleted && (
-                  <button data-primary-action onClick={nextSpelling} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '10px 24px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={() => nextSpelling()} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '10px 24px', fontWeight: 700 }}>
                     {spellingIndex === spellingPool.length - 1 ? '完成拼写 / Ολοκλήρωση' : '下一个 / Επόμενο →'}
                   </button>
                 )}
@@ -5582,7 +5725,8 @@ export default function StudentApp() {
                     getGuidingHint(currentSpellingWord, 'greek'),
                     getAnswerReveal(currentSpellingWord, 'greek'),
                     showAnswer || spellingCompleted,
-                    () => setShowAnswer(true)
+                    () => setShowAnswer(true),
+                    answerGate(spellingMistakes, OPEN_TRY_NEED)
                   )}
                   <button
                     onClick={() => handleReportFeedback(
@@ -5705,20 +5849,27 @@ export default function StudentApp() {
                   <>
                     {(() => {
                       // 选了任意一个选项(哪怕选错)就算试过, 才给看提示
-                      const tried = !!selectedOption || wrongOptionsSelected.length > 0 || quizMistakes > 0;
+                      // 选择题错不满 5 次(选项就那么几个) -> 改成「把错的选项都点一遍」+ 10 秒
+                      const gate = hintGate(quizMistakes, Math.max(1, quizOptions.length - 1));
+                      const tried = gate.unlocked || answerChecked;
+                      const lockLabel = gateLabel(gate, '提示');
                       return (
                         <button
-                          onClick={() => tried && setShowTip(!showTip)}
+                          onClick={() => {
+                          if (!tried) return;
+                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          if (showTip) setShowTip(false); else openHint(quizMistakes, setShowTip);
+                        }}
                           disabled={!tried}
                           className="btn-premium"
-                          title={tried ? '' : hintLockedNote}
+                          title={tried ? '' : lockLabel}
                           style={{ width: 'auto', padding: '12px 18px',
                                    border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
                                    background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
+                          {!tried ? lockLabel : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -5750,7 +5901,7 @@ export default function StudentApp() {
                       onClick={handleSkipQuiz} 
                       className="btn-premium" 
                       style={{ width: 'auto', padding: '12px 18px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.12)', color: '#515154', fontWeight: 700 }}
-                      title="跳过当前选择题，直接进入下一题"
+                      title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                     >
                       ⏭️ 跳过此题
                     </button>
@@ -5765,7 +5916,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button data-primary-action onClick={nextQuiz} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 40px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={() => nextQuiz()} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 40px', fontWeight: 700 }}>
                     {quizIndex === quizPool.length - 1 ? '完成测试 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -5779,7 +5930,8 @@ export default function StudentApp() {
                     getGuidingHint(currentQuizWord, 'chinese'),
                     getAnswerReveal(currentQuizWord, 'chinese'),
                     showAnswer || answerChecked,
-                    () => setShowAnswer(true)
+                    () => setShowAnswer(true),
+                    answerGate(quizMistakes, 0)
                   )}
                   <button
                     onClick={() => handleReportFeedback(
@@ -6001,19 +6153,26 @@ export default function StudentApp() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginTop: '8px' }}>
                     {(() => {
-                      const tried = tfChecked || userTfChoice !== null;
+                      // 判断题只能提交一次, 没有「再试一次」可言 -> 只剩 10 秒这一道锁
+                      const gate = hintGate(0, 0);
+                      const tried = gate.unlocked || tfChecked;
+                      const lockLabel = gateLabel(gate, '提示');
                       return (
                         <button
-                          onClick={() => tried && setShowTip(!showTip)}
+                          onClick={() => {
+                          if (!tried) return;
+                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          if (showTip) setShowTip(false); else openHint(0, setShowTip);
+                        }}
                           disabled={!tried}
                           className="btn-premium"
-                          title={tried ? '' : hintLockedNote}
+                          title={tried ? '' : lockLabel}
                           style={{ width: 'auto', padding: '10px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
                                    background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
+                          {!tried ? lockLabel : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -6045,7 +6204,7 @@ export default function StudentApp() {
                       onClick={handleSkipTf} 
                       className="btn-premium" 
                       style={{ width: 'auto', padding: '10px 18px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.12)', color: '#515154', fontWeight: 700 }}
-                      title="跳过当前判断题，直接进入下一题"
+                      title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                     >
                       ⏭️ 跳过此题
                     </button>
@@ -6092,7 +6251,7 @@ export default function StudentApp() {
                     </div>
                   </div>
 
-                  <button data-primary-action onClick={nextTf} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', margin: '0 auto', fontWeight: 700 }}>
+                  <button data-primary-action onClick={() => nextTf()} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', margin: '0 auto', fontWeight: 700 }}>
                     {tfIndex === tfPool.length - 1 ? '完成测试 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 </div>
@@ -6106,7 +6265,8 @@ export default function StudentApp() {
                     getGuidingHint(currentTfWord, 'judge'),
                     getAnswerReveal(currentTfWord, 'judge'),
                     showAnswer || tfChecked,
-                    () => setShowAnswer(true)
+                    () => setShowAnswer(true),
+                    answerGate(0, 0)
                   )}
                   <button
                     onClick={() => handleReportFeedback(
@@ -6259,19 +6419,25 @@ export default function StudentApp() {
                 {!transGrZhChecked ? (
                   <>
                     {(() => {
-                      const tried = userTransGrZhInput.trim().length > 0 || transGrZhMistakes > 0;
+                      const gate = hintGate(transGrZhMistakes, OPEN_TRY_NEED);
+                      const tried = gate.unlocked || transGrZhChecked;
+                      const lockLabel = gateLabel(gate, '提示');
                       return (
                         <button
-                          onClick={() => tried && setShowTip(!showTip)}
+                          onClick={() => {
+                          if (!tried) return;
+                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          if (showTip) setShowTip(false); else openHint(transGrZhMistakes, setShowTip);
+                        }}
                           disabled={!tried}
                           className="btn-premium"
-                          title={tried ? '' : hintLockedNote}
+                          title={tried ? '' : lockLabel}
                           style={{ width: 'auto', padding: '12px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
                                    background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
+                          {!tried ? lockLabel : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -6303,7 +6469,7 @@ export default function StudentApp() {
                       onClick={handleSkipTransGrZh} 
                       className="btn-premium" 
                       style={{ width: 'auto', padding: '12px 18px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.12)', color: '#515154', fontWeight: 700 }}
-                      title="跳过当前翻译题，直接进入下一题"
+                      title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                     >
                       ⏭️ 跳过此题
                     </button>
@@ -6318,7 +6484,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button data-primary-action onClick={handleNextTransGrZh} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={() => handleNextTransGrZh()} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
                     {transGrZhIndex === translationGrZhPool.length - 1 ? '收集积分 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -6332,7 +6498,8 @@ export default function StudentApp() {
                     getGuidingHint(currentTransGrZh, 'chinese'),
                     getAnswerReveal(currentTransGrZh, 'chinese'),
                     showAnswer || transGrZhChecked,
-                    () => setShowAnswer(true)
+                    () => setShowAnswer(true),
+                    answerGate(transGrZhMistakes, OPEN_TRY_NEED)
                   )}
                 </div>
               )}
@@ -6466,19 +6633,25 @@ export default function StudentApp() {
                 {!transZhGrChecked ? (
                   <>
                     {(() => {
-                      const tried = userTransZhGrInput.trim().length > 0 || transZhGrMistakes > 0;
+                      const gate = hintGate(transZhGrMistakes, OPEN_TRY_NEED);
+                      const tried = gate.unlocked || transZhGrChecked;
+                      const lockLabel = gateLabel(gate, '提示');
                       return (
                         <button
-                          onClick={() => tried && setShowTip(!showTip)}
+                          onClick={() => {
+                          if (!tried) return;
+                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          if (showTip) setShowTip(false); else openHint(transZhGrMistakes, setShowTip);
+                        }}
                           disabled={!tried}
                           className="btn-premium"
-                          title={tried ? '' : hintLockedNote}
+                          title={tried ? '' : lockLabel}
                           style={{ width: 'auto', padding: '12px 18px', border: `1px solid ${tried ? '#FF9500' : '#D2D2D7'}`,
                                    background: !tried ? '#F5F5F7' : (showTip ? 'rgba(255,149,0,0.12)' : 'rgba(255,149,0,0.05)'),
                                    color: tried ? '#FF9500' : '#AEAEB2', fontWeight: 700,
                                    cursor: tried ? 'pointer' : 'not-allowed' }}
                         >
-                          {!tried ? `🔒 ${hintLockedNote}` : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
+                          {!tried ? lockLabel : (showTip ? '收起提示 / Απόκρυψη' : '💡 查看提示 / Συμβουλή')}
                         </button>
                       );
                     })()}
@@ -6510,7 +6683,7 @@ export default function StudentApp() {
                       onClick={handleSkipTransZhGr} 
                       className="btn-premium" 
                       style={{ width: 'auto', padding: '12px 18px', background: '#F5F5F7', border: '1px solid rgba(0,0,0,0.12)', color: '#515154', fontWeight: 700 }}
-                      title="跳过当前翻译题，直接进入下一题"
+                      title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                     >
                       ⏭️ 跳过此题
                     </button>
@@ -6525,7 +6698,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button data-primary-action onClick={handleNextTransZhGr} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={() => handleNextTransZhGr()} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
                     {transZhGrIndex === translationZhGrPool.length - 1 ? '收集积分 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -6539,7 +6712,8 @@ export default function StudentApp() {
                     getGuidingHint(currentTransZhGr, 'greek'),
                     getAnswerReveal(currentTransZhGr, 'greek'),
                     showAnswer || transZhGrChecked,
-                    () => setShowAnswer(true)
+                    () => setShowAnswer(true),
+                    answerGate(transZhGrMistakes, OPEN_TRY_NEED)
                   )}
                 </div>
               )}
@@ -7172,14 +7346,20 @@ export default function StudentApp() {
                         <>
                           {(() => {
                             // 和别的模块一个规矩: 本题至少认真试过一次才给看提示
-                            const tried = userGlossaryInput.trim().length > 0 || glossaryMistakes > 0;
+                            const gate = hintGate(glossaryMistakes, OPEN_TRY_NEED);
+                            const tried = gate.unlocked || glossaryChecked;
+                            const lockLabel = gateLabel(gate, '提示');
                             return (
                               <button
                                 type="button"
-                                onClick={() => tried && setShowGlossaryTip(prev => !prev)}
+                                onClick={() => {
+                                  if (!tried) return;
+                                  if (showGlossaryTip) setShowGlossaryTip(false);
+                                  else openHint(glossaryMistakes, setShowGlossaryTip);
+                                }}
                                 disabled={!tried}
                                 className="btn-premium"
-                                title={tried ? '提示里想不出来，还有一个「查看答案」' : hintLockedNote}
+                                title={tried ? '提示里想不出来，还有一个「查看答案」' : lockLabel}
                                 style={{
                                   background: '#F5F5F7',
                                   border: `1px solid ${tried ? 'rgba(0,0,0,0.12)' : '#E5E5EA'}`,
@@ -7190,7 +7370,7 @@ export default function StudentApp() {
                                   cursor: tried ? 'pointer' : 'not-allowed'
                                 }}
                               >
-                                {!tried ? `🔒 ${hintLockedNote}` : (showGlossaryTip ? '收起提示' : '💡 查看提示')}
+                                {!tried ? lockLabel : (showGlossaryTip ? '收起提示' : '💡 查看提示')}
                               </button>
                             );
                           })()}
@@ -7207,7 +7387,7 @@ export default function StudentApp() {
                               fontSize: '14px',
                               fontWeight: 700
                             }}
-                            title="跳过本词，留待后续复习"
+                            title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                           >
                             ⏭️ 跳过此题 (稍后复习)
                           </button>
@@ -7232,7 +7412,7 @@ export default function StudentApp() {
                       ) : (
                         <button
                           type="button"
-                          onClick={handleNextGlossary}
+                          onClick={() => handleNextGlossary()}
                           data-primary-action
                           className="btn-premium btn-blue-filled"
                           style={{ 
@@ -7258,19 +7438,30 @@ export default function StudentApp() {
                             <div style={{ marginTop: '4px' }}>中文意思：{currentGlossaryWord.word_chinese}</div>
                           )}
                         </div>
-                        <button
-                          type="button"
-                          onClick={handleRevealGlossary}
-                          className="btn-premium"
-                          style={{
-                            marginTop: '12px', width: 'auto', padding: '8px 14px',
-                            fontSize: '13px', fontWeight: 700,
-                            border: '1px dashed #9333EA', background: '#FFFFFF', color: '#9333EA'
-                          }}
-                          title="看完提示还是想不出来，才点这里"
-                        >
-                          🔑 还是不会？查看答案
-                        </button>
+                        {(() => {
+                          // 单词表的「查看答案」也走第二道闸门: 看完提示后再错满 5 次、再等 10 秒
+                          const aGate = answerGate(glossaryMistakes, OPEN_TRY_NEED);
+                          const locked = !aGate.unlocked;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => { if (!locked) handleRevealGlossary(); }}
+                              disabled={locked}
+                              className="btn-premium"
+                              style={{
+                                marginTop: '12px', width: 'auto', padding: '8px 14px',
+                                fontSize: '13px', fontWeight: 700,
+                                border: `1px dashed ${locked ? '#D2D2D7' : '#9333EA'}`,
+                                background: locked ? '#F5F5F7' : '#FFFFFF',
+                                color: locked ? '#AEAEB2' : '#9333EA',
+                                cursor: locked ? 'not-allowed' : 'pointer'
+                              }}
+                              title={locked ? '答案要再熬一会儿：提示看完还得再试几次、再等几秒' : '看完提示还是想不出来，才点这里'}
+                            >
+                              {locked ? gateLabel(aGate, '答案') : '🔑 还是不会？查看答案'}
+                            </button>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
@@ -7598,7 +7789,7 @@ export default function StudentApp() {
                         color: '#515154',
                         fontWeight: 700
                       }}
-                      title="跳过当前语法特训题，直接进入下一题"
+                      title="跳过就不算做完：这个模块今天拿不到绿对勾，首页会挂一个红圈，得回来把它补上"
                     >
                       ⏭️ 跳过此题
                     </button>
@@ -7663,6 +7854,7 @@ export default function StudentApp() {
                   <button
                     onClick={() => {
                       bumpModuleStep('grammar_drill');
+                      noteQuestionDone('grammar_drill', currentGrammarDrill?.id, false);
                       if (grammarDrillIndex + 1 < grammarDrillPool.length) {
                         setGrammarDrillIndex(prev => prev + 1);
                         setSelectedGrammarOption(null);
@@ -7694,14 +7886,19 @@ export default function StudentApp() {
               <div style={{ marginTop: '20px', borderTop: '1px solid #E5E5EA', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {(() => {
                   // 解析里写着【课本原句】(答案已经填好), 一进题就点开等于抄答案。
-                  // 选了选项 / 写了字 / 已提交, 才给看。答不出来还有「跳过此题」。
-                  const tried = isGrammarChecked || !!selectedGrammarOption
-                    || userGrammarInput.trim().length > 0;
+                  // 语法题提交一次就定生死, 没有「再试」可数 -> 只用 10 秒的时间锁。
+                  const gate = hintGate(0, 0);
+                  const tried = gate.unlocked || isGrammarChecked;
+                  const lockLabel = gateLabel(gate, '提示');
                   return (
                     <button
-                      onClick={() => tried && setShowGrammarTip(prev => !prev)}
+                      onClick={() => {
+                        if (!tried) return;
+                        if (showGrammarTip) setShowGrammarTip(false);
+                        else openHint(0, setShowGrammarTip);
+                      }}
                       disabled={!tried}
-                      title={tried ? '' : hintLockedNote}
+                      title={tried ? '' : lockLabel}
                       style={{
                         background: 'transparent',
                         border: 'none',
@@ -7714,7 +7911,7 @@ export default function StudentApp() {
                         gap: '4px'
                       }}
                     >
-                      {!tried ? `🔒 ${hintLockedNote}`
+                      {!tried ? lockLabel
                         : `💡 ${showGrammarTip ? '收起提示' : '查看提示 / Συμβουλή'}`}
                     </button>
                   );
@@ -7765,7 +7962,8 @@ export default function StudentApp() {
                     }, 'greek'),
                     `标准答案：${currentGrammarDrill.answer}\n\n${currentGrammarDrill.detailed_tip || ''}`.trim(),
                     showGrammarAnswer || isGrammarChecked,
-                    () => setShowGrammarAnswer(true)
+                    () => setShowGrammarAnswer(true),
+                    answerGate(0, 0)
                   )}
                 </div>
               )}
