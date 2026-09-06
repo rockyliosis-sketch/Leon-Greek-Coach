@@ -2312,7 +2312,76 @@ export default function StudentApp() {
     const roundWords = pool.slice(startIdx, startIdx + 5);
     setMatchingGreek([...roundWords].sort(() => Math.random() - 0.5));
     setMatchingChinese([...roundWords].sort(() => Math.random() - 0.5));
+    // 每重新发一次牌, 就把「已配对」清空 —— 配对记录只属于当前这一组。
+    // 从前是整个模块一路累加, 万一新一组里出现同一个 id, 牌一上来就是灰的、点都点不动。
+    setMatchedIds([]);
+    setSelectedGreekId(null);
+    setSelectedChineseId(null);
+    setMatchErrors({});
   };
+
+  /**
+   * 连连看今天一共几组: 按题池真实长度算, 不再写死 8 组。
+   * 词不够 40 个的日子, 写死 8 会凭空多出几组空白卡片。
+   */
+  const matchingTotalRounds = Math.max(1, Math.ceil(matchingPool.length / 5));
+
+  /**
+   * 进入下一组 (最后一组则收尾)。
+   * 自动推进和「跳过本组」都走这一个出口, 免得两边各写各的、其中一边漏了发牌。
+   */
+  const goToNextMatchingRound = () => {
+    if (matchingRound + 1 < matchingTotalRounds) {
+      const next = matchingRound + 1;
+      setMatchingRound(next);
+      setupMatchingRound(matchingPool, next);
+    } else {
+      handleGameComplete(40, matchingPool.length);
+    }
+  };
+
+  /**
+   * 「屏幕上这一组连完了, 就自动进下一组」。
+   *
+   * 从前这个判断写在 checkMatch 里, 拿 matchingPool.slice(matchingRound * 5) 去比对。
+   * 一旦「组号」和「屏幕上真正发出来的牌」对不上, 这个判断就永远为假 ——
+   * 典型触发路径: 点一次「跳过本组」, 组号 +1 了却没重新发牌, 于是屏幕上还是上一组的牌;
+   * 学生把它们全连完, 程序却在拿下一组的词做检查, 自然永远不推进;
+   * 再点「跳过本组」也只是组号继续 +1, 牌一张没换, 全灰、连不动、跳不走, 彻底卡死。
+   *
+   * 现在直接看**屏幕上这一组的牌**是不是都配对完了, 组号对不对都不影响结果。
+   */
+  React.useEffect(() => {
+    if (activeModule !== 'matching') return;
+    if (matchingGreek.length === 0) return;
+    if (!matchingGreek.every(w => matchedIds.includes(w.id))) return;
+    const timer = setTimeout(() => goToNextMatchingRound(), 600);
+    return () => clearTimeout(timer);
+  }, [activeModule, matchingGreek, matchedIds, matchingRound, matchingPool]);
+
+  /**
+   * 回车 = 点屏幕上那个蓝色主按钮(确认提交 / 检查答案 / 验证答案 / 下一题)。
+   *
+   * 各模块主按钮名字不一样, 所以不去一个个绑函数, 而是统一给它们打上
+   * data-primary-action 标记, 回车时点「页面上第一个没被禁用的那一个」——
+   * 按钮自己的禁用条件(没选选项、没输入答案)照常生效, 回车绕不过校验。
+   */
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.repeat) return;              // 按住不放不许连点
+      if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.isComposing || (e as any).keyCode === 229) return; // 中文输入法选字中的回车不算提交
+      if (feedbackCtx) return;                                 // 报错弹窗开着时不穿透到底下的按钮
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'TEXTAREA' || target.isContentEditable)) return; // 多行输入回车要换行
+      const btn = document.querySelector<HTMLButtonElement>('[data-primary-action]:not([disabled])');
+      if (!btn) return;
+      e.preventDefault();   // 顺手挡掉「焦点还停在某个按钮上, 回车把它又点一次」
+      btn.click();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [feedbackCtx]);
 
   const handleSelectCard = (type: 'greek' | 'chinese', id: number) => {
     if (wrongMatch || matchedIds.includes(id)) return;
@@ -2344,6 +2413,9 @@ export default function StudentApp() {
 
   const checkMatch = (gId: number, cId: number) => {
     if (gId === cId) {
+      // 每连对一对就记一步。从前是「每过一组记一步」, 词不满 40 个的日子,
+      // 学生明明全连完了, 步数却不够, 反被判成「没真正做起来」不给打卡。
+      bumpModuleStep('matching');
       const newMatched = [...matchedIds, gId];
       setMatchedIds(newMatched);
       setSelectedGreekId(null);
@@ -2355,25 +2427,8 @@ export default function StudentApp() {
         return next;
       });
 
-      const roundStartIdx = matchingRound * 5;
-      const roundWords = matchingPool.slice(roundStartIdx, roundStartIdx + 5);
-      // roundWords 为空时 `.every()` 恒为 true —— 词不够 40 个的日子, 空的那几轮
-      // 会一轮接一轮自动判定「本轮全配对」, 一路 600ms 跳到底并直接打卡,
-      // 学生根本没做, 首页却已经打上绿勾。所以先确认这一轮真的有词。
-      const allRoundMatched = roundWords.length > 0
-        && roundWords.every(w => newMatched.includes(w.id));
-      
-      if (allRoundMatched) {
-        setTimeout(() => {
-          if (matchingRound < 7) {
-            bumpModuleStep('matching');
-            setMatchingRound(prev => prev + 1);
-            setupMatchingRound(matchingPool, matchingRound + 1);
-          } else {
-            handleGameComplete(40, matchingPool.length);
-          }
-        }, 600);
-      }
+      // 「这一组连完了没有」的判断统一放在上面那个 useEffect 里做:
+      // 它看的是屏幕上真实发出来的牌, 不会因为组号和牌错位就永远推不动。
     } else {
       setWrongMatch(true);
       setMatchErrors(prev => ({
@@ -3521,15 +3576,9 @@ export default function StudentApp() {
 
   const handleSkipMatching = () => {
     bumpModuleStep('matching');
-    if (matchingRound < 7) {
-      setMatchingRound(prev => prev + 1);
-      setSelectedGreekId(null);
-      setSelectedChineseId(null);
-      setMatchErrors({});
-    } else {
-      handleGameComplete(40, matchingPool.length);
-      setActiveModule('dashboard');
-    }
+    // 老版本这里只把组号 +1, 忘了重新发牌 —— 屏幕上还是上一组那五张牌,
+    // 连完之后全变灰, 点「跳过本组」也只是数字往上跳, 学生直接卡死在这一屏。
+    goToNextMatchingRound();
   };
 
   const handleSkipSpelling = () => {
@@ -5245,10 +5294,10 @@ export default function StudentApp() {
           <div className="game-module animate-fade-in" style={{ maxWidth: '800px' }}>
             <h2 className="module-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span>单词连连看对对碰</span>
-              <span style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>当前进度: 组 {matchingRound + 1} / 8 (总共 40 词)</span>
+              <span style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>当前进度: 组 {matchingRound + 1} / {matchingTotalRounds} (总共 {matchingPool.length} 词)</span>
             </h2>
             <div style={{ textAlign: 'right', fontSize: '11px', color: '#86868B', fontWeight: 700, textTransform: 'uppercase', marginBottom: '24px', marginRight: '4px' }}>
-              Πρόοδος: Γύρος {matchingRound + 1} / 8 (40 λέξεις συνολικά)
+              Πρόοδος: Γύρος {matchingRound + 1} / {matchingTotalRounds} ({matchingPool.length} λέξεις συνολικά)
             </div>
             <div className="game-container-card" style={{ padding: '32px' }}>
               <div className="matching-game-grid">
@@ -5519,7 +5568,7 @@ export default function StudentApp() {
                   ⏭️ 跳过此题
                 </button>
                 {spellingCompleted && (
-                  <button onClick={nextSpelling} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '10px 24px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={nextSpelling} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '10px 24px', fontWeight: 700 }}>
                     {spellingIndex === spellingPool.length - 1 ? '完成拼写 / Ολοκλήρωση' : '下一个 / Επόμενο →'}
                   </button>
                 )}
@@ -5708,6 +5757,7 @@ export default function StudentApp() {
                     <button 
                       disabled={!selectedOption} 
                       onClick={checkQuizAnswer} 
+                      data-primary-action
                       className="btn-premium btn-blue-filled"
                       style={{ width: 'auto', padding: '12px 32px', opacity: selectedOption ? 1 : 0.5, fontWeight: 700 }}
                     >
@@ -5715,7 +5765,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button onClick={nextQuiz} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 40px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={nextQuiz} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 40px', fontWeight: 700 }}>
                     {quizIndex === quizPool.length - 1 ? '完成测试 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -6042,7 +6092,7 @@ export default function StudentApp() {
                     </div>
                   </div>
 
-                  <button onClick={nextTf} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', margin: '0 auto', fontWeight: 700 }}>
+                  <button data-primary-action onClick={nextTf} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', margin: '0 auto', fontWeight: 700 }}>
                     {tfIndex === tfPool.length - 1 ? '完成测试 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 </div>
@@ -6149,15 +6199,6 @@ export default function StudentApp() {
                   className="admin-input"
                   disabled={transGrZhChecked}
                   style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && userTransGrZhInput.trim()) {
-                      if (!transGrZhChecked) {
-                        handleCheckTransGrZh();
-                      } else {
-                        handleNextTransGrZh();
-                      }
-                    }
-                  }}
                 />
               </div>
 
@@ -6269,6 +6310,7 @@ export default function StudentApp() {
                     <button 
                       disabled={!userTransGrZhInput.trim()} 
                       onClick={handleCheckTransGrZh} 
+                      data-primary-action
                       className="btn-premium btn-blue-filled"
                       style={{ width: 'auto', padding: '12px 32px', opacity: userTransGrZhInput.trim() ? 1 : 0.5, fontWeight: 700 }}
                     >
@@ -6276,7 +6318,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button onClick={handleNextTransGrZh} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={handleNextTransGrZh} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
                     {transGrZhIndex === translationGrZhPool.length - 1 ? '收集积分 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -6357,15 +6399,6 @@ export default function StudentApp() {
                   className="admin-input"
                   disabled={transZhGrChecked}
                   style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && userTransZhGrInput.trim()) {
-                      if (!transZhGrChecked) {
-                        handleCheckTransZhGr();
-                      } else {
-                        handleNextTransZhGr();
-                      }
-                    }
-                  }}
                 />
               </div>
 
@@ -6484,6 +6517,7 @@ export default function StudentApp() {
                     <button 
                       disabled={!userTransZhGrInput.trim()} 
                       onClick={handleCheckTransZhGr} 
+                      data-primary-action
                       className="btn-premium btn-blue-filled"
                       style={{ width: 'auto', padding: '12px 32px', opacity: userTransZhGrInput.trim() ? 1 : 0.5, fontWeight: 700 }}
                     >
@@ -6491,7 +6525,7 @@ export default function StudentApp() {
                     </button>
                   </>
                 ) : (
-                  <button onClick={handleNextTransZhGr} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
+                  <button data-primary-action onClick={handleNextTransZhGr} className="btn-premium btn-blue-filled" style={{ width: 'auto', padding: '12px 48px', fontWeight: 700 }}>
                     {transZhGrIndex === translationZhGrPool.length - 1 ? '收集积分 / Ολοκλήρωση' : '下一题 / Επόμενο →'}
                   </button>
                 )}
@@ -6738,6 +6772,7 @@ export default function StudentApp() {
                           setActiveModule('dashboard');
                         }
                       }}
+                      data-primary-action
                       className="btn-premium btn-blue-filled"
                       style={{
                         width: 'auto',
@@ -7019,15 +7054,6 @@ export default function StudentApp() {
                         disabled={glossaryChecked && !isGlossaryRevealed}
                         autoFocus
                         style={{ width: '100%', padding: '16px', fontSize: '18px', fontWeight: 650, borderRadius: '14px' }}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            if (!glossaryChecked) {
-                              if (userGlossaryInput.trim()) handleCheckGlossary();
-                            } else {
-                              handleNextGlossary();
-                            }
-                          }
-                        }}
                       />
 
                       {/* Quick Greek Special Characters Keyboard */}
@@ -7190,6 +7216,7 @@ export default function StudentApp() {
                             type="button"
                             onClick={handleCheckGlossary}
                             disabled={!userGlossaryInput.trim()}
+                            data-primary-action
                             className="btn-premium btn-blue-filled"
                             style={{ 
                               background: userGlossaryInput.trim() ? 'linear-gradient(135deg, #9333EA 0%, #7E22CE 100%)' : '#E5E5EA',
@@ -7206,6 +7233,7 @@ export default function StudentApp() {
                         <button
                           type="button"
                           onClick={handleNextGlossary}
+                          data-primary-action
                           className="btn-premium btn-blue-filled"
                           style={{ 
                             background: isCorrectGlossaryInput ? '#34C759' : 'linear-gradient(135deg, #0071E3 0%, #0056B3 100%)',
@@ -7265,6 +7293,7 @@ export default function StudentApp() {
               </p>
               <button 
                 onClick={() => setActiveModule('dashboard')}
+                data-primary-action
                 className="btn-premium btn-blue-filled"
                 style={{ padding: '12px 32px', fontSize: '16px' }}
               >
@@ -7500,33 +7529,6 @@ export default function StudentApp() {
                       className="admin-input"
                       disabled={isGrammarChecked}
                       style={{ width: '100%', padding: '16px', fontSize: '18px', fontWeight: 650, borderRadius: '12px' }}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && userGrammarInput.trim() && !isGrammarChecked) {
-                          // Trigger check
-                          const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
-                          const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
-                          let correct = (normUser === normAns && normUser.length > 0);
-                          // 家长后台批准过的备选答案也要认 —— 否则「我的答案也对」批了等于白批
-                          const approved = alternativeTranslations[
-                            cleanGreekForComparison(currentGrammarDrill.answer || '')] || [];
-                          if (!correct && (currentGrammarDrill.acceptable_answers || approved.length)) {
-                            for (const alt of [...(currentGrammarDrill.acceptable_answers || []), ...approved]) {
-                              const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
-                              if (normUser === normAlt && normUser.length > 0) {
-                                correct = true;
-                                break;
-                              }
-                            }
-                          }
-                          setIsGrammarChecked(true);
-                          setIsGrammarCorrect(correct);
-                          if (correct) {
-                            setGrammarDrillScore(prev => prev + 1);
-                          } else {
-                            setShowGrammarTip(true);
-                          }
-                        }
-                      }}
                     />
                   </div>
 
@@ -7636,6 +7638,7 @@ export default function StudentApp() {
                           setShowGrammarTip(true);
                         }
                       }}
+                      data-primary-action
                       className="btn-premium btn-blue-filled"
                       style={{
                         padding: '12px 36px',
@@ -7672,6 +7675,7 @@ export default function StudentApp() {
                         setActiveModule('dashboard');
                       }
                     }}
+                    data-primary-action
                     className="btn-premium btn-blue-filled"
                     style={{
                       background: isGrammarCorrect ? '#34C759' : '#0071E3',
@@ -7782,6 +7786,7 @@ export default function StudentApp() {
               </p>
               <button 
                 onClick={() => setActiveModule('dashboard')}
+                data-primary-action
                 className="btn-premium btn-blue-filled"
                 style={{ padding: '12px 32px', fontSize: '16px' }}
               >
