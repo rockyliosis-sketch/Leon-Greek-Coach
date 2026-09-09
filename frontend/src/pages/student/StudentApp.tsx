@@ -26,6 +26,7 @@ import vocabV2Data from '../../data/vocabulary_v2.json';
 import sentencesData from '../../data/sentences.json';
 import glossaryV2 from '../../data/glossary_v2.json';
 import bSyllabus from '../../data/b_syllabus.json';
+import properNameBlocklist from '../../data/proper_name_blocklist.json';
 import {
   type PageMark, type V2Word,
   resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
@@ -967,6 +968,56 @@ const removeGreekAccents = (str: string): string => {
     .replace(/\s+/g, " "); // consolidate spaces
 };
 
+/**
+ * 把词条里的斜杠展开成「一整条一整条的完整答案」。
+ *
+ * 词库用斜杠表示「两种写法都行」, 但从前是直接 `split('/')`, 于是
+ *   κάνει/έχει κρύο (天气很冷)  ->  ["κάνει", "έχει κρύο"]
+ * 被从中间劈开了 —— 孩子写出完全正确的「κάνει κρύο」反而判错(2026-09-07 家长截图)。
+ * 拼字大作战更离谱: χτες/χθες 被当成一个 8 字母的词 χτεςχθες, 必须把两种写法连着拼完。
+ *
+ * 现在的规矩: 展开后的每一条都是**能单独成立的完整答案**, 写哪一条都算对。
+ *   κάνει/έχει κρύο  -> ["κάνει κρύο", "έχει κρύο"]
+ *   χτες/χθες        -> ["χτες", "χθες"]
+ *   Άγγλος, ο / Αγγλίδα, η -> ["Άγγλος, ο", "Αγγλίδα, η"]
+ *   είκοσι ένας/μία/ένα    -> ["είκοσι ένας", "είκοσι μία", "είκοσι ένα"]
+ * 第 [0] 条是「标准写法」, 拼字大作战就拿它排字母块。
+ */
+const expandGreekSlashVariants = (raw: string): string[] => {
+  const src = String(raw || '').trim();
+  if (!src) return [];
+  if (!src.includes('/')) return [src];
+
+  // ① 斜杠两边都有空格 = 整条与整条二选一, 直接按整条拆
+  if (/\s\/\s/.test(src)) {
+    return Array.from(new Set(src.split(/\s*\/\s*/).map(x => x.trim()).filter(Boolean)));
+  }
+
+  // ② 斜杠长在词里面: 只把带斜杠的那个词换成各个选项, 句子其余部分照抄
+  const tokens = src.split(/\s+/);
+  let combos: string[][] = [[]];
+  for (const tok of tokens) {
+    const m = tok.match(/^(.*?)([,，;；.。!！?？]*)$/);
+    const core = m ? m[1] : tok;
+    const tail = m ? m[2] : '';
+    let opts = core.includes('/')
+      ? core.split('/').map(x => x.trim()).filter(Boolean)
+      : [core];
+    // 「μαθητής/-τρια」这种只写阴性词尾的简写, 拼不成完整的词, 丢掉不要
+    const complete = opts.filter(x => !x.startsWith('-'));
+    opts = complete.length ? complete : [opts[0]];
+    const next: string[][] = [];
+    outer: for (const c of combos) {
+      for (const o of opts) {
+        if (next.length >= 8) break outer;   // 封顶, 防止组合爆炸
+        next.push([...c, o + tail]);
+      }
+    }
+    combos = next;
+  }
+  return Array.from(new Set(combos.map(c => c.join(' ').trim()).filter(Boolean)));
+};
+
 const getSpellingTargetWord = (word: string): string => {
   // Strip parentheses, quotes, periods and punctuation
   let cleaned = word.replace(/\s*\(.*?\)/g, '')
@@ -976,6 +1027,12 @@ const getSpellingTargetWord = (word: string): string => {
   // If there's a comma, take only the first part (e.g. "αβγό, το" -> "αβγό")
   if (cleaned.includes(',')) {
     cleaned = cleaned.split(',')[0];
+  }
+
+  // 斜杠 = 两种写法都行, 拼字块只排第一种。
+  // 否则 "χτες/χθες" 会被当成一个 8 字母的词, 必须两种写法连着拼完才算对。
+  if (cleaned.includes('/')) {
+    cleaned = expandGreekSlashVariants(cleaned)[0] || cleaned;
   }
   
   // Also remove common articles from the beginning if any (e.g. "το αεροπλάνο" -> "αεροπλάνο")
@@ -1072,6 +1129,10 @@ const normalizeChineseString = (str: string): string => {
     ["确定", "肯定", "一定", "有把握", "确信"],
     ["脸", "面孔", "面部", "人脸"],
     ["人", "人类", "个人", "个体"],
+    // 2026-09-07 家长截图: γυναίκα 标准答案写的是「女士」, 孩子答「女人」被判错。
+    // 这类只差一个字的称呼词, 写哪个都该算对。
+    ["女人", "女士", "妇女", "女性"],
+    ["男人", "男士", "男性"],
     ["面具", "面罩"],
     ["公寓", "房屋", "房子", "住宅"],
     ["旧", "老", "破旧"],
@@ -1269,6 +1330,45 @@ const isGreekProperNoun = (word: string): boolean => {
   return firstChar !== firstChar.toLowerCase();
 };
 
+/**
+ * 「这个词是人名/角色名/冷门地名吗?」—— 是的话整条词不出题。
+ *
+ * 家长 2026-09-09 的原话:「他现在不需要去背人名字, 因为翻译人名对他来说没有任何意义,
+ * 因为他在使用这些人名的时候也没有中文场景。」
+ * 「米格尔·德·塞万提斯」「季米特里斯」「亚历克西娅」「科莫蒂米」这类纯音译词条,
+ * 背下来既不能用也不能猜, 只会白白占掉当天的题量。
+ *
+ * 名单在 data/proper_name_blocklist.json, 由 scripts/build_proper_name_blocklist.py 生成,
+ * 存的是「去重音、小写、只取第一个词」的词头。要加要减直接改那个 json 即可。
+ *
+ * 只对**大写开头**的词条生效 —— 所以小写的 νίκη(胜利)、ελπίδα(希望)、ειρήνη(和平)
+ * 照常出题, 被撤掉的只有大写的同形人名 Νίκη / Ελπίδα / Ειρήνη。
+ */
+const BLOCKED_PROPER_NAMES: Set<string> = new Set([
+  ...((properNameBlocklist as any).person || []),
+  ...((properNameBlocklist as any).character || []),
+  ...((properNameBlocklist as any).place || []),
+]);
+
+/** 取词头: 去括号 -> 逗号前 -> 去重音 -> 只留第一个词 -> 小写 */
+const properNameKey = (word: string): string => {
+  const noBrackets = removeBracketContents(String(word || ''));
+  const head = noBrackets.split(/[,，]/)[0];
+  const plain = head
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\u0370-\u03ff\u1f00-\u1fff\s-]/g, ' ')
+    .toLowerCase()
+    .trim();
+  const first = plain.split(/[\s-]+/).filter(Boolean)[0] || '';
+  return first;
+};
+
+const isBlockedProperName = (word: string): boolean => {
+  if (!isGreekProperNoun(word)) return false;
+  return BLOCKED_PROPER_NAMES.has(properNameKey(word));
+};
+
 const hasGreekCharacters = (text: string): boolean => {
   return /[\u0370-\u03ff\u1f00-\u1fff]/.test(text);
 };
@@ -1286,6 +1386,11 @@ const isValidExerciseWord = (
 
   // Rule 1: No empty/placeholder values
   if (!gr || !zh || gr === '--' || zh === '--' || gr === 'undefined' || zh === 'undefined') {
+    return false;
+  }
+
+  // Rule 1b: 人名 / 虚构角色 / 冷门地名一律不出题(见 isBlockedProperName 的注释)
+  if (isBlockedProperName(gr)) {
     return false;
   }
 
@@ -1730,17 +1835,21 @@ export default function StudentApp() {
    *
    * 家长要求: 不许一进题就点提示。必须
    *   1) 在这道题上**真的答错够次数**, 而且
-   *   2) 在这道题上**待够 10 秒**,
-   * 才给看提示; 看完提示之后, 还要再错够次数、再等 10 秒, 才给看答案。
+   *   2) 在这道题上**待够 3 秒**,
+   * 才给看提示; 看完提示之后, 还要再错够次数、再等 3 秒, 才给看答案。
    *
    * 第 2 条是专门防「乱敲几个错答案骗提示」的 —— 错得再快也绕不过秒表。
+   *
+   * 2026-09-09 调整: 原来是「错 5 次 + 熬 10 秒」, 孩子嫌太久, 在那儿一直敲键盘出气。
+   * 家长拍板: 秒表留着但砍到 3 秒, 次数减半(开放题 5->3, 选项题 = ⌈(选项数-1)/2⌉)。
+   * 门还在, 只是不再把人晾在那儿。
    * ============================================================ */
   /** 看提示前, 这道题至少要待满多少毫秒 */
-  const HINT_MIN_MS = 10000;
+  const HINT_MIN_MS = 3000;
   /** 看完提示之后, 再等多少毫秒才给看答案 */
-  const ANSWER_MIN_MS = 10000;
+  const ANSWER_MIN_MS = 3000;
   /** 自己打字的开放题(拼写/两种翻译/单词表): 要错满几次 */
-  const OPEN_TRY_NEED = 5;
+  const OPEN_TRY_NEED = 3;
 
   /** 本题是什么时候出现在屏幕上的 —— 题号一变就重置(见下面那个统一 effect) */
   const [qStartAt, setQStartAt] = useState<number>(() => Date.now());
@@ -1766,8 +1875,8 @@ export default function StudentApp() {
   /**
    * 「看提示」放不放行。
    * @param wrongTries 本题已经答错几次
-   * @param need       这类题要错几次才够: 开放输入题 5 次;
-   *                   选项题 = 选项数 - 1(把错的选项都试一遍);
+   * @param need       这类题要错几次才够: 开放输入题 3 次;
+   *                   选项题 = ⌈(选项数 - 1) / 2⌉;
    *                   只能提交一次的题(判断题/语法题)传 0, 只剩时间这一道锁。
    */
   const hintGate = (wrongTries: number, need: number) => {
@@ -1778,7 +1887,7 @@ export default function StudentApp() {
 
   /**
    * 「看答案」放不放行 —— 比提示还严一层:
-   * 必须先看过提示, 看完之后再错够次数, 并且从点开提示那一刻起再等满 10 秒。
+   * 必须先看过提示, 看完之后再错够次数, 并且从点开提示那一刻起再等满 3 秒。
    * @param wrongTries 本题到现在一共错了几次(函数内部会自己减掉看提示前的那些)
    */
   const answerGate = (wrongTries: number, need: number) => {
@@ -2314,7 +2423,7 @@ export default function StudentApp() {
     onReveal: () => void,
     /**
      * 答案的第二道闸门(不传就是不设限, 给「已经提交过」的题用)。
-     * 传进来的话: 看完提示还得再错够次数、再等满 10 秒, 才点得开。
+     * 传进来的话: 看完提示还得再错够次数、再等满 3 秒, 才点得开。
      */
     gate?: { unlocked: boolean; secLeft: number; tryLeft: number }
   ) => {
@@ -2976,7 +3085,11 @@ export default function StudentApp() {
     if (marked.length === 0) {
       const masterList: any[] = (staticVocabData as any).master_glossary || [];
       return applyMakeup('glossary_review',
-        masterList.filter((w: any) => w.scheduled_date === selectedDateStr).slice(0, 40), (x: any) => String(x.id));
+        masterList
+          .filter((w: any) => w.scheduled_date === selectedDateStr)
+          // 这条线不经过 isValidExerciseWord, 人名要在这里单独挡一次
+          .filter((w: any) => !isBlockedProperName(w.word_greek || ''))
+          .slice(0, 40), (x: any) => String(x.id));
     }
 
     const out: any[] = [];
@@ -2986,6 +3099,7 @@ export default function StudentApp() {
       list.slice(0, front).forEach((w: any) => {
         const d = getPageDate(pageMarksState, g, w.idx);
         if (!d) return;
+        if (isBlockedProperName(w.word_greek || '')) return;   // 人名不出题
         out.push({ ...w, letter: (w.word_greek || '?')[0], tag: w.pos || '词', activated_on: d });
       });
     });
@@ -3260,7 +3374,7 @@ export default function StudentApp() {
    * 一进题就能点开, 等于抄。规则改成: **本题至少认真试过一次**才给看
    * (填了字 / 选了选项 / 已提交都算)。真不会也永远不会卡死 —— 旁边一直有「跳过此题」。
    */
-  // (旧的 hintLockedNote 已废弃: 从「试过一次就给看」升级成 hintGate —— 错够次数 + 待够 10 秒)
+  // (旧的 hintLockedNote 已废弃: 从「试过一次就给看」升级成 hintGate —— 错够次数 + 待够 3 秒)
 
   const handleSelectOption = (opt: string) => {
     if (answerChecked) return;
@@ -3452,7 +3566,7 @@ export default function StudentApp() {
     setShowGlossaryTip(false);
     setShowGrammarTip(false);
     setShowGrammarAnswer(false);
-    // 秒表也在这里归零: 新的一道题, 10 秒重新数起, 「看过提示」的记录也清掉。
+    // 秒表也在这里归零: 新的一道题, 3 秒重新数起, 「看过提示」的记录也清掉。
     // 挂在题号上而不是各模块的「下一题」函数里 —— 漏写一处就等于白锁。
     setQStartAt(Date.now());
     setHintOpenedAt(null);
@@ -3655,12 +3769,13 @@ export default function StudentApp() {
       }
     }
 
-    // 4. Slash parts e.g. "συζητώ / συζητάω"
-    const slashParts = wordGreek.split('/').map(p => p.trim()).filter(Boolean);
-    for (const sp of slashParts) {
+    // 4. 斜杠: 展开成一条条完整答案, 写哪一条都算对
+    //    (从前是直接 split('/'), 把 "κάνει/έχει κρύο" 劈成了 "κάνει" 和 "έχει κρύο",
+    //     正确答案 "κάνει κρύο" 反而不在名单里 —— 见 expandGreekSlashVariants 的注释)
+    for (const sp of [...expandGreekSlashVariants(wordGreek), ...expandGreekSlashVariants(noBrackets)]) {
       variants.push(sp);
-      const spClean = sp.replace(/\(.*?\)|\[.*?\]|（.*?）|【.*?】/g, '').trim();
-      if (spClean) variants.push(spClean);
+      const spHead = sp.split(',')[0].trim();
+      if (spHead) variants.push(spHead);
     }
 
     // 5. Comma parts & articles e.g. "συλλαβή, η" -> "συλλαβή", "η συλλαβή"
@@ -5655,7 +5770,7 @@ export default function StudentApp() {
                   重置 / Επαναφορά
                 </button>
                   {(() => {
-                    // 拼写是自己敲字母的开放题 -> 要错满 5 次, 还要在这道题上待够 10 秒
+                    // 拼写是自己敲字母的开放题 -> 要错满 3 次, 还要在这道题上待够 3 秒
                     const gate = hintGate(spellingMistakes, OPEN_TRY_NEED);
                     const tried = gate.unlocked || spellingCompleted;
                     const lockLabel = gateLabel(gate, '提示');
@@ -5663,7 +5778,7 @@ export default function StudentApp() {
                       <button
                         onClick={() => {
                           if (!tried) return;
-                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          // 点开提示的这一刻要记下来: 「看答案」的 3 秒从这里才开始数
                           if (showTip) setShowTip(false); else openHint(spellingMistakes, setShowTip);
                         }}
                         disabled={!tried}
@@ -5849,15 +5964,15 @@ export default function StudentApp() {
                   <>
                     {(() => {
                       // 选了任意一个选项(哪怕选错)就算试过, 才给看提示
-                      // 选择题错不满 5 次(选项就那么几个) -> 改成「把错的选项都点一遍」+ 10 秒
-                      const gate = hintGate(quizMistakes, Math.max(1, quizOptions.length - 1));
+                      // 选择题错不满 3 次(选项就那么几个) -> 改成「把一半错选项点一遍」+ 3 秒
+                      const gate = hintGate(quizMistakes, Math.max(1, Math.ceil((quizOptions.length - 1) / 2)));
                       const tried = gate.unlocked || answerChecked;
                       const lockLabel = gateLabel(gate, '提示');
                       return (
                         <button
                           onClick={() => {
                           if (!tried) return;
-                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          // 点开提示的这一刻要记下来: 「看答案」的 3 秒从这里才开始数
                           if (showTip) setShowTip(false); else openHint(quizMistakes, setShowTip);
                         }}
                           disabled={!tried}
@@ -6153,7 +6268,7 @@ export default function StudentApp() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginTop: '8px' }}>
                     {(() => {
-                      // 判断题只能提交一次, 没有「再试一次」可言 -> 只剩 10 秒这一道锁
+                      // 判断题只能提交一次, 没有「再试一次」可言 -> 只剩 3 秒这一道锁
                       const gate = hintGate(0, 0);
                       const tried = gate.unlocked || tfChecked;
                       const lockLabel = gateLabel(gate, '提示');
@@ -6161,7 +6276,7 @@ export default function StudentApp() {
                         <button
                           onClick={() => {
                           if (!tried) return;
-                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          // 点开提示的这一刻要记下来: 「看答案」的 3 秒从这里才开始数
                           if (showTip) setShowTip(false); else openHint(0, setShowTip);
                         }}
                           disabled={!tried}
@@ -6426,7 +6541,7 @@ export default function StudentApp() {
                         <button
                           onClick={() => {
                           if (!tried) return;
-                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          // 点开提示的这一刻要记下来: 「看答案」的 3 秒从这里才开始数
                           if (showTip) setShowTip(false); else openHint(transGrZhMistakes, setShowTip);
                         }}
                           disabled={!tried}
@@ -6640,7 +6755,7 @@ export default function StudentApp() {
                         <button
                           onClick={() => {
                           if (!tried) return;
-                          // 点开提示的这一刻要记下来: 「看答案」的 10 秒从这里才开始数
+                          // 点开提示的这一刻要记下来: 「看答案」的 3 秒从这里才开始数
                           if (showTip) setShowTip(false); else openHint(transZhGrMistakes, setShowTip);
                         }}
                           disabled={!tried}
@@ -7439,7 +7554,7 @@ export default function StudentApp() {
                           )}
                         </div>
                         {(() => {
-                          // 单词表的「查看答案」也走第二道闸门: 看完提示后再错满 5 次、再等 10 秒
+                          // 单词表的「查看答案」也走第二道闸门: 看完提示后再错满 3 次、再等 3 秒
                           const aGate = answerGate(glossaryMistakes, OPEN_TRY_NEED);
                           const locked = !aGate.unlocked;
                           return (
@@ -7886,7 +8001,7 @@ export default function StudentApp() {
               <div style={{ marginTop: '20px', borderTop: '1px solid #E5E5EA', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {(() => {
                   // 解析里写着【课本原句】(答案已经填好), 一进题就点开等于抄答案。
-                  // 语法题提交一次就定生死, 没有「再试」可数 -> 只用 10 秒的时间锁。
+                  // 语法题提交一次就定生死, 没有「再试」可数 -> 只用 3 秒的时间锁。
                   const gate = hintGate(0, 0);
                   const tried = gate.unlocked || isGrammarChecked;
                   const lockLabel = gateLabel(gate, '提示');
