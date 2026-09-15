@@ -366,6 +366,48 @@ const getUnitFromDate = (dateStr: string): number => {
   }
 };
 
+/**
+ * 已经学完、不该再被误改的课本与词表。
+ * 家长原话:「我老婆操作的时候, 或者爷爷奶奶操作的时候, 可能点错, 一下子进度就乱了。」
+ * A1 两册和 A2 的课堂进度已由内置学习时间轴钉死, A1 单词表也已整本背完 ——
+ * 这几项默认只读, 要改必须先掀开「解锁」开关。
+ * A2 单词表**不锁**: 2026-09-13 还记到第 332 个词, 明摆着还在背。
+ */
+const FINISHED_BOOKS = new Set(['a1-a', 'a1-b', 'a2', 'glossary-a1']);
+
+/** 笔记词统一挂这个书名, 后台不再散成「A1-A / 学习笔记 / 笔记」三处 */
+const NOTE_BOOK_ID = '笔记';
+
+/**
+ * 一批笔记归到哪个「复习单元」。
+ *
+ * 从前所有笔记都被 getUnitFromDate 夹到 unit 39, 三批笔记挤进同一个桶。
+ * 而一个桶的艾宾浩斯起点取桶里**最晚**的那天 —— 再录一批新笔记,
+ * 老笔记的复习节点就被整体推回今天, 等于前面白背了。
+ * 改成按「周」分桶: 同一周记的笔记一起复习(教学上也合理), 跨周互不干扰。
+ * 从 100 起步是为了和教材单元号(1–39)错开; 走到 unit 999 还有十七年。
+ */
+const getNoteUnitFromDate = (dateStr: string): number => {
+  const d = parseLocalDate(dateStr);
+  const base = parseLocalDate(START_DATE);
+  if (!d || !base) return 100;
+  const weeks = Math.floor((d.getTime() - base.getTime()) / (7 * 86400000));
+  return 100 + Math.max(0, Math.min(899, weeks));
+};
+
+/**
+ * 剥掉希腊语词条开头的冠词括号:「(η) οδός」→「οδός」。
+ *
+ * 判题那边有一条老规则: 希腊语字段只要含括号就整条作废 —— 本意是挡掉
+ * OCR 扫出来的「（可能有变位）」这类垃圾标注, 结果把词表的标准写法
+ * (ο)/(η)/(το)/(οι)/(τα) 一起误伤了。2026-09-13 那批 16 个词里
+ * (οι) ειδήσεις、(η) οδός、(η) λεωφόρος 三个因此永远出不了题。
+ * 在入口就剥干净: 既救回这些词, 孩子拼字时也不用去敲括号。
+ */
+const stripLeadingArticle = (greek: string): string =>
+  String(greek || '').replace(
+    /^\s*[（(]\s*(οι|τα|ο|η|το|ένας|μια|μία|ένα)\s*[)）]\s*/i, '').trim();
+
 const getMondayDateStr = (dateStr: string): string => {
   if (!dateStr || dateStr === 'LOCKED') return 'LOCKED';
   const d = parseLocalDate(dateStr);
@@ -537,7 +579,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [allVocab, setAllVocab] = useState<Word[]>([]);
   const [unitStudyDates, setUnitStudyDates] = useState<Record<string, string>>({});
   const [pageMarks, setPageMarks] = useState<PageMark[]>([]);
-  const [pmBook, setPmBook] = useState<string>('a1-b');
+  // 默认 b1: 从前默认 a1-b, 后台一打开「记录这次课」就已经指着 A1 第二分册, 极易误记
+  const [pmBook, setPmBook] = useState<string>('b1');
+  /** 掀开它才能改「已学完」的课本 / 词表进度 —— 防家里其他人误点(见 FINISHED_BOOKS) */
+  const [unlockFinished, setUnlockFinished] = useState(false);
   const [pmPage, setPmPage] = useState<string>('');
   const [pmDate, setPmDate] = useState<string>('');
   const [showLegacyUnits, setShowLegacyUnits] = useState(false);
@@ -563,7 +608,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [rawMD, setRawMD] = useState('');
   const [parsedWordsCount, setParsedWordsCount] = useState<number | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [uploadBookId, setUploadBookId] = useState('A1-A');
+  // 默认「笔记」: 从前默认 A1-A, 2026-07-28 那批 26 个笔记词就是这样被塞进
+  // A1-A 教材桶里的 —— 已学完的教材不该再往里加词。
+  const [uploadBookId, setUploadBookId] = useState(NOTE_BOOK_ID);
   const [uploadUnit, setUploadUnit] = useState('1');
   const [customBookId, setCustomBookId] = useState('');
   const [isCustomBook, setIsCustomBook] = useState(false);
@@ -579,6 +626,15 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         // If there are any custom notes incorrectly assigned to A2_36, move them to A2_35
         let needSave = false;
         customVocab = customVocab.map((w: Word) => {
+          // 剥掉开头的冠词括号:「(η) οδός」→「οδός」。
+          // 判题规则「希腊语字段含括号即作废」把词表标准写法误伤了 ——
+          // 2026-09-13 那批 16 个词有 3 个因此一道题都出不了。中文释义一个字不动。
+          const stripped = String(w.word_greek || '').replace(
+            /^\s*[（(]\s*(οι|τα|ο|η|το|ένας|μια|μία|ένα)\s*[)）]\s*/i, '').trim();
+          if (stripped && stripped !== w.word_greek) {
+            needSave = true;
+            w = { ...w, word_greek: stripped };
+          }
           if (w.book_id && w.book_id.toUpperCase() === 'A2' && w.unit === 36 && w.note_date) {
             needSave = true;
             return { ...w, unit: 35 };
@@ -670,6 +726,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const page = parseInt(pmPage, 10);
     const date = pmDate || getGreeceDateString();
     if (!rng) { alert('请选择课本'); return; }
+    if (!canEditBook(pmBook)) {
+      alert(`「${rng.name}」已经学完，进度已锁定。\n真要改，先打开上面的「解锁已学完的课本」开关。`);
+      return;
+    }
     if (!Number.isFinite(page) || page < rng.min || page > rng.max) {
       alert(`页码需要在 ${rng.min}–${rng.max} 之间（${rng.name}）`);
       return;
@@ -683,7 +743,12 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   };
 
   /** 一键标记「这本整本已学完」 */
+  /** 已学完的课本/词表是否可改 —— UI 藏起来还不够, 函数层再拦一道 */
+  const canEditBook = (bookId: string) =>
+    unlockFinished || !FINISHED_BOOKS.has(String(bookId).toLowerCase());
+
   const handleFinishBook = (bookId: string) => {
+    if (!canEditBook(bookId)) return;
     const rng = BOOK_PAGE_RANGE[bookId] || GLOSSARY_RANGE[bookId];
     if (!rng) return;
     const isGloss = !!GLOSSARY_RANGE[bookId];
@@ -700,6 +765,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     const m = pageMarks.find(x => x.id === id);
     if (!m) return;
     const nm = BOOK_PAGE_RANGE[m.bookId]?.name || GLOSSARY_RANGE[m.bookId]?.name || m.bookId;
+    if (!canEditBook(m.bookId)) {
+      alert(`「${nm}」已经学完，这条记录已锁定。\n真要删，先打开「解锁已学完的课本」开关。`);
+      return;
+    }
     if (!window.confirm(`删除这条进度记录？\n${m.date}  ${nm}  ${GLOSSARY_RANGE[m.bookId] ? '背到第' : '上到第'} ${m.upToPage} ${GLOSSARY_RANGE[m.bookId] ? '个词' : '页'}`)) return;
     persistPageMarks(pageMarks.filter(x => x.id !== id));
   };
@@ -755,7 +824,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
     e.preventDefault();
     if (!rawMD.trim()) return;
 
-    const targetBookId = (isCustomBook ? customBookId.trim() : uploadBookId) || 'NEW_UPLOAD';
+    const targetBookId = (isCustomBook ? customBookId.trim() : uploadBookId) || NOTE_BOOK_ID;
 
     // Simple markdown word extractor
     const lines = rawMD.split('\n');
@@ -778,7 +847,11 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
     // Default to today's date in Greece timezone if no date is found
     const finalNoteDate = uploadedUnitDate || getGreeceDateString();
-    const currentUnit = getUnitFromDate(finalNoteDate);
+    // 笔记按「周」自成一个复习单元(见 getNoteUnitFromDate 的说明);
+    // 家长手动指定了别的教材, 才回退到旧的按周单元号。
+    const currentUnit = targetBookId === NOTE_BOOK_ID
+      ? getNoteUnitFromDate(finalNoteDate)
+      : getUnitFromDate(finalNoteDate);
 
     lines.forEach(line => {
       // Check if it is a markdown table row (e.g. | 1 | δημόσια | 公共服务 | ...)
@@ -809,6 +882,8 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             }
           }
           
+          greekPart = stripLeadingArticle(greekPart);
+          exampleGreek = stripLeadingArticle(exampleGreek);
           if (greekPart && chinesePart) {
             newWordsList.push({
               id: currentId++,
@@ -849,6 +924,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               
               // Clean index numbers or trailing punctuation in Greek part (e.g. "1. ληξιαρχείο:", "2. ")
               gr = gr.replace(/^\d+[\.\s、]+/, '').replace(/[-—–:~：\s\/\\→>]+$/, '').trim();
+              gr = stripLeadingArticle(gr);
 
               if (gr && zh) {
                 newWordsList.push({
@@ -902,6 +978,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleSetGlossaryTo = (glossId: string, w: any) => {
     const rng = GLOSSARY_RANGE[glossId];
     if (!rng) return;
+    if (!canEditBook(glossId)) {
+      alert(`「${rng.name}」已经整本背完，进度已锁定。\n真要改，先打开上面的「解锁已学完的课本」开关。`);
+      return;
+    }
     const date = pmDate || getGreeceDateString();
     const front = getBookFrontier(pageMarks, glossId);
     const zh = w.word_chinese ? `（${w.word_chinese}）` : '';
@@ -919,6 +999,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const handleClearGlossary = (glossId: string) => {
     const n = pageMarks.filter(m => m.bookId === glossId).length;
     if (!n) return;
+    if (!canEditBook(glossId)) return;
     if (!window.confirm(`清空「${GLOSSARY_RANGE[glossId]?.name}」的 ${n} 条背诵进度记录？\n课堂进度不受影响。`)) return;
     persistPageMarks(pageMarks.filter(m => m.bookId !== glossId));
   };
@@ -942,7 +1023,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         </span>
         {isCur ? (
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#AF52DE', whiteSpace: 'nowrap' }}>← 当前进度</span>
-        ) : (
+        ) : !canEditBook(glossId) ? null : (
           <button onClick={() => handleSetGlossaryTo(glossId, w)}
             style={{
               fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer',
@@ -958,7 +1039,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
   const renderPageProgressPanel = () => {
     const today = getGreeceDateString();
-    const books = ['a1-a', 'a1-b', 'a2', 'b1'];
+    const books = ['b1', 'a1-a', 'a1-b', 'a2'];   // 在学的 B 本排最前
     const unlockedAll = unlockedWords(V2_WORDS, pageMarks, today);
     const history = [...pageMarks].sort((a, b) =>
       (b.date + b.bookId).localeCompare(a.date + a.bookId));
@@ -1007,7 +1088,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                           {clozeTotal > 0 && <> · 填空题 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b>/{clozeTotal}</>}</>
                       : <><b style={{ color: '#FF9500' }}>单词未入库</b> · 只有课本原句填空 <b style={{ color: '#1D1D1F' }}>{clozeOpen}</b>/{clozeTotal} 道</>}
                   </span>
-                  {front < rng.max && (
+                  {!canEditBook(b) && (
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#86868B', background: '#F5F5F7',
+                                   border: '1px solid #E5E5EA', borderRadius: '7px', padding: '4px 9px', whiteSpace: 'nowrap' }}>
+                      🔒 已学完 · 锁定
+                    </span>
+                  )}
+                  {canEditBook(b) && front < rng.max && (
                     <button onClick={() => handleFinishBook(b)}
                       style={{ fontSize: '11px', fontWeight: 700, color: '#34C759', background: 'rgba(52,199,89,0.1)',
                                border: '1px solid rgba(52,199,89,0.25)', borderRadius: '7px', padding: '4px 9px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -1087,13 +1174,39 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
 
+        {/* 已学完的课本默认锁死 —— 防止家里其他人误点把进度搞乱 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
+                      background: unlockFinished ? 'rgba(255,59,48,0.06)' : 'rgba(0,0,0,0.03)',
+                      border: `1px solid ${unlockFinished ? 'rgba(255,59,48,0.25)' : '#E5E5EA'}`,
+                      borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+          <span style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.6, flex: '1 1 260px' }}>
+            {unlockFinished
+              ? <><b style={{ color: '#FF3B30' }}>⚠️ 已解锁：A1 两册、A2、A1 单词表现在可以改了。</b> 改完请立刻关回去。</>
+              : <><b style={{ color: '#1D1D1F' }}>🔒 A1 两册、A2 和 A1 单词表已学完，进度锁定。</b>
+                  只有还在学的 <b>B 本</b>和还在背的 <b>A2 / B 单词表</b>可以记录。</>}
+          </span>
+          <button type="button" onClick={() => {
+              if (!unlockFinished && !window.confirm(
+                '要解锁「已经学完」的课本吗？\n\n' +
+                'A1 两册和 A2 的进度是内置时间轴钉死的，改了会让复习计划整体错位。\n' +
+                '除非确实记错了，否则不要打开。')) return;
+              setUnlockFinished(v => !v);
+            }}
+            style={{ fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap', cursor: 'pointer',
+                     color: unlockFinished ? '#FF3B30' : '#86868B',
+                     background: '#FFF', border: `1px solid ${unlockFinished ? 'rgba(255,59,48,0.3)' : '#D2D2D7'}`,
+                     borderRadius: '8px', padding: '7px 14px' }}>
+            {unlockFinished ? '🔒 重新锁上' : '🔓 解锁已学完的课本'}
+          </button>
+        </div>
+
         {/* 记录一次课 */}
         <div style={{ background: '#F5F5F7', borderRadius: '12px', padding: '14px', display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div>
             <label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#86868B', marginBottom: '4px' }}>课本</label>
             <select value={pmBook} onChange={e => setPmBook(e.target.value)}
               style={{ padding: '9px 12px', borderRadius: '9px', border: '1px solid #D2D2D7', fontSize: '13px', fontWeight: 600, minWidth: '190px', background: '#FFF' }}>
-              {books.map(b => <option key={b} value={b}>{BOOK_PAGE_RANGE[b].name}</option>)}
+              {books.filter(canEditBook).map(b => <option key={b} value={b}>{BOOK_PAGE_RANGE[b].name}</option>)}
             </select>
           </div>
           <div>
@@ -1145,7 +1258,9 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', cursor: 'pointer', flexWrap: 'wrap' }}
                 >
                   <ChevronRight size={16} style={{ color: '#86868B', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform .2s', flexShrink: 0 }} />
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', minWidth: '84px' }}>{rng.name}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F', minWidth: '84px' }}>
+                    {canEditBook(g) ? '' : '🔒 '}{rng.name}
+                  </span>
                   <div style={{ flex: '1 1 140px', minWidth: '110px' }}>
                     <div style={{ height: '7px', background: '#F0F0F3', borderRadius: '99px', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: '#AF52DE', borderRadius: '99px', transition: 'width .3s' }} />
@@ -1553,8 +1668,13 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '20px' }}>
             <div className="admin-input-group" style={{ marginBottom: 0 }}>
               <label className="admin-label" style={{ fontWeight: 600 }}>归属教材 / 书籍 ID</label>
+              <div style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.6, marginBottom: '8px' }}>
+                课堂笔记一律用「<b>笔记</b>」这一个名字就好 —— 系统会按<b>录入日期所在的那一周</b>
+                自动分成独立的复习单元，各自走各自的艾宾浩斯周期，互不干扰。<br />
+                A1/A2 已经学完，<b>不再作为导入目标</b>（从前默认选中 A1-A，笔记会被混进教材里）。
+              </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                {['A1-A', 'A1-B', 'A2'].map(b => (
+                {[NOTE_BOOK_ID].map(b => (
                   <button
                     key={b}
                     type="button"

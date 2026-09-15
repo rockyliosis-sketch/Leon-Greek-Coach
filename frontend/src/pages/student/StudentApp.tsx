@@ -2024,6 +2024,15 @@ export default function StudentApp() {
         // Automatically migrate dirty data: notes mistakenly assigned to A2_36 go to A2_35
         let needSave = false;
         customVocab = customVocab.map((w: Word) => {
+          // 剥掉开头的冠词括号:「(η) οδός」→「οδός」。
+          // 判题规则「希腊语字段含括号即作废」把词表标准写法误伤了 ——
+          // 2026-09-13 那批 16 个词有 3 个因此一道题都出不了。中文释义一个字不动。
+          const stripped = String(w.word_greek || '').replace(
+            /^\s*[（(]\s*(οι|τα|ο|η|το|ένας|μια|μία|ένα)\s*[)）]\s*/i, '').trim();
+          if (stripped && stripped !== w.word_greek) {
+            needSave = true;
+            w = { ...w, word_greek: stripped };
+          }
           if (w.book_id && w.book_id.toUpperCase() === 'A2' && w.unit === 36 && w.note_date) {
             needSave = true;
             return { ...w, unit: 35 };
