@@ -4,6 +4,15 @@ This document establishes the universal development, maintenance, and synchroniz
 
 ---
 
+## 0. Session Start & End Protocol (MANDATORY for every agent)
+
+- **开工先读 `工作进程.md`**（项目根目录）：当前状态、遗留事项、上一次停在哪。
+- **收工更新 `工作进程.md`**：在「三、工作记录」最上面加一节（家长问了什么 / 做了什么 / 停在哪 / 遗留），并同步「一、当前状态」「二、遗留事项」。
+- **每次发版后**运行 `bash scripts/backup_github_releases.sh`，把 GitHub Release 说明备份到 `docs/GitHub发布记录备份.md`。
+- 课堂笔记 `materials/notes/YYYY-MM-DD.md` 只放「`# YYYY-MM-DD` + `| 希腊语 | 中文 |` 表」，家长会整篇粘进后台导入，不许夹校验报告、图源、对号、备注列。
+
+---
+
 ## 1. Project Context & Workspace Root
 
 - **Target Workspace Root**: `/Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach`

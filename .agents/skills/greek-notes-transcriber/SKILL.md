@@ -28,13 +28,24 @@ To guarantee accuracy, transcribe the list line-by-line following this precise s
 *   Cross-verify with existing textbooks or dictionaries if applicable.
 *   If a mismatch is found, or if a handwritten character was misread, correct it and highlight it in the **Calibration Report**.
 
-### 4. Output Generation & Path
-*   Generate a Markdown file containing:
-    *   Header stating the date.
-    *   A table of recognized vocabulary with columns: `序号`, `希腊语 (Greek)`, `中文翻译 (Chinese)`, `语法与发音备注`, `校验状态` (e.g. `[√] 校验通过`).
-    *   A **Calibration Report** detailing handwriting deciphering notes, accent marks verification, and translation alignments.
-*   Write and save the Markdown file directly to:
-    `/Users/johnsmacbook/Documents/antigravity IDE/Greek book/希腊语学习笔记/YYYY-MM-DD.md`
+### 4. Output Generation & Path（2026-09-25 家长定型，以此为准）
+*   The file is pasted **as a whole** into the parent admin import box, so it must contain ONLY:
+
+    ```
+    # 2026-09-23
+
+    | 希腊语 | 中文 |
+    | --- | --- |
+    | σπάω | 打破 |
+    ```
+*   **No** calibration report, image source, check marks, grammar-note or status columns in the file.
+    Put handwriting doubts and calibration notes in the chat reply to the parent instead.
+*   The Chinese column is copied verbatim from the teacher's handwriting — never "correct" it.
+*   Save to: `/Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/notes/YYYY-MM-DD.md`
+*   Verify with the real import code: `python3 scripts/tests/check_note_import.py materials/notes/YYYY-MM-DD.md`
+    (word count and date must match the photo).
+*   If a date's words were already imported, do NOT ask the parent to re-upload; fix the cloud
+    `custom_vocab` directly and update the md file.
 
 ### 5. Confirmation Safeguard
 *   **Do NOT** modify the database `greek_coach.db` or the frontend file `vocabulary.json` during the note transcription phase.
