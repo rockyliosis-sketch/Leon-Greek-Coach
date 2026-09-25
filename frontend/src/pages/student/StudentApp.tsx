@@ -433,13 +433,26 @@ const partitionModules = (
   const daySeed = (y * 372 + mo * 31 + da) * 101;
   const dayCount = Math.floor(new Date(y, mo - 1, da).getTime() / 86400000);
 
+  // 录入 0–7 天内的课堂笔记词: 每天必须分到题位。
+  // 从前它们和 400 多个复习词一起按 id 哈希洗牌, 每天 190 个题位轮不轮得到全看运气 ——
+  // 2026-09-19 录入的 26 个词, 6 天里在有记录的三个题型中一共只出现了 8 次。
+  const isFreshNote = (w: any) => {
+    if (!w.note_date) return false;
+    const d = daysBetween(w.note_date, dateStr);
+    return d >= 0 && d <= 7;
+  };
   // 前几天出过的排到最后 —— 够用就轮不到它们, 不够用时它们仍然顶得上
   const order3 = (a: any, b: any) => {
+    const fa = isFreshNote(a) ? 0 : 1, fb = isFreshNote(b) ? 0 : 1;
+    if (fa !== fb) return fa - fb;
     const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
     if (ra !== rb) return ra - rb;
     return ((a.id * 137 + daySeed) % 10007) - ((b.id * 137 + daySeed) % 10007);
   };
-  const shuffled = filterDuplicateTranslations([...deck]).sort(order3);
+  // 去重是先到先得, 笔记词又排在卡组最末: 不先把它们挪到前面, 一撞中文就被丢掉
+  // (如笔记的 επισκευάζω「修」撞上课本的 φτιάχνω「修」)。
+  const notesFirst = [...deck].sort((a, b) => (isFreshNote(a) ? 0 : 1) - (isFreshNote(b) ? 0 : 1));
+  const shuffled = filterDuplicateTranslations(notesFirst).sort(order3);
 
   // 每天轮换「谁先挑」, 避免同一个题型总是吃到最新学的词
   const rot = dayCount % MODULE_SPECS_CONST.length;

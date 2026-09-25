@@ -9,11 +9,11 @@
     "level": "A1",
     "word_greek": "«παίζω την κολοκυθιά»",
     "entry": "«παίζω την κολοκυθιά»",
-    "word_chinese": "玩“20个提问”游戏 (\"play 20",
+    "word_chinese": "玩接话游戏",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 2,
@@ -33,11 +33,11 @@
     "level": "A1",
     "word_greek": "αγαπάω",
     "entry": "αγαπάω, -ώ",
-    "word_chinese": "去爱",
+    "word_chinese": "爱",
     "word_english": "to love",
     "pronunciation": "agapao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 4,
@@ -105,11 +105,11 @@
     "level": "A1",
     "word_greek": "Άγγλος",
     "entry": "Άγγλος, -ίδα",
-    "word_chinese": "英国人（男，女）)",
+    "word_chinese": "英国人（男/女）",
     "word_english": "English(man/woman)",
     "pronunciation": "anglos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 10,
@@ -249,11 +249,11 @@
     "level": "A1",
     "word_greek": "αδερφή",
     "entry": "αδερφή, η",
-    "word_chinese": "姐姐",
+    "word_chinese": "姐妹；姐姐；妹妹",
     "word_english": "sister",
     "pronunciation": "aderfi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 22,
@@ -273,11 +273,11 @@
     "level": "A1",
     "word_greek": "αδύνατος",
     "entry": "αδύνατος, -η, -ο",
-    "word_chinese": "薄，苗条",
+    "word_chinese": "瘦；苗条",
     "word_english": "thin, slim",
     "pronunciation": "adynatos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 24,
@@ -321,11 +321,11 @@
     "level": "A1",
     "word_greek": "αεροσυνοδός",
     "entry": "αεροσυνοδός, ο/η",
-    "word_chinese": "空姐/空姐",
+    "word_chinese": "空乘人员；空姐",
     "word_english": "air host/hostess",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 28,
@@ -381,11 +381,11 @@
     "level": "A1",
     "word_greek": "αιγυπτιακός",
     "entry": "αιγυπτιακός, -ή, -ό",
-    "word_chinese": "埃及人",
+    "word_chinese": "埃及的",
     "word_english": "Egyptian",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 33,
@@ -597,11 +597,11 @@
     "level": "A1",
     "word_greek": "αλβανικός",
     "entry": "αλβανικός, -ή, -ό",
-    "word_chinese": "阿尔巴尼亚语",
+    "word_chinese": "阿尔巴尼亚的",
     "word_english": "Albanian",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 51,
@@ -609,11 +609,11 @@
     "level": "A1",
     "word_greek": "Αλβανός",
     "entry": "Αλβανός, -ή/-ίδα",
-    "word_chinese": "阿尔巴尼亚语",
+    "word_chinese": "阿尔巴尼亚人",
     "word_english": "Albanian",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 52,
@@ -753,11 +753,11 @@
     "level": "A1",
     "word_greek": "αμερικανικός",
     "entry": "αμερικανικός, -ή, -ό",
-    "word_chinese": "美国人",
+    "word_chinese": "美国的",
     "word_english": "American",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 64,
@@ -813,11 +813,11 @@
     "level": "A1",
     "word_greek": "ανεβαίνω",
     "entry": "ανεβαίνω",
-    "word_chinese": "上升，攀登，继续",
+    "word_chinese": "上去；攀登；上车",
     "word_english": "to rise, to climb, to get on",
     "pronunciation": "aneveno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 69,
@@ -921,11 +921,11 @@
     "level": "A1",
     "word_greek": "ανοιχτός",
     "entry": "ανοιχτός, -ή, -ό",
-    "word_chinese": "打开",
+    "word_chinese": "开着的；打开的",
     "word_english": "open",
     "pronunciation": "anichtos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 78,
@@ -933,11 +933,11 @@
     "level": "A1",
     "word_greek": "αντίθετος",
     "entry": "αντίθετος, -η, -ο",
-    "word_chinese": "对面的",
+    "word_chinese": "相反的",
     "word_english": "opposite",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 79,
@@ -1065,11 +1065,11 @@
     "level": "A1",
     "word_greek": "απόγευμα",
     "entry": "απόγευμα, το",
-    "word_chinese": "下午，晚上",
+    "word_chinese": "下午",
     "word_english": "afternoon, evening",
     "pronunciation": "apogefma",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 90,
@@ -1113,11 +1113,11 @@
     "level": "A1",
     "word_greek": "αργά",
     "entry": "αργά",
-    "word_chinese": "晚的",
+    "word_chinese": "晚；迟；慢慢地",
     "word_english": "late",
     "pronunciation": "arga",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 94,
@@ -1209,11 +1209,11 @@
     "level": "A1",
     "word_greek": "αριστερά",
     "entry": "αριστερά [adverb]",
-    "word_chinese": "左边 ( left)",
+    "word_chinese": "向左；左边",
     "word_english": "(to the) left",
     "pronunciation": "aristera",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 102,
@@ -1245,11 +1245,11 @@
     "level": "A1",
     "word_greek": "αρχαιολογικός χώρος",
     "entry": "αρχαιολογικός χώρος, ο",
-    "word_chinese": "考古遗址 (archaeological",
+    "word_chinese": "考古遗址",
     "word_english": "archaeological site",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 105,
@@ -1389,11 +1389,11 @@
     "level": "A1",
     "word_greek": "άσχημα",
     "entry": "άσχημα",
-    "word_chinese": "严重地",
+    "word_chinese": "不好；糟糕地",
     "word_english": "badly",
     "pronunciation": "aschima",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 117,
@@ -1497,11 +1497,11 @@
     "level": "A1",
     "word_greek": "Αυστραλός",
     "entry": "Αυστραλός, -ή",
-    "word_chinese": "澳大利亚",
+    "word_chinese": "澳大利亚人",
     "word_english": "Australian",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 126,
@@ -1557,11 +1557,11 @@
     "level": "A1",
     "word_greek": "αυτός",
     "entry": "αυτός, -ή, -ό [for persons]",
-    "word_chinese": "他，这个",
+    "word_chinese": "他；她；它",
     "word_english": "he, she, it",
     "pronunciation": "aftos",
     "pos": "",
-    "zh_source": "claude"
+    "zh_source": "fix"
    },
    {
     "idx": 131,
@@ -1761,11 +1761,11 @@
     "level": "A1",
     "word_greek": "βάφω",
     "entry": "βάφω",
-    "word_chinese": "画画",
+    "word_chinese": "涂颜色；粉刷；染",
     "word_english": "to paint",
     "pronunciation": "vafo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 148,
@@ -1809,11 +1809,11 @@
     "level": "A1",
     "word_greek": "βελγικός",
     "entry": "βελγικός, -ή, -ό",
-    "word_chinese": "比利时人",
+    "word_chinese": "比利时的",
     "word_english": "Belgian",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 152,
@@ -1977,11 +1977,11 @@
     "level": "A1",
     "word_greek": "βόλτα",
     "entry": "βόλτα, η",
-    "word_chinese": "走",
+    "word_chinese": "散步；兜风",
     "word_english": "walk",
     "pronunciation": "volta",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 166,
@@ -2085,11 +2085,11 @@
     "level": "A1",
     "word_greek": "βρύση",
     "entry": "βρύση, η",
-    "word_chinese": "轻敲",
+    "word_chinese": "水龙头",
     "word_english": "tap",
     "pronunciation": "vrysi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 175,
@@ -2181,11 +2181,11 @@
     "level": "A1",
     "word_greek": "γαλλικός",
     "entry": "γαλλικός, -ή, -ό",
-    "word_chinese": "法语",
+    "word_chinese": "法国的；法语的",
     "word_english": "French",
     "pronunciation": "gallikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 183,
@@ -2217,11 +2217,11 @@
     "level": "A1",
     "word_greek": "γαριδάκι",
     "entry": "γαριδάκι, το",
-    "word_chinese": "脆",
+    "word_chinese": "虾条（膨化零食）",
     "word_english": "crisp",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 186,
@@ -2337,11 +2337,11 @@
     "level": "A1",
     "word_greek": "γερμανικός",
     "entry": "γερμανικός, -ή, -ό",
-    "word_chinese": "德语",
+    "word_chinese": "德国的；德语的",
     "word_english": "German",
     "pronunciation": "germanikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 196,
@@ -2505,11 +2505,11 @@
     "level": "A1",
     "word_greek": "γίγαντας",
     "entry": "γίγαντας, ο",
-    "word_chinese": "巨大的",
+    "word_chinese": "巨人",
     "word_english": "giant",
     "pronunciation": "gigadas",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 210,
@@ -2565,11 +2565,11 @@
     "level": "A1",
     "word_greek": "γκάιντα",
     "entry": "γκάιντα, η",
-    "word_chinese": "管子，风笛",
+    "word_chinese": "风笛",
     "word_english": "pipe, bagpipe",
     "pronunciation": "geda",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 215,
@@ -2577,11 +2577,11 @@
     "level": "A1",
     "word_greek": "γκολ",
     "entry": "γκολ, το",
-    "word_chinese": "目标",
+    "word_chinese": "进球",
     "word_english": "goal",
     "pronunciation": "gol",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 216,
@@ -2733,11 +2733,11 @@
     "level": "A1",
     "word_greek": "γράμμα",
     "entry": "γράμμα, το",
-    "word_chinese": "信",
+    "word_chinese": "字母；信",
     "word_english": "letter",
     "pronunciation": "gramma",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 229,
@@ -2877,11 +2877,11 @@
     "level": "A1",
     "word_greek": "γυριστός",
     "entry": "γυριστός, -ή, -ό",
-    "word_chinese": "转身",
+    "word_chinese": "弯的；卷曲的；上翘的",
     "word_english": "turned",
     "pronunciation": "gyristos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 241,
@@ -2937,11 +2937,11 @@
     "level": "A1",
     "word_greek": "δε",
     "entry": "δε(ν)",
-    "word_chinese": "不是",
+    "word_chinese": "不；没有",
     "word_english": "not",
     "pronunciation": "de",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 246,
@@ -3165,11 +3165,11 @@
     "level": "A1",
     "word_greek": "Δημοτικό σχολείο",
     "entry": "Δημοτικό σχολείο, το",
-    "word_chinese": "小学 (Elementary/Primary",
+    "word_chinese": "小学",
     "word_english": "Elementary/Primary School",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 265,
@@ -3213,11 +3213,11 @@
     "level": "A1",
     "word_greek": "διαδρομή",
     "entry": "διαδρομή, η",
-    "word_chinese": "方式，路径",
+    "word_chinese": "路线；路程",
     "word_english": "way, path, route",
     "pronunciation": "diadromi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 269,
@@ -3285,11 +3285,11 @@
     "level": "A1",
     "word_greek": "διαλυτικά",
     "entry": "διαλυτικά, τα",
-    "word_chinese": "元音变音",
+    "word_chinese": "分音符",
     "word_english": "umlaut",
     "pronunciation": "dialytika",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 275,
@@ -3393,11 +3393,11 @@
     "level": "A1",
     "word_greek": "δίπλα",
     "entry": "δίπλα",
-    "word_chinese": "旁",
+    "word_chinese": "在旁边",
     "word_english": "beside",
     "pronunciation": "dipla",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 284,
@@ -3489,11 +3489,11 @@
     "level": "A1",
     "word_greek": "δουλειές σπιτιού",
     "entry": "δουλειές σπιτιού, οι",
-    "word_chinese": "家务活 (housework,",
+    "word_chinese": "家务活",
     "word_english": "housework, housekeeping chores",
     "pronunciation": "",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 292,
@@ -3549,11 +3549,11 @@
     "level": "A1",
     "word_greek": "δυνατά",
     "entry": "δυνατά",
-    "word_chinese": "强烈地",
+    "word_chinese": "大声地；用力地",
     "word_english": "strongly",
     "pronunciation": "dynata",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 297,
@@ -3657,11 +3657,11 @@
     "level": "A1",
     "word_greek": "δώρο",
     "entry": "δώρο, το",
-    "word_chinese": "展示",
+    "word_chinese": "礼物",
     "word_english": "present",
     "pronunciation": "doro",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 306,
@@ -3777,11 +3777,11 @@
     "level": "A1",
     "word_greek": "είμαι σπίτι",
     "entry": "είμαι σπίτι",
-    "word_chinese": "回家 (to be (at) home)",
+    "word_chinese": "在家",
     "word_english": "to be (at) home",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 316,
@@ -4017,11 +4017,11 @@
     "level": "A1",
     "word_greek": "Έλληνας/-ίδα",
     "entry": "Έλληνας/-ίδα, ο/η",
-    "word_chinese": "希腊语",
+    "word_chinese": "希腊人（男/女）",
     "word_english": "Greek",
     "pronunciation": "ellinasida",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 336,
@@ -4029,11 +4029,11 @@
     "level": "A1",
     "word_greek": "ελληνικός",
     "entry": "ελληνικός, -ή, -ό",
-    "word_chinese": "希腊语",
+    "word_chinese": "希腊的；希腊语的",
     "word_english": "Greek, Hellenic",
     "pronunciation": "ellinikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 337,
@@ -4221,11 +4221,11 @@
     "level": "A1",
     "word_greek": "έξω",
     "entry": "έξω",
-    "word_chinese": "出去",
+    "word_chinese": "外面；在外",
     "word_english": "out",
     "pronunciation": "exo",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 353,
@@ -4233,11 +4233,11 @@
     "level": "A1",
     "word_greek": "έξω από",
     "entry": "έξω από",
-    "word_chinese": "外部",
+    "word_chinese": "在……外面",
     "word_english": "outside",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 354,
@@ -4317,11 +4317,11 @@
     "level": "A1",
     "word_greek": "επιτραπέζιο παιχνίδι",
     "entry": "επιτραπέζιο παιχνίδι, το",
-    "word_chinese": "桌面游戏（桌游） (board",
+    "word_chinese": "桌游",
     "word_english": "board",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 361,
@@ -4449,11 +4449,11 @@
     "level": "A1",
     "word_greek": "εσύ",
     "entry": "εσύ, εσείς",
-    "word_chinese": "你",
+    "word_chinese": "你；你们；您",
     "word_english": "you",
     "pronunciation": "esy",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 372,
@@ -4497,11 +4497,11 @@
     "level": "A1",
     "word_greek": "έτος",
     "entry": "έτος, το [see also χρόνος]",
-    "word_chinese": "时间",
+    "word_chinese": "年",
     "word_english": "year",
     "pronunciation": "etos",
     "pos": "",
-    "zh_source": "xref"
+    "zh_source": "fix"
    },
    {
     "idx": 376,
@@ -4593,11 +4593,11 @@
     "level": "A1",
     "word_greek": "Ευρωπαίος",
     "entry": "Ευρωπαίος, -α",
-    "word_chinese": "欧洲的",
+    "word_chinese": "欧洲人",
     "word_english": "European",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 384,
@@ -4725,11 +4725,11 @@
     "level": "A1",
     "word_greek": "εφτακόσιοι/επτακόσιοι",
     "entry": "εφτακόσιοι/επτακόσιοι, -ες, -α",
-    "word_chinese": "七百 (seven",
+    "word_chinese": "七百",
     "word_english": "",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 395,
@@ -4941,11 +4941,11 @@
     "level": "A1",
     "word_greek": "η ώρα είναι τέσσερις",
     "entry": "η ώρα είναι τέσσερις",
-    "word_chinese": "四点整 ((it is) four o'clock)",
+    "word_chinese": "现在四点整",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 413,
@@ -4953,11 +4953,11 @@
     "level": "A1",
     "word_greek": "η ώρα είναι τεσσερισήμισι",
     "entry": "η ώρα είναι τεσσερισήμισι",
-    "word_chinese": "四点半 ((it is) half past",
+    "word_chinese": "现在四点半",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 414,
@@ -5181,11 +5181,11 @@
     "level": "A1",
     "word_greek": "θέα",
     "entry": "θέα, η",
-    "word_chinese": "看法",
+    "word_chinese": "景色；风景",
     "word_english": "view",
     "pronunciation": "thea",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 433,
@@ -5481,11 +5481,11 @@
     "level": "A1",
     "word_greek": "ισπανικός",
     "entry": "ισπανικός, -ή, -ό",
-    "word_chinese": "西班牙语",
+    "word_chinese": "西班牙的；西班牙语的",
     "word_english": "Spanish",
     "pronunciation": "ispanikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 458,
@@ -5493,11 +5493,11 @@
     "level": "A1",
     "word_greek": "Ισπανός",
     "entry": "Ισπανός, -ίδα",
-    "word_chinese": "西班牙语",
+    "word_chinese": "西班牙人",
     "word_english": "Spanish",
     "pronunciation": "ispanos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 459,
@@ -5529,11 +5529,11 @@
     "level": "A1",
     "word_greek": "ιταλικός",
     "entry": "ιταλικός, -ή, -ό",
-    "word_chinese": "意大利语",
+    "word_chinese": "意大利的；意大利语的",
     "word_english": "Italian",
     "pronunciation": "italikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 462,
@@ -5541,11 +5541,11 @@
     "level": "A1",
     "word_greek": "Ιταλός",
     "entry": "Ιταλός, -ίδα",
-    "word_chinese": "意大利语",
+    "word_chinese": "意大利人",
     "word_english": "Italian",
     "pronunciation": "italos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 463,
@@ -5601,11 +5601,11 @@
     "level": "A1",
     "word_greek": "καημένος",
     "entry": "καημένος, -η, -ο",
-    "word_chinese": "贫穷的",
+    "word_chinese": "可怜的",
     "word_english": "poor",
     "pronunciation": "kaimenos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 468,
@@ -5637,11 +5637,11 @@
     "level": "A1",
     "word_greek": "καθόλου",
     "entry": "καθόλου",
-    "word_chinese": "任何，全部",
+    "word_chinese": "一点也不；根本不",
     "word_english": "any, at all",
     "pronunciation": "katholou",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 471,
@@ -5781,11 +5781,11 @@
     "level": "A1",
     "word_greek": "καλή διασκέδαση",
     "entry": "καλή διασκέδαση",
-    "word_chinese": "玩得开心，享受 (have a nice time,",
+    "word_chinese": "玩得开心！",
     "word_english": "have a nice time",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 483,
@@ -5877,11 +5877,11 @@
     "level": "A1",
     "word_greek": "καναδικός",
     "entry": "καναδικός, -ή, -ό",
-    "word_chinese": "加拿大人",
+    "word_chinese": "加拿大的",
     "word_english": "Canadian",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 491,
@@ -5973,11 +5973,11 @@
     "level": "A1",
     "word_greek": "καπάκι",
     "entry": "καπάκι, το",
-    "word_chinese": "帽子（有舌帽）",
+    "word_chinese": "盖子",
     "word_english": "",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 499,
@@ -6009,11 +6009,11 @@
     "level": "A1",
     "word_greek": "κάποτε",
     "entry": "κάποτε",
-    "word_chinese": "一次，有一天",
+    "word_chinese": "曾经；从前；有一天",
     "word_english": "once, someday, one day",
     "pronunciation": "kapote",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 502,
@@ -6549,11 +6549,11 @@
     "level": "A1",
     "word_greek": "κινεζικός",
     "entry": "κινεζικός, -ή, -ό",
-    "word_chinese": "中国人",
+    "word_chinese": "中国的；中文的",
     "word_english": "Chinese",
     "pronunciation": "kinezikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 547,
@@ -6669,11 +6669,11 @@
     "level": "A1",
     "word_greek": "κλειδώνω το παράθυρο",
     "entry": "κλειδώνω το παράθυρο",
-    "word_chinese": "关窗户",
+    "word_chinese": "锁上窗户",
     "word_english": "",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 557,
@@ -6681,11 +6681,11 @@
     "level": "A1",
     "word_greek": "κλείνω",
     "entry": "κλείνω [a table at a restaurant]",
-    "word_chinese": "关闭，关掉",
+    "word_chinese": "预订；关闭",
     "word_english": "to",
     "pronunciation": "klino",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 558,
@@ -6777,11 +6777,11 @@
     "level": "A1",
     "word_greek": "κοιτάζω",
     "entry": "κοιτάζω",
-    "word_chinese": "看)",
+    "word_chinese": "看",
     "word_english": "",
     "pronunciation": "kitazo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 566,
@@ -6861,11 +6861,11 @@
     "level": "A1",
     "word_greek": "κόλπο",
     "entry": "κόλπο, το",
-    "word_chinese": "诡计",
+    "word_chinese": "把戏；戏法",
     "word_english": "trick",
     "pronunciation": "kolpo",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 573,
@@ -6945,11 +6945,11 @@
     "level": "A1",
     "word_greek": "κοντάρι",
     "entry": "κοντάρι, το",
-    "word_chinese": "矛，枪",
+    "word_chinese": "长杆；杆子",
     "word_english": "",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 580,
@@ -7125,11 +7125,11 @@
     "level": "A1",
     "word_greek": "κόσμος",
     "entry": "κόσμος, ο",
-    "word_chinese": "宇宙",
+    "word_chinese": "人们；人群；世界",
     "word_english": "people, crowd",
     "pronunciation": "kosmos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 595,
@@ -7137,11 +7137,11 @@
     "level": "A1",
     "word_greek": "κοστίζω",
     "entry": "κοστίζω [see also κάνω]",
-    "word_chinese": "成本",
+    "word_chinese": "值；花费",
     "word_english": "to cost",
     "pronunciation": "kostizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 596,
@@ -7293,11 +7293,11 @@
     "level": "A1",
     "word_greek": "κούνια",
     "entry": "κούνια, η",
-    "word_chinese": "摇摆",
+    "word_chinese": "秋千",
     "word_english": "swing",
     "pronunciation": "kounia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 609,
@@ -7341,11 +7341,11 @@
     "level": "A1",
     "word_greek": "κουράζω",
     "entry": "κουράζω",
-    "word_chinese": "轮胎",
+    "word_chinese": "使疲劳；使累",
     "word_english": "",
     "pronunciation": "kourazo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 613,
@@ -7413,11 +7413,11 @@
     "level": "A1",
     "word_greek": "κρατάω",
     "entry": "κρατάω, -ώ",
-    "word_chinese": "持有",
+    "word_chinese": "拿着；握着",
     "word_english": "to hold",
     "pronunciation": "kratao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 619,
@@ -7473,11 +7473,11 @@
     "level": "A1",
     "word_greek": "κρεoπωλείο",
     "entry": "κρεoπωλείο, το",
-    "word_chinese": "屠夫的",
+    "word_chinese": "肉店",
     "word_english": "the butcher's",
     "pronunciation": "krepolio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 624,
@@ -7509,11 +7509,11 @@
     "level": "A1",
     "word_greek": "κρυμμένος",
     "entry": "κρυμμένος, -η, -ο",
-    "word_chinese": "隐",
+    "word_chinese": "隐藏的",
     "word_english": "hidden",
     "pronunciation": "krymmenos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 627,
@@ -7593,11 +7593,11 @@
     "level": "A1",
     "word_greek": "κυνηγητό",
     "entry": "κυνηγητό, το",
-    "word_chinese": "猫和老鼠",
+    "word_chinese": "捉人游戏；追逐游戏",
     "word_english": "cat and mouse",
     "pronunciation": "kynigito",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 634,
@@ -8145,11 +8145,11 @@
     "level": "A1",
     "word_greek": "μαγικός",
     "entry": "μαγικός, -ή, -ό",
-    "word_chinese": "魔法",
+    "word_chinese": "有魔法的；神奇的",
     "word_english": "magic",
     "pronunciation": "magikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 680,
@@ -8397,11 +8397,11 @@
     "level": "A1",
     "word_greek": "μανάβικο",
     "entry": "μανάβικο, το",
-    "word_chinese": "杂货店的",
+    "word_chinese": "蔬果店",
     "word_english": "the grocer's",
     "pronunciation": "manaviko",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 701,
@@ -8697,11 +8697,11 @@
     "level": "A1",
     "word_greek": "μένω",
     "entry": "μένω",
-    "word_chinese": "留下来，生活",
+    "word_chinese": "住；留下",
     "word_english": "to stay, to live",
     "pronunciation": "meno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 726,
@@ -8853,11 +8853,11 @@
     "level": "A1",
     "word_greek": "μια φορά και έναν καιρό",
     "entry": "μια φορά και έναν καιρό",
-    "word_chinese": "从前，很久以前 (once upon",
+    "word_chinese": "从前；很久以前",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 739,
@@ -8961,11 +8961,11 @@
     "level": "A1",
     "word_greek": "μόνο",
     "entry": "μόνο",
-    "word_chinese": "仅有的",
+    "word_chinese": "只；仅仅",
     "word_english": "only",
     "pronunciation": "mono",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 748,
@@ -9213,11 +9213,11 @@
     "level": "A1",
     "word_greek": "μπιφτέκι",
     "entry": "μπιφτέκι, το",
-    "word_chinese": "汉堡",
+    "word_chinese": "汉堡肉饼",
     "word_english": "burger",
     "pronunciation": "bifteki",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 769,
@@ -9261,11 +9261,11 @@
     "level": "A1",
     "word_greek": "μπότα",
     "entry": "μπότα, η",
-    "word_chinese": "启动",
+    "word_chinese": "靴子",
     "word_english": "boot",
     "pronunciation": "bota",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 773,
@@ -9285,11 +9285,11 @@
     "level": "A1",
     "word_greek": "μπριζόλα",
     "entry": "μπριζόλα, η",
-    "word_chinese": "赌注",
+    "word_chinese": "牛排；排骨",
     "word_english": "stake",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 775,
@@ -9597,11 +9597,11 @@
     "level": "A1",
     "word_greek": "νότα",
     "entry": "νότα, η",
-    "word_chinese": "笔记",
+    "word_chinese": "音符",
     "word_english": "note",
     "pronunciation": "nota",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 801,
@@ -9681,11 +9681,11 @@
     "level": "A1",
     "word_greek": "νωρίς",
     "entry": "νωρίς",
-    "word_chinese": "早期的",
+    "word_chinese": "早；很早",
     "word_english": "early",
     "pronunciation": "noris",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 808,
@@ -9873,11 +9873,11 @@
     "level": "A1",
     "word_greek": "ξύστρα",
     "entry": "ξύστρα, η",
-    "word_chinese": "磨刀器",
+    "word_chinese": "卷笔刀",
     "word_english": "sharpener",
     "pronunciation": "xystra",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 824,
@@ -10029,11 +10029,11 @@
     "level": "A1",
     "word_greek": "ολλανδικός",
     "entry": "ολλανδικός, -ή, -ό",
-    "word_chinese": "荷兰语",
+    "word_chinese": "荷兰的；荷兰语的",
     "word_english": "Dutch",
     "pronunciation": "ollandikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 837,
@@ -10041,11 +10041,11 @@
     "level": "A1",
     "word_greek": "Ολλανδός",
     "entry": "Ολλανδός, -ή",
-    "word_chinese": "荷兰语",
+    "word_chinese": "荷兰人",
     "word_english": "Dutch",
     "pronunciation": "ollandos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 838,
@@ -10065,11 +10065,11 @@
     "level": "A1",
     "word_greek": "όλος",
     "entry": "όλος, -η, -ο",
-    "word_chinese": "整体",
+    "word_chinese": "整个的；全部的",
     "word_english": "the whole",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 840,
@@ -10077,11 +10077,11 @@
     "level": "A1",
     "word_greek": "Ολυμπιακοί αγώνες",
     "entry": "Ολυμπιακοί αγώνες, οι",
-    "word_chinese": "奥林匹克运动会 (Olympic",
+    "word_chinese": "奥林匹克运动会",
     "word_english": "Olympic",
     "pronunciation": "",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 841,
@@ -10173,11 +10173,11 @@
     "level": "A1",
     "word_greek": "όπως",
     "entry": "όπως",
-    "word_chinese": "喜欢，作为",
+    "word_chinese": "像；如同",
     "word_english": "like, as",
     "pronunciation": "opos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 849,
@@ -10233,11 +10233,11 @@
     "level": "A1",
     "word_greek": "όροφος",
     "entry": "όροφος, ο",
-    "word_chinese": "地面",
+    "word_chinese": "楼层",
     "word_english": "floor",
     "pronunciation": "orofos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 854,
@@ -10245,11 +10245,11 @@
     "level": "A1",
     "word_greek": "όταν",
     "entry": "όταν",
-    "word_chinese": "什么时候",
+    "word_chinese": "当……的时候",
     "word_english": "when",
     "pronunciation": "otan",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 855,
@@ -10293,11 +10293,11 @@
     "level": "A1",
     "word_greek": "πάγκος ποδοσφαίρου",
     "entry": "πάγκος ποδοσφαίρου, ο",
-    "word_chinese": "足球替补席 (football",
+    "word_chinese": "足球替补席",
     "word_english": "football",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 859,
@@ -10317,11 +10317,11 @@
     "level": "A1",
     "word_greek": "παζλ",
     "entry": "παζλ, το",
-    "word_chinese": "谜",
+    "word_chinese": "拼图",
     "word_english": "puzzle",
     "pronunciation": "pazl",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 861,
@@ -10365,11 +10365,11 @@
     "level": "A1",
     "word_greek": "παιδική χαρά",
     "entry": "παιδική χαρά, η",
-    "word_chinese": "操场",
+    "word_chinese": "儿童游乐场",
     "word_english": "playground",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 865,
@@ -10377,11 +10377,11 @@
     "level": "A1",
     "word_greek": "παιδότοπος",
     "entry": "παιδότοπος, ο",
-    "word_chinese": "操场",
+    "word_chinese": "儿童游乐场",
     "word_english": "playground",
     "pronunciation": "pedotopos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 866,
@@ -10401,11 +10401,11 @@
     "level": "A1",
     "word_greek": "παίκτης/-τρια",
     "entry": "παίκτης/-τρια, ο/η",
-    "word_chinese": "玩家",
+    "word_chinese": "球员；选手",
     "word_english": "player",
     "pronunciation": "pektistria",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 868,
@@ -10545,11 +10545,11 @@
     "level": "A1",
     "word_greek": "παντελόνι",
     "entry": "παντελόνι, το",
-    "word_chinese": "裤子，长裤，pants)",
+    "word_chinese": "裤子；长裤",
     "word_english": "trousers (a pair of )",
     "pronunciation": "padeloni",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 880,
@@ -10629,11 +10629,11 @@
     "level": "A1",
     "word_greek": "πάρα πολύ",
     "entry": "πάρα πολύ",
-    "word_chinese": "太多了",
+    "word_chinese": "非常；很多",
     "word_english": "too much",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 887,
@@ -10665,11 +10665,11 @@
     "level": "A1",
     "word_greek": "παρακαλώ",
     "entry": "παρακαλώ",
-    "word_chinese": "取悦",
+    "word_chinese": "请；不客气",
     "word_english": "to please",
     "pronunciation": "parakalo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 890,
@@ -10713,11 +10713,11 @@
     "level": "A1",
     "word_greek": "παραπάνω / πιο πάνω",
     "entry": "παραπάνω / πιο πάνω",
-    "word_chinese": "多于",
+    "word_chinese": "上面；更上面",
     "word_english": "above",
     "pronunciation": "parapano  pio pano",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 894,
@@ -10773,11 +10773,11 @@
     "level": "A1",
     "word_greek": "πάρκιγκ",
     "entry": "πάρκιγκ, το",
-    "word_chinese": "停車處",
+    "word_chinese": "停车场",
     "word_english": "parking",
     "pronunciation": "parkig",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 899,
@@ -10833,11 +10833,11 @@
     "level": "A1",
     "word_greek": "πατατάκια",
     "entry": "πατατάκια, τα",
-    "word_chinese": "筹码",
+    "word_chinese": "薯片",
     "word_english": "chips",
     "pronunciation": "patatakia",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 904,
@@ -11037,11 +11037,11 @@
     "level": "A1",
     "word_greek": "περίπτερο",
     "entry": "περίπτερο, το",
-    "word_chinese": "亭",
+    "word_chinese": "报刊亭",
     "word_english": "kiosk",
     "pronunciation": "periptero",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 921,
@@ -11301,11 +11301,11 @@
     "level": "A1",
     "word_greek": "πινέλο",
     "entry": "πινέλο, το",
-    "word_chinese": "刷子",
+    "word_chinese": "画笔",
     "word_english": "brush",
     "pronunciation": "pinelo",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 943,
@@ -11337,11 +11337,11 @@
     "level": "A1",
     "word_greek": "πιο",
     "entry": "πιο",
-    "word_chinese": "更多的",
+    "word_chinese": "更",
     "word_english": "more",
     "pronunciation": "pio",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 946,
@@ -11361,11 +11361,11 @@
     "level": "A1",
     "word_greek": "πιπεριά",
     "entry": "πιπεριά, η",
-    "word_chinese": "胡椒",
+    "word_chinese": "甜椒；辣椒",
     "word_english": "pepper",
     "pronunciation": "piperia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 948,
@@ -11421,11 +11421,11 @@
     "level": "A1",
     "word_greek": "πλατεία",
     "entry": "πλατεία, η",
-    "word_chinese": "正方形",
+    "word_chinese": "广场",
     "word_english": "square",
     "pronunciation": "platia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 953,
@@ -11433,11 +11433,11 @@
     "level": "A1",
     "word_greek": "πλάτη",
     "entry": "πλάτη, η",
-    "word_chinese": "后退",
+    "word_chinese": "后背；背",
     "word_english": "back",
     "pronunciation": "plati",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 954,
@@ -11829,11 +11829,11 @@
     "level": "A1",
     "word_greek": "πόσο κάνει/κάνουν…;",
     "entry": "πόσο κάνει/κάνουν…;",
-    "word_chinese": "……多少钱？ (how much",
+    "word_chinese": "……多少钱？",
     "word_english": "how much",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 987,
@@ -12009,11 +12009,11 @@
     "level": "A1",
     "word_greek": "πρόβατο",
     "entry": "πρόβατο, το",
-    "word_chinese": "羊肉",
+    "word_chinese": "绵羊",
     "word_english": "lamb",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1002,
@@ -12153,11 +12153,11 @@
     "level": "A1",
     "word_greek": "πρωί-πρωί",
     "entry": "πρωί-πρωί",
-    "word_chinese": "大清早，一大清早 (early in the morning, ﬁrst",
+    "word_chinese": "大清早",
     "word_english": "early in the morning",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1014,
@@ -12177,11 +12177,11 @@
     "level": "A1",
     "word_greek": "πυραμίδα",
     "entry": "πυραμίδα [stereometry]",
-    "word_chinese": "实心三角形，金字塔",
+    "word_chinese": "金字塔；棱锥",
     "word_english": "",
     "pronunciation": "pyramida",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1016,
@@ -12225,11 +12225,11 @@
     "level": "A1",
     "word_greek": "ραδιόφωνο",
     "entry": "ραδιόφωνο, το",
-    "word_chinese": "收音机，无线电电话",
+    "word_chinese": "收音机",
     "word_english": "radio",
     "pronunciation": "radiofono",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1020,
@@ -12297,11 +12297,11 @@
     "level": "A1",
     "word_greek": "ρέστα",
     "entry": "ρέστα, τα",
-    "word_chinese": "改变",
+    "word_chinese": "找零；零钱",
     "word_english": "change",
     "pronunciation": "",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1026,
@@ -12345,11 +12345,11 @@
     "level": "A1",
     "word_greek": "ρούχο",
     "entry": "ρούχο, το",
-    "word_chinese": "布",
+    "word_chinese": "衣服",
     "word_english": "cloth",
     "pronunciation": "roucho",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1030,
@@ -12405,11 +12405,11 @@
     "level": "A1",
     "word_greek": "ρωσικός",
     "entry": "ρωσικός, -ή, -ό",
-    "word_chinese": "俄语",
+    "word_chinese": "俄罗斯的；俄语的",
     "word_english": "Russian",
     "pronunciation": "rosikos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1035,
@@ -12693,11 +12693,11 @@
     "level": "A1",
     "word_greek": "σιδερένιος",
     "entry": "σιδερένιος, -ια, -ο",
-    "word_chinese": "铁",
+    "word_chinese": "铁的；铁制的",
     "word_english": "iron",
     "pronunciation": "siderenios",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1059,
@@ -12741,11 +12741,11 @@
     "level": "A1",
     "word_greek": "σκάκι",
     "entry": "σκάκι, το",
-    "word_chinese": "棋",
+    "word_chinese": "国际象棋",
     "word_english": "chess",
     "pronunciation": "skaki",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1063,
@@ -12849,11 +12849,11 @@
     "level": "A1",
     "word_greek": "σκούρος",
     "entry": "σκούρος, -η, -ο",
-    "word_chinese": "黑暗的",
+    "word_chinese": "深色的",
     "word_english": "dark",
     "pronunciation": "skouros",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1072,
@@ -12897,11 +12897,11 @@
     "level": "A1",
     "word_greek": "σκωτσέζικος",
     "entry": "σκωτσέζικος, -η, -ο",
-    "word_chinese": "苏格兰人",
+    "word_chinese": "苏格兰的",
     "word_english": "Scotish",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1076,
@@ -13173,11 +13173,11 @@
     "level": "A1",
     "word_greek": "στήλη",
     "entry": "στήλη, η",
-    "word_chinese": "柱子",
+    "word_chinese": "（报纸/表格的）栏；列",
     "word_english": "column",
     "pronunciation": "stili",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1099,
@@ -13329,11 +13329,11 @@
     "level": "A1",
     "word_greek": "συναντάω",
     "entry": "συναντάω, -ώ",
-    "word_chinese": "遇见，碰见，to come",
+    "word_chinese": "遇见；碰见",
     "word_english": "to meet (with), to",
     "pronunciation": "synadao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1112,
@@ -13449,11 +13449,11 @@
     "level": "A1",
     "word_greek": "σχέδιο",
     "entry": "σχέδιο, το",
-    "word_chinese": "设计",
+    "word_chinese": "图画；草图；计划",
     "word_english": "design",
     "pronunciation": "schedio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1122,
@@ -13533,11 +13533,11 @@
     "level": "A1",
     "word_greek": "ταβέρνα",
     "entry": "ταβέρνα, η",
-    "word_chinese": "酒馆",
+    "word_chinese": "希腊小餐馆",
     "word_english": "tavern",
     "pronunciation": "taverna",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1129,
@@ -13677,11 +13677,11 @@
     "level": "A1",
     "word_greek": "τέλεια",
     "entry": "τέλεια",
-    "word_chinese": "完美的",
+    "word_chinese": "完美地；太好了！",
     "word_english": "perfect",
     "pronunciation": "telia",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1141,
@@ -13845,11 +13845,11 @@
     "level": "A1",
     "word_greek": "τζιν",
     "entry": "τζιν, το",
-    "word_chinese": "牛仔裤)",
+    "word_chinese": "牛仔裤",
     "word_english": "jeans (a pair of )",
     "pronunciation": "tzin",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1155,
@@ -14121,11 +14121,11 @@
     "level": "A1",
     "word_greek": "τρέχω",
     "entry": "τρέχω",
-    "word_chinese": "运行",
+    "word_chinese": "跑",
     "word_english": "to run",
     "pronunciation": "trecho",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1178,
@@ -14265,11 +14265,11 @@
     "level": "A1",
     "word_greek": "τσουλήθρα",
     "entry": "τσουλήθρα, η",
-    "word_chinese": "滑动",
+    "word_chinese": "滑梯",
     "word_english": "slide",
     "pronunciation": "tsoulithra",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1190,
@@ -14421,11 +14421,11 @@
     "level": "A1",
     "word_greek": "υπογραμμίζω",
     "entry": "υπογραμμίζω",
-    "word_chinese": "下划线",
+    "word_chinese": "在下面划线",
     "word_english": "to underline",
     "pronunciation": "ypogrammizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1203,
@@ -14541,11 +14541,11 @@
     "level": "A1",
     "word_greek": "φασαρία",
     "entry": "φασαρία, η",
-    "word_chinese": "大惊小怪",
+    "word_chinese": "吵闹；喧哗",
     "word_english": "fuss",
     "pronunciation": "fasaria",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1213,
@@ -14553,11 +14553,11 @@
     "level": "A1",
     "word_greek": "φασολιά",
     "entry": "φασολιά, η",
-    "word_chinese": "豆计划",
+    "word_chinese": "豆藤；豆茎",
     "word_english": "bean plan",
     "pronunciation": "fasolia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1214,
@@ -14697,11 +14697,11 @@
     "level": "A1",
     "word_greek": "φορά",
     "entry": "φορά, η",
-    "word_chinese": "时间",
+    "word_chinese": "次；回",
     "word_english": "time",
     "pronunciation": "fora",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1226,
@@ -15009,11 +15009,11 @@
     "level": "A1",
     "word_greek": "χαμηλός",
     "entry": "χαμηλός, -ή, -ό",
-    "word_chinese": "短、低",
+    "word_chinese": "低的；矮的",
     "word_english": "short, low",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1252,
@@ -15069,11 +15069,11 @@
     "level": "A1",
     "word_greek": "χάρακας",
     "entry": "χάρακας, ο",
-    "word_chinese": "统治者",
+    "word_chinese": "尺子",
     "word_english": "ruler",
     "pronunciation": "charakas",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1257,
@@ -15237,11 +15237,11 @@
     "level": "A1",
     "word_greek": "χιονοπόλεμος",
     "entry": "χιονοπόλεμος, ο",
-    "word_chinese": "滚雪球",
+    "word_chinese": "打雪仗",
     "word_english": "snowball",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1271,
@@ -15261,11 +15261,11 @@
     "level": "A1",
     "word_greek": "χοντρός",
     "entry": "χοντρός, -ή, -ό",
-    "word_chinese": "肥厚的",
+    "word_chinese": "胖的；粗的；厚的",
     "word_english": "fat, thick",
     "pronunciation": "chodros",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1273,
@@ -15297,11 +15297,11 @@
     "level": "A1",
     "word_greek": "χορός",
     "entry": "χορός, ο",
-    "word_chinese": "跳舞",
+    "word_chinese": "舞蹈；跳舞",
     "word_english": "dancing",
     "pronunciation": "choros",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1276,
@@ -15597,11 +15597,11 @@
     "level": "A1",
     "word_greek": "ψέμα",
     "entry": "ψέμα, το",
-    "word_chinese": "说谎",
+    "word_chinese": "谎言",
     "word_english": "lie",
     "pronunciation": "psema",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1301,
@@ -15669,11 +15669,11 @@
     "level": "A1",
     "word_greek": "ωδείο",
     "entry": "ωδείο, το",
-    "word_chinese": "温室",
+    "word_chinese": "音乐学院",
     "word_english": "conservatory",
     "pronunciation": "odio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1307,
@@ -15791,11 +15791,11 @@
     "level": "A2",
     "word_greek": "αγαπάω",
     "entry": "αγαπάω, -ώ",
-    "word_chinese": "去爱",
+    "word_chinese": "爱",
     "word_english": "to love",
     "pronunciation": "agapao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 4,
@@ -15815,11 +15815,11 @@
     "level": "A2",
     "word_greek": "αγαπημέν-ος",
     "entry": "αγαπημέν-ος, -η, -ο",
-    "word_chinese": "最喜欢的，亲爱的 (favorite,",
+    "word_chinese": "最喜欢的；亲爱的",
     "word_english": "favorite",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 6,
@@ -15875,11 +15875,11 @@
     "level": "A2",
     "word_greek": "αγγλικά",
     "entry": "αγγλικά",
-    "word_chinese": "英语)",
+    "word_chinese": "英语",
     "word_english": "",
     "pronunciation": "anglika",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 11,
@@ -15899,11 +15899,11 @@
     "level": "A2",
     "word_greek": "Άγγλος",
     "entry": "Άγγλος, ο / Αγγλίδα, η",
-    "word_chinese": "英国人（男，女）)",
+    "word_chinese": "英国人（男/女）",
     "word_english": "English(man/woman)",
     "pronunciation": "anglos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 13,
@@ -15923,11 +15923,11 @@
     "level": "A2",
     "word_greek": "αγέλαστο",
     "entry": "αγέλαστο",
-    "word_chinese": "没有笑容，严肃，严厉 (without a smile,",
+    "word_chinese": "没有笑容的；严肃的",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 15,
@@ -15983,11 +15983,11 @@
     "level": "A2",
     "word_greek": "άγνωστ-ος",
     "entry": "άγνωστ-ος, -η, -ο [adj]",
-    "word_chinese": "未知的，不熟悉的 (unknown,",
+    "word_chinese": "未知的；陌生的",
     "word_english": "unknown",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 20,
@@ -16043,11 +16043,11 @@
     "level": "A2",
     "word_greek": "άγρι-ος",
     "entry": "άγρι-ος, -α, -ο [adj]",
-    "word_chinese": "荒野",
+    "word_chinese": "野生的；野蛮的",
     "word_english": "wild",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 25,
@@ -16103,11 +16103,11 @@
     "level": "A2",
     "word_greek": "άδεια",
     "entry": "άδεια, η",
-    "word_chinese": "离开",
+    "word_chinese": "假期；许可",
     "word_english": "leave",
     "pronunciation": "adia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 30,
@@ -16115,11 +16115,11 @@
     "level": "A2",
     "word_greek": "αδελφή",
     "entry": "αδελφή, η",
-    "word_chinese": "姐姐",
+    "word_chinese": "姐妹（姐姐或妹妹）",
     "word_english": "",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 31,
@@ -16163,11 +16163,11 @@
     "level": "A2",
     "word_greek": "αδιάφορος",
     "entry": "αδιάφορος, -η, -ο",
-    "word_chinese": "冷漠的，冷漠的 (indiﬀerent,",
+    "word_chinese": "冷漠的；无所谓的",
     "word_english": "",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 35,
@@ -16211,11 +16211,11 @@
     "level": "A2",
     "word_greek": "αδύνατ-ος",
     "entry": "αδύνατ-ος, -η, -ο",
-    "word_chinese": "薄，苗条",
+    "word_chinese": "瘦的；苗条的",
     "word_english": "thin, slim",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 39,
@@ -16379,11 +16379,11 @@
     "level": "A2",
     "word_greek": "αθλητισμός",
     "entry": "αθλητισμός, ο",
-    "word_chinese": "运动的",
+    "word_chinese": "体育运动",
     "word_english": "sports",
     "pronunciation": "athlitismos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 53,
@@ -16391,11 +16391,11 @@
     "level": "A2",
     "word_greek": "αίθουσα",
     "entry": "αίθουσα, η [school]",
-    "word_chinese": "大厅，房间，休息室",
+    "word_chinese": "教室",
     "word_english": "classroom",
     "pronunciation": "ethousa",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 54,
@@ -16679,11 +16679,11 @@
     "level": "A2",
     "word_greek": "άλλ-ος",
     "entry": "άλλ-ος, -η, -ο",
-    "word_chinese": "其他，另一个，其他 (other, another,",
+    "word_chinese": "其他的；另一个",
     "word_english": "other, another, else",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 78,
@@ -16739,11 +16739,11 @@
     "level": "A2",
     "word_greek": "άλλοτε – άλλοτε",
     "entry": "άλλοτε – άλλοτε",
-    "word_chinese": "有时——有时 (sometimes –",
+    "word_chinese": "有时……有时……",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 83,
@@ -16883,11 +16883,11 @@
     "level": "A2",
     "word_greek": "ανακατεμέν-ος",
     "entry": "ανακατεμέν-ος, -η, -ο",
-    "word_chinese": "混合的，混合的 (mixed,",
+    "word_chinese": "混合的；搅拌过的",
     "word_english": "mixed, blended",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 95,
@@ -17087,11 +17087,11 @@
     "level": "A2",
     "word_greek": "ανεβαίνω",
     "entry": "ανεβαίνω",
-    "word_chinese": "上升，攀登，继续",
+    "word_chinese": "上去；攀登；上车",
     "word_english": "to rise, to climb, to get on",
     "pronunciation": "aneveno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 112,
@@ -17411,11 +17411,11 @@
     "level": "A2",
     "word_greek": "αξιοθέατο",
     "entry": "αξιοθέατο, το",
-    "word_chinese": "视线，吸引力",
+    "word_chinese": "名胜；景点",
     "word_english": "sight, attraction",
     "pronunciation": "axiotheato",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 139,
@@ -17423,11 +17423,11 @@
     "level": "A2",
     "word_greek": "αξιόλογος",
     "entry": "αξιόλογος, -η, -ο",
-    "word_chinese": "非凡的，值得的 (remarkable,",
+    "word_chinese": "值得注意的；出色的",
     "word_english": "",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 140,
@@ -17435,11 +17435,11 @@
     "level": "A2",
     "word_greek": "αξιόπιστος",
     "entry": "αξιόπιστος, -η, -ο",
-    "word_chinese": "值得信赖的，可靠的 (trustworthy,",
+    "word_chinese": "值得信赖的；可靠的",
     "word_english": "",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 141,
@@ -17447,11 +17447,11 @@
     "level": "A2",
     "word_greek": "αξιωματικός",
     "entry": "αξιωματικός, ο",
-    "word_chinese": "官",
+    "word_chinese": "军官",
     "word_english": "",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 142,
@@ -17459,11 +17459,11 @@
     "level": "A2",
     "word_greek": "αξιωματούχος",
     "entry": "αξιωματούχος, ο",
-    "word_chinese": "官方的",
+    "word_chinese": "官员",
     "word_english": "",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 143,
@@ -17555,11 +17555,11 @@
     "level": "A2",
     "word_greek": "απλώνω",
     "entry": "απλώνω",
-    "word_chinese": "传播",
+    "word_chinese": "摊开；涂抹；晾开",
     "word_english": "to spread",
     "pronunciation": "aplono",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 151,
@@ -17591,11 +17591,11 @@
     "level": "A2",
     "word_greek": "Aπό πού είσαι/είστε?",
     "entry": "Aπό πού είσαι/είστε?",
-    "word_chinese": "你从哪来？ (Where are you (στη) συνέχεια — 之后，在那之后 (afterwards, after",
+    "word_chinese": "你从哪里来？",
     "word_english": "Where",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 154,
@@ -17627,11 +17627,11 @@
     "level": "A2",
     "word_greek": "απογευματιν-ός",
     "entry": "απογευματιν-ός, -ή, -ό",
-    "word_chinese": "下午、晚上 (afternoon,",
+    "word_chinese": "下午的",
     "word_english": "afternoon",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 157,
@@ -17675,11 +17675,11 @@
     "level": "A2",
     "word_greek": "αποδίδω",
     "entry": "αποδίδω",
-    "word_chinese": "产量，渲染",
+    "word_chinese": "归还；表达；产生效果",
     "word_english": "",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 161,
@@ -17723,11 +17723,11 @@
     "level": "A2",
     "word_greek": "Απόκριες",
     "entry": "Απόκριες, οι",
-    "word_chinese": "狂欢节，万圣节",
+    "word_chinese": "狂欢节",
     "word_english": "Carnival time /",
     "pronunciation": "apokries",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 165,
@@ -17795,11 +17795,11 @@
     "level": "A2",
     "word_greek": "απομακρύνω",
     "entry": "απομακρύνω",
-    "word_chinese": "移除、距离",
+    "word_chinese": "移开；使远离",
     "word_english": "",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 171,
@@ -17939,11 +17939,11 @@
     "level": "A2",
     "word_greek": "αργά",
     "entry": "αργά [adv]",
-    "word_chinese": "晚的",
+    "word_chinese": "晚；迟；慢慢地",
     "word_english": "late",
     "pronunciation": "arga",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 183,
@@ -17987,11 +17987,11 @@
     "level": "A2",
     "word_greek": "αριστερά",
     "entry": "αριστερά [adv]",
-    "word_chinese": "左边 ( left)",
+    "word_chinese": "向左；左边",
     "word_english": "(to the) left",
     "pronunciation": "aristera",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 187,
@@ -18059,11 +18059,11 @@
     "level": "A2",
     "word_greek": "αρχαιότητα",
     "entry": "αρχαιότητα, η",
-    "word_chinese": "古代，远古时代 (antiquity, ancient",
+    "word_chinese": "古代；古典时期",
     "word_english": "antiquity, ancient",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 193,
@@ -18107,11 +18107,11 @@
     "level": "A2",
     "word_greek": "ας",
     "entry": "ας",
-    "word_chinese": "让)",
+    "word_chinese": "让……吧",
     "word_english": "let(s)",
     "pronunciation": "as",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 197,
@@ -18179,11 +18179,11 @@
     "level": "A2",
     "word_greek": "αστράφτει",
     "entry": "αστράφτει [weather]",
-    "word_chinese": "是闪电",
+    "word_chinese": "打闪电；闪电了",
     "word_english": "it’s lightning",
     "pronunciation": "astrafti",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 203,
@@ -18215,11 +18215,11 @@
     "level": "A2",
     "word_greek": "αστυνομικός",
     "entry": "αστυνομικός, ο/η",
-    "word_chinese": "警察，女",
+    "word_chinese": "警察",
     "word_english": "policeman/woman",
     "pronunciation": "astynomikos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 206,
@@ -18251,11 +18251,11 @@
     "level": "A2",
     "word_greek": "άσχημα",
     "entry": "άσχημα",
-    "word_chinese": "严重地",
+    "word_chinese": "不好；糟糕地",
     "word_english": "badly",
     "pronunciation": "aschima",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 209,
@@ -18263,11 +18263,11 @@
     "level": "A2",
     "word_greek": "ασχολία",
     "entry": "ασχολία, η",
-    "word_chinese": "职业、消遣、爱好 (occupation, diversion,",
+    "word_chinese": "工作；消遣；爱好",
     "word_english": "occupation, diversion",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 210,
@@ -18359,11 +18359,11 @@
     "level": "A2",
     "word_greek": "αυτ-ός",
     "entry": "αυτ-ός, -ή, -ό [for persons]",
-    "word_chinese": "他、她、它 (he, she,",
+    "word_chinese": "他；她；它",
     "word_english": "he, she, it",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 218,
@@ -18419,11 +18419,11 @@
     "level": "A2",
     "word_greek": "αφετηρία λεωφορείου",
     "entry": "αφετηρία λεωφορείου, η",
-    "word_chinese": "巴士起点 (bus starting",
+    "word_chinese": "公交起点站",
     "word_english": "bus",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 223,
@@ -18515,11 +18515,11 @@
     "level": "A2",
     "word_greek": "βαμβάκι",
     "entry": "βαμβάκι, το",
-    "word_chinese": "棉布",
+    "word_chinese": "棉花",
     "word_english": "cotton",
     "pronunciation": "vamvaki",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 231,
@@ -18539,11 +18539,11 @@
     "level": "A2",
     "word_greek": "βάση",
     "entry": "βάση, η",
-    "word_chinese": "根据",
+    "word_chinese": "基础；底部",
     "word_english": "base",
     "pronunciation": "vasi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 233,
@@ -18623,11 +18623,11 @@
     "level": "A2",
     "word_greek": "βάφω",
     "entry": "βάφω",
-    "word_chinese": "画画",
+    "word_chinese": "涂颜色；粉刷；染",
     "word_english": "to paint, to dye",
     "pronunciation": "vafo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 240,
@@ -18719,11 +18719,11 @@
     "level": "A2",
     "word_greek": "βιβλιάριο τράπεζας",
     "entry": "βιβλιάριο τράπεζας, το",
-    "word_chinese": "存折，存折 (bankbook,",
+    "word_chinese": "存折",
     "word_english": "bankbook",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 248,
@@ -18935,11 +18935,11 @@
     "level": "A2",
     "word_greek": "βραστ-ός",
     "entry": "βραστ-ός, -ή, -ό",
-    "word_chinese": "煮沸",
+    "word_chinese": "煮的；水煮的",
     "word_english": "boiled",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 266,
@@ -18947,11 +18947,11 @@
     "level": "A2",
     "word_greek": "βρεφονηπιακός σταθμός",
     "entry": "βρεφονηπιακός σταθμός, ο",
-    "word_chinese": "苗圃",
+    "word_chinese": "托儿所",
     "word_english": "nursery",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 267,
@@ -19103,11 +19103,11 @@
     "level": "A2",
     "word_greek": "γαλλικ-ός",
     "entry": "γαλλικ-ός, -ή, -ό",
-    "word_chinese": "法语",
+    "word_chinese": "法国的；法语的",
     "word_english": "French",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 280,
@@ -19235,11 +19235,11 @@
     "level": "A2",
     "word_greek": "γεμίζω",
     "entry": "γεμίζω",
-    "word_chinese": "填补",
+    "word_chinese": "装满；填满",
     "word_english": "to fill",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 291,
@@ -19331,11 +19331,11 @@
     "level": "A2",
     "word_greek": "γερμανικ-ός",
     "entry": "γερμανικ-ός, -ή, -ό",
-    "word_chinese": "德语",
+    "word_chinese": "德国的；德语的",
     "word_english": "German",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 299,
@@ -19379,11 +19379,11 @@
     "level": "A2",
     "word_greek": "γεύση",
     "entry": "γεύση, η",
-    "word_chinese": "品尝",
+    "word_chinese": "味道；口味",
     "word_english": "taste",
     "pronunciation": "gefsi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 303,
@@ -19643,11 +19643,11 @@
     "level": "A2",
     "word_greek": "γνωριμία",
     "entry": "γνωριμία, η",
-    "word_chinese": "熟人",
+    "word_chinese": "相识；结识",
     "word_english": "acquaintance",
     "pronunciation": "gnorimia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 325,
@@ -19739,11 +19739,11 @@
     "level": "A2",
     "word_greek": "γραμματοκιβώτιο",
     "entry": "γραμματοκιβώτιο, το",
-    "word_chinese": "邮箱, 信箱, 信箱 (mailbox,",
+    "word_chinese": "邮箱；信箱",
     "word_english": "mailbox",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 333,
@@ -19895,11 +19895,11 @@
     "level": "A2",
     "word_greek": "Γυμνάσιο",
     "entry": "Γυμνάσιο, το",
-    "word_chinese": "高中，中学",
+    "word_chinese": "初中",
     "word_english": "High school",
     "pronunciation": "gymnasio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 346,
@@ -19967,11 +19967,11 @@
     "level": "A2",
     "word_greek": "γύρω",
     "entry": "γύρω",
-    "word_chinese": "大约",
+    "word_chinese": "周围；大约",
     "word_english": "around",
     "pronunciation": "gyro",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 352,
@@ -20003,11 +20003,11 @@
     "level": "A2",
     "word_greek": "ΔΕΗ",
     "entry": "ΔΕΗ (Δημόσια Επιχείρηση Ηλεκτρισμού)",
-    "word_chinese": "南澳希",
+    "word_chinese": "希腊国家电力公司",
     "word_english": "Public Power",
     "pronunciation": "dei",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 355,
@@ -20159,11 +20159,11 @@
     "level": "A2",
     "word_greek": "ΔΕΠΑ",
     "entry": "ΔΕΠΑ (Δημόσια Επιχείρηση Αερίου ΑΕ)",
-    "word_chinese": "天然气供",
+    "word_chinese": "希腊天然气公司",
     "word_english": "",
     "pronunciation": "depa",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 368,
@@ -20219,11 +20219,11 @@
     "level": "A2",
     "word_greek": "δηλαδή",
     "entry": "δηλαδή",
-    "word_chinese": "的意思就是",
+    "word_chinese": "也就是说",
     "word_english": "meaning, that is",
     "pronunciation": "diladi",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 373,
@@ -20339,11 +20339,11 @@
     "level": "A2",
     "word_greek": "δημόσι-ος",
     "entry": "δημόσι-ος, -α, -ο",
-    "word_chinese": "民众",
+    "word_chinese": "公共的；公立的",
     "word_english": "public",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 383,
@@ -20375,11 +20375,11 @@
     "level": "A2",
     "word_greek": "Δημοτικό σχολείο",
     "entry": "Δημοτικό σχολείο, το",
-    "word_chinese": "小学 (Elementary/Primary",
+    "word_chinese": "小学",
     "word_english": "Elementary/",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 386,
@@ -20483,11 +20483,11 @@
     "level": "A2",
     "word_greek": "διαδοχικ-ός",
     "entry": "διαδοχικ-ός, -ή, -ό",
-    "word_chinese": "连续的，连续的 (successive,",
+    "word_chinese": "连续的；接连的",
     "word_english": "successive",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 395,
@@ -20507,11 +20507,11 @@
     "level": "A2",
     "word_greek": "διαδρομή",
     "entry": "διαδρομή, η",
-    "word_chinese": "方式，路径",
+    "word_chinese": "路线；路程",
     "word_english": "way, path, route",
     "pronunciation": "diadromi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 397,
@@ -20651,11 +20651,11 @@
     "level": "A2",
     "word_greek": "διάστημα",
     "entry": "διάστημα, το [temporal]",
-    "word_chinese": "空间",
+    "word_chinese": "一段时间；期间",
     "word_english": "period",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 409,
@@ -20831,11 +20831,11 @@
     "level": "A2",
     "word_greek": "δίνομαι",
     "entry": "δίνομαι",
-    "word_chinese": "给予",
+    "word_chinese": "被给予",
     "word_english": "to be given",
     "pronunciation": "dinome",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 424,
@@ -20879,11 +20879,11 @@
     "level": "A2",
     "word_greek": "δίπλα",
     "entry": "δίπλα",
-    "word_chinese": "旁",
+    "word_chinese": "在旁边",
     "word_english": "beside, next",
     "pronunciation": "dipla",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 428,
@@ -20891,11 +20891,11 @@
     "level": "A2",
     "word_greek": "διπλαν-ός",
     "entry": "διπλαν-ός, -ή, -ό",
-    "word_chinese": "附近",
+    "word_chinese": "旁边的；隔壁的",
     "word_english": "nearby",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 429,
@@ -20915,11 +20915,11 @@
     "level": "A2",
     "word_greek": "ΔΟΥ",
     "entry": "ΔΟΥ (Δημόσια Οικονομική Υπηρεσία)",
-    "word_chinese": "税务局，公共",
+    "word_chinese": "税务局",
     "word_english": "Tax Office / Public Fiscal",
     "pronunciation": "dou",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 431,
@@ -20939,11 +20939,11 @@
     "level": "A2",
     "word_greek": "δουλειές σπιτιού",
     "entry": "δουλειές σπιτιού, οι",
-    "word_chinese": "家务活 (housework,",
+    "word_chinese": "家务活",
     "word_english": "housework, housekeeping chores",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 433,
@@ -20963,11 +20963,11 @@
     "level": "A2",
     "word_greek": "Δράμα",
     "entry": "Δράμα, η",
-    "word_chinese": "戏剧",
+    "word_chinese": "德拉马",
     "word_english": "Drama",
     "pronunciation": "drama",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 435,
@@ -21011,11 +21011,11 @@
     "level": "A2",
     "word_greek": "δρομολόγιο",
     "entry": "δρομολόγιο, το",
-    "word_chinese": "巴士/火车时刻表 (bus/train",
+    "word_chinese": "班次；路线",
     "word_english": "bus/train schedule",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 439,
@@ -21059,11 +21059,11 @@
     "level": "A2",
     "word_greek": "δυνατά",
     "entry": "δυνατά [adv; in general]",
-    "word_chinese": "强烈地",
+    "word_chinese": "大声地；用力地",
     "word_english": "strongly",
     "pronunciation": "dynata",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 443,
@@ -21119,11 +21119,11 @@
     "level": "A2",
     "word_greek": "δύσκολα",
     "entry": "δύσκολα [adv]",
-    "word_chinese": "几乎，勉强",
+    "word_chinese": "困难地；勉强",
     "word_english": "hardly, barely",
     "pronunciation": "dyskola",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 448,
@@ -21179,11 +21179,11 @@
     "level": "A2",
     "word_greek": "δώρο",
     "entry": "δώρο, το",
-    "word_chinese": "展示",
+    "word_chinese": "礼物",
     "word_english": "present",
     "pronunciation": "doro",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 453,
@@ -21443,11 +21443,11 @@
     "level": "A2",
     "word_greek": "είμαι σπίτι",
     "entry": "είμαι σπίτι",
-    "word_chinese": "回家 (to be (at) home)",
+    "word_chinese": "在家",
     "word_english": "to be (at) home",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 475,
@@ -21479,11 +21479,11 @@
     "level": "A2",
     "word_greek": "εισιτήριο με επιστροφή",
     "entry": "εισιτήριο με επιστροφή",
-    "word_chinese": "回程票",
+    "word_chinese": "往返票",
     "word_english": "return",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 478,
@@ -21623,11 +21623,11 @@
     "level": "A2",
     "word_greek": "εκπτώσεις",
     "entry": "εκπτώσεις, οι",
-    "word_chinese": "销售量",
+    "word_chinese": "打折；减价",
     "word_english": "sales",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 490,
@@ -21683,11 +21683,11 @@
     "level": "A2",
     "word_greek": "ελαφρύς",
     "entry": "ελαφρύς, -ιά, -ύ",
-    "word_chinese": "光",
+    "word_chinese": "轻的",
     "word_english": "light",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 495,
@@ -21767,11 +21767,11 @@
     "level": "A2",
     "word_greek": "Έλληνας",
     "entry": "Έλληνας, ο / Ελληνίδα, η",
-    "word_chinese": "希腊语",
+    "word_chinese": "希腊人",
     "word_english": "Greek",
     "pronunciation": "ellinas",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 502,
@@ -21779,11 +21779,11 @@
     "level": "A2",
     "word_greek": "ελληνικ-ός",
     "entry": "ελληνικ-ός, -ή, -ό",
-    "word_chinese": "希腊语、希腊语",
+    "word_chinese": "希腊的；希腊语的",
     "word_english": "Greek, Hellenic",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 503,
@@ -21875,11 +21875,11 @@
     "level": "A2",
     "word_greek": "εμπορικό κέντρο",
     "entry": "εμπορικό κέντρο, το",
-    "word_chinese": "购物中心/中心, 购物中心",
+    "word_chinese": "购物中心",
     "word_english": "shopping",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 511,
@@ -22007,11 +22007,11 @@
     "level": "A2",
     "word_greek": "ενοίκιο",
     "entry": "ενοίκιο, το",
-    "word_chinese": "租",
+    "word_chinese": "房租",
     "word_english": "rent",
     "pronunciation": "enikio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 522,
@@ -22091,11 +22091,11 @@
     "level": "A2",
     "word_greek": "έξοδος",
     "entry": "έξοδος, η",
-    "word_chinese": "出去过夜",
+    "word_chinese": "晚上出去玩",
     "word_english": "a night out",
     "pronunciation": "exodos",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 529,
@@ -22151,11 +22151,11 @@
     "level": "A2",
     "word_greek": "έξω από",
     "entry": "έξω από",
-    "word_chinese": "外部",
+    "word_chinese": "在……外面",
     "word_english": "outside",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 534,
@@ -22235,11 +22235,11 @@
     "level": "A2",
     "word_greek": "επικίνδυν-ος",
     "entry": "επικίνδυν-ος, -η, -ο",
-    "word_chinese": "危险的，有风险的 (dangerous,",
+    "word_chinese": "危险的",
     "word_english": "dangerous",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 541,
@@ -22355,11 +22355,11 @@
     "level": "A2",
     "word_greek": "επιτέλους",
     "entry": "επιτέλους",
-    "word_chinese": "最后",
+    "word_chinese": "终于",
     "word_english": "at last, finally",
     "pronunciation": "epitelous",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 551,
@@ -22367,11 +22367,11 @@
     "level": "A2",
     "word_greek": "επιτυχία",
     "entry": "επιτυχία, η [in general]",
-    "word_chinese": "打",
+    "word_chinese": "成功",
     "word_english": "success",
     "pronunciation": "epitychia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 552,
@@ -22427,11 +22427,11 @@
     "level": "A2",
     "word_greek": "έργο θεατρικό",
     "entry": "έργο θεατρικό, το",
-    "word_chinese": "玩",
+    "word_chinese": "戏剧；话剧",
     "word_english": "play",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 557,
@@ -22571,11 +22571,11 @@
     "level": "A2",
     "word_greek": "έτος",
     "entry": "έτος, το [see also χρόνος]",
-    "word_chinese": "时间",
+    "word_chinese": "年",
     "word_english": "year",
     "pronunciation": "etos",
     "pos": "中",
-    "zh_source": "xref"
+    "zh_source": "fix"
    },
    {
     "idx": 569,
@@ -22691,11 +22691,11 @@
     "level": "A2",
     "word_greek": "Ευρωπαίος",
     "entry": "Ευρωπαίος, ο / Ευρωπαία, η",
-    "word_chinese": "欧洲的",
+    "word_chinese": "欧洲人",
     "word_english": "European",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 579,
@@ -23111,11 +23111,11 @@
     "level": "A2",
     "word_greek": "η ώρα είναι τέσσερις",
     "entry": "η ώρα είναι τέσσερις",
-    "word_chinese": "现在是四点钟 (it is four o’",
+    "word_chinese": "现在是四点钟",
     "word_english": "it is four o’",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 614,
@@ -23123,11 +23123,11 @@
     "level": "A2",
     "word_greek": "η ώρα είναι τεσσερισήμισι",
     "entry": "η ώρα είναι τεσσερισήμισι",
-    "word_chinese": "现在是四点半 (it is half",
+    "word_chinese": "现在是四点半",
     "word_english": "it is",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 615,
@@ -23171,11 +23171,11 @@
     "level": "A2",
     "word_greek": "ηλεκτροπληξία",
     "entry": "ηλεκτροπληξία, η",
-    "word_chinese": "触电、触电 (electrocution, electric",
+    "word_chinese": "触电",
     "word_english": "electrocution",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 619,
@@ -23195,11 +23195,11 @@
     "level": "A2",
     "word_greek": "ηλικιωμένoς",
     "entry": "ηλικιωμένoς, ο / ηλικωμένη, η",
-    "word_chinese": "年长的, 年长的,",
+    "word_chinese": "老人；长者",
     "word_english": "",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 621,
@@ -23267,11 +23267,11 @@
     "level": "A2",
     "word_greek": "ήσυχ-ος",
     "entry": "ήσυχ-ος, -η, -ο",
-    "word_chinese": "沉默的、安静的、平静的 (silent,",
+    "word_chinese": "安静的；平静的",
     "word_english": "silent, quiet, calm",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 627,
@@ -23339,11 +23339,11 @@
     "level": "A2",
     "word_greek": "θέα",
     "entry": "θέα, η",
-    "word_chinese": "看法",
+    "word_chinese": "景色；风景",
     "word_english": "view",
     "pronunciation": "thea",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 633,
@@ -23375,11 +23375,11 @@
     "level": "A2",
     "word_greek": "θεατρικό έργο",
     "entry": "θεατρικό έργο, το",
-    "word_chinese": "玩",
+    "word_chinese": "戏剧；话剧",
     "word_english": "play",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 636,
@@ -23471,11 +23471,11 @@
     "level": "A2",
     "word_greek": "Θεσσαλονίκης)",
     "entry": "Θεσσαλονίκης)",
-    "word_chinese": "塞萨洛尼基供水和污水处理公司",
+    "word_chinese": "",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 644,
@@ -23495,11 +23495,11 @@
     "level": "A2",
     "word_greek": "θήκη",
     "entry": "θήκη, η",
-    "word_chinese": "案件",
+    "word_chinese": "盒子；套子",
     "word_english": "case",
     "pronunciation": "thiki",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 646,
@@ -23507,11 +23507,11 @@
     "level": "A2",
     "word_greek": "Θρησκευτικά",
     "entry": "Θρησκευτικά [school subject]",
-    "word_chinese": "宗教阶层",
+    "word_chinese": "宗教课",
     "word_english": "",
     "pronunciation": "thriskeftika",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 647,
@@ -23603,11 +23603,11 @@
     "level": "A2",
     "word_greek": "ίδρυμα",
     "entry": "ίδρυμα, το",
-    "word_chinese": "研究所/机构、基金会 (institute/",
+    "word_chinese": "机构；基金会",
     "word_english": "institute/institution",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 655,
@@ -23723,11 +23723,11 @@
     "level": "A2",
     "word_greek": "κάγκελο",
     "entry": "κάγκελο, το",
-    "word_chinese": "酒吧、铁路",
+    "word_chinese": "栏杆；铁栏",
     "word_english": "bar, rail",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 665,
@@ -24011,11 +24011,11 @@
     "level": "A2",
     "word_greek": "καλεσμέν-ος",
     "entry": "καλεσμέν-ος, -η, -ο",
-    "word_chinese": "邀请",
+    "word_chinese": "被邀请的",
     "word_english": "invited",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 689,
@@ -24035,11 +24035,11 @@
     "level": "A2",
     "word_greek": "Kαλή διασκέδαση!",
     "entry": "Kαλή διασκέδαση!",
-    "word_chinese": "玩得开心！ (Have fun! / Enjoy!",
+    "word_chinese": "玩得开心！",
     "word_english": "Have fun! /",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 691,
@@ -24059,11 +24059,11 @@
     "level": "A2",
     "word_greek": "Καλή όρεξη!",
     "entry": "Καλή όρεξη!",
-    "word_chinese": "祝您好胃口！ (Bon appetite! / Enjoy your",
+    "word_chinese": "祝你好胃口！",
     "word_english": "Bon appetite! / Enjoy",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 693,
@@ -24179,11 +24179,11 @@
     "level": "A2",
     "word_greek": "καλώ]",
     "entry": "καλώ]",
-    "word_chinese": "邀请",
+    "word_chinese": "",
     "word_english": "",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 703,
@@ -24251,11 +24251,11 @@
     "level": "A2",
     "word_greek": "κανονικ-ός",
     "entry": "κανονικ-ός, -ή, -ό",
-    "word_chinese": "正常的，有规律的 (normal,",
+    "word_chinese": "正常的；规律的",
     "word_english": "normal, regular",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 709,
@@ -24383,11 +24383,11 @@
     "level": "A2",
     "word_greek": "καρναβάλι",
     "entry": "καρναβάλι, το [see also Απόκριες]",
-    "word_chinese": "狂欢节/万圣",
+    "word_chinese": "狂欢节",
     "word_english": "",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 720,
@@ -24455,11 +24455,11 @@
     "level": "A2",
     "word_greek": "κατάθεση",
     "entry": "κατάθεση, η",
-    "word_chinese": "订金",
+    "word_chinese": "存款",
     "word_english": "deposit",
     "pronunciation": "katathesi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 726,
@@ -24491,11 +24491,11 @@
     "level": "A2",
     "word_greek": "κατάλληλ-ος",
     "entry": "κατάλληλ-ος, -η, -ο",
-    "word_chinese": "适当的，合适的 (appropriate,",
+    "word_chinese": "合适的；恰当的",
     "word_english": "appropriate",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 729,
@@ -24503,11 +24503,11 @@
     "level": "A2",
     "word_greek": "κατανόηση γραπτού λόγου",
     "entry": "κατανόηση γραπτού λόγου, η",
-    "word_chinese": "阅读理解 (reading",
+    "word_chinese": "阅读理解",
     "word_english": "",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 730,
@@ -24527,11 +24527,11 @@
     "level": "A2",
     "word_greek": "καταπληκτικ-ός",
     "entry": "καταπληκτικ-ός, -ή, -ό",
-    "word_chinese": "惊人的，精彩的 (amazing,",
+    "word_chinese": "惊人的；精彩的",
     "word_english": "amazing",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 732,
@@ -24575,11 +24575,11 @@
     "level": "A2",
     "word_greek": "καταφέρνω",
     "entry": "καταφέρνω",
-    "word_chinese": "管理，实现",
+    "word_chinese": "做到；设法完成",
     "word_english": "to manage, to achieve",
     "pronunciation": "kataferno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 736,
@@ -24767,11 +24767,11 @@
     "level": "A2",
     "word_greek": "κελί",
     "entry": "κελί, το",
-    "word_chinese": "细胞",
+    "word_chinese": "小房间；牢房",
     "word_english": "cell",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 752,
@@ -24803,11 +24803,11 @@
     "level": "A2",
     "word_greek": "κεντρικό δελτίο ειδήσεων",
     "entry": "κεντρικό δελτίο ειδήσεων",
-    "word_chinese": "消息",
+    "word_chinese": "主新闻；晚间新闻",
     "word_english": "news",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 755,
@@ -24827,11 +24827,11 @@
     "level": "A2",
     "word_greek": "ΚΕΠ",
     "entry": "ΚΕΠ (Κέντρο Εξυπηρέτησης Πολιτών), το",
-    "word_chinese": "市民",
+    "word_chinese": "市民服务中心",
     "word_english": "",
     "pronunciation": "kep",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 757,
@@ -25055,11 +25055,11 @@
     "level": "A2",
     "word_greek": "κλειστ-ός",
     "entry": "κλειστ-ός, ή, -ό [for eyes, windows etc]",
-    "word_chinese": "关闭，关",
+    "word_chinese": "关着的；闭着的",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 776,
@@ -25067,11 +25067,11 @@
     "level": "A2",
     "word_greek": "κλέφτης",
     "entry": "κλέφτης, ο / κλέφτρα, η",
-    "word_chinese": "小偷，强盗 (thief,",
+    "word_chinese": "小偷；强盗",
     "word_english": "thief, robber",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 777,
@@ -25211,11 +25211,11 @@
     "level": "A2",
     "word_greek": "κομμάτι",
     "entry": "κομμάτι, το [see also μέρος]",
-    "word_chinese": "片",
+    "word_chinese": "一块；一部分",
     "word_english": "part",
     "pronunciation": "kommati",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 789,
@@ -25223,11 +25223,11 @@
     "level": "A2",
     "word_greek": "κομμωτήριο",
     "entry": "κομμωτήριο, το",
-    "word_chinese": "美发师，发廊",
+    "word_chinese": "理发店；发廊",
     "word_english": "hairdresser’s / hair",
     "pronunciation": "kommotirio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 790,
@@ -25343,11 +25343,11 @@
     "level": "A2",
     "word_greek": "κόσμος",
     "entry": "κόσμος, ο",
-    "word_chinese": "宇宙",
+    "word_chinese": "人们；人群；世界",
     "word_english": "people, crowd, world",
     "pronunciation": "kosmos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 800,
@@ -25355,11 +25355,11 @@
     "level": "A2",
     "word_greek": "κοστίζω",
     "entry": "κοστίζω [see also κάνω]",
-    "word_chinese": "成本",
+    "word_chinese": "值；花费",
     "word_english": "to cost",
     "pronunciation": "kostizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 801,
@@ -25415,11 +25415,11 @@
     "level": "A2",
     "word_greek": "κουζίνα ηλεκτρική",
     "entry": "κουζίνα ηλεκτρική, η [kitchen appliance]",
-    "word_chinese": "电",
+    "word_chinese": "电炉；电灶",
     "word_english": "",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 806,
@@ -25463,11 +25463,11 @@
     "level": "A2",
     "word_greek": "κουράζω",
     "entry": "κουράζω",
-    "word_chinese": "轮胎",
+    "word_chinese": "使疲劳；使累",
     "word_english": "to tire",
     "pronunciation": "kourazo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 810,
@@ -25499,11 +25499,11 @@
     "level": "A2",
     "word_greek": "κουραστικ-ός",
     "entry": "κουραστικ-ός, -ή, -ό",
-    "word_chinese": "累",
+    "word_chinese": "累人的；令人疲劳的",
     "word_english": "tiring",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 813,
@@ -25559,11 +25559,11 @@
     "level": "A2",
     "word_greek": "κρατάω",
     "entry": "κρατάω, -ώ",
-    "word_chinese": "持有",
+    "word_chinese": "拿着；握着",
     "word_english": "to hold, to last",
     "pronunciation": "kratao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 818,
@@ -25631,11 +25631,11 @@
     "level": "A2",
     "word_greek": "Κρητικ-ός",
     "entry": "Κρητικ-ός, -ιά, -ό",
-    "word_chinese": "克里特岛/来自克里特岛 (Cretan /",
+    "word_chinese": "克里特的；克里特人",
     "word_english": "Cretan / from Crete",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 824,
@@ -25679,11 +25679,11 @@
     "level": "A2",
     "word_greek": "κρύο",
     "entry": "κρύο, το",
-    "word_chinese": "寒冷的",
+    "word_chinese": "寒冷；冷",
     "word_english": "cold",
     "pronunciation": "kryo",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 828,
@@ -25799,11 +25799,11 @@
     "level": "A2",
     "word_greek": "κωμικ-ός",
     "entry": "κωμικ-ός, -ή, -ό",
-    "word_chinese": "漫画",
+    "word_chinese": "喜剧的；滑稽的",
     "word_english": "comic",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 838,
@@ -25931,11 +25931,11 @@
     "level": "A2",
     "word_greek": "λειτουργία",
     "entry": "λειτουργία, η",
-    "word_chinese": "服务、操作、功能 (service, operation,",
+    "word_chinese": "服务；运行；功能",
     "word_english": "service, operation",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 849,
@@ -25943,11 +25943,11 @@
     "level": "A2",
     "word_greek": "λειτουργώ",
     "entry": "λειτουργώ [for public services]",
-    "word_chinese": "营业，开着 (to",
+    "word_chinese": "营业；开放",
     "word_english": "to",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 850,
@@ -25955,11 +25955,11 @@
     "level": "A2",
     "word_greek": "λεκές",
     "entry": "λεκές, ο",
-    "word_chinese": "弄脏",
+    "word_chinese": "污渍",
     "word_english": "stain",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 851,
@@ -26135,11 +26135,11 @@
     "level": "A2",
     "word_greek": "λίγ-ος",
     "entry": "λίγ-ος, -η, -ο [non countable]",
-    "word_chinese": "一些，一点 (some,",
+    "word_chinese": "一些；一点",
     "word_english": "some",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 866,
@@ -26207,11 +26207,11 @@
     "level": "A2",
     "word_greek": "λόγια",
     "entry": "λόγια, τα",
-    "word_chinese": "字",
+    "word_chinese": "话；话语",
     "word_english": "words",
     "pronunciation": "logia",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 872,
@@ -26267,11 +26267,11 @@
     "level": "A2",
     "word_greek": "Λύκειο",
     "entry": "Λύκειο, το",
-    "word_chinese": "中学",
+    "word_chinese": "高中",
     "word_english": "High school",
     "pronunciation": "lykio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 877,
@@ -26399,11 +26399,11 @@
     "level": "A2",
     "word_greek": "μαζεύω από κάτω",
     "entry": "μαζεύω από κάτω",
-    "word_chinese": "挑选",
+    "word_chinese": "捡起来",
     "word_english": "to pick",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 888,
@@ -26495,11 +26495,11 @@
     "level": "A2",
     "word_greek": "μακάρι",
     "entry": "μακάρι",
-    "word_chinese": "如果只是，我希望",
+    "word_chinese": "但愿",
     "word_english": "if only, I wish",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 896,
@@ -26675,11 +26675,11 @@
     "level": "A2",
     "word_greek": "μάρκα αυτοκινήτου",
     "entry": "μάρκα αυτοκινήτου, η",
-    "word_chinese": "模型",
+    "word_chinese": "汽车品牌",
     "word_english": "model",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 911,
@@ -26783,11 +26783,11 @@
     "level": "A2",
     "word_greek": "μεγάλ-ος",
     "entry": "μεγάλ-ος, -η, -ο [age]",
-    "word_chinese": "大人，成年人 (grown up,",
+    "word_chinese": "大人；成年人",
     "word_english": "grown up",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 920,
@@ -26807,11 +26807,11 @@
     "level": "A2",
     "word_greek": "μέγαρο",
     "entry": "μέγαρο, το",
-    "word_chinese": "宫殿",
+    "word_chinese": "大厦；（音乐）厅",
     "word_english": "palace",
     "pronunciation": "megaro",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 922,
@@ -26831,11 +26831,11 @@
     "level": "A2",
     "word_greek": "μειωμέν-ος",
     "entry": "μειωμέν-ος, -η, -ο",
-    "word_chinese": "减少",
+    "word_chinese": "减少的；优惠的",
     "word_english": "reduced",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 924,
@@ -26891,11 +26891,11 @@
     "level": "A2",
     "word_greek": "μένω σπίτι",
     "entry": "μένω σπίτι [to not go out]",
-    "word_chinese": "待在室内 (to stay",
+    "word_chinese": "待在家里",
     "word_english": "to",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 929,
@@ -26999,11 +26999,11 @@
     "level": "A2",
     "word_greek": "μετακίνηση",
     "entry": "μετακίνηση, η",
-    "word_chinese": "运输",
+    "word_chinese": "出行；交通往来",
     "word_english": "transportation",
     "pronunciation": "metakinisi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 938,
@@ -27011,11 +27011,11 @@
     "level": "A2",
     "word_greek": "μετακομίζω",
     "entry": "μετακομίζω",
-    "word_chinese": "移动",
+    "word_chinese": "搬家",
     "word_english": "to move",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 939,
@@ -27059,11 +27059,11 @@
     "level": "A2",
     "word_greek": "μετρό",
     "entry": "μετρό, το",
-    "word_chinese": "地铁，地下，管道",
+    "word_chinese": "地铁",
     "word_english": "metro, subway",
     "pronunciation": "metro",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 943,
@@ -27119,11 +27119,11 @@
     "level": "A2",
     "word_greek": "μήπως",
     "entry": "μήπως",
-    "word_chinese": "是否，如果",
+    "word_chinese": "是不是……；会不会……",
     "word_english": "whether, if",
     "pronunciation": "mipos",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 948,
@@ -27299,11 +27299,11 @@
     "level": "A2",
     "word_greek": "μοναδικ-ός",
     "entry": "μοναδικ-ός, -ή, -ό [see also μόνος]",
-    "word_chinese": "独特的，独",
+    "word_chinese": "唯一的；独特的",
     "word_english": "",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 963,
@@ -27371,11 +27371,11 @@
     "level": "A2",
     "word_greek": "μου πηγαίνει",
     "entry": "μου πηγαίνει [for a cloth]",
-    "word_chinese": "有些东西看起来很适合",
+    "word_chinese": "适合我",
     "word_english": "something",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 969,
@@ -27635,11 +27635,11 @@
     "level": "A2",
     "word_greek": "μπριζόλα",
     "entry": "μπριζόλα, η",
-    "word_chinese": "赌注",
+    "word_chinese": "牛排；排骨",
     "word_english": "stake",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 991,
@@ -27947,11 +27947,11 @@
     "level": "A2",
     "word_greek": "νομίζω",
     "entry": "νομίζω",
-    "word_chinese": "去思考，去相信",
+    "word_chinese": "认为；觉得",
     "word_english": "to think, to believe",
     "pronunciation": "nomizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1017,
@@ -28055,11 +28055,11 @@
     "level": "A2",
     "word_greek": "ντοκιμαντέρ",
     "entry": "ντοκιμαντέρ, το",
-    "word_chinese": "记录",
+    "word_chinese": "纪录片",
     "word_english": "documentary",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1026,
@@ -28139,11 +28139,11 @@
     "level": "A2",
     "word_greek": "νυχτεριν-ός",
     "entry": "νυχτεριν-ός, -ή, -ό",
-    "word_chinese": "过夜",
+    "word_chinese": "夜间的；晚上的",
     "word_english": "overnight",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1033,
@@ -28151,11 +28151,11 @@
     "level": "A2",
     "word_greek": "νωρίς",
     "entry": "νωρίς",
-    "word_chinese": "早期的",
+    "word_chinese": "早；很早",
     "word_english": "early",
     "pronunciation": "noris",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1034,
@@ -28163,11 +28163,11 @@
     "level": "A2",
     "word_greek": "ξάδερφος",
     "entry": "ξάδερφος, ο / ξαδέρφη, η",
-    "word_chinese": "表哥",
+    "word_chinese": "表兄弟；表姐妹",
     "word_english": "cousin",
     "pronunciation": "xaderfos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1035,
@@ -28355,11 +28355,11 @@
     "level": "A2",
     "word_greek": "ξεπερνάω",
     "entry": "ξεπερνάω [to go beyond]",
-    "word_chinese": "克服 (to",
+    "word_chinese": "超过；超越",
     "word_english": "to exceed",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1051,
@@ -28403,11 +28403,11 @@
     "level": "A2",
     "word_greek": "ξεχωριστ-ός",
     "entry": "ξεχωριστ-ός, -ή, -ό",
-    "word_chinese": "清楚的",
+    "word_chinese": "独特的；单独的",
     "word_english": "distinct",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1055,
@@ -28487,11 +28487,11 @@
     "level": "A2",
     "word_greek": "ο",
     "entry": "ο, η, το [article],",
-    "word_chinese": "无论什么",
+    "word_chinese": "定冠词",
     "word_english": "the",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1062,
@@ -28595,11 +28595,11 @@
     "level": "A2",
     "word_greek": "οικογενειακή κατάσταση",
     "entry": "οικογενειακή κατάσταση, η",
-    "word_chinese": "婚姻状况 (marital",
+    "word_chinese": "婚姻状况",
     "word_english": "marital",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1071,
@@ -28691,11 +28691,11 @@
     "level": "A2",
     "word_greek": "ομιλητής",
     "entry": "ομιλητής, ο / ομιλήτρια, η",
-    "word_chinese": "演讲者、讲师 (speaker,",
+    "word_chinese": "演讲者；讲者",
     "word_english": "speaker",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1079,
@@ -28811,11 +28811,11 @@
     "level": "A2",
     "word_greek": "όποι-ος",
     "entry": "όποι-ος, -α, -ο",
-    "word_chinese": "谁",
+    "word_chinese": "无论谁；谁……就",
     "word_english": "whoever",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1089,
@@ -28835,11 +28835,11 @@
     "level": "A2",
     "word_greek": "όροφος",
     "entry": "όροφος, ο",
-    "word_chinese": "地面",
+    "word_chinese": "楼层",
     "word_english": "floor",
     "pronunciation": "orofos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1091,
@@ -28907,11 +28907,11 @@
     "level": "A2",
     "word_greek": "ότι",
     "entry": "ότι",
-    "word_chinese": "那",
+    "word_chinese": "说……；认为……（连词）",
     "word_english": "that",
     "pronunciation": "oti",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1097,
@@ -28931,11 +28931,11 @@
     "level": "A2",
     "word_greek": "ούζο",
     "entry": "ούζο, το",
-    "word_chinese": "茴香酒)",
+    "word_chinese": "茴香酒（希腊烈酒）",
     "word_english": "ouzo (Greek alcoholic",
     "pronunciation": "ouzo",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1099,
@@ -29003,11 +29003,11 @@
     "level": "A2",
     "word_greek": "παθαίνω",
     "entry": "παθαίνω",
-    "word_chinese": "受苦，有事发生在我身上 (to suﬀer from,",
+    "word_chinese": "遭受；出事",
     "word_english": "to suffer from, something",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1105,
@@ -29075,11 +29075,11 @@
     "level": "A2",
     "word_greek": "παίρνω συνέντευξη",
     "entry": "παίρνω συνέντευξη",
-    "word_chinese": "接受采访，接受采访 (to take",
+    "word_chinese": "采访",
     "word_english": "to take an",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1111,
@@ -29279,11 +29279,11 @@
     "level": "A2",
     "word_greek": "παραγγελία",
     "entry": "παραγγελία, η",
-    "word_chinese": "命令",
+    "word_chinese": "订单；点菜",
     "word_english": "order",
     "pronunciation": "parangelia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1128,
@@ -29315,11 +29315,11 @@
     "level": "A2",
     "word_greek": "παραγωγή προφορικού λόγου",
     "entry": "παραγωγή προφορικού λόγου",
-    "word_chinese": "请讲",
+    "word_chinese": "口语表达",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1131,
@@ -29363,11 +29363,11 @@
     "level": "A2",
     "word_greek": "παρακαλώ",
     "entry": "παρακαλώ",
-    "word_chinese": "取悦",
+    "word_chinese": "请；不客气",
     "word_english": "to please",
     "pronunciation": "parakalo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1135,
@@ -29375,11 +29375,11 @@
     "level": "A2",
     "word_greek": "Παρακαλώ!",
     "entry": "Παρακαλώ! [in response to “Thank you!”]",
-    "word_chinese": "不客",
+    "word_chinese": "不客气！",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1136,
@@ -29435,11 +29435,11 @@
     "level": "A2",
     "word_greek": "παραπάνω / πιο πάνω",
     "entry": "παραπάνω / πιο πάνω",
-    "word_chinese": "多于",
+    "word_chinese": "上面；更上面",
     "word_english": "above",
     "pronunciation": "parapano  pio pano",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1141,
@@ -29519,11 +29519,11 @@
     "level": "A2",
     "word_greek": "πάρκιγκ",
     "entry": "πάρκιγκ, το",
-    "word_chinese": "停車處",
+    "word_chinese": "停车场",
     "word_english": "parking",
     "pronunciation": "parkig",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1148,
@@ -29651,11 +29651,11 @@
     "level": "A2",
     "word_greek": "πειράζει",
     "entry": "πειράζει",
-    "word_chinese": "这很重要",
+    "word_chinese": "要紧；没关系",
     "word_english": "it matters (δεν) πειράζει = it doesn't matter",
     "pronunciation": "pirazi",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1159,
@@ -29711,11 +29711,11 @@
     "level": "A2",
     "word_greek": "πεντάγραμμο",
     "entry": "πεντάγραμμο, το",
-    "word_chinese": "五角星",
+    "word_chinese": "五线谱",
     "word_english": "pentagram",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1164,
@@ -29843,11 +29843,11 @@
     "level": "A2",
     "word_greek": "περίπτωση",
     "entry": "περίπτωση, η",
-    "word_chinese": "案件",
+    "word_chinese": "情况",
     "word_english": "case",
     "pronunciation": "periptosi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1175,
@@ -29879,11 +29879,11 @@
     "level": "A2",
     "word_greek": "περνάω καλά",
     "entry": "περνάω καλά",
-    "word_chinese": "玩得开心，过得愉快 (to have a good",
+    "word_chinese": "玩得开心；过得愉快",
     "word_english": "to have a good time",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1178,
@@ -29987,11 +29987,11 @@
     "level": "A2",
     "word_greek": "πηγαίνω διακοπές",
     "entry": "πηγαίνω διακοπές",
-    "word_chinese": "去度假/休假 (to go on holiday/",
+    "word_chinese": "去度假",
     "word_english": "to go on",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1187,
@@ -30095,11 +30095,11 @@
     "level": "A2",
     "word_greek": "πισίνα",
     "entry": "πισίνα, η",
-    "word_chinese": "水池 ( pool)",
+    "word_chinese": "游泳池",
     "word_english": "(swimming) pool",
     "pronunciation": "pisina",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1196,
@@ -30179,11 +30179,11 @@
     "level": "A2",
     "word_greek": "Πλατεία Συντάγματος",
     "entry": "Πλατεία Συντάγματος, η [Athens]",
-    "word_chinese": "宪法广场/宪",
+    "word_chinese": "宪法广场",
     "word_english": "",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1203,
@@ -30539,11 +30539,11 @@
     "level": "A2",
     "word_greek": "πονάω",
     "entry": "πονάω, -ώ",
-    "word_chinese": "受伤，感到痛苦",
+    "word_chinese": "疼；疼痛",
     "word_english": "hurt, feel pain",
     "pronunciation": "ponao",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1233,
@@ -30587,11 +30587,11 @@
     "level": "A2",
     "word_greek": "ποντιακ-ός",
     "entry": "ποντιακ-ός, -ή, -ό",
-    "word_chinese": "桥体",
+    "word_chinese": "本都的",
     "word_english": "Pontic",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1237,
@@ -30731,11 +30731,11 @@
     "level": "A2",
     "word_greek": "ποτό",
     "entry": "ποτό, το",
-    "word_chinese": "喝",
+    "word_chinese": "饮料",
     "word_english": "drink",
     "pronunciation": "poto",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1249,
@@ -30923,11 +30923,11 @@
     "level": "A2",
     "word_greek": "προβολή",
     "entry": "προβολή, η [movie]",
-    "word_chinese": "筛选",
+    "word_chinese": "放映",
     "word_english": "screening",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1265,
@@ -30959,11 +30959,11 @@
     "level": "A2",
     "word_greek": "προετοιμάζω",
     "entry": "προετοιμάζω [see also ετοιμάζω]",
-    "word_chinese": "准备 (to",
+    "word_chinese": "准备",
     "word_english": "to",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1268,
@@ -30971,11 +30971,11 @@
     "level": "A2",
     "word_greek": "προηγούμεν-ος",
     "entry": "προηγούμεν-ος, -η, -o",
-    "word_chinese": "上一个、最后一个 (previous,",
+    "word_chinese": "上一个；之前的",
     "word_english": "previous, last",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1269,
@@ -31007,11 +31007,11 @@
     "level": "A2",
     "word_greek": "προλαβαίνω",
     "entry": "προλαβαίνω",
-    "word_chinese": "及时赶上，赶上 (to be in time for, to",
+    "word_chinese": "赶得上；来得及",
     "word_english": "to be in time for, to",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1272,
@@ -31103,11 +31103,11 @@
     "level": "A2",
     "word_greek": "προσχολικ-ός",
     "entry": "προσχολικ-ός, -ή, -ό",
-    "word_chinese": "学前班, 托儿所 (preschool,",
+    "word_chinese": "学前的",
     "word_english": "preschool",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1280,
@@ -31115,11 +31115,11 @@
     "level": "A2",
     "word_greek": "προσωπικ-ός",
     "entry": "προσωπικ-ός, -ή, -ό",
-    "word_chinese": "个人的，私人的 (personal,",
+    "word_chinese": "个人的；私人的",
     "word_english": "personal, private",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1281,
@@ -31259,11 +31259,11 @@
     "level": "A2",
     "word_greek": "Πρωτεύουσας)",
     "entry": "Πρωτεύουσας)",
-    "word_chinese": "雅典供水和污水处理公司 (Athens",
+    "word_chinese": "",
     "word_english": "",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1293,
@@ -31271,11 +31271,11 @@
     "level": "A2",
     "word_greek": "Πρωτοχρονιά",
     "entry": "Πρωτοχρονιά, η",
-    "word_chinese": "除夕",
+    "word_chinese": "元旦（新年第一天）",
     "word_english": "New Year’s Eve",
     "pronunciation": "protochronia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1294,
@@ -31295,11 +31295,11 @@
     "level": "A2",
     "word_greek": "πυραμίδα",
     "entry": "πυραμίδα [stereometry]",
-    "word_chinese": "实心三角形，金字塔",
+    "word_chinese": "金字塔；棱锥",
     "word_english": "solid",
     "pronunciation": "pyramida",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1296,
@@ -31307,11 +31307,11 @@
     "level": "A2",
     "word_greek": "Πύργος του Άιφελ",
     "entry": "Πύργος του Άιφελ, ο [monument in Paris]",
-    "word_chinese": "埃",
+    "word_chinese": "埃菲尔铁塔",
     "word_english": "",
     "pronunciation": "",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1297,
@@ -31343,11 +31343,11 @@
     "level": "A2",
     "word_greek": "πωλητής",
     "entry": "πωλητής, o / πωλήτρια, η",
-    "word_chinese": "卖家, 推销员/女售货",
+    "word_chinese": "售货员；卖家",
     "word_english": "seller",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1300,
@@ -31355,11 +31355,11 @@
     "level": "A2",
     "word_greek": "Πώς σε/σας λένε;",
     "entry": "Πώς σε/σας λένε;",
-    "word_chinese": "你叫什么名字？ (What’s your",
+    "word_chinese": "你叫什么名字？",
     "word_english": "What’s your name?",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1301,
@@ -31415,11 +31415,11 @@
     "level": "A2",
     "word_greek": "ραντεβού",
     "entry": "ραντεβού, το",
-    "word_chinese": "日期，约会",
+    "word_chinese": "约会；预约",
     "word_english": "date, appointement",
     "pronunciation": "radevou",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1306,
@@ -31427,11 +31427,11 @@
     "level": "A2",
     "word_greek": "ράτσα ζώου",
     "entry": "ράτσα ζώου, η",
-    "word_chinese": "谱系",
+    "word_chinese": "品种（动物）",
     "word_english": "pedigree",
     "pronunciation": "",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1307,
@@ -31475,11 +31475,11 @@
     "level": "A2",
     "word_greek": "ρίχνω",
     "entry": "ρίχνω",
-    "word_chinese": "放下",
+    "word_chinese": "扔；倒入；放进",
     "word_english": "to drop",
     "pronunciation": "richno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1311,
@@ -31715,11 +31715,11 @@
     "level": "A2",
     "word_greek": "σβήνω τη φωτιά",
     "entry": "σβήνω τη φωτιά",
-    "word_chinese": "拿出来",
+    "word_chinese": "灭火",
     "word_english": "to put out",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1331,
@@ -31811,11 +31811,11 @@
     "level": "A2",
     "word_greek": "σερβίρω",
     "entry": "σερβίρω",
-    "word_chinese": "服务",
+    "word_chinese": "上菜；端上（饭菜）",
     "word_english": "to serve",
     "pronunciation": "serviro",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1339,
@@ -32231,11 +32231,11 @@
     "level": "A2",
     "word_greek": "σπάζω",
     "entry": "σπάζω",
-    "word_chinese": "粉碎、制动",
+    "word_chinese": "打碎；打破",
     "word_english": "to smash, to brake",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1374,
@@ -32303,11 +32303,11 @@
     "level": "A2",
     "word_greek": "σπουδές",
     "entry": "σπουδές, οι",
-    "word_chinese": "研究",
+    "word_chinese": "学业",
     "word_english": "studies",
     "pronunciation": "spoudes",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1380,
@@ -32327,11 +32327,11 @@
     "level": "A2",
     "word_greek": "σταγόνα",
     "entry": "σταγόνα, η",
-    "word_chinese": "降低",
+    "word_chinese": "滴；水滴",
     "word_english": "drop",
     "pronunciation": "stagona",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1382,
@@ -32411,11 +32411,11 @@
     "level": "A2",
     "word_greek": "στήλη",
     "entry": "στήλη, η",
-    "word_chinese": "柱子",
+    "word_chinese": "（报纸/表格的）栏；列",
     "word_english": "column",
     "pronunciation": "stili",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1389,
@@ -32423,11 +32423,11 @@
     "level": "A2",
     "word_greek": "στην τηλεόραση",
     "entry": "στην τηλεόραση",
-    "word_chinese": "在电视上/在电视上 (on the",
+    "word_chinese": "在电视上",
     "word_english": "on the",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1390,
@@ -32507,11 +32507,11 @@
     "level": "A2",
     "word_greek": "στρώνω",
     "entry": "στρώνω",
-    "word_chinese": "放置、放置、制作",
+    "word_chinese": "铺（床）；摆（桌）",
     "word_english": "to lay, to set, to make",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1397,
@@ -32579,11 +32579,11 @@
     "level": "A2",
     "word_greek": "συγκρότημα",
     "entry": "συγκρότημα, το",
-    "word_chinese": "团体",
+    "word_chinese": "乐队；乐团",
     "word_english": "group",
     "pronunciation": "sygrotima",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1403,
@@ -32603,11 +32603,11 @@
     "level": "A2",
     "word_greek": "σύγχρον-ος",
     "entry": "σύγχρον-ος, -η, -ο",
-    "word_chinese": "现代的，当代的 (modern,",
+    "word_chinese": "现代的；当代的",
     "word_english": "modern",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1405,
@@ -32687,11 +32687,11 @@
     "level": "A2",
     "word_greek": "συμπαθητικ-ός",
     "entry": "συμπαθητικ-ός, -ή, -ό",
-    "word_chinese": "漂亮、迷人",
+    "word_chinese": "讨人喜欢的；可爱的",
     "word_english": "nice, charming",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1412,
@@ -32771,11 +32771,11 @@
     "level": "A2",
     "word_greek": "συναντάω",
     "entry": "συναντάω, -ώ",
-    "word_chinese": "遇见，碰见，to come",
+    "word_chinese": "遇见；碰见",
     "word_english": "to meet, to come",
     "pronunciation": "synadao",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1419,
@@ -32783,11 +32783,11 @@
     "level": "A2",
     "word_greek": "συνάντηση",
     "entry": "συνάντηση, η",
-    "word_chinese": "会议",
+    "word_chinese": "见面；会面",
     "word_english": "meeting",
     "pronunciation": "synadisi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1420,
@@ -32819,11 +32819,11 @@
     "level": "A2",
     "word_greek": "συνεργείο",
     "entry": "συνεργείο, το",
-    "word_chinese": "车库",
+    "word_chinese": "汽车修理厂",
     "word_english": "garage",
     "pronunciation": "synergio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1423,
@@ -32987,11 +32987,11 @@
     "level": "A2",
     "word_greek": "συστημέν-ος",
     "entry": "συστημέν-ος, -η, -ο",
-    "word_chinese": "介绍、推荐 (introduced,",
+    "word_chinese": "被介绍的；被推荐的",
     "word_english": "introduced",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1437,
@@ -33119,11 +33119,11 @@
     "level": "A2",
     "word_greek": "σχολικ-ός",
     "entry": "σχολικ-ός, -ή, -ό",
-    "word_chinese": "学校教育",
+    "word_chinese": "学校的",
     "word_english": "schooling",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1448,
@@ -33191,11 +33191,11 @@
     "level": "A2",
     "word_greek": "ταβέρνα",
     "entry": "ταβέρνα, η",
-    "word_chinese": "酒馆",
+    "word_chinese": "希腊小餐馆",
     "word_english": "tavern",
     "pronunciation": "taverna",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1454,
@@ -33371,11 +33371,11 @@
     "level": "A2",
     "word_greek": "TΕΙ",
     "entry": "TΕΙ (Τεχνολογικό Εκπαιδευτικό ‘Ιδρυμα), τo",
-    "word_chinese": "科技",
+    "word_chinese": "技术教育学院",
     "word_english": "",
     "pronunciation": "i",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1469,
@@ -33395,11 +33395,11 @@
     "level": "A2",
     "word_greek": "τέλεια",
     "entry": "τέλεια [adv]",
-    "word_chinese": "完美的",
+    "word_chinese": "完美地；太好了",
     "word_english": "perfect",
     "pronunciation": "telia",
     "pos": "副",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1471,
@@ -33587,11 +33587,11 @@
     "level": "A2",
     "word_greek": "τζάμι",
     "entry": "τζάμι, το",
-    "word_chinese": "窗户",
+    "word_chinese": "窗玻璃",
     "word_english": "window",
     "pronunciation": "tzami",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1487,
@@ -33623,11 +33623,11 @@
     "level": "A2",
     "word_greek": "τηλεφώνημα",
     "entry": "τηλεφώνημα, το",
-    "word_chinese": "打电话",
+    "word_chinese": "电话（通话）",
     "word_english": "call, phonecall",
     "pronunciation": "tilefonima",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1490,
@@ -33695,11 +33695,11 @@
     "level": "A2",
     "word_greek": "τμήμα αστυνομικό",
     "entry": "τμήμα αστυνομικό, το",
-    "word_chinese": "警察局/派出所 (police",
+    "word_chinese": "警察局；派出所",
     "word_english": "police",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1496,
@@ -33707,11 +33707,11 @@
     "level": "A2",
     "word_greek": "το",
     "entry": "το",
-    "word_chinese": "自动柜员机，自动交易机",
+    "word_chinese": "",
     "word_english": "Citizen Service Centre",
     "pronunciation": "to",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1497,
@@ -33719,11 +33719,11 @@
     "level": "A2",
     "word_greek": "τονισμέν-ος",
     "entry": "τονισμέν-ος, -η, -ο",
-    "word_chinese": "强调",
+    "word_chinese": "带重音的",
     "word_english": "stressed",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1498,
@@ -33767,11 +33767,11 @@
     "level": "A2",
     "word_greek": "τόσ-ος",
     "entry": "τόσ-ος, -η, -ο [non countable]",
-    "word_chinese": "如此/那么多 (so/",
+    "word_chinese": "这么多的；如此",
     "word_english": "so/",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1502,
@@ -33923,11 +33923,11 @@
     "level": "A2",
     "word_greek": "τρία πόδια Χαλκιδικής",
     "entry": "τρία πόδια Χαλκιδικής, τα",
-    "word_chinese": "哈尔基迪基半岛的三",
+    "word_chinese": "哈尔基迪基的三个半岛",
     "word_english": "the three",
     "pronunciation": "",
     "pos": "复",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1515,
@@ -34031,11 +34031,11 @@
     "level": "A2",
     "word_greek": "τρυφερ-ός",
     "entry": "τρυφερ-ός, -ή, -ό",
-    "word_chinese": "温柔的，温和的，柔软的 (tender,",
+    "word_chinese": "温柔的；柔软的",
     "word_english": "tender, gentle, soft",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1524,
@@ -34187,11 +34187,11 @@
     "level": "A2",
     "word_greek": "υπέροχ-ος",
     "entry": "υπέροχ-ος, -η, -ο",
-    "word_chinese": "美妙的，棒极了的 (marvellous,",
+    "word_chinese": "美妙的；棒极了",
     "word_english": "marvellous",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1537,
@@ -34211,11 +34211,11 @@
     "level": "A2",
     "word_greek": "υπεύθυν-ος",
     "entry": "υπεύθυν-ος, -η, -ο",
-    "word_chinese": "负责人、经理 (responsible,",
+    "word_chinese": "负责的；负责人",
     "word_english": "responsible",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1539,
@@ -34247,11 +34247,11 @@
     "level": "A2",
     "word_greek": "ύπνος",
     "entry": "ύπνος, ο",
-    "word_chinese": "睡觉",
+    "word_chinese": "睡眠",
     "word_english": "sleep",
     "pronunciation": "ypnos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1542,
@@ -34259,11 +34259,11 @@
     "level": "A2",
     "word_greek": "υπογραμμίζω",
     "entry": "υπογραμμίζω",
-    "word_chinese": "下划线",
+    "word_chinese": "在下面划线",
     "word_english": "to underline",
     "pronunciation": "ypogrammizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1543,
@@ -34283,11 +34283,11 @@
     "level": "A2",
     "word_greek": "υπόλοιπ-ος",
     "entry": "υπόλοιπ-ος, -η, -ο",
-    "word_chinese": "剩余的，其余的 (remaining, rest",
+    "word_chinese": "剩余的；其余的",
     "word_english": "remaining",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1545,
@@ -34463,11 +34463,11 @@
     "level": "A2",
     "word_greek": "φασαρία",
     "entry": "φασαρία, η",
-    "word_chinese": "大惊小怪",
+    "word_chinese": "吵闹；喧哗",
     "word_english": "fuss",
     "pronunciation": "fasaria",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1560,
@@ -34499,11 +34499,11 @@
     "level": "A2",
     "word_greek": "φέιγ βολάν",
     "entry": "φέιγ βολάν, το",
-    "word_chinese": "传单、传单、讲义 (ﬂysheet, leaﬂet,",
+    "word_chinese": "传单",
     "word_english": "flysheet, leaflet",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1563,
@@ -34643,11 +34643,11 @@
     "level": "A2",
     "word_greek": "φιλοξενώ",
     "entry": "φιλοξενώ",
-    "word_chinese": "主持，招待",
+    "word_chinese": "招待；接待",
     "word_english": "to host, to offer hospitality",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1575,
@@ -34727,11 +34727,11 @@
     "level": "A2",
     "word_greek": "φορά",
     "entry": "φορά, η",
-    "word_chinese": "时间",
+    "word_chinese": "次；回",
     "word_english": "time",
     "pronunciation": "fora",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1582,
@@ -35075,11 +35075,11 @@
     "level": "A2",
     "word_greek": "χάδι",
     "entry": "χάδι, το",
-    "word_chinese": "触碰",
+    "word_chinese": "抚摸；爱抚",
     "word_english": "touch",
     "pronunciation": "chadi",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1611,
@@ -35135,11 +35135,11 @@
     "level": "A2",
     "word_greek": "χαλάω",
     "entry": "χαλάω, -ώ",
-    "word_chinese": "分解",
+    "word_chinese": "坏掉；出故障",
     "word_english": "to break down",
     "pronunciation": "",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1616,
@@ -35171,11 +35171,11 @@
     "level": "A2",
     "word_greek": "χαμηλ-ός",
     "entry": "χαμηλ-ός, -ή, -ό",
-    "word_chinese": "短、低",
+    "word_chinese": "低的；矮的",
     "word_english": "short, low",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1619,
@@ -35219,11 +35219,11 @@
     "level": "A2",
     "word_greek": "χάπι",
     "entry": "χάπι, το",
-    "word_chinese": "丸",
+    "word_chinese": "药片；药丸",
     "word_english": "pill",
     "pronunciation": "",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1623,
@@ -35243,11 +35243,11 @@
     "level": "A2",
     "word_greek": "χάρακας",
     "entry": "χάρακας, ο",
-    "word_chinese": "统治者",
+    "word_chinese": "尺子",
     "word_english": "ruler",
     "pronunciation": "charakas",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1625,
@@ -35435,11 +35435,11 @@
     "level": "A2",
     "word_greek": "χοντρ-ός",
     "entry": "χοντρ-ός, -ή, -ό",
-    "word_chinese": "肥厚的",
+    "word_chinese": "胖的；粗的",
     "word_english": "fat, thick",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1641,
@@ -35579,11 +35579,11 @@
     "level": "A2",
     "word_greek": "Χρόνια πολλά",
     "entry": "Χρόνια πολλά [Christmas]!",
-    "word_chinese": "圣诞快乐！ (Merry",
+    "word_chinese": "圣诞快乐！",
     "word_english": "Merry",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1653,
@@ -35615,11 +35615,11 @@
     "level": "A2",
     "word_greek": "χρωματιστ-ός",
     "entry": "χρωματιστ-ός, -ή, -ό",
-    "word_chinese": "色彩缤纷/色彩缤纷 (colorful/",
+    "word_chinese": "彩色的；多彩的",
     "word_english": "colorful/",
     "pronunciation": "",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1656,
@@ -35711,11 +35711,11 @@
     "level": "A2",
     "word_greek": "χωρισμένος",
     "entry": "χωρισμένος, ο / χωρισμένη, η [marriage]",
-    "word_chinese": "分",
+    "word_chinese": "离婚的；分居的",
     "word_english": "",
     "pronunciation": "chorismenos",
     "pos": "阳",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1664,
@@ -35759,11 +35759,11 @@
     "level": "A2",
     "word_greek": "ψέμα",
     "entry": "ψέμα, το",
-    "word_chinese": "说谎",
+    "word_chinese": "谎言",
     "word_english": "lie",
     "pronunciation": "psema",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1668,
@@ -35855,11 +35855,11 @@
     "level": "A2",
     "word_greek": "ωδείο",
     "entry": "ωδείο, το",
-    "word_chinese": "温室",
+    "word_chinese": "音乐学院",
     "word_english": "conservatory",
     "pronunciation": "odio",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1676,
@@ -35939,11 +35939,11 @@
     "level": "A2",
     "word_greek": "ωστόσο",
     "entry": "ωστόσο",
-    "word_chinese": "然而 (however) (στις 10) ακριβώς — （十点）整 ((at ten o’clock) sharp) (μου) αρέσει 动 — 喜欢",
+    "word_chinese": "然而",
     "word_english": "however",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    }
   ],
   "B1": [

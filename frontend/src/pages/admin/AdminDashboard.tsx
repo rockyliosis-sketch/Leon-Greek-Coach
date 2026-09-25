@@ -845,15 +845,58 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       }
     }
 
-    // Default to today's date in Greece timezone if no date is found
+    // 找不到日期就按今天记 —— 但要先说一声。2026-09-19 那次上传,
+    // 17 号笔记的抬头写的是「17.9.26」, 认不出, 于是被悄悄记成了上传当天。
+    if (!uploadedUnitDate && !window.confirm(
+      `没在文字里找到「2026-09-23」这种格式的日期，将按今天（${getGreeceDateString()}）记录这批笔记。\n` +
+      `复习计划会从这一天算起。确定吗？（不确定就点取消，在第一行补上日期再传）`)) return;
     const finalNoteDate = uploadedUnitDate || getGreeceDateString();
+
+    // 只收「单词表」: 表头里写着 希腊语 / Greek / 单词 / 词汇 的表格。
+    // 2026-09-19 那次把 17 号笔记里的语法表(τον = 单数、Μου αρέσει = 后面是单数…)
+    // 和小标题(### 二、介词 με…)一起收成了 10 个「单词」, 孩子被考了 25 次;
+    // 7 月两批则把校验报告里的说明句(γαρίφαλο = 手写的中文注释笔迹潦草…)收了进去。
+    const VOCAB_HEADER = /希腊语|希腊文|Greek|单词|词汇/i;
+    const isTableLine = (l: string) => l.trim().startsWith('|');
+    const hasVocabTable = lines.some(l => isTableLine(l) && VOCAB_HEADER.test(l));
+    let inTable = false;
+    let tableIsVocab = false;
+
+    // 同一天的同一个词已经录过就跳过(后台导入从前不去重, 重传一次每个词出现两遍)
+    const normGr = (s: string) => cleanGreekForComparison(String(s || ''));
+    const existingKeys = new Set(
+      (JSON.parse(localStorage.getItem('leon_custom_vocab') || '[]') as Word[])
+        .map(w => `${w.note_date}|${normGr(w.word_greek)}`));
+    let skippedDup = 0;
     // 笔记按「周」自成一个复习单元(见 getNoteUnitFromDate 的说明);
     // 家长手动指定了别的教材, 才回退到旧的按周单元号。
     const currentUnit = targetBookId === NOTE_BOOK_ID
       ? getNoteUnitFromDate(finalNoteDate)
       : getUnitFromDate(finalNoteDate);
 
+    const pushWord = (w: Word) => {
+      const key = `${w.note_date}|${normGr(w.word_greek)}`;
+      if (existingKeys.has(key)) { skippedDup++; return; }
+      existingKeys.add(key);
+      newWordsList.push(w);
+    };
+
     lines.forEach(line => {
+      // 表格: 表头那一行决定整张表收不收
+      if (isTableLine(line)) {
+        if (!inTable) {
+          inTable = true;
+          tableIsVocab = VOCAB_HEADER.test(line);
+          return;   // 表头本身不是单词
+        }
+        if (!tableIsVocab) return;
+      } else {
+        inTable = false;
+        // 文里已经有单词表, 表格外的文字(标题、说明、校验报告)一律不收;
+        // 纯文字抄写的笔记(没有表格)才走下面的逐行拆分
+        if (hasVocabTable) return;
+      }
+
       // Check if it is a markdown table row (e.g. | 1 | δημόσια | 公共服务 | ...)
       if (line.trim().startsWith('|')) {
         const columns = line.split('|').map(c => c.trim()).filter(c => c !== '');
@@ -885,7 +928,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           greekPart = stripLeadingArticle(greekPart);
           exampleGreek = stripLeadingArticle(exampleGreek);
           if (greekPart && chinesePart) {
-            newWordsList.push({
+            pushWord({
               id: currentId++,
               book_id: targetBookId,
               unit: currentUnit,
@@ -927,7 +970,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
               gr = stripLeadingArticle(gr);
 
               if (gr && zh) {
-                newWordsList.push({
+                pushWord({
                   id: currentId++,
                   book_id: targetBookId,
                   unit: currentUnit,
@@ -966,6 +1009,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
       setUploadSuccess(true);
       setRawMD('');
       setTimeout(() => setUploadSuccess(false), 4000);
+      alert(`已录入 ${newWordsList.length} 个词，记为 ${finalNoteDate} 的笔记。` +
+        (skippedDup ? `\n另有 ${skippedDup} 个词这一天已经录过，自动跳过了。` : ''));
+    } else if (skippedDup > 0) {
+      alert(`这 ${skippedDup} 个词在 ${finalNoteDate} 已经全部录过了，这次没有重复添加。`);
     } else {
       alert('未能在文本中解析出希腊语单词。请使用 "希腊语单词 - 中文释义" 的格式，或标准的 Markdown 表格形式。');
     }
