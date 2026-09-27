@@ -1303,6 +1303,66 @@ const getZhSenseIndex = (): Map<string, string[]> => {
   return out;
 };
 
+/**
+ * 「你写的是另一个真词」查词表 (2026-09-27)。
+ *
+ * 孩子答错时, 很多时候写的并不是乱码, 而是**意思相近的另一个真词**:
+ * 看到「农村」写 χωριό(村子), 看到 φως 写「灯」(灯是 φωτιστικό)。
+ * 从前系统只会冷冰冰判错, 他就觉得「我写的明明也对, 是题错了」, 转手就去报错。
+ * 现在答错时先查一遍词表, 查到了就直接告诉他「你这个词是存在的, 意思是 X, 但这题要的不是它」——
+ * 由系统先承认他写的是真词, 再把两个词的区别摆出来。
+ *
+ * 词源只用 V2_WORDS(课本真词库) + 官方单词表。旧 vocabulary.json 里有「λέξη 20-36」
+ * 这种占位假词, 不能拿来当字典。懒加载, 理由同 getZhSenseIndex。
+ */
+type DictHit = { greek: string; zh: string };
+let _dicts: { gr: Map<string, DictHit>; zh: Map<string, string[]> } | null = null;
+const getDicts = () => {
+  if (_dicts) return _dicts;
+  const gr = new Map<string, DictHit>();
+  const zh = new Map<string, Set<string>>();
+  const feed = (greekRaw: string, zhRaw: string) => {
+    if (!greekRaw || !zhRaw) return;
+    const zhShown = promptZhOnly(zhRaw);
+    // 「εξοχή, η」只取词头; 斜杠是「两种写法都行」, 每种写法都要能查到
+    String(greekRaw).split(',')[0].split('/').map(s => s.trim()).filter(Boolean).forEach(head => {
+      const key = cleanGreekForComparison(head);
+      if (!key) return;
+      if (!gr.has(key)) gr.set(key, { greek: head, zh: zhShown });
+      splitChineseSenses(zhRaw).forEach(sense => {
+        if (!zh.has(sense)) zh.set(sense, new Set());
+        zh.get(sense)!.add(head);
+      });
+    });
+  };
+  V2_WORDS.forEach(w => feed(w.headword, w.word_chinese));
+  Object.values(GLOSS_LISTS).forEach(list => (list || []).forEach((w: any) => feed(w.word_greek, w.word_chinese)));
+  const zhOut = new Map<string, string[]>();
+  zh.forEach((set, k) => zhOut.set(k, [...set]));
+  _dicts = { gr, zh: zhOut };
+  return _dicts;
+};
+
+/** 同一个词的几种写法(冠词/重音/斜杠两写), 用来排除「他写的其实就是这个词」 */
+const sameWordKeys = (greekRaw: string): string[] =>
+  String(greekRaw || '').split(',')[0].split('/').map(s => cleanGreekForComparison(s.trim())).filter(Boolean);
+
+/** 汉译希答错: 他写的是不是词表里**另一个**真词? 是就返回那个词和它的中文意思 */
+const lookupOtherGreekWord = (typed: string, targetGreekRaw: string): DictHit | null => {
+  const key = cleanGreekForComparison(typed || '');
+  if (!key || key.length < 2) return null;
+  if (sameWordKeys(targetGreekRaw).includes(key)) return null;
+  return getDicts().gr.get(key) || null;
+};
+
+/** 希译汉答错: 他写的中文是不是**另一个**希腊语词的意思? 返回那些词(最多 2 个) */
+const lookupGreekForChinese = (typedZh: string, targetGreekRaw: string): string[] => {
+  const s = normalizeChineseString(typedZh || '');
+  if (!s) return [];
+  const own = new Set(sameWordKeys(targetGreekRaw));
+  return (getDicts().zh.get(s) || []).filter(g => !own.has(cleanGreekForComparison(g))).slice(0, 2);
+};
+
 
 // 中文答案判定：必须答出某一个完整义项，不再是「命中一个字就算对」
 const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => {
@@ -1317,6 +1377,20 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
     if (sense.includes(user) && user.length >= 2 && sense.length - user.length <= 2) return true;
     // 学生多写了限定字：义项本身至少 2 字，且最多只能多 3 字
     if (user.includes(sense) && sense.length >= 2 && user.length - sense.length <= 3) return true;
+
+    // 2026-09-27 单字义项放宽。词库里 311 个词的标准答案只有一个字(鞋/伞/快/看…),
+    // 孩子按说话习惯写成两个字(鞋子/雨伞/快速/看见)从前一律判错 —— 写对了还被冤枉,
+    // 这是他觉得「题出错了」的主要来源之一。
+    // 单字义项 + 孩子多写 1 个字 -> 算对, 但多出来的那个字不能改掉意思(我们≠我, 不看≠看)。
+    // 但孩子写的这两个字若本身就是词表里别的词的意思(海豚≠海、水果≠水、大象≠大), 不放宽 ——
+    // 全库扫过, 不加这道闸会误放 1500 对。
+    if (sense.length === 1 && user.length === 2 && user.includes(sense)
+        && !/[们的不没别非无]/.test(user.replace(sense, '')) && !/\d/.test(user)
+        && !getDicts().zh.has(user)) return true;
+    // 两字义项 + 孩子只写了其中那个实字(给/给予、坐/坐下、洗/洗掉) -> 算对。
+    // 只认「实字 + 虚字尾巴」这种结构, 大海写成「大」不算。
+    if (user.length === 1 && sense.length === 2 && sense[0] === user
+        && '予下上起来去子儿头见到着了完掉'.includes(sense[1])) return true;
   }
   return false;
 };
@@ -1924,6 +1998,91 @@ export default function StudentApp() {
     setHintOpenedAt(Date.now());
     setMistakesAtHint(currentMistakes);
     setter(true);
+  };
+
+  /* ============================================================
+   * 开放输入题「答错了」统一怎么处理 (2026-09-27)
+   *
+   * 家长原话:「我不希望孩子总有一种, 只要题不会, 就是题出了错了的那种感觉。」
+   * 查云端做题记录, 9/20–9/27 希→中翻译里有 312 次间隔不到 0.6 秒的连续提交。三个原因:
+   *   1) 希→中 / 中→希两个模块答错时**屏幕上什么都不显示**, 孩子以为按钮没反应, 就一直按;
+   *   2) 同一个错答案连按也算「又错一次」, 按 3 下就把提示刷出来了, 不用动脑;
+   *   3) 他写的常常是意思相近的另一个真词, 系统只说错, 他就认定是题错了。
+   * 现在: 答错一定有一句话; 同一个答案再交不算次数; 是另一个真词就直接点破。
+   * ============================================================ */
+  const [attemptNote, setAttemptNote] = useState<{ kind: 'same' | 'other' | 'wrong'; text: string } | null>(null);
+  /** 本题上一次交的错答案(归一化后), 用来认出「同一个答案又按了一遍」 */
+  const lastWrongKeyRef = React.useRef<string>('');
+  /** 本题的作答记录: 交过哪些错答案、有没有已经写进 answer_log(一道题只记一条) */
+  const attemptLogRef = React.useRef<{ logged: boolean; wrong: string[] }>({ logged: false, wrong: [] });
+
+  /**
+   * 开放输入题答错时调用。
+   * @returns false = 这次**不算**新的一次错(和上次交的一模一样), 调用方不要加错误次数
+   */
+  const registerWrongAttempt = (typed: string, dir: 'toGreek' | 'toChinese',
+                                targetGreek: string, isWordItem: boolean, mistakesSoFar: number): boolean => {
+    const raw = String(typed || '').trim();
+    const key = dir === 'toGreek' ? cleanGreekForComparison(raw) : normalizeChineseString(raw);
+    if (key && key === lastWrongKeyRef.current) {
+      setAttemptNote({ kind: 'same',
+        text: `「${raw}」刚才已经交过了，它不对。换一个答案再试 —— 同一个答案再按也不算次数，解不开提示。` });
+      return false;
+    }
+    lastWrongKeyRef.current = key;
+    const log = attemptLogRef.current;
+    if (raw && !log.wrong.includes(raw.slice(0, 30)) && log.wrong.length < 8) log.wrong.push(raw.slice(0, 30));
+
+    if (isWordItem) {
+      if (dir === 'toGreek') {
+        const hit = lookupOtherGreekWord(raw, targetGreek);
+        if (hit) {
+          setAttemptNote({ kind: 'other',
+            text: `「${raw}」是一个真的单词，意思是「${hit.zh}」。可这道题要的是另一个词 —— 再对照一下题目的意思想想。` });
+          return true;
+        }
+      } else {
+        const others = lookupGreekForChinese(raw, targetGreek);
+        if (others.length) {
+          const head = String(targetGreek).split(',')[0].trim();
+          setAttemptNote({ kind: 'other',
+            text: `「${raw}」一般是 ${others.join(' / ')} 的意思。${head} 和它不是同一个词，再想想 ${head} 还能是什么意思。` });
+          return true;
+        }
+      }
+    }
+    setAttemptNote({ kind: 'wrong', text: `还不对（第 ${mistakesSoFar + 1} 次）。检查一下，改一改再交。` });
+    return true;
+  };
+
+  /** 答对了: 这道题记一条(ok = 是不是一次就对) */
+  const logSolved = (moduleKey: string, qLabel: string, firstTry: boolean, hintUsed: boolean, typed: string) => {
+    if (attemptLogRef.current.logged) return;
+    attemptLogRef.current.logged = true;
+    logAnswer(moduleKey, qLabel, firstTry, hintUsed, { a: typed, w: attemptLogRef.current.wrong });
+  };
+
+  /** 没答对就走了(看答案后下一题 / 跳过): 只要错过或跳过, 也记一条错 */
+  const logUnsolved = (moduleKey: string, qLabel: string, hintUsed: boolean, skipped: boolean) => {
+    const log = attemptLogRef.current;
+    if (log.logged || (!skipped && log.wrong.length === 0)) return;
+    log.logged = true;
+    logAnswer(moduleKey, qLabel, false, hintUsed, { w: log.wrong, s: skipped });
+  };
+
+  const renderAttemptNote = () => {
+    if (!attemptNote) return null;
+    const c = attemptNote.kind === 'other'
+      ? { bg: 'rgba(0,113,227,0.07)', bd: 'rgba(0,113,227,0.25)', fg: '#0058B0', icon: '🔎' }
+      : attemptNote.kind === 'same'
+        ? { bg: '#F5F5F7', bd: '#D2D2D7', fg: '#515154', icon: '🔁' }
+        : { bg: '#FFF2E8', bd: '#FFD591', fg: '#D4380D', icon: '✏️' };
+    return (
+      <div role="status" style={{ background: c.bg, border: `1px solid ${c.bd}`, color: c.fg, padding: '12px 16px',
+                                  borderRadius: '10px', margin: '-12px 0 20px 0', fontSize: '13.5px', fontWeight: 650, lineHeight: 1.6 }}>
+        {c.icon} {attemptNote.text}
+      </div>
+    );
   };
 
   /* ============================================================
@@ -3147,11 +3306,21 @@ export default function StudentApp() {
    * 记一条作答记录：对错 / 有没有看提示 / 花了多久。
    * 攒够或 4 秒后批量写云端，避免每题一次网络请求。
    */
-  const logAnswer = (moduleKey: string, qLabel: string, ok: boolean, hintUsed: boolean) => {
+  /**
+   * @param extra 开放输入题额外记下孩子**实际写了什么** (2026-09-27 起):
+   *   a = 最后答对时写的; w = 这道题上交过的错答案(去重, 最多 8 个); s = 最后是跳过的。
+   *   从前只记对错, 孩子报「我的答案也对」时根本没法回头查他当时写了什么,
+   *   「是题错还是孩子错」只能靠猜。
+   */
+  const logAnswer = (moduleKey: string, qLabel: string, ok: boolean, hintUsed: boolean,
+                     extra?: { a?: string; w?: string[]; s?: boolean }) => {
     const now = Date.now();
     const ms = Math.max(0, Math.min(now - (questionStartRef.current || now), 10 * 60 * 1000));
     questionStartRef.current = now;
-    const entry = { d: getGreeceDateString(), m: moduleKey, q: String(qLabel || '').slice(0, 40), ok, h: !!hintUsed, ms };
+    const entry: any = { d: getGreeceDateString(), m: moduleKey, q: String(qLabel || '').slice(0, 40), ok, h: !!hintUsed, ms };
+    if (extra?.a) entry.a = String(extra.a).trim().slice(0, 40);
+    if (extra?.w && extra.w.length) entry.w = extra.w.slice(0, 8);
+    if (extra?.s) entry.s = true;
     const next = [...answerLogRef.current, entry].slice(-4000);   // 只保留最近 4000 条
     answerLogRef.current = next;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -3594,6 +3763,10 @@ export default function StudentApp() {
     setHintOpenedAt(null);
     setMistakesAtHint(0);
     setGateTick(Date.now());
+    // 答错提示、「同一个答案」记忆、本题作答记录, 也跟着题号走
+    setAttemptNote(null);
+    lastWrongKeyRef.current = '';
+    attemptLogRef.current = { logged: false, wrong: [] };
   }, [activeModule, spellingIndex, quizIndex, tfIndex,
       transGrZhIndex, transZhGrIndex, glossaryIndex, grammarDrillIndex]);
 
@@ -3618,13 +3791,16 @@ export default function StudentApp() {
     }
 
     if (correct) {
-      logAnswer('grzh', currentTransGrZh?.greek || '', transGrZhMistakes === 0, showTip || showAnswer);
+      // 一道题只记一条。从前每交一次错答案就记一条, 周报里「希→中一天 122 题」其实是同几道题反复按出来的
+      logSolved('grzh', currentTransGrZh?.greek || '', transGrZhMistakes === 0, showTip || showAnswer, userTransGrZhInput);
+      setAttemptNote(null);
       setTransGrZhChecked(true);
       setIsCorrectTransGrZh(true);
       setTransGrZhScore(prev => prev + 5);
       setTransGrZhWrongAttempt(false);
     } else {
-      if (transGrZhMistakes >= 1) logAnswer('grzh', currentTransGrZh?.greek || '', false, showTip || showAnswer);
+      if (!registerWrongAttempt(userTransGrZhInput, 'toChinese', currentTransGrZh.greek,
+                                !isSentenceItem(currentTransGrZh), transGrZhMistakes)) return;
       setTransGrZhWrongAttempt(true);
       setTransGrZhMistakes(prev => {
         const next = prev + 1;
@@ -3634,6 +3810,7 @@ export default function StudentApp() {
   };
 
   const handleNextTransGrZh = (opt?: { skipped?: boolean }) => {
+    logUnsolved('grzh', currentTransGrZh?.greek || '', showTip || showAnswer, !!opt?.skipped);
     noteQuestionDone('translation_gr_zh', currentTransGrZh?.id, opt?.skipped);
     bumpModuleStep('translation_gr_zh');
     if (transGrZhIndex < translationGrZhPool.length - 1) {
@@ -3730,11 +3907,16 @@ export default function StudentApp() {
          || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek)
          || approvedAlts.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)));
     if (correct) {
+      logSolved('zhgr', String(currentTransZhGr.greek || '').split('\n')[0], transZhGrMistakes === 0,
+                showTip || showAnswer, userTransZhGrInput);
+      setAttemptNote(null);
       setTransZhGrChecked(true);
       setIsCorrectTransZhGrInput(true);
       setTransZhGrScore(prev => prev + 5);
       setTransZhGrWrongAttempt(false);
     } else {
+      if (!registerWrongAttempt(userTransZhGrInput, 'toGreek', currentTransZhGr.greek,
+                                !isGrammarItem && !isSentenceItem(currentTransZhGr), transZhGrMistakes)) return;
       setTransZhGrWrongAttempt(true);
       setTransZhGrMistakes(prev => {
         const next = prev + 1;
@@ -3744,6 +3926,7 @@ export default function StudentApp() {
   };
 
   const handleNextTransZhGr = (opt?: { skipped?: boolean }) => {
+    logUnsolved('zhgr', String(currentTransZhGr?.greek || '').split('\n')[0], showTip || showAnswer, !!opt?.skipped);
     noteQuestionDone('translation_zh_gr', currentTransZhGr?.id, opt?.skipped);
     bumpModuleStep('translation_zh_gr');
     if (transZhGrIndex < translationZhGrPool.length - 1) {
@@ -3826,25 +4009,30 @@ export default function StudentApp() {
 
   const checkGlossaryAnswer = (userRaw: string, wordObj: any): boolean => {
     if (!userRaw || !wordObj) return false;
-    const variants = getExpandedGlossaryVariants(wordObj.word_greek || '');
-    for (const v of variants) {
-      if (isFuzzyGreekMatch(userRaw, v)) {
-        return true;
-      }
-    }
-    return false;
+    // 2026-09-27: 从前只认这一个词的几种写法。汉译希模块早在 2.5.0 就接上了两样东西,
+    // 这里一直漏着 ——
+    //   ① 中文释义完全相同的同义词(题目给「但」, 写 όμως 或 αλλά 都对);
+    //   ② 家长在后台批准过的备选答案(不接的话, 家长批了孩子下次照样被判错)。
+    const variants = getAcceptableGreekTranslations(wordObj.word_greek || '', wordObj.word_chinese || '');
+    const approvedAlts = alternativeTranslations[cleanGreekForComparison(wordObj.word_greek || '')] || [];
+    return [...variants, ...approvedAlts].some(v => isFuzzyGreekMatch(userRaw, v));
   };
 
   const handleCheckGlossary = () => {
     if (!currentGlossaryWord) return;
     const correct = checkGlossaryAnswer(userGlossaryInput, currentGlossaryWord);
     if (correct) {
+      logSolved('glossary', currentGlossaryWord.word_greek || '', glossaryMistakes === 0,
+                showGlossaryTip || isGlossaryRevealed, userGlossaryInput);
+      setAttemptNote(null);
       setGlossaryChecked(true);
       setIsCorrectGlossaryInput(true);
       setIsGlossaryRevealed(false);
       setGlossaryScore(prev => prev + 5);
       setGlossaryWrongAttempt(false);
     } else {
+      if (!registerWrongAttempt(userGlossaryInput, 'toGreek', currentGlossaryWord.word_greek || '',
+                                true, glossaryMistakes)) return;
       setGlossaryWrongAttempt(true);
       setGlossaryMistakes(prev => {
         const next = prev + 1;
@@ -3883,6 +4071,7 @@ export default function StudentApp() {
   };
 
   const handleNextGlossary = (opt?: { skipped?: boolean }) => {
+    logUnsolved('glossary', currentGlossaryWord?.word_greek || '', showGlossaryTip || isGlossaryRevealed, !!opt?.skipped);
     noteQuestionDone('glossary_review', currentGlossaryWord?.id, opt?.skipped);
     bumpModuleStep('glossary_review');
     if (glossaryIndex < glossaryReviewPool.length - 1) {
@@ -6499,6 +6688,9 @@ export default function StudentApp() {
                 />
               </div>
 
+              {/* 答错一定要有一句话。从前这里什么都不显示, 孩子以为按钮坏了, 一直连按 */}
+              {!transGrZhChecked && renderAttemptNote()}
+
               {transGrZhChecked && (
                 <div style={{ 
                   background: isCorrectTransGrZh ? 'rgba(52,199,89,0.08)' : 'rgba(255,59,48,0.08)',
@@ -6705,6 +6897,8 @@ export default function StudentApp() {
                   style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
                 />
               </div>
+
+              {!transZhGrChecked && renderAttemptNote()}
 
               {transZhGrChecked && (
                 <div style={{ 
@@ -7395,21 +7589,8 @@ export default function StudentApp() {
                       )}
                     </div>
 
-                    {/* Wrong Attempt Prompt */}
-                    {!glossaryChecked && glossaryWrongAttempt && (
-                      <div style={{ 
-                        background: '#FFF2E8', 
-                        border: '1px solid #FFD591', 
-                        color: '#D4380D',
-                        padding: '12px 16px',
-                        borderRadius: '10px',
-                        marginBottom: '20px',
-                        fontSize: '13.5px',
-                        fontWeight: 650
-                      }}>
-                        ⚠️ 拼写还没完全对上。可以检查重音或词形再试一次；实在想不起来，点下方<strong>【💡 查看提示】</strong>，提示里还有一个「查看答案」。
-                      </div>
-                    )}
+                    {/* 答错提示: 同一个答案重交 / 写了另一个真词 / 普通答错, 三种说法 */}
+                    {!glossaryChecked && glossaryWrongAttempt && renderAttemptNote()}
 
                     {/* Answer & Feedback box */}
                     {glossaryChecked && (

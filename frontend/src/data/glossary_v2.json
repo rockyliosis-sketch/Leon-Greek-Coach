@@ -1786,7 +1786,7 @@
     "word_greek": "βγαίνω",
     "entry": "βγαίνω",
     "word_chinese": "出去",
-    "word_english": "to get out, to go out (ε)βδομάδα, η = week",
+    "word_english": "to get out, to go out",
     "pronunciation": "vgeno",
     "pos": "动",
     "zh_source": "official"
@@ -3381,11 +3381,11 @@
     "level": "A1",
     "word_greek": "δίνω",
     "entry": "δίνω",
-    "word_chinese": "给予",
+    "word_chinese": "给；给予",
     "word_english": "to give",
     "pronunciation": "dino",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 283,
@@ -3849,11 +3849,11 @@
     "level": "A1",
     "word_greek": "εκείνη",
     "entry": "εκείνη [accusative]",
-    "word_chinese": "她（宾格）",
+    "word_chinese": "那个（阴性）；那个女的",
     "word_english": "her",
     "pronunciation": "ekini",
     "pos": "",
-    "zh_source": "claude"
+    "zh_source": "fix"
    },
    {
     "idx": 322,
@@ -3861,11 +3861,11 @@
     "level": "A1",
     "word_greek": "εκείνος",
     "entry": "εκείνος, -η, -ο",
-    "word_chinese": "那",
+    "word_chinese": "那个（阳性）；那个人",
     "word_english": "that",
     "pronunciation": "ekinos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 323,
@@ -4221,7 +4221,7 @@
     "level": "A1",
     "word_greek": "έξω",
     "entry": "έξω",
-    "word_chinese": "外面；在外",
+    "word_chinese": "外面；在外面",
     "word_english": "out",
     "pronunciation": "exo",
     "pos": "",
@@ -8313,11 +8313,11 @@
     "level": "A1",
     "word_greek": "μακριά",
     "entry": "μακριά",
-    "word_chinese": "离这很远",
+    "word_chinese": "远；在远处",
     "word_english": "far, away",
     "pronunciation": "makria",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 694,
@@ -13017,11 +13017,11 @@
     "level": "A1",
     "word_greek": "σοφός",
     "entry": "σοφός, -ή, -ό",
-    "word_chinese": "明智的",
+    "word_chinese": "有智慧的；明智的",
     "word_english": "wise",
     "pronunciation": "sofos",
     "pos": "形",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1086,
@@ -14121,7 +14121,7 @@
     "level": "A1",
     "word_greek": "τρέχω",
     "entry": "τρέχω",
-    "word_chinese": "跑",
+    "word_chinese": "跑；奔跑",
     "word_english": "to run",
     "pronunciation": "trecho",
     "pos": "动",
@@ -18648,7 +18648,7 @@
     "word_greek": "βγαίνω",
     "entry": "βγαίνω",
     "word_chinese": "出去",
-    "word_english": "to get out, to go out (ε)βδομάδα, η = week",
+    "word_english": "to get out, to go out",
     "pronunciation": "vgeno",
     "pos": "动",
     "zh_source": "official"
@@ -20531,11 +20531,11 @@
     "level": "A2",
     "word_greek": "δίαιτα",
     "entry": "δίαιτα, η",
-    "word_chinese": "饮食",
+    "word_chinese": "节食；饮食",
     "word_english": "diet",
     "pronunciation": "dieta",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 399,
@@ -20843,11 +20843,11 @@
     "level": "A2",
     "word_greek": "δίνω",
     "entry": "δίνω",
-    "word_chinese": "给予",
+    "word_chinese": "给；给予",
     "word_english": "to give",
     "pronunciation": "dino",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 425,
@@ -21551,11 +21551,11 @@
     "level": "A2",
     "word_greek": "εκείνη",
     "entry": "εκείνη [accusative]",
-    "word_chinese": "她（宾格）",
+    "word_chinese": "那个（阴性）；那个女的",
     "word_english": "her",
     "pronunciation": "ekini",
     "pos": "",
-    "zh_source": "claude"
+    "zh_source": "fix"
    },
    {
     "idx": 484,
@@ -21563,11 +21563,11 @@
     "level": "A2",
     "word_greek": "εκείνον",
     "entry": "εκείνον [accusative]",
-    "word_chinese": "他",
+    "word_chinese": "那个人（阳性，宾格）；那个（阳性，宾格）",
     "word_english": "him",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 485,
@@ -21659,11 +21659,11 @@
     "level": "A2",
     "word_greek": "εκτίμηση",
     "entry": "εκτίμηση, η",
-    "word_chinese": "尊重",
+    "word_chinese": "尊重；评价；估计",
     "word_english": "esteem, respect",
     "pronunciation": "ektimisi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 493,
@@ -21863,11 +21863,11 @@
     "level": "A2",
     "word_greek": "εμπειρία",
     "entry": "εμπειρία, η",
-    "word_chinese": "经验",
+    "word_chinese": "经验；经历",
     "word_english": "experience",
     "pronunciation": "ebiria",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 510,
@@ -22103,11 +22103,11 @@
     "level": "A2",
     "word_greek": "εξοχή",
     "entry": "εξοχή, η",
-    "word_chinese": "农村",
+    "word_chinese": "乡下；郊外；农村",
     "word_english": "countryside",
     "pronunciation": "exochi",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 530,
@@ -22139,11 +22139,11 @@
     "level": "A2",
     "word_greek": "έξω",
     "entry": "έξω",
-    "word_chinese": "出去",
+    "word_chinese": "外面；在外面",
     "word_english": "out",
     "pronunciation": "exo",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 533,
@@ -23531,11 +23531,11 @@
     "level": "A2",
     "word_greek": "θυμίζω",
     "entry": "θυμίζω",
-    "word_chinese": "提醒",
+    "word_chinese": "提醒；使想起",
     "word_english": "to remind",
     "pronunciation": "thymizo",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 649,
@@ -23843,11 +23843,11 @@
     "level": "A2",
     "word_greek": "κάθομαι",
     "entry": "κάθομαι",
-    "word_chinese": "坐下",
+    "word_chinese": "坐；坐下",
     "word_english": "to sit, to have a seat, to sit",
     "pronunciation": "kathome",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 675,
@@ -26519,11 +26519,11 @@
     "level": "A2",
     "word_greek": "μακριά",
     "entry": "μακριά",
-    "word_chinese": "离这很远",
+    "word_chinese": "远；在远处",
     "word_english": "far, far away, away",
     "pronunciation": "makria",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 898,
@@ -29531,11 +29531,11 @@
     "level": "A2",
     "word_greek": "παροιμία",
     "entry": "παροιμία, η",
-    "word_chinese": "谚语，说",
+    "word_chinese": "谚语；俗语",
     "word_english": "proverb, saying",
     "pronunciation": "parimia",
     "pos": "阴",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1149,
@@ -30803,11 +30803,11 @@
     "level": "A2",
     "word_greek": "πράγμα",
     "entry": "πράγμα, το [see also αντικείμενο]",
-    "word_chinese": "事物",
+    "word_chinese": "东西；事物",
     "word_english": "",
     "pronunciation": "pragma",
     "pos": "中",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1255,
@@ -33911,11 +33911,11 @@
     "level": "A2",
     "word_greek": "τρέχω",
     "entry": "τρέχω",
-    "word_chinese": "运行",
+    "word_chinese": "跑；奔跑",
     "word_english": "to run",
     "pronunciation": "trecho",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1514,
