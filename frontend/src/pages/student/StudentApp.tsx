@@ -1201,7 +1201,24 @@ const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   if (!u || !t) return false;
   if (u === t) return true;
 
-  const isProper = isGreekProperNoun(userRaw) || isGreekProperNoun(targetRaw);
+  // 下面几道「差不多就算对」(词形变化 / 包含 / 差一个字母)只原谅手误和变位,
+  // 不原谅**写成了另一个真词**: Ιούνιος(六月)/Ιούλιος(七月)、Αγγλία(英格兰)/Άγγλος(英国人)、
+  // γάλα(牛奶)/Γάλλος(法国人)。两个都是词表里的词、且中文义项一个都不重合 -> 直接判错。
+  // 同一个词的异写(οκτώ/οχτώ、αδερφή/αδελφή)义项重合, 不受影响。
+  const uHit = getDicts().gr.get(u);
+  const tHit = getDicts().gr.get(t);
+  if (uHit && tHit) {
+    const tSenses = new Set(splitChineseSenses(tHit.zh));
+    if (!splitChineseSenses(uHit.zh).some(x => tSenses.has(x))) return false;
+  }
+
+  // 「专名从严」只看标准答案, 且只认真正的人名/地名(名单里的单个词)。
+  // 2026-09-27 前是「孩子写的或答案, 任一方大写开头就从严」, 两个大坑:
+  //   ① 平板键盘会自动把首字母大写 —— 孩子几乎每个答案都是 Χωριό / Δράκο / Αυτός,
+  //      于是全部走「专名从严」, 8 个字母以下一个错字都不许, 词形变化也不认;
+  //   ② 句子、月份、星期、国名、Καλή όρεξη! 这类都是大写开头, 一样被从严。
+  // 名单里的人名本来就不出题(isBlockedProperName), 这里留着只是兜底。
+  const isProper = !/\s/.test(String(targetRaw || '').trim()) && isBlockedProperName(targetRaw);
 
   if (!isProper) {
     // 1. 词干匹配：容忍变位与变格（συζητάω/συζητώ、αγαπάς/αγαπώ、καλός/καλή）
@@ -1393,6 +1410,57 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
         && '予下上起来去子儿头见到着了完掉'.includes(sense[1])) return true;
   }
   return false;
+};
+
+/**
+ * 句子题的宽容判法 (2026-09-27)。
+ *
+ * 从前句子题和单词题用同一把尺子: 中文必须几乎一字不差, 希腊语必须整句只差一个字母。
+ * 孩子交「互联网教育并拉近人们的距离」(标准答案多一个「人们」) 被判错;
+ * 交「τώρα είναι στις οχτώ και μισή」(标准答案 Είναι οκτώ και μισή) 也被判错。
+ * 翻译句子本来就没有唯一写法, 这两条都是他报「我的答案也对」、家长批准过的。
+ *
+ * 中文: 两句的「最长公共子序列」要覆盖标准答案 80% 以上的字, 且孩子写的不能比答案长出 40%。
+ * 希腊语: 标准答案里每个实词(冠词已由 cleanGreekForComparison 去掉)都要在孩子的句子里找到
+ *        (允许变位/一个错字, 走 isFuzzyGreekMatch), 孩子最多多写 2 个词。
+ * 只用于句子/短语题, 语法题(考的就是词尾)绝不能走这里。
+ */
+const lcsLength = (a: string, b: string): number => {
+  const prev = new Array(b.length + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = 0;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = prev[j];
+      prev[j] = a[i - 1] === b[j - 1] ? diag + 1 : Math.max(prev[j], prev[j - 1]);
+      diag = tmp;
+    }
+  }
+  return prev[b.length];
+};
+
+const isChineseSentenceClose = (userRaw: string, answerRaw: string): boolean => {
+  const u = normalizeChineseString(userRaw);
+  const t = normalizeChineseString(answerRaw);
+  if (!u || t.length < 6) return false;          // 太短的不算句子, 交给单词判法
+  if (u.length > t.length * 1.4) return false;
+  return lcsLength(u, t) >= Math.ceil(t.length * 0.8);
+};
+
+const greekTokens = (s: string): string[] =>
+  String(s || '').split(/\s+/).map(w => cleanGreekForComparison(w)).filter(Boolean);
+
+const isGreekSentenceClose = (userRaw: string, answerRaw: string): boolean => {
+  const u = greekTokens(userRaw);
+  const t = greekTokens(answerRaw);
+  if (t.length < 2 || u.length === 0) return false;
+  if (u.length - t.length > 2) return false;
+  const used = new Set<number>();
+  for (const tw of t) {
+    const hit = u.findIndex((uw, i) => !used.has(i) && (uw === tw || isFuzzyGreekMatch(uw, tw)));
+    if (hit < 0) return false;
+    used.add(hit);
+  }
+  return true;
 };
 
 // Alternative translations mapping for specific Greek words to support multiple meanings
@@ -2187,7 +2255,11 @@ export default function StudentApp() {
         );
         // 家长已按页码记录进度的书 -> 换成教材重建产出的真词库; 其余书维持原样, 不影响现有进度
         const oldKept = (staticVocabData.textbook_vocabulary || [])
-          .filter((w: any) => !pageBooks.has(String(w.book_id || '').toLowerCase()));
+          .filter((w: any) => !pageBooks.has(String(w.book_id || '').toLowerCase()))
+          // 旧词库里打包着一份 7/30 课堂笔记(book_id=学习笔记, 22 条), 是早期转写的草稿:
+          // 「κορυφή = 重音在尾部的 ή 上，拼写正确」「καλεσμένος ⇄ = 客人 (Guest)」这种校对备注
+          // 被当成中文释义出了题。真正的笔记在云端 custom_vocab(2.8.0 已清洗), 这份一律不用。
+          .filter((w: any) => String(w.book_id || '') !== '学习笔记');
         const v2Words = V2_WORDS.filter(w => pageBooks.has(w.book_id)).map(v2ToWord);
         let mergedVocab = [...oldKept, ...v2Words] as Word[];
         let customVocab = state.custom_vocab || [];
@@ -3373,8 +3445,8 @@ export default function StudentApp() {
     setFeedbackCtx(null);
     setFeedbackNote('');
     alert(reason === 'alt_answer'
-      ? '已提交：爸爸妈妈会看一下你的答案是不是也对。可以继续下一题啦！'
-      : '已提交：这道题会交给爸爸妈妈检查。可以继续下一题啦！');
+      ? '已提交：爸爸妈妈会看一下你的答案是不是也对。这道题可以接着想，也可以点「跳过此题」。'
+      : '已提交：这道题会交给爸爸妈妈检查。这道题可以接着想，也可以点「跳过此题」。');
   };
 
   const handleLetterClick = (letter: string, idx: number) => {
@@ -3773,7 +3845,8 @@ export default function StudentApp() {
   const currentTransGrZh = translationGrZhPool[transGrZhIndex] || null;
   const currentTransZhGr = translationZhGrPool[transZhGrIndex] || null;
   const handleCheckTransGrZh = () => {
-    let correct = isChineseAnswerCorrect(userTransGrZhInput, currentTransGrZh.chinese);
+    let correct = isChineseAnswerCorrect(userTransGrZhInput, currentTransGrZh.chinese)
+      || (isSentenceItem(currentTransGrZh) && isChineseSentenceClose(userTransGrZhInput, currentTransGrZh.chinese));
 
     // 家长后台审核通过的备选译法，以及内置的一词多义表
     if (!correct) {
@@ -3905,7 +3978,8 @@ export default function StudentApp() {
       ? [...acceptable, ...approvedAlts].some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
       : (acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans))
          || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek)
-         || approvedAlts.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans)));
+         || approvedAlts.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans))
+         || (isSentenceItem(currentTransZhGr) && isGreekSentenceClose(userTransZhGrInput, currentTransZhGr.greek)));
     if (correct) {
       logSolved('zhgr', String(currentTransZhGr.greek || '').split('\n')[0], transZhGrMistakes === 0,
                 showTip || showAnswer, userTransZhGrInput);
@@ -4063,11 +4137,9 @@ export default function StudentApp() {
       currentGlossaryWord.word_chinese,
       userGlossaryInput ? userGlossaryInput.trim() : '(学生一键报错纠错)'
     );
-    // Automatically reveal answer and allow smooth progression
-    setIsGlossaryRevealed(true);
-    setGlossaryChecked(true);
-    setIsCorrectGlossaryInput(false);
-    setGlossaryWrongAttempt(false);
+    // 2026-09-27 家长拍板: 报错之后**不再放出答案**。
+    // 从前这里一点「报错」就直接亮答案(而且弹窗还没提交就亮了), 报错成了拿答案的捷径。
+    // 不卡人的保证交给「跳过此题」, 报错只负责把问题送到家长那里。
   };
 
   const handleNextGlossary = (opt?: { skipped?: boolean }) => {
@@ -7544,7 +7616,7 @@ export default function StudentApp() {
                             alignItems: 'center',
                             gap: '4px'
                           }}
-                          title="上报此题问题给家长审核并解锁"
+                          title="上报此题问题给家长审核（不会显示答案）"
                         >
                           🚩 {isFeedbackSent ? '已上报家长' : '一键报错 / 纠错'}
                         </button>
@@ -8541,11 +8613,12 @@ export default function StudentApp() {
               🚩 这道题怎么了？
             </div>
             <div style={{ fontSize: '13px', color: '#86868B', marginBottom: '16px', lineHeight: 1.6 }}>
-              题目：<b style={{ color: '#1D1D1F' }}>{feedbackCtx.greek}</b>
-              <br />标准答案：<b style={{ color: '#1D1D1F' }}>{feedbackCtx.expected}</b>
-              {isRealTypedAnswer(feedbackCtx.userTyped) && (
-                <><br />你填的：<b style={{ color: '#FF9500' }}>{feedbackCtx.userTyped}</b></>
-              )}
+              {/* 2026-09-27: 这里从前印着「题目 + 标准答案」—— 汉译希/单词表复习里「题目」那一栏
+                  其实就是希腊语答案, 一点报错答案就出来了。孩子这边只看自己写的, 题目和答案家长后台看。 */}
+              {isRealTypedAnswer(feedbackCtx.userTyped)
+                ? <>你填的：<b style={{ color: '#FF9500' }}>{feedbackCtx.userTyped}</b></>
+                : <>选一下是哪种情况，爸爸妈妈会在后台看到这道题。</>}
+              <br /><span style={{ fontSize: '12px' }}>报错不会显示答案。真的不会做，可以点「跳过此题」。</span>
             </div>
 
             <button

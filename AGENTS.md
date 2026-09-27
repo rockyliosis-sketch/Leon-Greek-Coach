@@ -46,7 +46,7 @@ Greek is a highly inflected, flexible language. Never use strict, rigid single-s
 
 ### Rule B: Universal Non-Blocking Rule (Zero Frustration)
 Every single question across all 9 modules MUST provide:
-1. `🚩 一键报错 / 纠错 (Dispute / Report)`: Directly sends student input and question ID to parent admin queue and unlocks question.
+1. `🚩 一键报错 / 纠错 (Dispute / Report)`: Sends student input and question ID to parent admin queue. **It must NOT reveal the answer** (parent decision 2026-09-27: report had become a shortcut to the answer). Non-blocking is guaranteed by Skip, not by Report.
 2. `⏭️ 跳过此题 (Skip Question)`: Bypasses the current question without penalty.
 
 ---

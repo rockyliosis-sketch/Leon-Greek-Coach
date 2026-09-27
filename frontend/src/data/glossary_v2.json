@@ -514,7 +514,7 @@
     "word_greek": "ακριβός",
     "entry": "ακριβός, -ή, -ό",
     "word_chinese": "昂贵的",
-    "word_english": "expensive, costly (στις 10) ακριβώς = (at ten o’clock)",
+    "word_english": "expensive, costly",
     "pronunciation": "akrivos",
     "pos": "形",
     "zh_source": "official"
@@ -1162,7 +1162,7 @@
     "word_greek": "αργώ",
     "entry": "αργώ",
     "word_chinese": "迟到",
-    "word_english": "to be late (μου) αρέσει = to like",
+    "word_english": "to be late",
     "pronunciation": "argo",
     "pos": "动",
     "zh_source": "official"
@@ -7954,7 +7954,7 @@
     "word_greek": "Λιάνα",
     "entry": "Λιάνα, η",
     "word_chinese": "藤本植物",
-    "word_english": "Liana (για) λίγο [temporal] = for a while (σε) λίγο [temporal] = in a while",
+    "word_english": "Liana",
     "pronunciation": "",
     "pos": "阴",
     "zh_source": "official"
@@ -10570,7 +10570,7 @@
     "word_greek": "παντόφλα",
     "entry": "παντόφλα, η",
     "word_chinese": "拖鞋",
-    "word_english": "slipper (ε)πάνω = up (ε)πάνω από = above (ε)πάνω σε = on, onto",
+    "word_english": "slipper",
     "pronunciation": "",
     "pos": "阴",
     "zh_source": "official"
@@ -16536,7 +16536,7 @@
     "word_greek": "ακριβώς",
     "entry": "ακριβώς [adv]",
     "word_chinese": "准确地，精确地",
-    "word_english": "exactly, precisely (στις 10) ακριβώς = (at ten o’clock)",
+    "word_english": "exactly, precisely",
     "pronunciation": "akrivos",
     "pos": "副",
     "zh_source": "official"
@@ -17952,7 +17952,7 @@
     "word_greek": "αργώ",
     "entry": "αργώ",
     "word_chinese": "迟到",
-    "word_english": "to be late (μου) αρέσει = to like",
+    "word_english": "to be late",
     "pronunciation": "argo",
     "pos": "动",
     "zh_source": "official"
@@ -24168,7 +24168,7 @@
     "word_greek": "καλώ",
     "entry": "καλώ [on the phone]",
     "word_chinese": "打电话",
-    "word_english": "to call also προσκαλώ] = to invite",
+    "word_english": "to call; to invite",
     "pronunciation": "kalo",
     "pos": "动",
     "zh_source": "official"
@@ -26112,7 +26112,7 @@
     "word_greek": "λιακάδα",
     "entry": "λιακάδα, η",
     "word_chinese": "阳光",
-    "word_english": "sunshine (για) λίγο [temporal] = for a while (σε) λίγο [temporal] = in a while",
+    "word_english": "sunshine",
     "pronunciation": "liakada",
     "pos": "阴",
     "zh_source": "official"
@@ -27731,11 +27731,11 @@
     "level": "A2",
     "word_greek": "Να ζήσετε!",
     "entry": "Να ζήσετε!",
-    "word_chinese": "愿你们婚姻长久！ (May you have a life long",
+    "word_chinese": "祝你们白头偕老！",
     "word_english": "May you have a life long",
     "pronunciation": "",
     "pos": "",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 999,
@@ -29652,7 +29652,7 @@
     "word_greek": "πειράζει",
     "entry": "πειράζει",
     "word_chinese": "要紧；没关系",
-    "word_english": "it matters (δεν) πειράζει = it doesn't matter",
+    "word_english": "it matters",
     "pronunciation": "pirazi",
     "pos": "",
     "zh_source": "fix"
@@ -31128,7 +31128,7 @@
     "word_greek": "πρόσωπο",
     "entry": "πρόσωπο, το [part of the body]",
     "word_chinese": "脸；人物",
-    "word_english": "face see also καλώ] = to invite",
+    "word_english": "face; person",
     "pronunciation": "prosopo",
     "pos": "中",
     "zh_source": "claude"
@@ -34907,11 +34907,11 @@
     "level": "A2",
     "word_greek": "φτιάχνω",
     "entry": "φτιάχνω [something that doesn’t work]",
-    "word_chinese": "修",
+    "word_chinese": "做；修理",
     "word_english": "",
     "pronunciation": "ftiachno",
     "pos": "动",
-    "zh_source": "official"
+    "zh_source": "fix"
    },
    {
     "idx": 1597,
