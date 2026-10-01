@@ -27,6 +27,7 @@ import sentencesData from '../../data/sentences.json';
 import glossaryV2 from '../../data/glossary_v2.json';
 import bSyllabus from '../../data/b_syllabus.json';
 import properNameBlocklist from '../../data/proper_name_blocklist.json';
+import zhAcceptData from '../../data/zh_accept.json';
 import {
   type PageMark, type V2Word,
   resolveActivationByPage, getPageDate, getBookFrontier, GLOSSARY_RANGE, LOCKED as PAGE_LOCKED
@@ -554,7 +555,10 @@ const ALL_GRAMMAR_DRILLS: any[] = (() => {
     ...d, book_title: 'Ελληνικά Β΄', badge: '📘 B',
     _key: DRILL_KEY('b1', d.unit),
   }));
-  return out;
+  // 选择题成对生成的填空版里, 有 9 道问的是「这句话的意思最接近下面哪一句？」——
+  // 填空题下面根本没有选项, 只能凭空猜一整句(2026-10-01 孩子报「???」)。
+  // 同一道题的选择题版本照常出, 这里只拿掉没有选项的那一半。
+  return out.filter(d => !(!(d.options && d.options.length) && /下面哪|下列哪|以下哪|哪个选项/.test(String(d.question || ''))));
 })();
 
 /**
@@ -652,9 +656,14 @@ const textSeed = (str: string): number => {
 };
 
 /** 语法题按题面去重用的键(去重音、去标点、压空格) */
+// 2026-10-01: 去掉的从「几个常见标点」改成「除撇号外所有不是字母数字的符号」。
+// 题库 43 道答案里有长横「–」(表示不加冠词: μια / ο / –)、9 道有书名号「«»」,
+// 平板键盘打不出来 —— 孩子写「Μια / ο / -」完全正确, 却因为短横≠长横被判错。
+// 撇号不能去: 有题考的就是它(Με ακούς -> Μ’ ακούς, 写「Μ」不带撇号是错的)。
+// 只把各种撇号(’ ‘ ´ ` ')统一成一个, 孩子用直撇号 ' 写 Μ' 一样对。
 const grammarNormKey = (str: string): string =>
-  String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+  String(str || '').replace(/[’‘´`ʼ′]/g, "'").normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^\p{L}\p{N}\s']/gu, '').replace(/\s+/g, ' ').trim();
 
 interface Word {
   id: number;
@@ -1074,8 +1083,10 @@ const cleanGreekForComparison = (str: string): string => {
     .toLowerCase();
   
   // Remove punctuation
-  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").trim();
-  
+  // 2026-10-01 补上平板打不出来的几种: 弯撇号 ’ ‘ (γι’ αυτό)、长横 – —、书名号 « »、省略号、弯引号, 以及直撇号 '。
+  // 只补这几个, 不一刀切去掉所有符号 —— 这个函数还是「家长批准的备选答案」的索引键, 键变了旧批准就失效。
+  cleaned = cleaned.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?’‘'´«»–—―‐…“”"]/g, "").trim();
+
   // Remove common articles and normalize demonstrative pronouns
   const words = cleaned.split(/\s+/);
   const articles = new Set(['ο', 'η', 'το', 'τα', 'οι', 'της', 'του', 'τον', 'την', 'μας', 'σας', 'μου', 'σου']);
@@ -1096,18 +1107,33 @@ const normalizeChineseString = (str: string): string => {
     .toLowerCase()
     .trim()
     .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?，。？！；：]/g, "")
-    .replace(/\s+/g, "");
+    .replace(/\s+/g, "")
+    // 2026-10-01: 只留汉字、英文字母和数字, 其余符号一律不算。
+    // 孩子写「法国🇫🇷」(多一个国旗表情)被判错; 标准答案「当……的时候」里的省略号
+    // 根本打不出来, 他写「当的时候」也被判错 —— 词库里带「……」的释义有 20 来条, 全是这个坑。
+    .replace(/[^㐀-䶿一-鿿a-z0-9]/g, "");
 
-  // Normalize Chinese number characters to digits for comparison (e.g. 一 -> 1, 二/两 -> 2...)
-  const zhNumMap: Record<string, string> = {
-    "零": "0", "一": "1", "二": "2", "两": "2", "三": "3", "四": "4", 
-    "五": "5", "六": "6", "七": "7", "八": "8", "九": "9", "十": "10"
-  };
-  Object.keys(zhNumMap).forEach(key => {
-    s = s.replaceAll(key, zhNumMap[key]);
+  // 汉字数字 -> 阿拉伯数字 (二十 -> 20, 十九 -> 19, 十二月 -> 12月)。
+  // 2026-10-01 前是逐字替换: 十九 -> 「109」、七十 -> 「710」, 孩子打「19」「70」「12月」一律判错。
+  // 不带十/百/千的照旧逐字换(一起 -> 1起), 两边同样处理, 不影响比对。
+  s = s.replace(/[零〇一二两三四五六七八九十百千]+/g, run => {
+    const D: Record<string, number> = { "零": 0, "〇": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4,
+      "五": 5, "六": 6, "七": 7, "八": 8, "九": 9 };
+    if (!/[十百千]/.test(run)) return run.split('').map(c => String(D[c])).join('');
+    let total = 0, digit = 0;
+    for (const c of run) {
+      if (c in D) { digit = D[c]; continue; }
+      const unit = c === '十' ? 10 : c === '百' ? 100 : 1000;
+      total += (digit || 1) * unit;
+      digit = 0;
+    }
+    return String(total + digit);
   });
 
   // Remove common prefixes
+  // 只在去掉之后还剩 2 个字以上时才去。2026-10-01 前没有这道限制:
+  // 「这里」「那里」都被削成「里」(εδώ 写「那里」也算对), 「我的」「你的」都成了「的」,
+  // 「去年」成了「年」 —— 错答案被放过。「这是苹果」->「苹果」这类照旧。
   const prefixes = [
     "这是", "那是", "它是", "这个是", "那个是", "是一只", "一个", "一些",
     "我们", "你们", "他们", "她们", "它们",
@@ -1117,7 +1143,7 @@ const normalizeChineseString = (str: string): string => {
   while (changedPrefix) {
     changedPrefix = false;
     for (const prefix of prefixes) {
-      if (s.startsWith(prefix) && s.length > prefix.length) {
+      if (s.startsWith(prefix) && s.length - prefix.length >= 2) {
         s = s.substring(prefix.length);
         changedPrefix = true;
       }
@@ -1279,6 +1305,18 @@ const promptZhOnly = (raw: string): string => {
   return stripped || String(raw || '');
 };
 
+/**
+ * 单词表复习的题面: 只去掉「里面有希腊字母」的括号, 中文说明的括号留着(元旦（新年第一天）)。
+ * B 本单词表有 65 条把希腊语搭配写在括号里(信贷的（πιστωτική κάρτα 信用卡）),
+ * 家长一开始标 B 本单词表的进度, 题面就会把要拼的词直接印出来。
+ */
+const glossaryPromptZh = (raw: string): string => {
+  const s = String(raw || '')
+    .replace(/[（(][^（）()]*[Ͱ-Ͽἀ-῿][^（）()]*[）)]/g, '')
+    .trim();
+  return s || String(raw || '');
+};
+
 const splitChineseSenses = (raw: string): string[] => {
   if (!raw) return [];
   const senses = removeBracketContents(raw)
@@ -1380,6 +1418,52 @@ const lookupGreekForChinese = (typedZh: string, targetGreekRaw: string): string[
   return (getDicts().zh.get(s) || []).filter(g => !own.has(cleanGreekForComparison(g))).slice(0, 2);
 };
 
+/**
+ * 「希译汉」里, 除了这道题自己那一条中文, 还有哪些中文也算对 (2026-10-01)。
+ *
+ * 孩子 9/28–30 报了 12 道题, 一多半是写对了被判错: αγόρι 写「男孩」(标准答案「男生」)、
+ * υδράργυρος 写「水银」(标准答案「汞」)、χάνω 写「丢」(标准答案「失去」)。
+ * 一道题只认它自己那一条中文, 而同一个意思中文有好几种说法, 孩子写哪一种全凭习惯。
+ * 两个来源:
+ *   ① 同一个希腊语词在别的词表里的中文 —— χάνω 在 A1 写「失去」、在 B 本写「丢失；错过」,
+ *      出题时只拿到其中一条。都是这个词的意思, 写哪条都该对。
+ *      词源只用 V2_WORDS + 官方单词表 + 课堂笔记, 不用旧 vocabulary.json(有错译和占位假词)。
+ *   ② data/zh_accept.json: 逐词审过的「其他常见说法」(男孩、水银、丢、外套…),
+ *      由 scripts/build_zh_accept.py 生成, 要加要减改那个脚本的输入再跑一遍。
+ * 键是「第一个逗号前的词头, 去括号、去重音、去连字符」(αγόρι, το -> αγορι; μεγάλ-ος -> μεγαλος)。
+ * 不能直接用 cleanGreekForComparison: 它把 αυτός/αυτή/αυτοί 都并成 αυτο(那是给希腊语判题用的),
+ * 拿来合并中文的话 αυτός(他) 写「她」「这些」也算对了。
+ */
+const sameWordKey = (greek: string): string =>
+  removeBracketContents(String(greek || '').split(',')[0])
+    .normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^Ͱ-Ͽἀ-῿]/g, '');
+const ZH_ACCEPT: Record<string, string[]> = (zhAcceptData as any).accept || {};
+let _sameWordZh: Map<string, string[]> | null = null;
+const getSameWordZh = (): Map<string, string[]> => {
+  if (_sameWordZh) return _sameWordZh;
+  const m = new Map<string, Set<string>>();
+  const feed = (gr: string, zh: string) => {
+    const k = sameWordKey(gr);
+    if (!k || !zh) return;
+    if (!m.has(k)) m.set(k, new Set());
+    m.get(k)!.add(zh);
+  };
+  V2_WORDS.forEach(w => feed(w.word_greek, w.word_chinese));
+  Object.values(GLOSS_LISTS).forEach(list => (list || []).forEach((w: any) => feed(w.word_greek, w.word_chinese)));
+  _sameWordZh = new Map([...m].map(([k, s]) => [k, [...s]]));
+  return _sameWordZh;
+};
+const getExtraChineseAnswers = (greek: string, notes: { word_greek: string; word_chinese: string }[] = []): string[] => {
+  const k = sameWordKey(greek);
+  if (!k) return [];
+  return [
+    ...(getSameWordZh().get(k) || []),
+    ...(ZH_ACCEPT[k] || []),
+    ...notes.filter(n => sameWordKey(n.word_greek) === k).map(n => n.word_chinese),
+  ];
+};
+
 
 // 中文答案判定：必须答出某一个完整义项，不再是「命中一个字就算对」
 const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => {
@@ -1388,8 +1472,12 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
   const senses = splitChineseSenses(answerRaw);
   if (senses.length === 0) return false;   // 答案为空时一律判错，绝不放行
 
+  const digitsOf = (x: string) => (x.match(/\d+/g) || []).join(',');
   for (const sense of senses) {
     if (user === sense) return true;
+    // 孩子写了数字, 数字就得一个不差。否则「一千」(1000) 写「10」、「三十」写「3」
+    // 都能靠下面「少写两个字也算对」放过去。没写数字的不受影响(「点儿」照样对得上「一点儿」)。
+    if (/\d/.test(user) && digitsOf(user) !== digitsOf(sense)) continue;
     // 学生少写了修饰字：至少写满 2 字，且最多只能少 2 字
     if (sense.includes(user) && user.length >= 2 && sense.length - user.length <= 2) return true;
     // 学生多写了限定字：义项本身至少 2 字，且最多只能多 3 字
@@ -1530,6 +1618,23 @@ const hasGreekCharacters = (text: string): boolean => {
 
 const hasChineseCharacters = (text: string): boolean => {
   return /[\u4e00-\u9fa5]/.test(text);
+};
+
+/**
+ * \u5b98\u65b9\u5355\u8bcd\u8868\u91cc\u6709\u51e0\u6761\u662f PDF \u89e3\u6790\u7684\u6b8b\u6e23 (2026-10-01 \u67e5\u51fa 7 \u6761, \u5168\u5728 A2):
+ *   \u300c\u0398\u03b5\u03c3\u03c3\u03b1\u03bb\u03bf\u03bd\u03af\u03ba\u03b7\u03c2)\u300d\u300c\u03a0\u03c1\u03c9\u03c4\u03b5\u03cd\u03bf\u03c5\u03c3\u03b1\u03c2)\u300d\u300c\u03ba\u03b1\u03bb\u03ce]\u300d\u300c\u03c4\u03bf\u300d\u2014\u2014 \u4e2d\u6587\u662f\u7a7a\u7684;
+ *   \u300c\u0399\u300d\u300c\u03a1\u300d\u300c\u03bf\u300d\u2014\u2014 \u53ea\u6709\u4e00\u4e2a\u5b57\u6bcd(\u5b57\u6bcd\u540d / \u51a0\u8bcd), \u4e2d\u6587\u5199\u7740\u300c\u03c1\u03bf\u300d\u300c\u5b9a\u51a0\u8bcd\u300d\u3002
+ * \u5355\u8bcd\u8868\u590d\u4e60\u4e0d\u7ecf\u8fc7 isValidExerciseWord, \u8fd9\u4e9b\u4f1a\u539f\u6837\u51fa\u6210\u9898: \u9898\u9762\u4e00\u7247\u7a7a\u767d, \u6216\u8005\u8981\u5b69\u5b50\u62fc\u300c\u03c1\u03bf\u300d\u3002
+ * A2 \u80cc\u5230\u7b2c 643 \u4e2a\u5c31\u4f1a\u649e\u4e0a\u7b2c\u4e00\u6761(9/30 \u80cc\u5230 545)\u3002\u8bcd\u6761\u4e0d\u5220(\u80cc\u8bcd\u8fdb\u5ea6\u6309\u4f4d\u7f6e\u6570), \u51fa\u9898\u65f6\u8df3\u8fc7\u3002
+ */
+const isDrillableGlossaryEntry = (w: any): boolean => {
+  const gr = String(w?.word_greek || '').trim();
+  const zh = String(w?.word_chinese || '').trim();
+  if (!gr || !zh) return false;
+  if ((gr.match(/[\u0370-\u03ff\u1f00-\u1fff]/g) || []).length < 2) return false;
+  if (/^[^(\[]*[)\]]/.test(gr)) return false;   // \u53ea\u6709\u53f3\u62ec\u53f7 = \u4e0a\u4e00\u6761\u7684\u6b8b\u5c3e
+  if (!hasChineseCharacters(zh) && !/\d/.test(zh)) return false;   // 「21」这种纯数字释义照常出
+  return true;
 };
 
 // Check if a word item is clean and suitable for daily exercise modules
@@ -3341,7 +3446,7 @@ export default function StudentApp() {
         masterList
           .filter((w: any) => w.scheduled_date === selectedDateStr)
           // 这条线不经过 isValidExerciseWord, 人名要在这里单独挡一次
-          .filter((w: any) => !isBlockedProperName(w.word_greek || ''))
+          .filter((w: any) => !isBlockedProperName(w.word_greek || '') && isDrillableGlossaryEntry(w))
           .slice(0, 40), (x: any) => String(x.id));
     }
 
@@ -3353,6 +3458,7 @@ export default function StudentApp() {
         const d = getPageDate(pageMarksState, g, w.idx);
         if (!d) return;
         if (isBlockedProperName(w.word_greek || '')) return;   // 人名不出题
+        if (!isDrillableGlossaryEntry(w)) return;               // 解析残渣不出题
         out.push({ ...w, letter: (w.word_greek || '?')[0], tag: w.pos || '词', activated_on: d });
       });
     });
@@ -3853,7 +3959,10 @@ export default function StudentApp() {
       const cleanGreekKey = cleanGreekForComparison(currentTransGrZh.greek);
       const alternatives = [
         ...(GREEK_ALTERNATIVE_TRANSLATIONS[cleanGreekKey] || []),
-        ...(alternativeTranslations[cleanGreekKey] || [])
+        ...(alternativeTranslations[cleanGreekKey] || []),
+        // 同一个词在别的词表/笔记里的中文 + 逐词审过的其他常见说法(男孩/水银/丢…)
+        ...(currentTransGrZh.isExam ? []
+            : getExtraChineseAnswers(currentTransGrZh.greek, allVocab.filter((w: any) => w.note_date)))
       ];
       for (const alt of alternatives) {
         if (isChineseAnswerCorrect(userTransGrZhInput, alt)) {
@@ -4089,7 +4198,11 @@ export default function StudentApp() {
     //   ② 家长在后台批准过的备选答案(不接的话, 家长批了孩子下次照样被判错)。
     const variants = getAcceptableGreekTranslations(wordObj.word_greek || '', wordObj.word_chinese || '');
     const approvedAlts = alternativeTranslations[cleanGreekForComparison(wordObj.word_greek || '')] || [];
-    return [...variants, ...approvedAlts].some(v => isFuzzyGreekMatch(userRaw, v));
+    if ([...variants, ...approvedAlts].some(v => isFuzzyGreekMatch(userRaw, v))) return true;
+    // 2026-10-01: 单词表里的短语(η ώρα είναι τέσσερις)和汉译希的句子题用同一把宽尺子 ——
+    // 实词都写到了、语序不同或多一两个词也算对(Είναι τέσσερις η ώρα)。单个词不走这里。
+    const head = String(wordObj.word_greek || '').split(',')[0].trim();
+    return /\s/.test(head) && isGreekSentenceClose(userRaw, head);
   };
 
   const handleCheckGlossary = () => {
@@ -7577,7 +7690,7 @@ export default function StudentApp() {
                   margin: '12px 0 6px 0',
                   letterSpacing: '-0.5px'
                 }}>
-                  {currentGlossaryWord.word_chinese}
+                  {glossaryPromptZh(currentGlossaryWord.word_chinese)}
                 </h3>
                 {currentGlossaryWord.word_english && (
                   <div style={{ fontSize: '15px', color: '#86868B', fontWeight: 600 }}>
@@ -7825,7 +7938,7 @@ export default function StudentApp() {
                         <div style={{ fontSize: '13px', color: '#1D1D1F', lineHeight: '1.6' }}>
                           首字母提示：<strong>{cleanLemma[0]}</strong> ...，标准总长度为 <strong>{letterCount}</strong> 个字母。
                           {currentGlossaryWord.word_chinese && (
-                            <div style={{ marginTop: '4px' }}>中文意思：{currentGlossaryWord.word_chinese}</div>
+                            <div style={{ marginTop: '4px' }}>中文意思：{glossaryPromptZh(currentGlossaryWord.word_chinese)}</div>
                           )}
                         </div>
                         {(() => {
@@ -8194,15 +8307,16 @@ export default function StudentApp() {
                         if (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0)) {
                           correct = (selectedGrammarOption === currentGrammarDrill.answer);
                         } else {
-                          const normUser = userGrammarInput.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
-                          const normAns = (currentGrammarDrill.answer || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                          // 与 grammarNormKey 同一把尺子(从前这里另抄了一份, 长横「–」弯撇号「’」都去不掉)
+                          const normUser = grammarNormKey(userGrammarInput);
+                          const normAns = grammarNormKey(currentGrammarDrill.answer || '');
                           correct = (normUser === normAns && normUser.length > 0);
                           // 家长后台批准过的备选答案也要认 —— 否则「我的答案也对」批了等于白批
                           const approved = alternativeTranslations[
                             cleanGreekForComparison(currentGrammarDrill.answer || '')] || [];
                           if (!correct && (currentGrammarDrill.acceptable_answers || approved.length)) {
                             for (const alt of [...(currentGrammarDrill.acceptable_answers || []), ...approved]) {
-                              const normAlt = alt.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?!;·]/g, '').replace(/\s+/g, ' ').trim();
+                              const normAlt = grammarNormKey(alt);
                               if (normUser === normAlt && normUser.length > 0) {
                                 correct = true;
                                 break;

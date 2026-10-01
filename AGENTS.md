@@ -42,7 +42,8 @@ Greek is a highly inflected, flexible language. Never use strict, rigid single-s
 - **Verb Dual Form Tolerant**: Always accept both `-άω` and `-ώ` (e.g., `συζητάω` and `συζητώ`).
 - **Synonym & Inflection Mesh**: Connect lemmas with imperatives and synonyms (e.g., `λέω`, `μιλάω`, `μιλώ`, `πες`).
 - **Typo Forgiveness**: Allow 1 typo for words >= 4 letters using `isFuzzyGreekMatch` (Levenshtein distance <= 1).
-- **Accents & Punctuation Agnostic**: Diacritics and punctuation must be normalized before comparison.
+- **Accents & Punctuation Agnostic**: Diacritics and punctuation must be normalized before comparison. This includes symbols a tablet keyboard cannot type (– — « » … ’ emoji); apostrophes are unified, not removed (some drills test elision: Μ’).
+- **Chinese Answers Are Not One-String Either** (v2.9.2): Greek→Chinese accepts (1) every gloss the same Greek word has in any word list (`getExtraChineseAnswers`) and (2) the reviewed synonyms in `frontend/src/data/zh_accept.json` (男孩=男生, 水银=汞). New words → add their synonyms via `docs/zh_accept_audit_*.jsonl` + `scripts/build_zh_accept.py`. Never add a synonym that is really another Greek word's meaning (αγόρι ≠ 男人).
 
 ### Rule B: Universal Non-Blocking Rule (Zero Frustration)
 Every single question across all 9 modules MUST provide:
