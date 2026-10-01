@@ -2206,6 +2206,20 @@ export default function StudentApp() {
     const log = attemptLogRef.current;
     if (raw && !log.wrong.includes(raw.slice(0, 30)) && log.wrong.length < 8) log.wrong.push(raw.slice(0, 30));
 
+    // 2026-10-01 家长同意: 乱敲键盘不算次数。9/28–10/1 的做题记录里, 中文题被敲成
+    // 「jjjk」「fklll」「sss and you have」, 每次稍有不同就算错一次, 敲 3 下提示就出来了。
+    // 中文题里没有汉字(也没有数字)、希腊语题里没有希腊字母的输入, 不计次(返回 false, 调用方不加次数)。
+    // 照样记进作答记录(上面那行), 家长能看到; 「跳过此题」照常可用, 不会卡住。
+    const looksReal = dir === 'toChinese'
+      ? /[㐀-鿿\d]/.test(raw)
+      : /[Ͱ-Ͽἀ-῿]/.test(raw);
+    if (!looksReal) {
+      setAttemptNote({ kind: 'same', text: dir === 'toChinese'
+        ? `「${raw.slice(0, 20)}」里没有中文，不算一次。写一个你觉得对的中文意思再交；实在不会，可以点「跳过此题」。`
+        : `「${raw.slice(0, 20)}」里没有希腊字母，不算一次。用希腊语写一个你觉得对的答案再交；实在不会，可以点「跳过此题」。` });
+      return false;
+    }
+
     if (isWordItem) {
       if (dir === 'toGreek') {
         const hit = lookupOtherGreekWord(raw, targetGreek);
