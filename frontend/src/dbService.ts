@@ -36,6 +36,8 @@ export interface SharedState {
     note?: string;
     /** 出问题的词（希腊语原形），家长可据此停用该词 */
     wordKey?: string;
+    /** 报错时孩子页面跑的是哪一版。2026-10-04 起记: 旧页面没刷新会让已修好的题照样被报 */
+    v?: string;
   }>;
   /** 家长停用的词（希腊语原形，已归一化）——不再出题 */
   disabled_words?: string[];
@@ -47,6 +49,7 @@ export interface SharedState {
     ok: boolean;      // 是否答对
     h: boolean;       // 是否看了提示/答案
     ms: number;       // 本题耗时（毫秒）
+    v?: string;       // 当时页面的版本号（2026-10-04 起）
   }>;
 }
 

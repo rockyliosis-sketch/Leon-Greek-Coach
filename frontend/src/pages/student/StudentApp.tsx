@@ -43,6 +43,7 @@ import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import bGrammarDrills from '../../data/b_grammar_drills.json';
 import a1UnitMap from '../../data/a1_unit_map.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
+import { APP_VERSION, LONG_AWAY_MS, reloadToBuild, watchForNewVersion } from '../../lib/autoUpdate';
 
 const speakGreek = (text: string) => {
   if ('speechSynthesis' in window) {
@@ -1419,6 +1420,16 @@ const lookupGreekForChinese = (typedZh: string, targetGreekRaw: string): string[
 };
 
 /**
+ * 两条中文释义的意思是否对得上: 拆成义项后, 有一项**完全相同**(至少 2 个字)。
+ * 「严肃的」对「没有笑容的；严肃的」算; 「回收」对「回收」算。
+ * 不用「包含」: 「为什么」包含「什么」, 孩子在 τι(什么) 那题写 γιατί 会被夸「意思没错」。
+ */
+const chineseMeaningsOverlap = (a: string, b: string): boolean => {
+  const sb = new Set(splitChineseSenses(b).filter(x => x.length >= 2));
+  return splitChineseSenses(a).some(x => x.length >= 2 && sb.has(x));
+};
+
+/**
  * 「希译汉」里, 除了这道题自己那一条中文, 还有哪些中文也算对 (2026-10-01)。
  *
  * 孩子 9/28–30 报了 12 道题, 一多半是写对了被判错: αγόρι 写「男孩」(标准答案「男生」)、
@@ -2194,7 +2205,8 @@ export default function StudentApp() {
    * @returns false = 这次**不算**新的一次错(和上次交的一模一样), 调用方不要加错误次数
    */
   const registerWrongAttempt = (typed: string, dir: 'toGreek' | 'toChinese',
-                                targetGreek: string, isWordItem: boolean, mistakesSoFar: number): boolean => {
+                                targetGreek: string, isWordItem: boolean, mistakesSoFar: number,
+                                promptZh?: string): boolean => {
     const raw = String(typed || '').trim();
     const key = dir === 'toGreek' ? cleanGreekForComparison(raw) : normalizeChineseString(raw);
     if (key && key === lastWrongKeyRef.current) {
@@ -2224,6 +2236,17 @@ export default function StudentApp() {
       if (dir === 'toGreek') {
         const hit = lookupOtherGreekWord(raw, targetGreek);
         if (hit) {
+          // 2026-10-04: 题目写「没有笑容的；严肃的」, 他写 σοβαρός(严肃的); 题目写「回收」, 他写动词 ανακυκλώνω。
+          // 意思完全对得上, 旧提示却只说「这道题要的是另一个词」, 他觉得自己没错, 就报了错。
+          // 意思对得上时先肯定他, 再说清楚差在哪(同词根 -> 换词形; 不同词根 -> 要的是同义的另一个词)。
+          // 仍然算一次: 不算的话他只会同义词就永远解不开提示, 只能跳过欠账。
+          if (promptZh && chineseMeaningsOverlap(hit.zh, promptZh)) {
+            const sameRoot = cleanGreekForComparison(raw).slice(0, 5) === cleanGreekForComparison(targetGreek).slice(0, 5);
+            setAttemptNote({ kind: 'other', text: sameRoot
+              ? `「${raw}」意思是「${hit.zh}」—— 意思没错，词根也对！不过题目要的是同一个词根的另一种词形（比如名词和动词不一样）。改一改词尾再试。`
+              : `「${raw}」意思是「${hit.zh}」—— 意思你没理解错！不过这道题练的是另一个意思相近的词。再想想，或者错够次数后看提示。` });
+            return true;
+          }
           setAttemptNote({ kind: 'other',
             text: `「${raw}」是一个真的单词，意思是「${hit.zh}」。可这道题要的是另一个词 —— 再对照一下题目的意思想想。` });
           return true;
@@ -3509,7 +3532,7 @@ export default function StudentApp() {
     const now = Date.now();
     const ms = Math.max(0, Math.min(now - (questionStartRef.current || now), 10 * 60 * 1000));
     questionStartRef.current = now;
-    const entry: any = { d: getGreeceDateString(), m: moduleKey, q: String(qLabel || '').slice(0, 40), ok, h: !!hintUsed, ms };
+    const entry: any = { d: getGreeceDateString(), m: moduleKey, q: String(qLabel || '').slice(0, 40), ok, h: !!hintUsed, ms, v: APP_VERSION };   // v = 孩子当时跑的是哪一版(查「是不是旧页面」用)
     if (extra?.a) entry.a = String(extra.a).trim().slice(0, 40);
     if (extra?.w && extra.w.length) entry.w = extra.w.slice(0, 8);
     if (extra?.s) entry.s = true;
@@ -3520,6 +3543,26 @@ export default function StudentApp() {
       saveSharedState({ answer_log: answerLogRef.current });
     }, 4000);
   };
+
+  // ── 网站更新了, 把开着的旧页面换成新版(见 lib/autoUpdate.ts) ──
+  // 只在「安全」的时候刷新: 回到首页且没开报错弹窗, 或者离开超过 30 分钟再回来(算新的一次学习)。
+  // 做题做到一半不刷 —— 顶上挂一条提示, 回首页时自动刷。刷之前先把还没上传的作答记录立刻存掉。
+  const [pendingBuild, setPendingBuild] = useState<string | null>(null);
+  const reloadForUpdate = React.useCallback(async (build: string) => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+      try { await saveSharedState({ answer_log: answerLogRef.current }); } catch { /* 存不上也照刷, 不卡孩子 */ }
+    }
+    reloadToBuild(build);
+  }, []);
+  useEffect(() => watchForNewVersion((build, awayMs) => {
+    setPendingBuild(build);
+    if (awayMs >= LONG_AWAY_MS) reloadForUpdate(build);
+  }), [reloadForUpdate]);
+  useEffect(() => {
+    if (pendingBuild && activeModule === 'dashboard' && !feedbackCtx) reloadForUpdate(pendingBuild);
+  }, [pendingBuild, activeModule, feedbackCtx, reloadForUpdate]);
 
   /** 孩子在报错弹窗里自己写的那句话 */
   const [feedbackNote, setFeedbackNote] = useState('');
@@ -3557,6 +3600,7 @@ export default function StudentApp() {
       note: feedbackNote.trim().slice(0, 200),
       date: getGreeceDateString(),
       status: 'pending' as const,
+      v: APP_VERSION,
     };
     const updated = [...userFeedbackList, item];
     setUserFeedbackList(updated);
@@ -4113,7 +4157,8 @@ export default function StudentApp() {
       setTransZhGrWrongAttempt(false);
     } else {
       if (!registerWrongAttempt(userTransZhGrInput, 'toGreek', currentTransZhGr.greek,
-                                !isGrammarItem && !isSentenceItem(currentTransZhGr), transZhGrMistakes)) return;
+                                !isGrammarItem && !isSentenceItem(currentTransZhGr), transZhGrMistakes,
+                                currentTransZhGr.chinese)) return;
       setTransZhGrWrongAttempt(true);
       setTransZhGrMistakes(prev => {
         const next = prev + 1;
@@ -4233,7 +4278,7 @@ export default function StudentApp() {
       setGlossaryWrongAttempt(false);
     } else {
       if (!registerWrongAttempt(userGlossaryInput, 'toGreek', currentGlossaryWord.word_greek || '',
-                                true, glossaryMistakes)) return;
+                                true, glossaryMistakes, currentGlossaryWord.word_chinese)) return;
       setGlossaryWrongAttempt(true);
       setGlossaryMistakes(prev => {
         const next = prev + 1;
@@ -5945,6 +5990,19 @@ export default function StudentApp() {
           </div>
         </div>
       </nav>
+
+      {/* 网站已更新、这一页还是旧的: 做题中途不打断, 只提示一句; 回首页会自动换新 */}
+      {pendingBuild && activeModule !== 'dashboard' && (
+        <div style={{ background: '#FFF4E5', color: '#8A4B00', fontSize: '13px', padding: '8px 16px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <span>🔄 网站刚更新了。做完这题点「返回控制台」，会自动换成新版。</span>
+          <button onClick={() => reloadForUpdate(pendingBuild)}
+                  style={{ border: '1px solid #E0A458', background: '#fff', color: '#8A4B00', borderRadius: '6px',
+                           padding: '2px 10px', fontSize: '12px', cursor: 'pointer' }}>
+            现在更新
+          </button>
+        </div>
+      )}
 
       {/* Main Container */}
       <main className="main-content">
