@@ -1,52 +1,86 @@
 ---
 name: greek-notes-transcriber
-description: "Triggers when the user provides handwritten images of Greek-Chinese learning notes. Automatically transcribes, names, and calibrates them with mutual translation verification."
+description: "家长发来 Leon 手写的希腊语-中文课堂笔记照片时使用。逐行转写成后台可直接粘贴上传的极简 Markdown（只有日期+希腊语|中文表），并对每一行做「希→中、中→希」双向反复验证，专抓手写误读。Triggers when the user provides handwritten images of Greek-Chinese learning notes."
 ---
 
-# Greek Notes Transcriber Skill
+# Leon 笔记照片 → 后台上传用 Markdown
 
-This skill governs the process of automatically transcribing, naming, and verifying Greek-Chinese handwritten study notes uploaded by the user.
+家长会把整份文件**原样粘进后台「导入笔记」**，所以文件里只能有日期和单词表，别的什么都不放。
 
-## Triggering Conditions
-Activate this skill whenever the user uploads one or more images of handwritten notes containing Greek vocabulary alongside Chinese translations.
+## 一、文件长这样（2026-09-25 家长定型，2026-10-04 再次强调「简单一点」）
 
-## Core Execution Steps
+```
+# 2026-10-04
 
-### 1. Date & Filename Recognition
-*   Scan the top of the handwritten note to identify the date (typically formatted like `D.M.YY` or `M.D.YY`, e.g. `7.3.26` for July 3, 2026).
-*   Format this date as `YYYY-MM-DD`.
-*   The output file must be named `YYYY-MM-DD.md`.
+| 希腊语 | 中文 |
+| --- | --- |
+| κίνηση | 堵车 |
+| οικονομικός, ή, ό | 优惠 |
+```
 
-### 2. Sequential Transcription Workflow
-To guarantee accuracy, transcribe the list line-by-line following this precise sequence:
-*   **Greek First**: Transcribe the Greek word/phrase on the left. Pay close attention to Greek letters and accents (`ά`, `έ`, `ή`, `ί`, `ό`, `ύ`, `ώ`).
-*   **Chinese Second**: Transcribe the Chinese translation on the right.
+- 第一行 `# YYYY-MM-DD`，然后一张两列表格，表头固定 `| 希腊语 | 中文 |`。
+- **不要**：序号列、语法备注、校验报告、对号、图片来源、说明文字、任何其他段落。
+- 疑点、改动理由一律写在**给家长的聊天回复**里，不进文件。
+- 保存位置：`materials/notes/YYYY-MM-DD.md`（项目根目录下）。
 
-### 3. Mutual Translation Verification (Calibration)
-*   For each transcribed pair, verify if the Greek word and Chinese translation match semantically.
-*   Lookup or translate the Greek word back to Chinese, and translate the Chinese word to Greek.
-*   Cross-verify with existing textbooks or dictionaries if applicable.
-*   If a mismatch is found, or if a handwritten character was misread, correct it and highlight it in the **Calibration Report**.
+## 二、日期
 
-### 4. Output Generation & Path（2026-09-25 家长定型，以此为准）
-*   The file is pasted **as a whole** into the parent admin import box, so it must contain ONLY:
+照片顶部的日期是**日.月.年**（希腊写法）：`4.10.26` = 2026-10-04，`7.3.26` = 2026-03-07。
+拿不准是哪月哪日时，用「家长发图的日期」和「已有笔记的先后顺序」对一下；还拿不准就问家长，不要猜。
 
-    ```
-    # 2026-09-23
+## 三、转写顺序
 
-    | 希腊语 | 中文 |
-    | --- | --- |
-    | σπάω | 打破 |
-    ```
-*   **No** calibration report, image source, check marks, grammar-note or status columns in the file.
-    Put handwriting doubts and calibration notes in the chat reply to the parent instead.
-*   The Chinese column is copied verbatim from the teacher's handwriting — never "correct" it.
-*   Save to: `/Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/notes/YYYY-MM-DD.md`
-*   Verify with the real import code: `python3 scripts/tests/check_note_import.py materials/notes/YYYY-MM-DD.md`
-    (word count and date must match the photo).
-*   If a date's words were already imported, do NOT ask the parent to re-upload; fix the cloud
-    `custom_vocab` directly and update the md file.
+逐行，从上到下，一行一个词条：
+1. 先写左边希腊语，**带上重音**（ά έ ή ί ό ύ ώ）。形容词照笔记写成 `αρκετός, ή, ό` / `κάθετος, η, ο` 这种格式。
+2. 再写右边中文。
+3. 数一遍：文件里的行数必须等于照片上的行数。
 
-### 5. Confirmation Safeguard
-*   **Do NOT** modify the database `greek_coach.db` or the frontend file `vocabulary.json` during the note transcription phase.
-*   Ask the user to review the generated Markdown note content first. Only sync the vocabulary to the database and frontend when the user explicitly gives confirmation to import/upload the notes.
+## 四、双向反复验证（核心，每一行都做，不许跳）
+
+笔记是孩子手写的，字母和汉字都容易认错。**每一行**都走完下面三步：
+
+| 步骤 | 做什么 | 抓什么错 |
+| --- | --- | --- |
+| ① 希→中 | 把读出来的希腊语翻成中文，看和笔记上的中文是否说得通 | 希腊语读错了一个字母，变成别的词或不存在的词 |
+| ② 中→希 | 把笔记上的中文翻回希腊语，看能不能回到读出来的那个希腊词（或它的近义词） | 汉字认错（如「验」看成「签」），或希腊语读成了形近词 |
+| ③ 字典核对 | 确认读出来的希腊语是**真实存在的标准拼写**、重音位置正确 | 少重音、重音位置错、η/ι/υ 混淆 |
+
+**三步都对得上 → 直接写进文件。**
+**任何一步对不上 → 回去重新看照片那一行**（放大、裁剪、和同一页里同一个字母的写法比对），再验一遍。
+
+### 孩子手写的常见形近字母（重点盯）
+
+| 照片上看着像 | 实际多半是 | 例 |
+| --- | --- | --- |
+| n、u | η | `κίνnσn` → κίνηση，`κατεύθυνon` → κατεύθυνση |
+| j | ζ | `διασχίjω` → διασχίζω |
+| 6、σ 混写 | σ / ς（词尾一律 ς） | |
+| ι 和 η | 按字典定 | 老师手写的 η 也常像 ι，见下 |
+| 没写重音 | 按字典补上 | `οικονομικos` → οικονομικός |
+
+找对照样本：**在同一张照片里找确定的同一个字母**，比笔形，不要凭感觉。
+
+## 五、红线
+
+1. **中文的意思不许改。** 笔记里的中文是希腊老师教的说法，常常不是逐词直译（如 κίνηση = 堵车、οικονομικός = 优惠），这是对的。双向验证只用来**抓认错的字**，不是用来"纠正翻译"。
+   - 汉字写得歪、缺笔，按孩子明显想写的那个标准字转写，并在回复里说一声。
+   - 真觉得某条意思对不上：先假设是希腊语那一侧认错了；仍对不上，**原样照抄**，在回复里请家长对照照片。
+2. **不许为误读编理由**（如把读错的 η→ι 说成"方言拼法"）。拿不准就按标准拼写写，回复里注明「字形存疑」。
+3. **人名不收**（见项目 `proper_name_blocklist.json`）。
+4. 转写阶段**不动**数据库、`vocabulary.json`、云端。
+
+## 六、交付前自检
+
+```
+python3 scripts/tests/check_note_import.py materials/notes/YYYY-MM-DD.md
+```
+
+用后台真代码模拟导入：**读出的词数 = 照片行数，日期 = 照片日期**，才算完成。
+另外查一次云端 `custom_vocab` 有没有这一天的词——已经导入过的，不要让家长重传，直接改云端并同步改 md。
+
+## 七、给家长的回复（文件以外的话都写这里）
+
+用中文、大白话，三块：
+1. 文件放在哪、共几个词、日期是哪天。
+2. 每个词都做了希→中、中→希双向核对；**列出改动过/存疑的条目**（照片上写的是什么 → 我写成什么 → 为什么），没有就说"没有存疑"。
+3. 下一步：打开后台「导入笔记」，把文件全文粘进去。
