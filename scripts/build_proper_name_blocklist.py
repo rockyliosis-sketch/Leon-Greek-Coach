@@ -57,10 +57,15 @@ PLACE = """
 Ναβαρίνου Καμάρα Δράμα
 """
 
+# ── 小写纯音译文化专名（如民间舞名，孩子没有中文音译语境）──────
+TRANSLIT = """
+ζεϊμπέκικο συρτάκι
+"""
+
 def toks(block):
     return [t for t in re.split(r'\s+', block.strip()) if t]
 
-groups = {'person': toks(PERSON), 'character': toks(CHARACTER), 'place': toks(PLACE)}
+groups = {'person': toks(PERSON), 'character': toks(CHARACTER), 'place': toks(PLACE), 'translit': toks(TRANSLIT)}
 
 # 载入词库，统计每个 key 命中的词条
 d = json.load(open('frontend/src/data/vocabulary.json'))

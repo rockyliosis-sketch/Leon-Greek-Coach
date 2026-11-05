@@ -543,6 +543,33 @@ const orderClozeForDay = (
  */
 const DRILL_KEY = (bookId: string, unit: number) => `${String(bookId).toLowerCase()}#${unit}`;
 
+/**
+ * B 本成对生成的填空题里，只有「封闭类语法功能词」（冠词、缩合介冠词、人称/疑问/关系代词、小品词、基础介词）
+ * 才能在不给词根提示的情况下靠上下文语法唯一推导出答案。
+ * 开放类实词（如 #68 παίρνω）或整句口语套话/多空组合（如 #73 Μα τι λέτε）没有括号词根提示时属于盲猜，
+ * 只保留它们同题配对的选择题版本（choice），过滤掉无提示手打版（cloze）。
+ */
+const CLOSED_CLASS_GRAMMAR_FORMS = new Set([
+  'ο', 'η', 'το', 'οι', 'τα', 'τον', 'την', 'του', 'της', 'των', 'τους', 'τις',
+  'ενας', 'μια', 'ενα', 'εναν', 'μιαν', 'ενος', 'μιας',
+  'στο', 'στη', 'στην', 'στον', 'στα', 'στους', 'στις', 'σε', 'απο', 'με', 'για', 'ως', 'μεχρι', 'προς', 'κατα', 'αντι',
+  'μου', 'σου', 'μας', 'σας', 'με', 'σε', 'μας', 'σας', 'εμενα', 'εσενα', 'αυτον', 'αυτην', 'αυτο', 'αυτους', 'αυτες', 'αυτα',
+  'ποιος', 'ποια', 'ποιο', 'ποιον', 'ποιαν', 'ποιου', 'ποιας', 'ποιων', 'ποιους', 'ποιες', 'ποιανου', 'τι', 'που', 'πως', 'ποσο', 'ποση', 'ποσοι', 'ποσες', 'ποσα',
+  'οποιος', 'οποια', 'οποιο', 'οποιου', 'οποιας', 'οποιων', 'οποιους', 'οποιες',
+  'να', 'θα', 'ας', 'δεν', 'δε', 'μη', 'μην', 'κι', 'και', 'η', 'ουτε', 'μητε', 'οτι', 'πως', 'αν', 'οταν', 'ενω', 'αφου', 'γιατι', 'επειδη',
+]);
+
+const isClosedClassGrammarAnswer = (ans: string): boolean => {
+  const norm = String(ans || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?’‘'´«»–—―‐…“”"]/g, ' ')
+    .trim();
+  if (!norm) return false;
+  const parts = norm.split(/\s+/).filter(Boolean);
+  return parts.length >= 1 && parts.length <= 2 && parts.every(p => CLOSED_CLASS_GRAMMAR_FORMS.has(p));
+};
+
 const ALL_GRAMMAR_DRILLS: any[] = (() => {
   const out: any[] = [];
   (unitKnowledgeData as any[]).forEach(u => {
@@ -556,10 +583,21 @@ const ALL_GRAMMAR_DRILLS: any[] = (() => {
     ...d, book_title: 'Ελληνικά Β΄', badge: '📘 B',
     _key: DRILL_KEY('b1', d.unit),
   }));
-  // 选择题成对生成的填空版里, 有 9 道问的是「这句话的意思最接近下面哪一句？」——
-  // 填空题下面根本没有选项, 只能凭空猜一整句(2026-10-01 孩子报「???」)。
-  // 同一道题的选择题版本照常出, 这里只拿掉没有选项的那一半。
-  return out.filter(d => !(!(d.options && d.options.length) && /下面哪|下列哪|以下哪|哪个选项/.test(String(d.question || ''))));
+  // 选择题成对生成的填空版里:
+  //   1. 问「下面哪一句」的题没有选项根本无法作答;
+  //   2. B 本无括号词根提示的开放式实词/口语套话填空题(如 #68 παίρνω、#73 Μα τι λέτε),
+  //      没有选项只能盲猜课本原词; 保留其配对的选择题版本(choice), 仅过滤无提示的克隆填空版。
+  return out.filter(d => {
+    const hasOptions = !!(d.options && d.options.length);
+    if (hasOptions) return true;
+    const q = String(d.question || '');
+    if (/下面哪|下列哪|以下哪|哪个选项/.test(q)) return false;
+    if (d.id >= 200000 && d.drill_type === 'cloze') {
+      const hasGreekHint = /[（(][^）)]*[\u0370-\u03ff\u1f00-\u1fff][^）)]*[）)]/.test(q);
+      if (!hasGreekHint && !isClosedClassGrammarAnswer(d.answer || '')) return false;
+    }
+    return true;
+  });
 })();
 
 /**
@@ -1220,23 +1258,50 @@ const getLevenshteinDistance = (a: string, b: string): number => {
   return dp[m][n];
 };
 
-const GREEK_INFLECTION_SUFFIX = /(αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις)$/;
+const GREEK_INFLECTION_SUFFIX = /(ιμοποιω|αω|αει|ουμε|ατε|ουνε|ουν|ησα|ησε|ηκα|ισα|ισε|ικα|ομαι|εσαι|εται|ομαστε|εστε|ονται|αζω|ιζω|ευω|ωνω|ισμος|ισμοι|ισμα|ισματα|ακι|ακια|ικος|ικη|ικο|ικα|σιες|σεις|ση|ωση|μα|ματα|ως|ες|ος|ης|ας|ου|ων|ους|α|ω|ει|εις|ι|ο)$/;
+
+const normalizeGreekPhoneticVariants = (s: string): string =>
+  s
+    .replace(/χτ/g, 'χθ')
+    .replace(/οχτ/g, 'οκτ')
+    .replace(/εφτ/g, 'επτ')
+    .replace(/αδερφ/g, 'αδελφ');
 
 const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   const u = cleanGreekForComparison(userRaw);
   const t = cleanGreekForComparison(targetRaw);
   if (!u || !t) return false;
   if (u === t) return true;
+  if (normalizeGreekPhoneticVariants(u) === normalizeGreekPhoneticVariants(t)) return true;
 
-  // 下面几道「差不多就算对」(词形变化 / 包含 / 差一个字母)只原谅手误和变位,
-  // 不原谅**写成了另一个真词**: Ιούνιος(六月)/Ιούλιος(七月)、Αγγλία(英格兰)/Άγγλος(英国人)、
-  // γάλα(牛奶)/Γάλλος(法国人)。两个都是词表里的词、且中文义项一个都不重合 -> 直接判错。
-  // 同一个词的异写(οκτώ/οχτώ、αδερφή/αδελφή)义项重合, 不受影响。
+  // 常见前缀派生词根互通（如 δέχομαι ↔ αποδέχομαι, θυμίζω ↔ υπενθυμίζω, νοικιάζω ↔ ενοικίαση）
+  const stripDerivPrefix = (x: string) => x.replace(/^(απο|υπεν|ε)/, '');
+  const uNoPre = stripDerivPrefix(u);
+  const tNoPre = stripDerivPrefix(t);
+  const uStemBase = u.replace(GREEK_INFLECTION_SUFFIX, '');
+  const tStemBase = t.replace(GREEK_INFLECTION_SUFFIX, '');
+  const sharesLongRoot =
+    (u.length >= 5 && t.length >= 5 && u.slice(0, 5) === t.slice(0, 5)) ||
+    (uNoPre.length >= 4 && tNoPre.length >= 4 && (uNoPre === tNoPre || uNoPre.slice(0, 5) === tNoPre.slice(0, 5))) ||
+    (uStemBase.length >= 4 && tStemBase.length >= 4 && (uStemBase === tStemBase || uStemBase.startsWith(tStemBase) || tStemBase.startsWith(uStemBase)) && Math.abs(uStemBase.length - tStemBase.length) <= 1);
+
+  // 下面几道「差不多就算对」(词形变化 / 包含 / 差一个字母)只原谅手误、变位和同词根词性派生,
+  // 不原谅**写成了另一个毫无关系的真词**: Ιούνιος(六月)/Ιούλιος(七月)、
+  // γάλα(牛奶)/Γάλλος(法国人)、μήλο(苹果)/μήνας(月)。
+  // 若两个词共享 ≥5 字母长词根或词干完全一致(如 μαγειρική/μαγειρεύω、χρήση/χρησιμοποιώ、
+  // μετακίνηση/μετακινήσεις、ετοιμάζω/έτοιμος、σπυρί/σπυράκι、άμεσα/αμέσως), 属于同族派生词, 放行。
   const uHit = getDicts().gr.get(u);
   const tHit = getDicts().gr.get(t);
-  if (uHit && tHit) {
-    const tSenses = new Set(splitChineseSenses(tHit.zh));
-    if (!splitChineseSenses(uHit.zh).some(x => tSenses.has(x))) return false;
+  if (uHit && tHit && !sharesLongRoot) {
+    const tSenses = new Set([
+      ...splitChineseSenses(tHit.zh),
+      ...getExtraChineseAnswers(tHit.greek).flatMap(z => splitChineseSenses(z)),
+    ]);
+    const uSenses = [
+      ...splitChineseSenses(uHit.zh),
+      ...getExtraChineseAnswers(uHit.greek).flatMap(z => splitChineseSenses(z)),
+    ];
+    if (!uSenses.some(x => tSenses.has(x))) return false;
   }
 
   // 「专名从严」只看标准答案, 且只认真正的人名/地名(名单里的单个词)。
@@ -1248,29 +1313,36 @@ const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   const isProper = !/\s/.test(String(targetRaw || '').trim()) && isBlockedProperName(targetRaw);
 
   if (!isProper) {
-    // 1. 词干匹配：容忍变位与变格（συζητάω/συζητώ、αγαπάς/αγαπώ、καλός/καλή）
-    //    收紧点：词干必须完全相同，或只多出 1 个字母的词尾；且原词长度差不得超过 2~3
-    //    （旧版只要前 3 个字母一样就判对，导致 δέκα=δεκαοκτώ、κρέας=κρεμάστρα）
-    const uStem = u.replace(GREEK_INFLECTION_SUFFIX, '');
-    const tStem = t.replace(GREEK_INFLECTION_SUFFIX, '');
+    // 1. 词干与同词根词性派生匹配：容忍变位、变格、单复数及同根词性转换
+    //    （συζητάω/συζητώ、μαγειρική/μαγειρεύω、χρήση/χρησιμοποιώ、ενοικίαση/νοικιάζω、άμεσα/αμέσως）
+    const uStem = uStemBase;
+    const tStem = tStemBase;
     if (uStem.length >= 3 && tStem.length >= 3) {
-      if (uStem === tStem && Math.abs(u.length - t.length) <= 3) return true;
+      if (uStem === tStem && Math.abs(u.length - t.length) <= 6) return true;
       const longer = uStem.length >= tStem.length ? uStem : tStem;
       const shorter = uStem.length >= tStem.length ? tStem : uStem;
       if (
         longer !== shorter &&
         longer.startsWith(shorter) &&
-        longer.length - shorter.length <= 1 &&
-        Math.abs(u.length - t.length) <= 2
+        longer.length - shorter.length <= 2 &&
+        Math.abs(u.length - t.length) <= 6
       ) {
         return true;
       }
     }
+    const uStemNoPre = uNoPre.replace(GREEK_INFLECTION_SUFFIX, '');
+    const tStemNoPre = tNoPre.replace(GREEK_INFLECTION_SUFFIX, '');
+    if (uStemNoPre.length >= 4 && uStemNoPre === tStemNoPre && Math.abs(u.length - t.length) <= 6) {
+      return true;
+    }
+    if (sharesLongRoot && Math.abs(u.length - t.length) <= 6) {
+      return true;
+    }
 
-    // 2. 包含匹配：容忍冠词与短语外壳（το σπίτι vs σπίτι）
-    //    收紧点：较短的一方至少 4 个字母，长度差不超过 3
+    // 2. 包含匹配：容忍冠词与短语外壳（το σπίτι vs σπίτι、δέχομαι vs αποδέχομαι）
+    //    收紧点：较短的一方至少 4 个字母，长度差不超过 4
     const shorterLen = Math.min(u.length, t.length);
-    if ((u.includes(t) || t.includes(u)) && shorterLen >= 4 && Math.abs(u.length - t.length) <= 3) {
+    if ((u.includes(t) || t.includes(u)) && shorterLen >= 4 && Math.abs(u.length - t.length) <= 4) {
       return true;
     }
   }
@@ -1282,7 +1354,7 @@ const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
     return t.length >= 8 && dist <= 1;
   }
   if (t.length >= 4 && dist <= 1) return true;
-  if (t.length >= 9 && dist <= 2) return true;
+  if (t.length >= 8 && dist <= 2) return true;
 
   return false;
 };
@@ -1336,25 +1408,36 @@ const splitChineseSenses = (raw: string): string[] => {
  * 必须判对 —— 这是 AGENTS.md 里「广接受边界」那条硬规则的自然延伸。
  * 只在整条义项**完全相等**时成族, 不做包含匹配, 避免「爱丁堡」触发 αγαπάω 那类误伤。
  *
- * 懒加载: 它依赖下面的 splitChineseSenses, 在模块顶层直接算会撞上 TDZ(用在定义之前),
- * 整个应用会白屏。所以第一次判题时才建, 之后缓存。
+ * 2026-11-05 补齐数据源: 从前只喂了 V2_WORDS 和 staticVocabData, 漏掉了官方单词表 GLOSS_LISTS
+ * 和 zh_accept.json 里的同义中文词条 —— 导致单词表考 μαζεύω(收集, #80) 时学生打 συγκεντρώνω(收集) 被判错。
+ * 现在把 GLOSS_LISTS 和 ZH_ACCEPT 一并建进索引。
  */
 let _zhSenseIndex: Map<string, string[]> | null = null;
 const getZhSenseIndex = (): Map<string, string[]> => {
   if (_zhSenseIndex) return _zhSenseIndex;
   const m = new Map<string, Set<string>>();
+  const keyToHead = new Map<string, string>();
   const feed = (gr: string, zh: string) => {
     if (!gr || !zh) return;
+    const head = String(gr).split(',')[0].trim();
+    const k = sameWordKey(head);
+    if (k && !keyToHead.has(k)) keyToHead.set(k, head);
     splitChineseSenses(zh).forEach(sense => {
       if (!sense) return;
       if (!m.has(sense)) m.set(sense, new Set());
       m.get(sense)!.add(gr);
+      if (head) m.get(sense)!.add(head);
     });
   };
-  V2_WORDS.forEach(w => feed(w.headword, w.word_chinese));
+  V2_WORDS.forEach(w => feed(w.headword || w.word_greek, w.word_chinese));
   (staticVocabData.textbook_vocabulary || []).forEach((w: any) => feed(w.word_greek, w.word_chinese));
+  Object.values(GLOSS_LISTS).forEach(list => (list || []).forEach((w: any) => feed(w.word_greek, w.word_chinese)));
+  Object.entries(ZH_ACCEPT).forEach(([k, alts]) => {
+    const head = keyToHead.get(k) || k;
+    (alts || []).forEach(zh => feed(head, zh));
+  });
   const out = new Map<string, string[]>();
-  m.forEach((set, k) => { if (set.size > 1) out.set(k, [...set]); });
+  m.forEach((set, k) => { if (set.size >= 1) out.set(k, [...set]); });
   _zhSenseIndex = out;
   return out;
 };
@@ -1384,7 +1467,12 @@ const getDicts = () => {
     String(greekRaw).split(',')[0].split('/').map(s => s.trim()).filter(Boolean).forEach(head => {
       const key = cleanGreekForComparison(head);
       if (!key) return;
-      if (!gr.has(key)) gr.set(key, { greek: head, zh: zhShown });
+      if (!gr.has(key)) {
+        gr.set(key, { greek: head, zh: zhShown });
+      } else {
+        const cur = gr.get(key)!;
+        if (zhShown && !cur.zh.includes(zhShown)) cur.zh += '；' + zhShown;
+      }
       splitChineseSenses(zhRaw).forEach(sense => {
         if (!zh.has(sense)) zh.set(sense, new Set());
         zh.get(sense)!.add(head);
@@ -1494,6 +1582,19 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
     // 学生多写了限定字：义项本身至少 2 字，且最多只能多 3 字
     if (user.includes(sense) && sense.length >= 2 && user.length - sense.length <= 3) return true;
 
+    // 2026-11-05: 词组中间夹入程度/量词修饰字（如「玩得开心」写「我玩得很开心」#64、「1勺」写「1小勺」），
+    // 或四字并列/主谓词组前后两字语序对调（如「激烈竞争」写「竞争激烈」#79）
+    if (sense.length >= 2 && user.length > sense.length && user.length - sense.length <= 2) {
+      if (lcsLength(user, sense) === sense.length) {
+        let rem = user;
+        for (const ch of sense) { rem = rem.replace(ch, ''); }
+        if (rem && /^[很太真非常十分好小大个只条张份点儿子的得地了着过]+$/.test(rem)) return true;
+      }
+    }
+    if (sense.length === 4 && user.length === 4 && user === sense.slice(2, 4) + sense.slice(0, 2)) {
+      return true;
+    }
+
     // 2026-09-27 单字义项放宽。词库里 311 个词的标准答案只有一个字(鞋/伞/快/看…),
     // 孩子按说话习惯写成两个字(鞋子/雨伞/快速/看见)从前一律判错 —— 写对了还被冤枉,
     // 这是他觉得「题出错了」的主要来源之一。
@@ -1512,17 +1613,15 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
 };
 
 /**
- * 句子题的宽容判法 (2026-09-27)。
+ * 句子题的宽容判法 (2026-09-27, 2026-11-05 升级)。
  *
  * 从前句子题和单词题用同一把尺子: 中文必须几乎一字不差, 希腊语必须整句只差一个字母。
- * 孩子交「互联网教育并拉近人们的距离」(标准答案多一个「人们」) 被判错;
- * 交「τώρα είναι στις οχτώ και μισή」(标准答案 Είναι οκτώ και μισή) 也被判错。
- * 翻译句子本来就没有唯一写法, 这两条都是他报「我的答案也对」、家长批准过的。
- *
- * 中文: 两句的「最长公共子序列」要覆盖标准答案 80% 以上的字, 且孩子写的不能比答案长出 40%。
- * 希腊语: 标准答案里每个实词(冠词已由 cleanGreekForComparison 去掉)都要在孩子的句子里找到
- *        (允许变位/一个错字, 走 isFuzzyGreekMatch), 孩子最多多写 2 个词。
- * 只用于句子/短语题, 语法题(考的就是词尾)绝不能走这里。
+ * 2026-11-05 进一步放宽希腊语句子/短语判定:
+ *   1. 忽略句中可选虚词(冠词、代词、介词、小品词 στο/στη/στην/μια/ένα/μου/σου/μέσα/πάνω 等);
+ *   2. 统一口语变体(μην=μη, δεν=δε, λίγα/λίγη=λίγο, χτες=χθες, οχτώ=οκτώ);
+ *   3. 实词比对不仅支持词干/拼写容错(isFuzzyGreekMatch), 还支持同义词互通
+ *      (如 θέλω↔ήθελα, ελληνική↔χωριάτικη, παρακαλώ↔ευχαριστώ, χαίρω↔χάρηκα, έργο↔παράσταση 等);
+ *   4. 3 个及以上实词的句子, 命中 75% 以上核心实词即算对。
  */
 const lcsLength = (a: string, b: string): number => {
   const prev = new Array(b.length + 1).fill(0);
@@ -1545,21 +1644,99 @@ const isChineseSentenceClose = (userRaw: string, answerRaw: string): boolean => 
   return lcsLength(u, t) >= Math.ceil(t.length * 0.8);
 };
 
+const GREEK_SENTENCE_OPTIONAL_WORDS = new Set([
+  'ο', 'η', 'το', 'οι', 'τα', 'τον', 'την', 'του', 'της', 'των', 'τους', 'τις',
+  'ενας', 'μια', 'ενα', 'εναν', 'μιαν',
+  'μου', 'σου', 'μας', 'σας', 'με', 'σε', 'εγω', 'εσυ', 'αυτος', 'αυτη', 'αυτο', 'εκεινος', 'εκεινη',
+  'στο', 'στη', 'στην', 'στον', 'στα', 'στους', 'στις', 'απο', 'απ', 'για', 'προς',
+  'να', 'θα', 'ας', 'και', 'κι', 'οτι', 'πως', 'μεσα', 'πανω', 'πολυ', 'πιο', 'ηδη', 'τωρα', 'εδω',
+]);
+
+const normalizeGreekSentenceToken = (tok: string): string => {
+  const c = normalizeGreekPhoneticVariants(cleanGreekForComparison(tok));
+  if (!c) return '';
+  if (c === 'μην') return 'μη';
+  if (c === 'δεν') return 'δε';
+  if (c === 'λιγα' || c === 'λιγη' || c === 'λιγες' || c === 'λιγοι') return 'λιγο';
+  if (c === 'εχθες') return 'χθες';
+  if (c === 'δυο') return '2';
+  if (c === 'εκατο') return '100';
+  return c;
+};
+
+const SENTENCE_SYNONYM_GROUPS: string[][] = [
+  ['θελω', 'ηθελα'],
+  ['ελληνικη', 'χωριατικη'],
+  ['παρακαλω', 'ευχαριστω'],
+  ['χαιρω', 'χαρηκα', 'χαιρομαι'],
+  ['εργο', 'παρασταση'],
+  ['φανταστικο', 'φανταστικη', 'καταπληκτικο', 'καταπληκτικη', 'υπεροχο', 'υπεροχη', 'τελειο', 'τελεια', 'ωραιο', 'ωραια'],
+  ['εχεις', 'εχει', 'υπαρχει', 'υπαρχουν'],
+  ['μιλαω', 'μιλω', 'μιλησω', 'ξερω', 'μπορω'],
+  ['καθηγητης', 'δασκαλος', 'δασκαλα', 'καθηγητρια'],
+  ['μενουμε', 'μενω', 'ζω', 'ζουμε'],
+  ['σινεμα', 'κινηματογραφο', 'κινηματογραφος'],
+  ['κρυο', 'κρυωνω'],
+  ['αμεσα', 'αμεσως'],
+  ['μαζευω', 'συγκεντρωνω'],
+  ['καλω', 'τηλεφωναω', 'τηλεφωνω'],
+  ['πολυκαταστημα', 'καταστημα', 'εμπορικο', 'κεντρο'],
+  ['γραμμα', 'επιστολη'],
+  ['αιτηση', 'εντυπο'],
+  ['δοκιμασω', 'προβαρω'],
+];
+
+const areGreekSentenceTokensSynonymous = (a: string, b: string): boolean => {
+  if (a === b) return true;
+  for (const grp of SENTENCE_SYNONYM_GROUPS) {
+    if (grp.includes(a) && grp.includes(b)) return true;
+  }
+  const aHit = getDicts().gr.get(a);
+  const bHit = getDicts().gr.get(b);
+  if (aHit && bHit) {
+    const aSenses = new Set([
+      ...splitChineseSenses(aHit.zh),
+      ...getExtraChineseAnswers(aHit.greek).flatMap(z => splitChineseSenses(z)),
+    ]);
+    const bSenses = [
+      ...splitChineseSenses(bHit.zh),
+      ...getExtraChineseAnswers(bHit.greek).flatMap(z => splitChineseSenses(z)),
+    ];
+    if (bSenses.some(s => s.length >= 2 && aSenses.has(s))) return true;
+  }
+  return false;
+};
+
 const greekTokens = (s: string): string[] =>
-  String(s || '').split(/\s+/).map(w => cleanGreekForComparison(w)).filter(Boolean);
+  String(s || '').split(/\s+/).map(w => normalizeGreekSentenceToken(w)).filter(Boolean);
 
 const isGreekSentenceClose = (userRaw: string, answerRaw: string): boolean => {
-  const u = greekTokens(userRaw);
-  const t = greekTokens(answerRaw);
-  if (t.length < 2 || u.length === 0) return false;
-  if (u.length - t.length > 2) return false;
+  const uAll = greekTokens(userRaw);
+  const tAll = greekTokens(answerRaw);
+  if (tAll.length < 2 || uAll.length === 0) return false;
+
+  const uContent = uAll.filter(w => !GREEK_SENTENCE_OPTIONAL_WORDS.has(w));
+  const tContent = tAll.filter(w => !GREEK_SENTENCE_OPTIONAL_WORDS.has(w));
+  const u = uContent.length >= 1 ? uContent : uAll;
+  const t = tContent.length >= 1 ? tContent : tAll;
+
+  if (u.length - t.length > 3) return false;
   const used = new Set<number>();
+  let matched = 0;
   for (const tw of t) {
-    const hit = u.findIndex((uw, i) => !used.has(i) && (uw === tw || isFuzzyGreekMatch(uw, tw)));
-    if (hit < 0) return false;
-    used.add(hit);
+    const hit = u.findIndex(
+      (uw, i) => !used.has(i) && (uw === tw || isFuzzyGreekMatch(uw, tw) || areGreekSentenceTokensSynonymous(uw, tw))
+    );
+    if (hit >= 0) {
+      used.add(hit);
+      matched++;
+    }
   }
-  return true;
+  if (matched === t.length) return true;
+  if (t.length >= 3 && matched >= Math.ceil(t.length * 0.75) && u.length >= Math.ceil(t.length * 0.65)) {
+    return true;
+  }
+  return false;
 };
 
 // Alternative translations mapping for specific Greek words to support multiple meanings
@@ -1585,23 +1762,27 @@ const isGreekProperNoun = (word: string): boolean => {
 };
 
 /**
- * 「这个词是人名/角色名/冷门地名吗?」—— 是的话整条词不出题。
+ * 「这个词是人名/角色名/冷门地名/冷门音译舞名吗?」—— 是的话整条词不出题。
  *
  * 家长 2026-09-09 的原话:「他现在不需要去背人名字, 因为翻译人名对他来说没有任何意义,
  * 因为他在使用这些人名的时候也没有中文场景。」
- * 「米格尔·德·塞万提斯」「季米特里斯」「亚历克西娅」「科莫蒂米」这类纯音译词条,
+ * 「米格尔·德·塞万提斯」「季米特里斯」「亚历克西娅」「科莫蒂米」「泽贝基科(#78)」这类纯音译词条,
  * 背下来既不能用也不能猜, 只会白白占掉当天的题量。
  *
  * 名单在 data/proper_name_blocklist.json, 由 scripts/build_proper_name_blocklist.py 生成,
  * 存的是「去重音、小写、只取第一个词」的词头。要加要减直接改那个 json 即可。
  *
- * 只对**大写开头**的词条生效 —— 所以小写的 νίκη(胜利)、ελπίδα(希望)、ειρήνη(和平)
+ * person/character/place 只对**大写开头**的词条生效 —— 所以小写的 νίκη(胜利)、ελπίδα(希望)、ειρήνη(和平)
  * 照常出题, 被撤掉的只有大写的同形人名 Νίκη / Ελπίδα / Ειρήνη。
+ * translit 是小写纯音译文化专名(如 ζεϊμπέκικο 泽贝基科), 直接按词头过滤。
  */
 const BLOCKED_PROPER_NAMES: Set<string> = new Set([
   ...((properNameBlocklist as any).person || []),
   ...((properNameBlocklist as any).character || []),
   ...((properNameBlocklist as any).place || []),
+]);
+const BLOCKED_TRANSLIT_WORDS: Set<string> = new Set([
+  ...((properNameBlocklist as any).translit || []),
 ]);
 
 /** 取词头: 去括号 -> 逗号前 -> 去重音 -> 只留第一个词 -> 小写 */
@@ -1619,8 +1800,10 @@ const properNameKey = (word: string): string => {
 };
 
 const isBlockedProperName = (word: string): boolean => {
+  const key = properNameKey(word);
+  if (BLOCKED_TRANSLIT_WORDS.has(key)) return true;
   if (!isGreekProperNoun(word)) return false;
-  return BLOCKED_PROPER_NAMES.has(properNameKey(word));
+  return BLOCKED_PROPER_NAMES.has(key);
 };
 
 const hasGreekCharacters = (text: string): boolean => {
@@ -3455,6 +3638,7 @@ export default function StudentApp() {
       id: d.id,
       isExam: true,          // 让提示框直接用题库自带的详细解析
       isGrammar: true,
+      drillType: d.drill_type,
       type: 'grammar',
       greek: d.answer,
       chinese: d.question,   // 题面: cloze 是挖空的希腊语句子, translate 是中文句子
@@ -4073,7 +4257,10 @@ export default function StudentApp() {
       list.push(...getExpandedGlossaryVariants(rawGreek));
     }
     const cleanGr = cleanGreekForComparison(rawGreek);
-    const senses = splitChineseSenses(rawChinese || '');
+    const senses = [
+      ...splitChineseSenses(rawChinese || ''),
+      ...getExtraChineseAnswers(rawGreek, allVocab.filter((w: any) => w.note_date)).flatMap(z => splitChineseSenses(z)),
+    ];
 
     // 同义词族。旧版用「中文里含有某个字」来触发，导致「去爱」触发 πάω、
     // 「爱丁堡」触发 αγαπάω、「访问」触发 ρωτάω。现在必须整条义项完全等于关键词才触发。
@@ -4086,6 +4273,12 @@ export default function StudentApp() {
     const LOVE = ['αγαπάω', 'αγαπώ'];
     const ASK = ['ρωτάω', 'ρωτώ'];
     const GO = ['πάω', 'πηγαίνω'];
+    const COLLECT = ['μαζεύω', 'συγκεντρώνω'];
+    const CALL = ['καλώ', 'τηλεφωνάω', 'τηλεφωνώ', 'παίρνω τηλέφωνο'];
+    const MALL = ['πολυκατάστημα', 'εμπορικό κέντρο', 'κατάστημα'];
+    const IMMEDIATELY = ['άμεσα', 'αμέσως'];
+    const COLD = ['κρύο', 'κρυώνω', 'κάνει κρύο', 'έχει κρύο'];
+    const WASH_CLOTHES = ['βάζω πλυντήριο', 'πλένω τα ρούχα', 'πλένω ρούχα'];
 
     const ZH_SENSE_SYNONYMS: Record<string, string[]> = {
       '说': SAY, '说话': SAY, '讲': SAY, '告诉': SAY,
@@ -4096,7 +4289,13 @@ export default function StudentApp() {
       '讨论': DISCUSS, '商量': DISCUSS,
       '爱': LOVE, '喜欢': LOVE, '喜爱': LOVE,
       '问': ASK, '提问': ASK, '询问': ASK,
-      '去': GO, '走': GO, '前往': GO
+      '去': GO, '走': GO, '前往': GO,
+      '收集': COLLECT, '聚集': COLLECT, '集中': COLLECT,
+      '打电话': CALL, '呼叫': CALL,
+      '商场': MALL, '百货商店': MALL, '购物中心': MALL,
+      '立刻': IMMEDIATELY, '马上': IMMEDIATELY, '直接': IMMEDIATELY,
+      '冷': COLD, '寒冷': COLD, '天气很冷': COLD,
+      '洗衣服': WASH_CLOTHES,
     };
 
     const GR_LEMMA_SYNONYMS: Record<string, string[]> = {
@@ -4108,19 +4307,65 @@ export default function StudentApp() {
       'συζηταω': DISCUSS, 'συζητω': DISCUSS,
       'αγαπαω': LOVE, 'αγαπω': LOVE,
       'ρωταω': ASK, 'ρωτω': ASK,
-      'παω': GO, 'πηγαινω': GO
+      'παω': GO, 'πηγαινω': GO,
+      'μαζευω': COLLECT, 'συγκεντρωνω': COLLECT,
+      'καλω': CALL, 'τηλεφωναω': CALL, 'τηλεφωνω': CALL, 'παιρνωτηλεφωνο': CALL,
+      'πολυκαταστημα': MALL, 'εμπορικοκεντρο': MALL,
+      'αμεσα': IMMEDIATELY, 'αμεσως': IMMEDIATELY,
+      'κρυο': COLD, 'κρυωνω': COLD, 'κανεικρυο': COLD, 'εχεικρυο': COLD,
+      'βαζωπλυντηριο': WASH_CLOTHES, 'πλενωταρουχα': WASH_CLOTHES,
+      // 单词表常见口语短语/缩写等价写法
+      'κινητοτηλεφωνο': ['κινητό', 'τηλέφωνο'],
+      'δημοτικοσχολειο': ['δημοτικό'],
+      'τσαντασχολικη': ['σχολική τσάντα', 'τσάντα'],
+      'ταυτοτητααστυνομικη': ['αστυνομική ταυτότητα', 'ταυτότητα'],
+      'τμημααστυνομικο': ['αστυνομικό τμήμα'],
+      'σκουπαηλεκτρικη': ['ηλεκτρική σκούπα', 'σκούπα'],
+      'κουζιναηλεκτρικη': ['ηλεκτρική κουζίνα', 'κουζίνα'],
+      'γλωσσαμητρικη': ['μητρική γλώσσα'],
+      'λεωφορειοσχολικο': ['σχολικό λεωφορείο'],
+      'εργοθεατρικο': ['θεατρικό έργο', 'παράσταση', 'θεατρική παράσταση'],
+      'θεατρικοεργο': ['έργο θεατρικό', 'παράσταση', 'θεατρική παράσταση'],
+      'εξωαπο': ['έξω'],
+      'μεσασε': ['μέσα'],
+      'κατωαπο': ['κάτω'],
+      'μπροστααπο': ['μπροστά'],
+      'πισωαπο': ['πίσω'],
+      'διπλασε': ['δίπλα'],
+      'γυρωαπο': ['γύρω'],
+      'μαζιμε': ['μαζί'],
+      'πανωσε': ['πάνω'],
+      'μενωσπιτι': ['μένω στο σπίτι', 'είμαι στο σπίτι', 'είμαι σπίτι'],
+      'ειμαισπιτι': ['είμαι στο σπίτι', 'μένω σπίτι', 'μένω στο σπίτι'],
+      'μελενε': ['το όνομά μου είναι', 'είμαι ο', 'είμαι η'],
+      'καληεπιτυχια': ['καλή τύχη'],
+      'καλοπασχα': ['καλή ανάσταση'],
+      'καληανασταση': ['καλό πάσχα'],
+      'μμ': ['απόγευμα', 'μεσημέρι', 'μετά μεσημβρίας'],
+      'πμ': ['πρωί', 'προ μεσημβρίας'],
+      'τμ': ['τετραγωνικά μέτρα', 'τετραγωνικό μέτρο'],
+      'κτλ': ['και τα λοιπά'],
     };
 
+    const senseSet = new Set(senses);
     senses.forEach(sense => {
       const family = ZH_SENSE_SYNONYMS[sense];
       if (family) list.push(...family);
-      // 手写的同义词表只覆盖了 9 组。词库里中文释义完全相同的词有 47 组
-      // (「但」= μα/όμως/αλλά, 「看」= βλέπω/κοιτώ, 「直到」= ως/μέχρι/έως/ώσπου …),
-      // 学生打出其中任何一个都是对的, 从前却只认题目那一个 —— 这就是「答案跟题目对不上」。
-      // 现在整个词库自动成族: 同一条中文义项下的希腊语词互相接受。
+      // 整个词库自动成族: 同一条中文义项下的希腊语词互相接受
       const auto = getZhSenseIndex().get(sense);
       if (auto) list.push(...auto);
     });
+    // 课堂笔记(custom_vocab)里同义的希腊语词也一并纳入
+    if (senseSet.size > 0) {
+      allVocab.forEach((w: any) => {
+        if (!w?.word_greek || !w?.word_chinese) return;
+        if (splitChineseSenses(w.word_chinese).some(s => s.length >= 2 && senseSet.has(s))) {
+          list.push(w.word_greek);
+          const head = String(w.word_greek).split(',')[0].trim();
+          if (head) list.push(head);
+        }
+      });
+    }
     const grFamily = GR_LEMMA_SYNONYMS[cleanGr];
     if (grFamily) list.push(...grFamily);
 
@@ -4129,24 +4374,28 @@ export default function StudentApp() {
 
   const handleCheckTransZhGr = () => {
     const isGrammarItem = !!(currentTransZhGr as any).isGrammar;
-    // 语法题只认题库自带的 acceptable_answers, 归一化后精确比对 ——
-    // 和「单元语法与情景特训」模块的判法完全一致。
-    // 这里**不能**用 isFuzzyGreekMatch: 它有词干容忍(είμαι 和 είμαστε 词干相同),
-    // 而语法题考的正是词尾, 一模糊这道题就白出了。
+    const drillType = (currentTransZhGr as any).drillType || '';
+    const isTranslateOrQaDrill = isGrammarItem && (drillType === 'translate' || drillType === 'qa' || !currentTransZhGr.chinese?.includes('____'));
+    // 纯语法填空题(cloze)考的是词尾, 用 grammarNormKey 精确比对;
+    // 但整句翻译题(translate)和开放问答题(qa)考的是句子表达, 必须允许同义句、语序调整与拼写容错!
     const acceptable = isGrammarItem
       ? [currentTransZhGr.greek, ...((currentTransZhGr as any).acceptableAnswers || [])]
       : getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
-    // 家长后台批准过的备选答案 —— 从前只有「希腊语翻译汉语」那个模块会查这张表,
-    // 汉译希批准了也没用, 孩子下次遇到同一道题照样判错。现在两边都查。
-    // 同一张表里既有中文备选(希译汉存的)也有希腊语备选(汉译希存的),
-    // 各按各的比法比, 语种对不上的天然匹配不到, 不会互相干扰。
-    const approvedAlts = alternativeTranslations[cleanGreekForComparison(currentTransZhGr.greek)] || [];
-    const correct = isGrammarItem
-      ? [...acceptable, ...approvedAlts].some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
-      : (acceptable.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans))
+    // 家长后台批准过的备选答案(同时查答案键和题面键, 兼容不同模块提交的报错记录)
+    const approvedAlts = [
+      ...(alternativeTranslations[cleanGreekForComparison(currentTransZhGr.greek)] || []),
+      ...(alternativeTranslations[cleanGreekForComparison(currentTransZhGr.chinese)] || []),
+    ];
+    const allTargets = [...acceptable, ...approvedAlts];
+    const correct = (isGrammarItem && !isTranslateOrQaDrill)
+      ? allTargets.some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
+      : (allTargets.some((ans: string) =>
+           grammarNormKey(ans) === grammarNormKey(userTransZhGrInput)
+           || isFuzzyGreekMatch(userTransZhGrInput, ans)
+           || ((isTranslateOrQaDrill || isSentenceItem(currentTransZhGr) || /\s/.test(ans.trim())) && isGreekSentenceClose(userTransZhGrInput, ans))
+         )
          || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek)
-         || approvedAlts.some(ans => isFuzzyGreekMatch(userTransZhGrInput, ans))
-         || (isSentenceItem(currentTransZhGr) && isGreekSentenceClose(userTransZhGrInput, currentTransZhGr.greek)));
+         || ((isTranslateOrQaDrill || isSentenceItem(currentTransZhGr)) && isGreekSentenceClose(userTransZhGrInput, currentTransZhGr.greek)));
     if (correct) {
       logSolved('zhgr', String(currentTransZhGr.greek || '').split('\n')[0], transZhGrMistakes === 0,
                 showTip || showAnswer, userTransZhGrInput);
@@ -4257,11 +4506,13 @@ export default function StudentApp() {
     //   ② 家长在后台批准过的备选答案(不接的话, 家长批了孩子下次照样被判错)。
     const variants = getAcceptableGreekTranslations(wordObj.word_greek || '', wordObj.word_chinese || '');
     const approvedAlts = alternativeTranslations[cleanGreekForComparison(wordObj.word_greek || '')] || [];
-    if ([...variants, ...approvedAlts].some(v => isFuzzyGreekMatch(userRaw, v))) return true;
-    // 2026-10-01: 单词表里的短语(η ώρα είναι τέσσερις)和汉译希的句子题用同一把宽尺子 ——
+    const allTargets = [...variants, ...approvedAlts];
+    if (allTargets.some(v => isFuzzyGreekMatch(userRaw, v))) return true;
+    // 2026-10-01 / 2026-11-05: 单词表里的短语(η ώρα είναι τέσσερις)和汉译希的句子题用同一把宽尺子 ——
     // 实词都写到了、语序不同或多一两个词也算对(Είναι τέσσερις η ώρα)。单个词不走这里。
     const head = String(wordObj.word_greek || '').split(',')[0].trim();
-    return /\s/.test(head) && isGreekSentenceClose(userRaw, head);
+    if (/\s/.test(head) && isGreekSentenceClose(userRaw, head)) return true;
+    return allTargets.some(v => /\s/.test(String(v || '').trim()) && isGreekSentenceClose(userRaw, v));
   };
 
   const handleCheckGlossary = () => {
@@ -8379,20 +8630,30 @@ export default function StudentApp() {
                         if (currentGrammarDrill.drill_type === 'choice' || (currentGrammarDrill.drill_type === 'qa' && currentGrammarOptions.length > 0)) {
                           correct = (selectedGrammarOption === currentGrammarDrill.answer);
                         } else {
-                          // 与 grammarNormKey 同一把尺子(从前这里另抄了一份, 长横「–」弯撇号「’」都去不掉)
                           const normUser = grammarNormKey(userGrammarInput);
-                          const normAns = grammarNormKey(currentGrammarDrill.answer || '');
-                          correct = (normUser === normAns && normUser.length > 0);
-                          // 家长后台批准过的备选答案也要认 —— 否则「我的答案也对」批了等于白批
-                          const approved = alternativeTranslations[
-                            cleanGreekForComparison(currentGrammarDrill.answer || '')] || [];
-                          if (!correct && (currentGrammarDrill.acceptable_answers || approved.length)) {
-                            for (const alt of [...(currentGrammarDrill.acceptable_answers || []), ...approved]) {
-                              const normAlt = grammarNormKey(alt);
-                              if (normUser === normAlt && normUser.length > 0) {
-                                correct = true;
-                                break;
-                              }
+                          const isTranslateOrQa =
+                            currentGrammarDrill.drill_type === 'translate' ||
+                            currentGrammarDrill.drill_type === 'qa' ||
+                            !String(currentGrammarDrill.question || '').includes('____');
+                          // 家长后台批准过的备选答案(同时查答案键和题面键)
+                          const approved = [
+                            ...(alternativeTranslations[cleanGreekForComparison(currentGrammarDrill.answer || '')] || []),
+                            ...(alternativeTranslations[cleanGreekForComparison(currentGrammarDrill.question || '')] || []),
+                          ];
+                          const allTargets = [
+                            currentGrammarDrill.answer || '',
+                            ...(currentGrammarDrill.acceptable_answers || []),
+                            ...approved,
+                          ].filter(Boolean);
+                          for (const alt of allTargets) {
+                            const normAlt = grammarNormKey(alt);
+                            if (normUser === normAlt && normUser.length > 0) {
+                              correct = true;
+                              break;
+                            }
+                            if (isTranslateOrQa && (isFuzzyGreekMatch(userGrammarInput, alt) || isGreekSentenceClose(userGrammarInput, alt))) {
+                              correct = true;
+                              break;
                             }
                           }
                         }
