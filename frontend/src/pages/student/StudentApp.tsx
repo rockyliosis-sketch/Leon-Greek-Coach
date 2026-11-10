@@ -414,6 +414,19 @@ const shiftDateStr = (dateStr: string, delta: number): string => {
 };
 
 /**
+ * 2026-11-10 修复「每天题目顺序一模一样」的根因:
+ * 旧写法 `(a.id * 137 + seed) % 9973` 把 `+ seed` 放在乘法外面,
+ * 每天 `seed` 加 1 只会让所有题的余数整体平移 +1, 相对大小顺序几乎 100% 不变!
+ * 改为 32 位雪崩哈希混合 (id, seed), 确保日期每换一天, 整张题表彻底重新洗牌。
+ */
+const dailyHash = (id: number, seed: number): number => {
+  let h = Math.imul(id ^ 0x9e3779b9, 2654435761) ^ Math.imul(seed ^ 0x85ebca6b, 2246822519);
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+};
+
+/**
  * 把当天的词**分配**给各题型, 互不重叠。
  *
  * 旧做法是每个题型都从同一副牌里各抽一遍(只换随机种子), 于是同一个词必然在
@@ -449,7 +462,7 @@ const partitionModules = (
     if (fa !== fb) return fa - fb;
     const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
     if (ra !== rb) return ra - rb;
-    return ((a.id * 137 + daySeed) % 10007) - ((b.id * 137 + daySeed) % 10007);
+    return dailyHash(a.id, daySeed) - dailyHash(b.id, daySeed);
   };
   // 去重是先到先得, 笔记词又排在卡组最末: 不先把它们挪到前面, 一撞中文就被丢掉
   // (如笔记的 επισκευάζω「修」撞上课本的 φτιάχνω「修」)。
@@ -475,7 +488,7 @@ const partitionModules = (
     .sort((a, b) => {
       const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
       if (ra !== rb) return ra - rb;
-      return ((a.id * 197 + daySeed) % 10007) - ((b.id * 197 + daySeed) % 10007);
+      return dailyHash(a.id, daySeed + 7919) - dailyHash(b.id, daySeed + 7919);
     });
   MODULE_SPECS_CONST.forEach(m => {
     for (const w of extra) {
@@ -505,8 +518,11 @@ const orderClozeForDay = (
 ): any[] => {
   const bm = (marks || []).filter(m => String(m.bookId).toLowerCase() === 'b1');
   const frontier = bm.length ? Math.max(...bm.map(m => m.upToPage)) : 0;
-  // 家长停用掉的课本原句, 不再出题(和语法题同一套判断)
-  let items = disabledDrills.size ? all.filter(c => !isDrillDisabled(c.text, disabledDrills)) : all;
+  // 家长停用掉的课本原句, 不再出题(和语法题同一套判断); 同时拦截人名/冷门地名填空
+  let items = all.filter(c =>
+    (!disabledDrills.size || !isDrillDisabled(c.text, disabledDrills)) &&
+    !isBlockedProperName(c.answer || '')
+  );
   if (frontier > 0) {
     items = items.filter(s => s.page <= frontier);
   } else {
@@ -518,7 +534,7 @@ const orderClozeForDay = (
   }
   const p = dateStr.split('-');
   const seed = (parseInt(p[0], 10) || 2026) * 372 + (parseInt(p[1], 10) || 7) * 31 + (parseInt(p[2], 10) || 5);
-  const shuffled = [...items].sort((a, b) => ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973));
+  const shuffled = [...items].sort((a, b) => dailyHash(a.id, seed) - dailyHash(b.id, seed));
 
   // sentences.json 的 unit 是系统单元号(40–59) = B 本第 1–20 单元 + 39
   const todayB = new Set(
@@ -636,7 +652,7 @@ const orderDrillsForDay = (
     : ALL_GRAMMAR_DRILLS.filter(taught);
   const base = pool.length ? pool : ALL_GRAMMAR_DRILLS.filter(taught);
   const shuffled = [...base].sort((a, b) =>
-    ((a.id * 137 + hash) % 9973) - ((b.id * 137 + hash) % 9973));
+    dailyHash(a.id, hash) - dailyHash(b.id, hash));
   // 今天复习计划里的单元排最前, 和首页的任务分解对得上
   return [...shuffled.filter(d => planKeys.has(d._key)), ...shuffled.filter(d => !planKeys.has(d._key))];
 };
@@ -1752,6 +1768,62 @@ const getCleanSpellingWord = (word: string): string => {
   return removeGreekAccents(target).replace(/\s+/g, '');
 };
 
+/**
+ * 2026-11-10: 拼字大作战支持「一词多形 / 斜杠双写 / 同义词」（解决 #84 κοτόπουλο/κότα、#85/#86 κομπιούτερ/υπολογιστής、#87/#88 ίντερνετ/διαδίκτυο）。
+ * 返回所有可接受的无重音拼写目标（第 0 项为主目标，其余为斜杠并列词、-άω/-ώ 双形式及中文完全同义的单个希腊语词）。
+ */
+const getSpellingAcceptedTargets = (wordObj: any): string[] => {
+  if (!wordObj) return [];
+  const rawGr = String(wordObj.word_greek || wordObj.greek || '');
+  const rawZh = String(wordObj.word_chinese || wordObj.chinese || '');
+  const primary = getCleanSpellingWord(rawGr);
+  const out: string[] = [];
+  const add = (w: string) => {
+    const c = removeGreekAccents(getSpellingTargetWord(w)).replace(/\s+/g, '');
+    if (c && c.length >= 2 && !out.includes(c)) out.push(c);
+  };
+  if (primary) out.push(primary);
+  expandGreekSlashVariants(rawGr).forEach(add);
+  // 缩合动词 -άω ↔ -ώ 双形式互通
+  [...out].forEach(w => {
+    if (w.endsWith('αω') && w.length >= 4) add(w.slice(0, -2) + 'ω');
+    else if (w.endsWith('ω') && !w.endsWith('αω') && w.length >= 3) add(w.slice(0, -1) + 'αω');
+  });
+  // 中文义项完全相同的单个希腊语同义词（如 电脑 -> κομπιούτερ / υπολογιστής；互联网 -> ίντερνετ / διαδίκτυο）
+  splitChineseSenses(rawZh).forEach(sense => {
+    if (sense.length < 2) return;
+    (getZhSenseIndex().get(sense) || []).forEach(cand => {
+      const t = getSpellingTargetWord(cand);
+      if (t && !/\s/.test(t)) add(t);
+    });
+  });
+  return out;
+};
+
+/**
+ * 语法填空题（cloze）词干手误容错：
+ * 语法填空考的是「冠词 + 词尾变格/变位」（如 του λεωφορείου、της Ελλάδας）。
+ * 如果学生把冠词和最后 2 个字母的变格词尾完全写对，仅在长词（≥6 字母）词干中间少写/错写 1 个字母
+ *（如把 του λεωφορείου 写成 Του λεωφοριου），应判定为正确，避免因词干拼写手误掩盖已经掌握的语法格变！
+ */
+const isGrammarClozeMatch = (userRaw: string, targetRaw: string): boolean => {
+  const u = grammarNormKey(userRaw);
+  const t = grammarNormKey(targetRaw);
+  if (!u || !t) return false;
+  if (u === t) return true;
+  const uParts = u.split(' ').filter(Boolean);
+  const tParts = t.split(' ').filter(Boolean);
+  if (uParts.length !== tParts.length) return false;
+  return tParts.every((tp, i) => {
+    const up = uParts[i];
+    if (up === tp) return true;
+    if (tp.length >= 6 && up.length >= 5 && up.slice(-2) === tp.slice(-2) && up[0] === tp[0]) {
+      return getLevenshteinDistance(up, tp) <= 1;
+    }
+    return false;
+  });
+};
+
 // 判断是不是专有名词（人名/地名）：跳过前导符号后，首个希腊字母是大写
 // 专名之间只差一两个字母的情况极多（Πέτρος/πέτρα、Αστερίξ/αστέρι），判题时必须走严格比对
 const isGreekProperNoun = (word: string): boolean => {
@@ -1993,6 +2065,7 @@ interface WritingSpeakingChallenge {
   titleGr: string;
   promptCn: string;
   promptGr: string;
+  sceneCards?: { icon: string; title: string; descGr: string; descCn: string }[];
   checklist: string[];
   vocab: string[];
   modelAnswer: string;
@@ -2061,6 +2134,20 @@ const WRITING_SPEAKING_CHALLENGES: WritingSpeakingChallenge[] = [
     titleGr: 'Περιγραφή Φωτογραφιών Διακοπών',
     promptCn: '你有度假的照片并把它们放入相册。在照片旁写下照片中能看到什么，描述照片里的景色、人物及天气。（要求 50-60 字）',
     promptGr: 'Έχεις φωτογραφίες από τις διακοπές σου και τις βάζεις στο άλμπουμ. Δίπλα στις φωτογραφίες από τις διακοπές γράφεις τι βλέπουμε σε κάθε φωτογραφία. Γράψε συνολικά 50-60 λέξεις.',
+    sceneCards: [
+      {
+        icon: '🏡🌺🌳',
+        title: 'Φωτογραφία 1 · 照片一：爷爷在乡下的房子',
+        descGr: 'Το σπίτι του παππού στο χωριό, με κόκκινα λουλούδια και μεγάλα πράσινα δέντρα.',
+        descCn: '画面内容：乡下漂亮的房子，门外盛开着许多红色的花朵和高大的绿树。'
+      },
+      {
+        icon: '🏖️☀️🏊‍♂️',
+        title: 'Φωτογραφία 2 · 照片二：和哥哥在海边游泳',
+        descGr: 'Στη θάλασσα με τον αδερφό μου· ο καιρός είναι καλός, έχει λιακάδα και κολυμπάμε.',
+        descCn: '画面内容：晴朗炎热的夏日海滩，我和哥哥正在海里游泳、在沙滩上玩耍。'
+      }
+    ],
     checklist: [
       '描述房屋和周围自然景色 (Αυτό είναι το σπίτι του παππού μου)',
       '描述当时的天气或活动 (Κάνει ζέστη / Έχει λιακάδα / Κολυμπάμε)',
@@ -2135,8 +2222,16 @@ const WRITING_SPEAKING_CHALLENGES: WritingSpeakingChallenge[] = [
     type: 'speaking',
     titleCn: '口语真题：看图说话与表达',
     titleGr: 'Περιγραφή Εικόνας (Αθλητές)',
-    promptCn: '口语部分第二部分：仔细观察图片，描述图中的人物、他们的动作、他们所处的位置以及他们的情绪感受，并表达你对该项运动的喜好。（请参考大纲与词汇提示）',
+    promptCn: '口语部分第二部分：仔细观察下方场景画面，描述图中的人物、他们的动作、他们所处的位置以及他们的情绪感受，并表达你对该项运动的喜好。（请参考画面卡片与大纲词汇提示）',
     promptGr: 'Τι βλέπετε στην εικόνα; Περιγράψτε τους αθλητές. Πού βρίσκονται; Ποια είναι τα συναισθήματά τους; Σας αρέσει ο αθλητισμός; Ποιο άθλημα σας αρέσει περισσότερο; Γιατί;',
+    sceneCards: [
+      {
+        icon: '🏟️🏃‍♂️🏃‍♀️',
+        title: 'Εικόνα · 考题画面：体育场跑道上的两名年轻运动员',
+        descGr: 'Δύο νέοι αθλητές (ένα αγόρι και ένα κορίτσι) φοράνε αθλητικά ρούχα και τρέχουν μαζί σε ένα μεγάλο γήπεδο / στάδιο. Είναι λίγο κουρασμένοι αλλά χαμογελαστοί και πολύ χαρούμενοι.',
+        descCn: '画面细节：① 人物：一男一女两名年轻运动员（ένα αγόρι και ένα κορίτσι）；② 穿着与动作：身穿运动服（αθλητικά ρούχα），正在大型体育场跑道上并肩跑步（τρέχουν στο γήπεδο）；③ 神态与心情：流汗略显疲惫，但满脸笑容、充满喜悦与自豪（κουρασμένοι αλλά χαρούμενοι και περήφανοι）。'
+      }
+    ],
     checklist: [
       '描述图中的主要人物（两个运动员，一男一女） (Βλέπω δύο αθλητές...)',
       '描述他们正在做的事情：跑步锻炼 (Τρέχουν στο γήπεδο)',
@@ -3357,7 +3452,8 @@ export default function StudentApp() {
   const recentlyUsedWordIds = useMemo(() => {
     const used = new Set<number>();
     if (allReviewUnits.length === 0) return used;
-    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+    // 从最早的一天往昨天顺着推, 让每一天的模拟都能避开它前几天已经抽过的词
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
       const d = shiftDateStr(selectedDateStr, -back);
       const units = pickDailyReviewUnits(allReviewUnits, d, 6);
       if (units.length === 0) continue;
@@ -3368,7 +3464,7 @@ export default function StudentApp() {
         const a = activatedDates[w.id];
         return a && a !== 'LOCKED' && a <= d;
       });
-      const part = partitionModules(deck, pool, d, new Set());
+      const part = partitionModules(deck, pool, d, used);
       Object.values(part).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
     }
     return used;
@@ -3411,12 +3507,20 @@ export default function StudentApp() {
    * 字母重新洗牌, 而且 `setSpellInput([])` 把学生已经敲进去的字母清空。
    * 现在只认「这是哪个词」这一个字符串, 词没换就绝不重跑;
    * 打乱顺序也按词定死, 同一个词每次进来摆法一致。
+   * 2026-11-10: 如果词条含斜杠并列写法(如 κοτόπουλο/κότα、χτες/χθες、εφτά/επτά),
+   * 把并列写法多出来的字母也放进字母块池, 这样点屏幕字母块也能拼出任一写法!
    */
   const spellingWordKey = currentSpellingWord ? String(currentSpellingWord.word_greek || '') : '';
   useEffect(() => {
     if (!spellingWordKey) return;
     const cleanWord = getCleanSpellingWord(spellingWordKey);
     const chars = cleanWord.split('');
+    expandGreekSlashVariants(spellingWordKey).forEach(v => {
+      const cv = removeGreekAccents(getSpellingTargetWord(v)).replace(/\s+/g, '');
+      for (const ch of cv) {
+        if (!chars.includes(ch)) chars.push(ch);
+      }
+    });
     const greekAlphabet = 'αβγδεζηθικλμνξοπρστυφχψω';
     const seed = textSeed(cleanWord);
     let k = 0;
@@ -3436,6 +3540,45 @@ export default function StudentApp() {
     setShowTip(false);
   }, [spellingWordKey]);
 
+  const normSpellChar = (c: string) => {
+    const ch = cleanChar(c);
+    return ch === 'ς' ? 'σ' : ch;
+  };
+
+  const processSpellingChar = (rawChar: string) => {
+    if (!currentSpellingWord || spellingCompleted) return;
+    const targets = getSpellingAcceptedTargets(currentSpellingWord);
+    if (targets.length === 0) return;
+    const prefixNorm = spellInput.map(normSpellChar).join('');
+    // 筛选出与当前已输入前缀匹配的候选目标词
+    const activeTargets = targets.filter(t =>
+      t.length > spellInput.length &&
+      t.slice(0, spellInput.length).split('').map(normSpellChar).join('') === prefixNorm
+    );
+    const pool = activeTargets.length > 0 ? activeTargets : [targets[0]];
+    const matchingTargets = pool.filter(t => {
+      const exp = t[spellInput.length];
+      return exp && normSpellChar(rawChar) === normSpellChar(exp);
+    });
+    if (matchingTargets.length > 0) {
+      const chosenTarget = matchingTargets[0];
+      const expectedChar = chosenTarget[spellInput.length];
+      const newInput = [...spellInput, expectedChar];
+      setSpellInput(newInput);
+      const newNorm = newInput.map(normSpellChar).join('');
+      if (matchingTargets.some(t => t.length === newInput.length && t.split('').map(normSpellChar).join('') === newNorm)) {
+        setSpellingCompleted(true);
+        logAnswer('spelling', currentSpellingWord?.word_greek || '', spellingMistakes === 0, showTip || showAnswer, {
+          a: newInput.join('')
+        });
+      }
+    } else {
+      setSpellingWrongFlash(true);
+      setSpellingMistakes(prev => prev + 1);
+      setTimeout(() => setSpellingWrongFlash(false), 500);
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (activeModule !== 'spelling' || !currentSpellingWord || spellingCompleted) return;
@@ -3445,29 +3588,12 @@ export default function StudentApp() {
         return;
       }
       if (key.length > 1) return;
-      const target = getCleanSpellingWord(currentSpellingWord.word_greek);
-      const expected = target[spellInput.length];
-      if (!expected) return;
-
-      if (cleanChar(key) === cleanChar(expected)) {
-        const newInput = [...spellInput, expected];
-        setSpellInput(newInput);
-        if (newInput.length === target.length) {
-          setSpellingCompleted(true);
-        }
-      } else {
-        setSpellingWrongFlash(true);
-        setSpellingMistakes(prev => {
-          const next = prev + 1;
-          return next;
-        });
-        setTimeout(() => setSpellingWrongFlash(false), 500);
-      }
+      processSpellingChar(key);
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeModule, currentSpellingWord, spellInput, spellingCompleted]);
+  }, [activeModule, currentSpellingWord, spellInput, spellingCompleted, spellingMistakes, showTip, showAnswer]);
 
   /**
    * 今天这一天, 整个语法题库该按什么顺序出。
@@ -3490,13 +3616,14 @@ export default function StudentApp() {
       unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
     });
 
-    // 前几天出过的题, 今天避开(同样靠「重算过去几天」, 不新建存储)
+    // 前几天出过的题, 今天避开(从最早的一天顺着往昨天推, 每一天都避开它前几天实际出过的题)
     const avoid = new Set<number>();
-    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
       const dstr = shiftDateStr(selectedDateStr, -back);
       const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
-      orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier, disabledDrillSet)
-        .slice(0, DRILLS_PER_DAY).forEach(d => avoid.add(d.id));
+      const pastOrdered = orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier, disabledDrillSet);
+      const pastDayList = [...pastOrdered.filter(d => !avoid.has(d.id)), ...pastOrdered.filter(d => avoid.has(d.id))];
+      pastDayList.slice(0, DRILLS_PER_DAY + GRAMMAR_IN_QUIZ + GRAMMAR_IN_ZHGR).forEach(d => avoid.add(d.id));
     }
 
     const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier, disabledDrillSet);
@@ -3692,7 +3819,7 @@ export default function StudentApp() {
       .sort((a, b) => {
         const da = due(a) ? 0 : 1, db = due(b) ? 0 : 1;
         if (da !== db) return da - db;
-        return ((a.id * 137 + seed) % 9973) - ((b.id * 137 + seed) % 9973);
+        return dailyHash(a.id, seed) - dailyHash(b.id, seed);
       })
       .slice(0, 40)
       .map((w: any) => ({ ...w, status: due(w) ? 'upcoming' : 'mastered' }));
@@ -3797,27 +3924,8 @@ export default function StudentApp() {
       : '已提交：这道题会交给爸爸妈妈检查。这道题可以接着想，也可以点「跳过此题」。');
   };
 
-  const handleLetterClick = (letter: string, idx: number) => {
-    if (spellingCompleted) return;
-    const target = getCleanSpellingWord(currentSpellingWord.word_greek);
-    const expected = target[spellInput.length];
-    if (!expected) return;
-
-    if (cleanChar(letter) === cleanChar(expected)) {
-      const newInput = [...spellInput, expected];
-      setSpellInput(newInput);
-      if (newInput.length === target.length) {
-        setSpellingCompleted(true);
-        logAnswer('spelling', currentSpellingWord?.word_greek || '', spellingMistakes === 0, showTip || showAnswer);
-      }
-    } else {
-      setSpellingWrongFlash(true);
-      setSpellingMistakes(prev => {
-        const next = prev + 1;
-        return next;
-      });
-      setTimeout(() => setSpellingWrongFlash(false), 500);
-    }
+  const handleLetterClick = (letter: string, _idx: number) => {
+    processSpellingChar(letter);
   };
 
   const resetSpell = () => {
@@ -3843,13 +3951,14 @@ export default function StudentApp() {
 
   /** 已解锁的课本填空题：优先按 B 本页码进度，其次按单元解锁日期 */
   const clozePool = useMemo(() => {
-    // 前几天已经出过的填空题, 今天避开(同样用「重算过去几天」的办法, 不新建存储)
+    // 前几天已经出过的填空题, 今天避开(从最早的一天顺着往昨天推, 每一天都避开它前几天实际出过的题)
     const avoid = new Set<number>();
-    for (let back = 1; back <= LOOKBACK_DAYS; back++) {
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
       const d = shiftDateStr(selectedDateStr, -back);
       const units = pickDailyReviewUnits(allReviewUnits, d, 6);
-      orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units, disabledDrillSet)
-        .slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
+      const pastOrdered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units, disabledDrillSet);
+      const pastDayList = [...pastOrdered.filter((c: any) => !avoid.has(c.id)), ...pastOrdered.filter((c: any) => avoid.has(c.id))];
+      pastDayList.slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
     }
     const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, disabledDrillSet);
     // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
@@ -3875,16 +3984,23 @@ export default function StudentApp() {
       detailed_tip: q.detailed_tip
     }));
 
-    // 课本真句子填空题：占选择题的一半，把「全是单词题」拉回到语境里
-    const clozeItems = clozePool.slice(0, CLOZE_PER_DAY).map((c: any) => ({
-      id: c.id,
-      isExam: true,
-      isCloze: true,
-      word_greek: c.cloze,
-      word_chinese: c.answer,
-      options: c.options,
-      detailed_tip: `【课本原句】${c.text}\n【出处】${c.unit_title || ''}（课本第 ${c.page} 页）`,
-    }));
+    // 课本真句子填空题：占选择题的一半，把「全是单词题」拉回到语境里。
+    // 2026-11-10 (#83): 开放实词填空如果没有词义线索，多个词性相同的选项放进句中都讲得通。
+    // 自动从词典补上挖空词的中文词义提示，让孩子考的是「认出该希腊语词形」，而不是盲猜课文原句。
+    const clozeItems = clozePool.slice(0, CLOZE_PER_DAY).map((c: any) => {
+      const ansKey = cleanGreekForComparison(c.answer || c.blank_word || '');
+      const dictHit = ansKey ? getDicts().gr.get(ansKey) : null;
+      const zhHint = dictHit?.zh ? promptZhOnly(dictHit.zh).split(/[；;]/)[0].trim() : '';
+      return {
+        id: c.id,
+        isExam: true,
+        isCloze: true,
+        word_greek: zhHint ? `${c.cloze}\n（提示词义：${zhHint}）` : c.cloze,
+        word_chinese: c.answer,
+        options: c.options,
+        detailed_tip: `【课本原句】${c.text}\n【出处】${c.unit_title || ''}（课本第 ${c.page} 页）`,
+      };
+    });
 
     // 语法选择题: 冠词的性数格、动词变位、课本原题精练 ——
     // 数据结构和上面的课本填空题完全一致(题面/选项/答案/解析), 直接掺进来。
@@ -4345,6 +4461,12 @@ export default function StudentApp() {
       'πμ': ['πρωί', 'προ μεσημβρίας'],
       'τμ': ['τετραγωνικά μέτρα', 'τετραγωνικό μέτρο'],
       'κτλ': ['και τα λοιπά'],
+      'ξαναβλεπω': ['ξανασυναντάω', 'ξανασυναντώ', 'βλέπω ξανά', 'συναντώ ξανά'],
+      'ξανασυνανταω': ['ξαναβλέπω', 'ξανασυναντώ'],
+      'ξανασυναντω': ['ξαναβλέπω', 'ξανασυναντάω'],
+      'ξαναλεω': ['ξαναμιλάω', 'ξαναμιλώ', 'λέω ξανά'],
+      'μακρυς': ['μακριά', 'μακρύ'],
+      'μακρια': ['μακρύς', 'μακρύ'],
     };
 
     const senseSet = new Set(senses);
@@ -4376,8 +4498,8 @@ export default function StudentApp() {
     const isGrammarItem = !!(currentTransZhGr as any).isGrammar;
     const drillType = (currentTransZhGr as any).drillType || '';
     const isTranslateOrQaDrill = isGrammarItem && (drillType === 'translate' || drillType === 'qa' || !currentTransZhGr.chinese?.includes('____'));
-    // 纯语法填空题(cloze)考的是词尾, 用 grammarNormKey 精确比对;
-    // 但整句翻译题(translate)和开放问答题(qa)考的是句子表达, 必须允许同义句、语序调整与拼写容错!
+    // 纯语法填空题(cloze)考的是词尾, 用 isGrammarClozeMatch 比对(词尾严格一致的前提下允许长词词干 1 字母手误);
+    // 整句翻译题(translate)和开放问答题(qa)考的是句子表达, 允许同义句、语序调整与拼写容错!
     const acceptable = isGrammarItem
       ? [currentTransZhGr.greek, ...((currentTransZhGr as any).acceptableAnswers || [])]
       : getAcceptableGreekTranslations(currentTransZhGr.greek, currentTransZhGr.chinese);
@@ -4388,9 +4510,9 @@ export default function StudentApp() {
     ];
     const allTargets = [...acceptable, ...approvedAlts];
     const correct = (isGrammarItem && !isTranslateOrQaDrill)
-      ? allTargets.some((ans: string) => grammarNormKey(ans) === grammarNormKey(userTransZhGrInput))
+      ? allTargets.some((ans: string) => isGrammarClozeMatch(userTransZhGrInput, ans))
       : (allTargets.some((ans: string) =>
-           grammarNormKey(ans) === grammarNormKey(userTransZhGrInput)
+           isGrammarClozeMatch(userTransZhGrInput, ans)
            || isFuzzyGreekMatch(userTransZhGrInput, ans)
            || ((isTranslateOrQaDrill || isSentenceItem(currentTransZhGr) || /\s/.test(ans.trim())) && isGreekSentenceClose(userTransZhGrInput, ans))
          )
@@ -6425,9 +6547,13 @@ export default function StudentApp() {
                 {currentSpellingWord.word_chinese}
               </div>
               <div style={{ color: '#86868B', fontSize: '13px', marginBottom: '4px', fontWeight: 600 }}>
-                拼写对应的希腊语单词 (支持键盘直接打字输入)
+                拼写对应的希腊语单词 (支持键盘直接打字输入，同义词或双形式均可识别)
               </div>
-              <div style={{ color: '#86868B', fontSize: '11.5px', marginBottom: '32px', textTransform: 'uppercase' }}>
+              <div style={{ color: '#0071E3', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
+                🔤 字母块主目标：{getCleanSpellingWord(currentSpellingWord.word_greek).length} 个字母
+                {getSpellingAcceptedTargets(currentSpellingWord).length > 1 ? `（共支持 ${getSpellingAcceptedTargets(currentSpellingWord).length} 种等价拼法）` : ''}
+              </div>
+              <div style={{ color: '#86868B', fontSize: '11.5px', marginBottom: '28px', textTransform: 'uppercase' }}>
                 Γράψτε την αντίστοιχη ελληνική λέξη
               </div>
 
@@ -6632,6 +6758,7 @@ export default function StudentApp() {
                 {quizOptions.map((opt, i) => {
                   const isSelected = selectedOption === opt;
                   const isCorrect = opt === currentQuizWord.word_chinese;
+                  const isWrongTried = !answerChecked && wrongOptionsSelected.includes(opt);
                   
                   let cardBg = '#FFFFFF';
                   let cardBorder = '1px solid rgba(0,0,0,0.1)';
@@ -6644,6 +6771,9 @@ export default function StudentApp() {
                       cardBg = 'rgba(255,59,48,0.08)';
                       cardBorder = '2px solid #FF3B30';
                     }
+                  } else if (isWrongTried) {
+                    cardBg = 'rgba(255,59,48,0.06)';
+                    cardBorder = '2px solid #FF3B30';
                   } else if (isSelected) {
                     cardBorder = '2px solid #0071E3';
                     cardBg = 'rgba(0,113,227,0.04)';
@@ -6662,7 +6792,7 @@ export default function StudentApp() {
                         textAlign: 'left',
                         fontSize: '16px',
                         fontWeight: '600',
-                        color: '#1D1D1F',
+                        color: isWrongTried ? '#D4380D' : '#1D1D1F',
                         cursor: answerChecked ? 'default' : 'pointer',
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -6672,7 +6802,7 @@ export default function StudentApp() {
                     >
                       <span>{opt}</span>
                       {answerChecked && isCorrect && <Check size={18} style={{ color: '#34C759' }} />}
-                      {answerChecked && isSelected && !isCorrect && <X size={18} style={{ color: '#FF3B30' }} />}
+                      {((answerChecked && isSelected && !isCorrect) || isWrongTried) && <X size={18} style={{ color: '#FF3B30' }} />}
                     </button>
                   );
                 })}
@@ -7664,6 +7794,37 @@ export default function StudentApp() {
                         </button>
                       </div>
                     </div>
+                    {currentChallenge.sceneCards && currentChallenge.sceneCards.length > 0 && (
+                      <div style={{
+                        marginTop: '16px',
+                        paddingTop: '16px',
+                        borderTop: '1px solid rgba(0,0,0,0.08)',
+                        display: 'grid',
+                        gridTemplateColumns: currentChallenge.sceneCards.length > 1 ? 'repeat(auto-fit, minmax(220px, 1fr))' : '1fr',
+                        gap: '12px'
+                      }}>
+                        {currentChallenge.sceneCards.map((sc, idx) => (
+                          <div key={idx} style={{
+                            background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F7FF 100%)',
+                            border: '1.5px solid rgba(0, 113, 227, 0.22)',
+                            borderRadius: '14px',
+                            padding: '14px 16px',
+                            boxShadow: '0 4px 12px rgba(0, 113, 227, 0.06)'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                              <span style={{ fontSize: '28px', lineHeight: 1 }}>{sc.icon}</span>
+                              <span style={{ fontSize: '14px', fontWeight: 800, color: '#0058B0' }}>{sc.title}</span>
+                            </div>
+                            <div style={{ fontSize: '13.5px', fontWeight: 650, color: '#1D1D1F', lineHeight: 1.5, marginBottom: '6px' }}>
+                              {sc.descGr}
+                            </div>
+                            <div style={{ fontSize: '12.5px', color: '#515154', lineHeight: 1.5 }}>
+                              {sc.descCn}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* User Input Area */}
@@ -8647,7 +8808,7 @@ export default function StudentApp() {
                           ].filter(Boolean);
                           for (const alt of allTargets) {
                             const normAlt = grammarNormKey(alt);
-                            if (normUser === normAlt && normUser.length > 0) {
+                            if ((normUser === normAlt && normUser.length > 0) || isGrammarClozeMatch(userGrammarInput, alt)) {
                               correct = true;
                               break;
                             }
