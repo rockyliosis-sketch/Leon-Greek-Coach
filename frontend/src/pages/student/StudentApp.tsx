@@ -609,7 +609,11 @@ const ALL_GRAMMAR_DRILLS: any[] = (() => {
     const q = String(d.question || '');
     if (/下面哪|下列哪|以下哪|哪个选项/.test(q)) return false;
     if (d.id >= 200000 && d.drill_type === 'cloze') {
-      const hasGreekHint = /[（(][^）)]*[\u0370-\u03ff\u1f00-\u1fff][^）)]*[）)]/.test(q);
+      // 2026-11-18 (#91): 只检查第一行希腊语题干是否带括号词根提示!
+      // 旧写法检查整段 q, 结果第二行中文翻译括号里只要出现希腊语人名(如「（Πόπη，你不能再瘦了…）」),
+      // 就会被误判成有词根提示, 导致 72 道带人名的开放式实词题漏进无选项填空池。
+      const firstLine = q.split('\n')[0] || '';
+      const hasGreekHint = /[（(][^）)]*[\u0370-\u03ff\u1f00-\u1fff][^）)]*[）)]/.test(firstLine);
       if (!hasGreekHint && !isClosedClassGrammarAnswer(d.answer || '')) return false;
     }
     return true;
@@ -1281,7 +1285,17 @@ const normalizeGreekPhoneticVariants = (s: string): string =>
     .replace(/χτ/g, 'χθ')
     .replace(/οχτ/g, 'οκτ')
     .replace(/εφτ/g, 'επτ')
-    .replace(/αδερφ/g, 'αδελφ');
+    .replace(/αδερφ/g, 'αδελφ')
+    .replace(/ελν/g, 'ελλ')
+    .replace(/οκτομβρ/g, 'οκτωβρ')
+    .replace(/συνχ/g, 'συγχ');
+
+/** 希腊语同音元音折算（αι↔ε, ει/οι↔ι）：仅在非短词拼写容错时兜底使用（如 βγαίνω 写 Βγένω、ονειρεύομαι 写 Ονοιρεύω） */
+const normalizeGreekHomophones = (s: string): string =>
+  normalizeGreekPhoneticVariants(s)
+    .replace(/αι/g, 'ε')
+    .replace(/ει/g, 'ι')
+    .replace(/οι/g, 'ι');
 
 const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   const u = cleanGreekForComparison(userRaw);
@@ -1289,6 +1303,7 @@ const isFuzzyGreekMatch = (userRaw: string, targetRaw: string): boolean => {
   if (!u || !t) return false;
   if (u === t) return true;
   if (normalizeGreekPhoneticVariants(u) === normalizeGreekPhoneticVariants(t)) return true;
+  if (t.length >= 4 && u.length >= 4 && normalizeGreekHomophones(u) === normalizeGreekHomophones(t)) return true;
 
   // 常见前缀派生词根互通（如 δέχομαι ↔ αποδέχομαι, θυμίζω ↔ υπενθυμίζω, νοικιάζω ↔ ενοικίαση）
   const stripDerivPrefix = (x: string) => x.replace(/^(απο|υπεν|ε)/, '');
@@ -1617,13 +1632,17 @@ const isChineseAnswerCorrect = (userRaw: string, answerRaw: string): boolean => 
     // 单字义项 + 孩子多写 1 个字 -> 算对, 但多出来的那个字不能改掉意思(我们≠我, 不看≠看)。
     // 但孩子写的这两个字若本身就是词表里别的词的意思(海豚≠海、水果≠水、大象≠大), 不放宽 ——
     // 全库扫过, 不加这道闸会误放 1500 对。
+    // 单字义项前加量词「一」（normalizeChineseString 已把「一」转为「1」，如「片」写「一片」->「1片」、「滴」写「一滴」->「1滴」）
+    if (sense.length === 1 && user === '1' + sense) return true;
     if (sense.length === 1 && user.length === 2 && user.includes(sense)
         && !/[们的不没别非无]/.test(user.replace(sense, '')) && !/\d/.test(user)
         && !getDicts().zh.has(user)) return true;
-    // 两字义项 + 孩子只写了其中那个实字(给/给予、坐/坐下、洗/洗掉) -> 算对。
-    // 只认「实字 + 虚字尾巴」这种结构, 大海写成「大」不算。
+    // 两字义项 + 孩子只写了其中那个实字(给/给予、坐/坐下、洗/洗掉、难/困难) -> 算对。
+    // 只认「实字 + 虚字尾巴」或「同义并列双字取尾字（如困难->难）」这种结构, 大海写成「大」不算。
     if (user.length === 1 && sense.length === 2 && sense[0] === user
-        && '予下上起来去子儿头见到着了完掉'.includes(sense[1])) return true;
+        && '予下上起来去子儿头见到着了完掉衣'.includes(sense[1])) return true;
+    if (user.length === 1 && sense.length === 2 && sense[1] === user
+        && '困寒疼痛喜观穿睡房'.includes(sense[0])) return true;
   }
   return false;
 };
@@ -1784,10 +1803,16 @@ const getSpellingAcceptedTargets = (wordObj: any): string[] => {
   };
   if (primary) out.push(primary);
   expandGreekSlashVariants(rawGr).forEach(add);
-  // 缩合动词 -άω ↔ -ώ 双形式互通
+  // 缩合动词 -άω ↔ -ώ 及 -έλνω ↔ -έλλω 双形式互通（仅当原词以 -άω 结尾，或词典中确实存在对应的 -άω 缩合形式时才扩展，避免为普通 -ω 动词虚构 -άω）
   [...out].forEach(w => {
-    if (w.endsWith('αω') && w.length >= 4) add(w.slice(0, -2) + 'ω');
-    else if (w.endsWith('ω') && !w.endsWith('αω') && w.length >= 3) add(w.slice(0, -1) + 'αω');
+    if (w.endsWith('αω') && w.length >= 4) {
+      add(w.slice(0, -2) + 'ω');
+    } else if (w.endsWith('ω') && !w.endsWith('αω') && w.length >= 3) {
+      const aoCand = w.slice(0, -1) + 'αω';
+      if (getDicts().gr.has(aoCand)) add(aoCand);
+    }
+    if (w.endsWith('ελνω')) add(w.slice(0, -4) + 'ελλω');
+    if (w.endsWith('ελλω')) add(w.slice(0, -4) + 'ελνω');
   });
   // 中文义项完全相同的单个希腊语同义词（如 电脑 -> κομπιούτερ / υπολογιστής；互联网 -> ίντερνετ / διαδίκτυο）
   splitChineseSenses(rawZh).forEach(sense => {
@@ -2286,23 +2311,43 @@ export default function StudentApp() {
   // Selected review date (defaults to today in Greece timezone, interactive)
   const [selectedDateStr, setSelectedDateStr] = useState<string>(getGreeceDateString);
 
-  const getDailyExams = (level: string, type: string, count: number = 1) => {
-    const examsList = (examQuestionsData || []).filter((q: any) => q.exam_level === level && q.question_type === type);
-    if (examsList.length <= count) return examsList;
-    
-    let hash = 0;
-    for (let i = 0; i < selectedDateStr.length; i++) {
-      hash = (hash << 5) - hash + selectedDateStr.charCodeAt(i);
-      hash = hash & hash;
+  /**
+   * 2026-11-18 修复「exam_questions.json 每天霸占各模块第 1 题」的 Bug:
+   * exam_questions.json 全文件只有 36 道静态样题（其中 A2 汉译希仅 1 道、A2 希译汉仅 2 道、A2 拼写仅 2 道）。
+   * 旧逻辑每天必抽 1 道并放在数组第 0 位 (`[...examItems, ...regularItems]`)，导致「不要在网上用你父母的卡付款。」
+   * 和「Το διαδίκτυο μορφώνει...」天天霸占第一题，完全绕过艾宾浩斯遗忘曲线。
+   * 现改为：
+   *   1) 合并 A1 + A2 已学完真题池，不再锁死单一级；
+   *   2) 引入 14 天冷却期（EXAM_COOLDOWN_DAYS = 14）：任何一道静态真题 14 天内最多只允许出现 1 次；
+   *      处于冷却期时直接返回空数组，把题位 100% 交还给当日艾宾浩斯复习单元！
+   */
+  const getDailyExams = (_level: string, type: string, count: number = 1) => {
+    const examsList = (examQuestionsData || []).filter((q: any) => q.question_type === type);
+    if (examsList.length === 0) return [];
+
+    const EXAM_COOLDOWN_DAYS = 14;
+    const seedOfDate = (dStr: string) => {
+      const p = dStr.split('-');
+      return (parseInt(p[0], 10) || 2026) * 372 + (parseInt(p[1], 10) || 7) * 31 + (parseInt(p[2], 10) || 5);
+    };
+    let typeSalt = 0;
+    for (let i = 0; i < type.length; i++) typeSalt = (typeSalt * 31 + type.charCodeAt(i)) | 0;
+
+    const pickForDate = (dStr: string, avoidIds: Set<number>): any[] => {
+      const s = seedOfDate(dStr) + typeSalt;
+      // 只有当天命中触发槽位且不在冷却集里的真题才出，绝不硬凑
+      const eligible = examsList
+        .filter((q: any) => !avoidIds.has(q.id) && (dailyHash(q.id, s) % EXAM_COOLDOWN_DAYS === 0))
+        .sort((a: any, b: any) => dailyHash(a.id, s) - dailyHash(b.id, s));
+      return eligible.slice(0, count);
+    };
+
+    const usedRecently = new Set<number>();
+    for (let back = EXAM_COOLDOWN_DAYS - 1; back >= 1; back--) {
+      const pastDate = shiftDateStr(selectedDateStr, -back);
+      pickForDate(pastDate, usedRecently).forEach((q: any) => usedRecently.add(q.id));
     }
-    hash = Math.abs(hash) + type.length * 13;
-    
-    const result = [];
-    for (let i = 0; i < count; i++) {
-       const index = (hash + i) % examsList.length;
-       result.push(examsList[index]);
-    }
-    return result;
+    return pickForDate(selectedDateStr, usedRecently);
   };
 
   const [allVocab, setAllVocab] = useState<Word[]>([]);
@@ -2873,7 +2918,7 @@ export default function StudentApp() {
         const m = parseInt(dateParts[1], 10) || 6;
         const d = parseInt(dateParts[2], 10) || 20;
         const dateSeed = y * 372 + m * 31 + d;
-        return ((a.id * 137 + dateSeed) % 1000) - ((b.id * 137 + dateSeed) % 1000);
+        return dailyHash(a.id, dateSeed) - dailyHash(b.id, dateSeed);
       }
 
       const order: Record<string, number> = { 'A1-A': 1, 'A1-B': 2, 'A2': 3, 'B1': 4, 'B': 4 };
@@ -3493,7 +3538,7 @@ export default function StudentApp() {
       detailed_tip: q.detailed_tip
     }));
 
-    const combined = [...examItems, ...spellingItems];
+    const combined = [...spellingItems, ...examItems];
     return applyMakeup('spelling', filterDuplicateTranslations(combined).slice(0, 40), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
@@ -3507,17 +3552,18 @@ export default function StudentApp() {
    * 字母重新洗牌, 而且 `setSpellInput([])` 把学生已经敲进去的字母清空。
    * 现在只认「这是哪个词」这一个字符串, 词没换就绝不重跑;
    * 打乱顺序也按词定死, 同一个词每次进来摆法一致。
-   * 2026-11-10: 如果词条含斜杠并列写法(如 κοτόπουλο/κότα、χτες/χθες、εφτά/επτά),
-   * 把并列写法多出来的字母也放进字母块池, 这样点屏幕字母块也能拼出任一写法!
+   * 2026-11-18 (#92): 把 getSpellingAcceptedTargets 算出的所有可接受拼法(斜杠变体、双形式、同义词)
+   * 的全部字母都放进屏幕字母块池 chars, 确保孩子在平板上不用外接键盘也能直接点出他知道的同义词!
    */
-  const spellingWordKey = currentSpellingWord ? String(currentSpellingWord.word_greek || '') : '';
+  const spellingWordKey = currentSpellingWord
+    ? `${currentSpellingWord.word_greek || ''}|${currentSpellingWord.word_chinese || ''}`
+    : '';
   useEffect(() => {
-    if (!spellingWordKey) return;
-    const cleanWord = getCleanSpellingWord(spellingWordKey);
+    if (!spellingWordKey || !currentSpellingWord) return;
+    const cleanWord = getCleanSpellingWord(currentSpellingWord.word_greek || '');
     const chars = cleanWord.split('');
-    expandGreekSlashVariants(spellingWordKey).forEach(v => {
-      const cv = removeGreekAccents(getSpellingTargetWord(v)).replace(/\s+/g, '');
-      for (const ch of cv) {
+    getSpellingAcceptedTargets(currentSpellingWord).forEach(t => {
+      for (const ch of t) {
         if (!chars.includes(ch)) chars.push(ch);
       }
     });
@@ -3718,7 +3764,7 @@ export default function StudentApp() {
       };
     });
 
-    const combined = [...examItems, ...transItems];
+    const combined = [...transItems, ...examItems];
     return applyMakeup('translation_gr_zh', filterDuplicateTranslations(combined).slice(0, 20), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
@@ -3779,7 +3825,7 @@ export default function StudentApp() {
       acceptableAnswers: d.acceptable_answers || [d.answer],
     }));
 
-    const combined = [...examItems, ...grammarItems, ...transItems];
+    const combined = [...grammarItems, ...transItems, ...examItems];
     return applyMakeup('translation_zh_gr', filterDuplicateTranslations(combined).slice(0, 20), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, grammarSpillover, makeupSnapshot]);
 
@@ -4023,7 +4069,7 @@ export default function StudentApp() {
       detailed_tip: d.detailed_tip,
     }));
 
-    const combined = [...examItems, ...clozeItems, ...grammarItems, ...quizItems];
+    const combined = [...clozeItems, ...grammarItems, ...quizItems, ...examItems];
     return applyMakeup('quiz', filterDuplicateTranslations(combined).slice(0, 30), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, clozePool, grammarSpillover, makeupSnapshot]);
 
@@ -4188,7 +4234,7 @@ export default function StudentApp() {
       answer: q.answer
     }));
 
-    const combined = [...examItems, ...tfItems];
+    const combined = [...tfItems, ...examItems];
     return applyMakeup('truefalse', filterDuplicateTranslations(combined).slice(0, 40), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, makeupSnapshot]);
 
@@ -4381,10 +4427,10 @@ export default function StudentApp() {
     // 同义词族。旧版用「中文里含有某个字」来触发，导致「去爱」触发 πάω、
     // 「爱丁堡」触发 αγαπάω、「访问」触发 ρωτάω。现在必须整条义项完全等于关键词才触发。
     const SAY = ['λέω', 'μιλάω', 'μιλώ', 'πες', 'πείτε', 'λες'];
-    const SEE = ['βλέπω', 'κοιτάζω', 'κοιτώ', 'δες'];
+    const SEE = ['βλέπω', 'κοιτάζω', 'κοιτώ', 'δες', 'αντικρίζω'];
     const EAT = ['τρώω', 'τρώγω', 'φάε'];
     const DRINK = ['πίνω', 'πιες'];
-    const BUY = ['αγοράζω', 'ψωνίζω'];
+    const BUY = ['αγοράζω', 'ψωνίζω', 'πάω για ψώνια', 'πηγαίνω για ψώνια', 'κάνω ψώνια'];
     const DISCUSS = ['συζητάω', 'συζητώ'];
     const LOVE = ['αγαπάω', 'αγαπώ'];
     const ASK = ['ρωτάω', 'ρωτώ'];
@@ -4395,13 +4441,16 @@ export default function StudentApp() {
     const IMMEDIATELY = ['άμεσα', 'αμέσως'];
     const COLD = ['κρύο', 'κρυώνω', 'κάνει κρύο', 'έχει κρύο'];
     const WASH_CLOTHES = ['βάζω πλυντήριο', 'πλένω τα ρούχα', 'πλένω ρούχα'];
+    const THIN = ['λεπτός', 'λεπτή', 'λεπτό', 'αδύνατος', 'αδύνατη', 'αδύνατο'];
+    const DAY_BEFORE = ['παραμονή', 'προηγούμενη μέρα', 'την προηγούμενη μέρα', 'η προηγούμενη μέρα'];
+    const DISAGREE = ['διαφωνώ', 'δεν συμφωνώ', 'δε συμφωνώ'];
 
     const ZH_SENSE_SYNONYMS: Record<string, string[]> = {
       '说': SAY, '说话': SAY, '讲': SAY, '告诉': SAY,
       '看': SEE, '看见': SEE, '观看': SEE, '瞧': SEE,
       '吃': EAT, '吃饭': EAT,
       '喝': DRINK, '喝水': DRINK,
-      '买': BUY, '购买': BUY,
+      '买': BUY, '购买': BUY, '买东西': BUY, '去购物': BUY, '购物': BUY,
       '讨论': DISCUSS, '商量': DISCUSS,
       '爱': LOVE, '喜欢': LOVE, '喜爱': LOVE,
       '问': ASK, '提问': ASK, '询问': ASK,
@@ -4412,14 +4461,17 @@ export default function StudentApp() {
       '立刻': IMMEDIATELY, '马上': IMMEDIATELY, '直接': IMMEDIATELY,
       '冷': COLD, '寒冷': COLD, '天气很冷': COLD,
       '洗衣服': WASH_CLOTHES,
+      '瘦': THIN, '瘦的': THIN, '苗条': THIN, '苗条的': THIN,
+      '前一天': DAY_BEFORE, '前夕': DAY_BEFORE, '节日前夕': DAY_BEFORE,
+      '不同意': DISAGREE,
     };
 
     const GR_LEMMA_SYNONYMS: Record<string, string[]> = {
       'λεω': SAY, 'μιλαω': SAY, 'μιλω': SAY, 'πες': SAY, 'πειτε': SAY, 'λες': SAY,
-      'βλεπω': SEE, 'κοιταζω': SEE, 'κοιτω': SEE, 'δες': SEE,
+      'βλεπω': SEE, 'κοιταζω': SEE, 'κοιτω': SEE, 'δες': SEE, 'αντικριζω': SEE,
       'τρωω': EAT, 'τρωγω': EAT, 'φαε': EAT,
       'πινω': DRINK, 'πιες': DRINK,
-      'αγοραζω': BUY, 'ψωνιζω': BUY,
+      'αγοραζω': BUY, 'ψωνιζω': BUY, 'παωγιαψωνια': BUY,
       'συζηταω': DISCUSS, 'συζητω': DISCUSS,
       'αγαπαω': LOVE, 'αγαπω': LOVE,
       'ρωταω': ASK, 'ρωτω': ASK,
@@ -4430,6 +4482,19 @@ export default function StudentApp() {
       'αμεσα': IMMEDIATELY, 'αμεσως': IMMEDIATELY,
       'κρυο': COLD, 'κρυωνω': COLD, 'κανεικρυο': COLD, 'εχεικρυο': COLD,
       'βαζωπλυντηριο': WASH_CLOTHES, 'πλενωταρουχα': WASH_CLOTHES,
+      'λεπτος': THIN, 'λεπτη': THIN, 'λεπτο': THIN, 'αδυνατος': THIN, 'αδυνατη': THIN, 'αδυνατο': THIN,
+      'παραμονη': DAY_BEFORE, 'προηγουμενημερα': DAY_BEFORE,
+      'διαφωνω': DISAGREE, 'δενσυμφωνω': DISAGREE,
+      'οσα': ['όλα', 'όλα αυτά', 'όλους', 'ότι', 'ό,τι'],
+      'οποιος': ['κάποιος', 'κανένας', 'όποιος'],
+      'παλιος': ['ηλικιωμένος', 'γέρος', 'μεγάλος', 'παλαιός'],
+      'πασχα': ['ανάσταση', 'καλό πάσχα', 'καλή ανάσταση'],
+      'εμενα': ['μένα', 'με'],
+      'οκτωβριος': ['οκτώβρης', 'οκτόμβριος'],
+      'ταβερνα': ['ουζερί', 'εστιατόριο'],
+      'κιτρινος': ['χρυσός', 'χρυσό', 'χρυσαφί'],
+      'εδωκαιπολυκαιρο': ['πολύ καιρό', 'πολύ χρόνο', 'παλαιότερα'],
+      'αποτοτε': ['μετά', 'από μετά'],
       // 单词表常见口语短语/缩写等价写法
       'κινητοτηλεφωνο': ['κινητό', 'τηλέφωνο'],
       'δημοτικοσχολειο': ['δημοτικό'],
@@ -6550,8 +6615,10 @@ export default function StudentApp() {
                 拼写对应的希腊语单词 (支持键盘直接打字输入，同义词或双形式均可识别)
               </div>
               <div style={{ color: '#0071E3', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-                🔤 字母块主目标：{getCleanSpellingWord(currentSpellingWord.word_greek).length} 个字母
-                {getSpellingAcceptedTargets(currentSpellingWord).length > 1 ? `（共支持 ${getSpellingAcceptedTargets(currentSpellingWord).length} 种等价拼法）` : ''}
+                🔤 目标词长：{getCleanSpellingWord(currentSpellingWord.word_greek).length} 个字母
+                {getSpellingAcceptedTargets(currentSpellingWord).length > 1
+                  ? `（下方字母块已包含全部 ${getSpellingAcceptedTargets(currentSpellingWord).length} 种同义/双形式拼法所需字母，任选其一拼写即可）`
+                  : ''}
               </div>
               <div style={{ color: '#86868B', fontSize: '11.5px', marginBottom: '28px', textTransform: 'uppercase' }}>
                 Γράψτε την αντίστοιχη ελληνική λέξη

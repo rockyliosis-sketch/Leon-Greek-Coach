@@ -189,17 +189,36 @@ export const isUnitDue = (u: ReviewUnit, today: string): boolean => {
   return d >= 0 && EBBINGHAUS_DAYS.includes(d);
 };
 
+/** 对单元 key + 日期计数 + 盐值做 32 位雪崩哈希，解决旧版用 key.length 导致同书单元哈希恒等的问题 */
+const unitDailyHash = (key: string, dayCount: number, salt: number): number => {
+  let h = 2166136261 ^ Math.imul(dayCount + salt * 131, 2654435761);
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
+};
+
+const shiftDateISO = (dateStr: string, deltaDays: number): string => {
+  const a = dateStr.split('-');
+  const d = new Date(parseInt(a[0], 10), parseInt(a[1], 10) - 1, parseInt(a[2], 10));
+  d.setDate(d.getDate() + deltaDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 /**
  * 选出今天要复习的复习单位。
  *
  * 规则（按优先级）：
  *  1. 正在学的那个单元永远占第一席（「最近的复习」）
- *  2. A2 保底一席 —— 刚学完、最难，家长指定优先
+ *  2. A2 保底两席 —— 刚学完、最难，家长指定优先
  *  3. 其余席位按「久远度」分四档铺开（这是遗忘曲线要的覆盖面），
- *     每档内部：今天到期的优先 → 权重高的优先 → 按日期轮换，保证天天不重样
+ *     每档内部：今天到期的优先 → 前 2 天没选过的优先 → 权重高的优先 → 32 位雪崩哈希每日轮换，保证天天不重样
  */
-export const pickDailyReviewUnits = (
-  all: ReviewUnit[], today: string, count = 6
+const pickDailyReviewUnitsCore = (
+  all: ReviewUnit[], today: string, count: number, avoidKeys: Set<string>
 ): ReviewUnit[] => {
   if (all.length === 0) return [];
 
@@ -217,26 +236,24 @@ export const pickDailyReviewUnits = (
     if (u && !picked.some(p => p.key === u.key)) picked.push(u);
   };
 
-  /** 档内排序：到期 > 权重 > 每日轮换 */
+  /** 档内排序：到期 > 避开前两天已选 > 权重 > 32 位每日哈希轮换 */
   const rank = (pool: ReviewUnit[], salt: number) =>
     [...pool].sort((a, b) => {
       const da = isUnitDue(a, today) ? 0 : 1, db = isUnitDue(b, today) ? 0 : 1;
       if (da !== db) return da - db;
+      const aa = avoidKeys.has(a.key) ? 1 : 0, ab = avoidKeys.has(b.key) ? 1 : 0;
+      if (aa !== ab) return aa - ab;
       const wa = BOOK_WEIGHT[a.bookId.toUpperCase()] ?? 1;
       const wb = BOOK_WEIGHT[b.bookId.toUpperCase()] ?? 1;
       if (wa !== wb) return wb - wa;
-      const ha = (a.key.length * 31 + dayCount + salt) % 97;
-      const hb = (b.key.length * 31 + dayCount + salt) % 97;
-      return ha - hb;
+      return unitDailyHash(a.key, dayCount, salt) - unitDailyHash(b.key, dayCount, salt);
     });
 
-  /** 每天从池子里轮换一个，保证连续几天不重复 */
+  /** 每天从池子里轮换一个，优先挑到期且前两天没出过的，保证连续几天不重复 */
   const rotate = (pool: ReviewUnit[], salt: number): ReviewUnit | undefined => {
     if (pool.length === 0) return undefined;
     const ranked = rank(pool, salt);
-    const due = ranked.filter(u => isUnitDue(u, today));
-    if (due.length) return due[(dayCount + salt) % due.length];
-    return ranked[(dayCount + salt) % ranked.length];
+    return ranked[0];
   };
 
   const isA2 = (u: ReviewUnit) => u.bookId.toUpperCase() === 'A2';
@@ -254,12 +271,12 @@ export const pickDailyReviewUnits = (
   // 没有「在学」标记时，退回最近学完的那个
   if (picked.length === 0) take(byDate[byDate.length - 1]);
 
-  // 2. 最近学完的那个单元 —— 刚学完的东西忘得最快, 必须占一席。
-  //    但只在它**确实还新鲜**(30 天内)时才霸这个位置; 否则它会永远赖着不走 ——
-  //    比如 B 本刚开课时, 最近学完的一直是 A2 最后一个单元, 天天都在,
-  //    A2 就吃掉三个席位了。过了 30 天就让它回到正常轮换里去竞争。
+  // 2. 最近学完的那个单元 —— 刚学完的东西忘得最快, 但在 14 天内且不在前两天刚复习过时才固定占席，
+  //    否则交给下面的艾宾浩斯到期 + 轮换去挑，避免同一个刚学完的单元连续 30 天天天霸占第二席。
   const lastDone = byDate.filter(u => u.kind !== 'current' && !picked.some(p => p.key === u.key)).pop();
-  if (lastDone && daysBetween(lastDone.studyDate, today) <= 30) take(lastDone);
+  if (lastDone && daysBetween(lastDone.studyDate, today) <= 14 && (isUnitDue(lastDone, today) || !avoidKeys.has(lastDone.key))) {
+    take(lastDone);
+  }
 
   // 3. A2 固定两席（刚学完、难度最大, 家长指定优先）
   take(rotate(byDate.filter(isA2), 7));
@@ -289,4 +306,20 @@ export const pickDailyReviewUnits = (
   // 由近及远排列，配合界面上「最近 → 最遥远」的版式
   return picked.slice(0, count).sort((a, b) =>
     b.studyDate.localeCompare(a.studyDate) || a.key.localeCompare(b.key));
+};
+
+export const pickDailyReviewUnits = (
+  all: ReviewUnit[], today: string, count = 6
+): ReviewUnit[] => {
+  if (all.length === 0) return [];
+  // 先递推前 2 天选出过的非在学单元，今天优先避开，实现「由远及近各梯度每日滚动更新」
+  const avoidKeys = new Set<string>();
+  const d2 = shiftDateISO(today, -2);
+  const p2 = pickDailyReviewUnitsCore(all, d2, count, new Set());
+  p2.forEach(u => { if (u.kind !== 'current') avoidKeys.add(u.key); });
+  const d1 = shiftDateISO(today, -1);
+  const p1 = pickDailyReviewUnitsCore(all, d1, count, avoidKeys);
+  p1.forEach(u => { if (u.kind !== 'current') avoidKeys.add(u.key); });
+
+  return pickDailyReviewUnitsCore(all, today, count, avoidKeys);
 };
