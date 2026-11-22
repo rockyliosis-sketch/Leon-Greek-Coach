@@ -54,6 +54,8 @@ Every single question across all 9 modules MUST provide:
 
 ## 4. Build, Validation & Deployment Routine
 
+历史故事馆每课先按年级、单元、课次核对此前所有课程的词表。每个新词在中文正文首次出场时先用中文自然引入，再用 `[[el:...]]` 领读一次。旧词在后续中文故事中直接讲中文；旧人物的新称号、器物和有独立意义的短语可单独收录。正文插播、片尾领读、网页点读卡必须一一对应，跨课新词交集应为空。片尾和词卡共用 `vocabReview`。每次制作或修订课程，先运行 `python3 scripts/generate_history_audio.py --validate-only`。
+
 Before finishing any task:
 1. Validate TypeScript & Vite build:
    ```bash

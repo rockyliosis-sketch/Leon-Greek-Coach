@@ -29,6 +29,7 @@ export interface HistoryLesson {
   zhStoryScript: string[]
   elStoryParagraphs: { el: string; zh: string }[]
   vocabReview: { zh: string; el: string; note?: string }[]
+  transcriptHighlightWords?: string[]
   workbookKeyPoints: { titleZh: string; detailZh: string; detailEl: string }[]
   practice: PracticeQuestion[]
 }

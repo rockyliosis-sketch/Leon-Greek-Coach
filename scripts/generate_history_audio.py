@@ -5,6 +5,7 @@
 """
 
 import argparse
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import fcntl
@@ -16,6 +17,7 @@ import shutil
 import subprocess
 import tempfile
 import time
+import unicodedata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +26,9 @@ EL = ("el-GR-NestorasNeural", "-18%")
 EL_STORY = ("el-GR-NestorasNeural", "-22%")
 RATE = 24000
 TAG = re.compile(r"\[\[el:([^\[\]]+)\]\]")
+HISTORY = ROOT / "frontend/src/data/history"
+UNIT_FILE = re.compile(r"g\d+_unit\d+\.json")
+GREEK_LETTER = re.compile(r"[Α-ΡΣ-ωάέήίόύώϊϋΐΰΆΈΉΊΌΎΏ]")
 TRIM = ("silenceremove=start_periods=1:start_silence=0.03:start_threshold=-45dB,"
         "areverse,silenceremove=start_periods=1:start_silence=0.03:"
         "start_threshold=-45dB,areverse")
@@ -40,6 +45,74 @@ class Speech:
         if settings != ZH:
             text = text.translate(str.maketrans({":": ",", "«": " ", "»": " "}))
         return cls(" ".join(text.split()), *settings)
+
+
+def spelling(text):
+    return " ".join(unicodedata.normalize("NFC", text).casefold().split())
+
+
+def term_key(text):
+    # Preserve lexical stress (Αθηνά / Αθήνα) and whole titles (Ξένιος Ζευς).
+    key = re.sub(r"^(?:ο|η|το|οι|τα) ", "", spelling(text))
+    return {"ζευσ": "δίασ", "ζεύσ": "δίασ"}.get(key, key)
+
+
+def validate_curriculum(lessons):
+    seen = {}
+    ids = set()
+    order = set()
+    errors = []
+    for lesson in sorted(lessons, key=lambda item: (item["grade"], item["unitNumber"], item["lessonNumber"])):
+        label = lesson["id"]
+        position = (lesson["grade"], lesson["unitNumber"], lesson["lessonNumber"])
+        if label in ids or position in order:
+            errors.append(f"{label}: duplicate lesson ID or curriculum position {position}")
+        ids.add(label)
+        order.add(position)
+        cards = Counter()
+        for entry in lesson["vocabReview"]:
+            term = entry["el"]
+            if not GREEK_LETTER.search(term) or not entry["zh"].strip():
+                errors.append(f"{label}: invalid vocabulary entry {entry}")
+            cards[unicodedata.normalize("NFC", term)] += 1
+            key = term_key(term)
+            if key in seen:
+                errors.append(f"{label}: repeated vocabulary {term!r}, first introduced in {seen[key]}")
+            else:
+                seen[key] = label
+        tags = Counter()
+        for number, paragraph in enumerate(lesson["zhStoryScript"], 1):
+            plain = TAG.sub("", paragraph)
+            if re.search(r"[\[\]［］]|\bel\s*[:：]", plain):
+                errors.append(f"{label} paragraph {number}: malformed Greek marker")
+            if GREEK_LETTER.search(plain):
+                errors.append(f"{label} paragraph {number}: Greek outside a voice marker")
+            for term in TAG.findall(paragraph):
+                if not GREEK_LETTER.search(term) or any(c.isalpha() and "GREEK" not in unicodedata.name(c, "") for c in term):
+                    errors.append(f"{label} paragraph {number}: invalid Greek marker {term!r}")
+                tags[unicodedata.normalize("NFC", term)] += 1
+        for term in sorted(tags.keys() | cards.keys()):
+            if (tags[term], cards[term]) != (1, 1):
+                errors.append(f"{label}: {term!r} has {tags[term]} body tags and {cards[term]} review/cards, expected 1 each")
+    if errors:
+        raise ValueError("\n".join(errors))
+
+
+def load_curriculum(input_path=None, history_dir=HISTORY):
+    # A scratch input can replace individual lessons for rendering, but cannot
+    # make previous units invisible to the first-introduction check.
+    paths = sorted(p.resolve() for p in history_dir.glob("g*_unit*.json") if UNIT_FILE.fullmatch(p.name))
+    by_file = {p: json.loads(p.read_text()) for p in paths}
+    lessons = [lesson for unit in by_file.values() for lesson in unit]
+    input_path = input_path.resolve() if input_path else None
+    if input_path and input_path not in by_file:
+        selected = json.loads(input_path.read_text())
+        replacements = {item["id"] for item in selected}
+        lessons = [item for item in lessons if item["id"] not in replacements] + selected
+    else:
+        selected = by_file[input_path] if input_path else lessons
+    validate_curriculum(lessons)
+    return sorted(selected, key=lambda item: (item["grade"], item["unitNumber"], item["lessonNumber"]))
 
 
 def lesson_tracks(lesson):
@@ -137,9 +210,27 @@ def save_timings(path, lesson_id, starts):
         Path(updated.name).replace(path)
 
 
-def render(lesson, cache, output_dir, jobs, timings_path):
+def prune_stale_cards(directory, count):
+    if not directory.is_dir() or directory.is_symlink():
+        return
+    for path in directory.iterdir():
+        match = re.fullmatch(r"word-([1-9]\d*)\.mp3", path.name)
+        if match and int(match[1]) > count and path.is_file() and not path.is_symlink():
+            path.unlink()
+
+
+def render(lesson, cache, output_dir, jobs, timings_path, zh_only=False):
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", lesson["id"]):
+        raise ValueError(f"Invalid lesson directory: {lesson['id']}")
+    for key in ("audioZh", "audioEl"):
+        name = lesson[key]
+        if Path(name).name != name or not name.endswith(".mp3"):
+            raise ValueError(f"Invalid {key} filename: {name}")
+    if (output_dir / lesson["id"]).is_symlink():
+        raise ValueError(f"Word audio directory is a symbolic link: {lesson['id']}")
     chinese, greek, cards, review_index = lesson_tracks(lesson)
-    phrases = list(dict.fromkeys(part for part in chinese + greek if isinstance(part, Speech)))
+    tracks = [("Zh", chinese)] if zh_only else [("Zh", chinese), ("El", greek)]
+    phrases = list(dict.fromkeys(part for _, sequence in tracks for part in sequence if isinstance(part, Speech)))
     print(f'{lesson["id"]}: synthesizing {len(phrases)} unique phrases', flush=True)
     with ThreadPoolExecutor(jobs) as pool:
         clips = dict(zip(phrases, pool.map(lambda item: render_speech(item, cache), phrases)))
@@ -149,7 +240,7 @@ def render(lesson, cache, output_dir, jobs, timings_path):
         card_dir = staging / lesson["id"]
         card_dir.mkdir(parents=True)
         duration = {}
-        for key, sequence in [("Zh", chinese), ("El", greek)]:
+        for key, sequence in tracks:
             dest = staging / lesson["audio" + key]
             starts = encode(sequence, clips, dest, tmp)
             if key == "El":
@@ -165,30 +256,41 @@ def render(lesson, cache, output_dir, jobs, timings_path):
             target = output_dir / path.relative_to(staging)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(path, target)
-        save_timings(timings_path, lesson["id"], paragraph_starts)
+        prune_stale_cards(output_dir / lesson["id"], len(cards))
+        if not zh_only:
+            save_timings(timings_path, lesson["id"], paragraph_starts)
         print(lesson["id"], json.dumps(duration), flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=ROOT / "frontend/src/data/history/g3_unit1.json")
+    parser.add_argument("--input", type=Path, help="Render one unit (default: all curriculum units)")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "frontend/public/audio/history")
     parser.add_argument("--timings", type=Path, help="Paragraph times (default: timings.json beside input)")
     parser.add_argument("--lesson", action="append", help="Render only this lesson ID (repeatable)")
     parser.add_argument("--cache-dir", type=Path, help="Reuse decoded phrases across runs")
     parser.add_argument("--jobs", type=int, default=4, choices=range(1, 17))
+    parser.add_argument("--validate-only", action="store_true", help="Validate all curriculum units without audio synthesis")
+    parser.add_argument("--zh-only", action="store_true", help="Render only Chinese stories and their word cards")
     args = parser.parse_args()
-    lessons = json.loads(args.input.read_text())
+    try:
+        lessons = load_curriculum(args.input)
+    except (ValueError, KeyError, OSError) as exc:
+        parser.error(str(exc))
     if args.lesson:
         missing = set(args.lesson) - {lesson["id"] for lesson in lessons}
         if missing:
             parser.error(f"Unknown lesson IDs: {sorted(missing)}")
         lessons = [lesson for lesson in lessons if lesson["id"] in args.lesson]
+    if args.validate_only:
+        print(f"Curriculum validated; {len(lessons)} lesson(s) selected.")
+        return
     with tempfile.TemporaryDirectory() as temporary:
         cache = args.cache_dir or Path(temporary)
         cache.mkdir(parents=True, exist_ok=True)
         for lesson in lessons:
-            render(lesson, cache, args.output_dir, args.jobs, args.timings or args.input.with_name("timings.json"))
+            timings = args.timings or (args.input.parent if args.input else HISTORY) / "timings.json"
+            render(lesson, cache, args.output_dir, args.jobs, timings, args.zh_only)
 
 
 if __name__ == "__main__":

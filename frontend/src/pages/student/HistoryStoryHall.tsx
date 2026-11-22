@@ -32,7 +32,7 @@ function Study({ lesson, track, word, playWord, currentParagraph }: { lesson: Hi
       <summary><span><BookOpen/> {track === 'el' ? '希腊语故事全文' : '中文故事与彩蛋'}</span><ChevronDown/></summary>
       {track === 'el' ? <div className="hh-reading">
         <button aria-pressed={translation} onClick={() => setTranslation(!translation)}>{translation ? '隐藏中文大意' : '显示中文大意'}</button>
-        {lesson.elStoryParagraphs.map((p, i) => <div key={i} className="hh-paragraph" aria-current={i === currentParagraph ? 'true' : undefined}><p lang="el">{highlight(p.el, lesson.vocabReview.map(v => v.el))}</p>{translation && <p className="hh-aside">{p.zh}</p>}</div>)}
+        {lesson.elStoryParagraphs.map((p, i) => <div key={i} className="hh-paragraph" aria-current={i === currentParagraph ? 'true' : undefined}><p lang="el">{highlight(p.el, lesson.transcriptHighlightWords ?? lesson.vocabReview.map(v => v.el))}</p>{translation && <p className="hh-aside">{p.zh}</p>}</div>)}
       </div> : <div className="hh-reading">{lesson.zhStoryScript.map((text, i) => <p key={i}>{text.replace(/\[\[el:(.*?)\]\]/g, ' $1 ')}</p>)}</div>}
     </details>
     <details><summary><span>本课课堂重点卡</span><ChevronDown/></summary>
