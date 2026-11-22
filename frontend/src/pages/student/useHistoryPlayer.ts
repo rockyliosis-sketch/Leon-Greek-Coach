@@ -163,7 +163,7 @@ export function useHistoryPlayer() {
       artist: '希腊历史故事馆', album: lesson.unitTitleZh,
       artwork: cover === defaultHistoryArtwork
         ? [{ src, type: 'image/png' }]
-        : [{ src, type: 'image/jpeg', sizes: '960x540' }],
+        : [{ src, type: 'image/jpeg', sizes: '1600x900' }],
     })
     const actions: Partial<Record<MediaSessionAction, MediaSessionActionHandler>> = {
       play, pause,

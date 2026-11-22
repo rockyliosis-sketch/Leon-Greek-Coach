@@ -46,12 +46,15 @@ export function historyAudioUrl(relativePath: string): string {
   return firebaseObjects + 'history%2F' + encodeURIComponent(objectPath) + '?alt=media'
 }
 export const defaultHistoryArtwork = '/greek_gods.png'
-const gradeThreeIllustratedLessons = [4, 7, 3, 3, 8, 6, 3, 2, 5, 6]
+const illustratedLessonsByGrade: Partial<Record<number, readonly number[]>> = {
+  3: [4, 7, 3, 3, 8, 6, 3, 2, 5, 6],
+  4: [4, 5, 5, 5, 5, 5, 4, 7, 3],
+}
 
 export function artwork(lesson: HistoryLesson): string {
   const { id, grade, unitNumber, lessonNumber } = lesson
-  const illustrated = grade === 3 && lessonNumber >= 1 &&
-    lessonNumber <= gradeThreeIllustratedLessons[unitNumber - 1]
+  const illustrated = lessonNumber >= 1 &&
+    lessonNumber <= (illustratedLessonsByGrade[grade]?.[unitNumber - 1] ?? 0)
   return illustrated ? `/images/history/${id}.jpg` : defaultHistoryArtwork
 }
 
