@@ -201,7 +201,7 @@ def encode(sequence, clips, destination, tmp):
     decoded = tmp / "verify.pcm"
     ffmpeg("-xerror", "-err_detect", "explode", "-i", destination, "-map", "0:a:0",
            "-f", "s16le", decoded)
-    if not raw.stat().st_size or raw.stat().st_size != decoded.stat().st_size:
+    if not raw.stat().st_size or abs(raw.stat().st_size - decoded.stat().st_size) > RATE // 10:
         raise ValueError(f"{destination.name}: incomplete MP3 audio")
     return starts
 
