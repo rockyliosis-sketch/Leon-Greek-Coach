@@ -60,6 +60,7 @@ def lesson_tracks(lesson):
                 chinese.append(130)
             chinese.append(Speech.spoken(text, EL if i % 2 else ZH))
 
+    review_index = sum(isinstance(part, Speech) for part in chinese)
     chinese.extend([1000, Speech.spoken("现在，一起来复习本课的人物和关键词。听完希腊语，你也可以跟着读一遍。", ZH), 600])
     cards = []
     for entry in lesson["vocabReview"]:
@@ -73,7 +74,7 @@ def lesson_tracks(lesson):
         if greek:
             greek.append(650)
         greek.append(Speech.spoken(paragraph["el"], EL_STORY))
-    return chinese, greek, cards
+    return chinese, greek, cards, review_index
 
 
 def ffmpeg(*args):
@@ -137,7 +138,7 @@ def save_timings(path, lesson_id, starts):
 
 
 def render(lesson, cache, output_dir, jobs, timings_path):
-    chinese, greek, cards = lesson_tracks(lesson)
+    chinese, greek, cards, review_index = lesson_tracks(lesson)
     phrases = list(dict.fromkeys(part for part in chinese + greek if isinstance(part, Speech)))
     print(f'{lesson["id"]}: synthesizing {len(phrases)} unique phrases', flush=True)
     with ThreadPoolExecutor(jobs) as pool:
@@ -153,6 +154,8 @@ def render(lesson, cache, output_dir, jobs, timings_path):
             starts = encode(sequence, clips, dest, tmp)
             if key == "El":
                 paragraph_starts = starts
+            else:
+                duration["reviewStartsSec"] = round(starts[review_index], 2)
             seconds = subprocess.check_output(["ffprobe", "-v", "error", "-show_entries",
                                                "format=duration", "-of", "csv=p=0", dest])
             duration["duration" + key + "Sec"] = round(float(seconds))

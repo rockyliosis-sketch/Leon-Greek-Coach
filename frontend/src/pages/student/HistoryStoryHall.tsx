@@ -22,8 +22,8 @@ function highlight(text: string, words: string[]) {
   const names = words.map(word => word.replace(/^(ο|η|το|οι|τα|Ο|Η|Το|Οι|Τα)\s+/u, '').trim()).filter(Boolean)
   if (!names.length) return text
   const escaped = names.sort((a, b) => b.length - a.length).map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-  const pattern = new RegExp('(?<![\\p{L}])(' + escaped.join('|') + ')(?![\\p{L}])', 'giu')
-  return text.split(pattern).map((part, i) => i % 2 ? <mark key={i}>{part}</mark> : part)
+  const pattern = new RegExp('(^|[^\\p{L}])(' + escaped.join('|') + ')(?![\\p{L}])', 'giu')
+  return text.split(pattern).map((part, i) => i % 3 === 2 ? <mark key={i}>{part}</mark> : part)
 }
 function Study({ lesson, track, word, playWord, currentParagraph }: { lesson: HistoryLesson; track: Track; word: number | null; playWord: (i: number) => void; currentParagraph: number }) {
   const [translation, setTranslation] = useState(false)
@@ -60,7 +60,8 @@ export default function HistoryStoryHall() {
   const units = [...new Set(lessons.filter(item => item.grade === grade).map(item => item.unitNumber))]
   const index = lessons.indexOf(lesson)
   const starts = (paragraphTimings as Record<string, number[]>)[lesson.id] || []
-  const currentParagraph = starts.findLastIndex(start => p.position >= start)
+  const upcomingParagraph = starts.findIndex(start => start > p.position)
+  const currentParagraph = (upcomingParagraph < 0 ? starts.length : upcomingParagraph) - 1
   const choose = (item: HistoryLesson, language: Track, autoplay: boolean) => {
     p.select(item, language, autoplay)
   }
@@ -96,7 +97,7 @@ export default function HistoryStoryHall() {
               <div className="hh-transport">
                 <button aria-label="上一集" title="上一集" disabled={index === 0} onClick={() => p.move(-1, true)}><SkipBack/></button>
                 <button aria-label="快退15秒" title="快退15秒" disabled={p.wordIndex !== null} onClick={() => p.seek((p.audio.current?.currentTime || 0) - 15)}><RotateCcw/><small>15</small></button>
-                <button className="hh-play" aria-label={p.playing ? '暂停' : '播放'} onClick={() => p.playing ? p.audio.current?.pause() : p.play()}>{p.playing ? <Pause/> : <Play/>}</button>
+                <button className="hh-play" aria-label={p.playing ? '暂停' : '播放'} onClick={() => p.playing ? p.pause() : p.play()}>{p.playing ? <Pause/> : <Play/>}</button>
                 <button aria-label="快进15秒" title="快进15秒" disabled={p.wordIndex !== null} onClick={() => p.seek((p.audio.current?.currentTime || 0) + 15)}><RotateCw/><small>15</small></button>
                 <button aria-label="下一集" title="下一集" disabled={index === lessons.length - 1} onClick={() => p.move(1, true)}><SkipForward/></button>
               </div>
