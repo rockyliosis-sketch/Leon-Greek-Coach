@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, BookOpen, ChevronDown, Headphones, Moon, Pause, Play, SkipBack, SkipForward, Sun, Volume2, RotateCcw, RotateCw } from 'lucide-react'
+import { ArrowLeft, BookOpen, ChevronDown, Headphones, Maximize2, Moon, Pause, Play, SkipBack, SkipForward, Sun, Volume2, RotateCcw, RotateCw, X } from 'lucide-react'
 import { artwork, clock, defaultHistoryArtwork, lessons, progress, read, write } from '../../data/history'
 import paragraphTimings from '../../data/history/timings.json'
 import type { HistoryLesson, Track } from '../../data/history'
@@ -56,6 +56,13 @@ export default function HistoryStoryHall() {
   const p = useHistoryPlayer()
   const [grade, setGrade] = useState(p.lesson.grade)
   const [night, setNight] = useState(() => read('night', false))
+  const [lightbox, setLightbox] = useState(false)
+  useEffect(() => {
+    if (!lightbox) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightbox])
   const { lesson, track } = p
   const units = [...new Set(lessons.filter(item => item.grade === grade).map(item => item.unitNumber))]
   const index = lessons.indexOf(lesson)
@@ -90,11 +97,16 @@ export default function HistoryStoryHall() {
         </aside>
         <div className="hh-main">
           <section className="hh-player" aria-label="故事播放器">
-            <div className="hh-cover">
-              <img key={lesson.id} src={artwork(lesson)} alt="" onError={({ currentTarget }) => {
+            <button type="button" className="hh-stage" aria-label="放大查看高清插画" onClick={() => setLightbox(true)}>
+              <img key={lesson.id} src={artwork(lesson)} alt={lesson.titleZh} onError={({ currentTarget }) => {
                 if (currentTarget.getAttribute('src') !== defaultHistoryArtwork) currentTarget.src = defaultHistoryArtwork
               }}/>
-              <div><p>第 {lesson.lessonNumber} 课</p><h2>{lesson.titleZh}</h2><p lang="el">{lesson.titleEl}</p></div>
+              <span className="hh-zoom-badge"><Maximize2 size={14}/> 大图欣赏</span>
+            </button>
+            <div className="hh-titlebar">
+              <p className="hh-kicker">{lesson.unitTitleZh} · 第 {lesson.lessonNumber} 课</p>
+              <h2>{lesson.titleZh}</h2>
+              <p className="hh-subtitle" lang="el">{lesson.titleEl}</p>
             </div>
             <div className="hh-controls">
               <div className="hh-tracks">{(['zh', 'el'] as const).map(t => <button key={t} aria-pressed={track === t} onClick={() => { if (t !== track) choose(lesson, t, p.playing) }}>{t === 'zh' ? '中文故事版' : '希腊语磨耳朵版'}</button>)}</div>
@@ -119,5 +131,21 @@ export default function HistoryStoryHall() {
         </div>
       </div>
     </div>
+    {lightbox && <div className="hh-lightbox" role="dialog" aria-modal="true" aria-label={lesson.titleZh + ' 高清插画'} onClick={() => setLightbox(false)}>
+      <div className="hh-lightbox-inner" onClick={e => e.stopPropagation()}>
+        <button type="button" className="hh-lightbox-close" aria-label="关闭大图" onClick={() => setLightbox(false)}><X size={24}/></button>
+        <img src={artwork(lesson)} alt={lesson.titleZh} onError={({ currentTarget }) => {
+          if (currentTarget.getAttribute('src') !== defaultHistoryArtwork) currentTarget.src = defaultHistoryArtwork
+        }}/>
+        <div className="hh-lightbox-bar">
+          <div><strong>{lesson.titleZh}</strong><small lang="el">{lesson.titleEl}</small></div>
+          <div className="hh-lightbox-controls">
+            <button type="button" aria-label="快退15秒" disabled={p.wordIndex !== null} onClick={() => p.seek((p.audio.current?.currentTime || 0) - 15)}><RotateCcw size={20}/></button>
+            <button type="button" className="hh-play" aria-label={p.playing ? '暂停' : '播放'} onClick={() => p.playing ? p.pause() : p.play()}>{p.playing ? <Pause size={22}/> : <Play size={22}/>}</button>
+            <button type="button" aria-label="快进15秒" disabled={p.wordIndex !== null} onClick={() => p.seek((p.audio.current?.currentTime || 0) + 15)}><RotateCw size={20}/></button>
+          </div>
+        </div>
+      </div>
+    </div>}
   </main>
 }
