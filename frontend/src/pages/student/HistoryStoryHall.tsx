@@ -79,7 +79,7 @@ export default function HistoryStoryHall() {
           {!units.length && <p className="hh-empty">四年级故事准备中。</p>}
           {units.map(unit => {
             const entries = lessons.filter(item => item.grade === grade && item.unitNumber === unit)
-            return <details key={grade + '-' + unit} open className="hh-unit"><summary>{entries[0].unitTitleZh}<ChevronDown size={16}/></summary>
+            return <details key={grade + '-' + unit} className="hh-unit"><summary>{entries[0].unitTitleZh}<ChevronDown size={16}/></summary>
               <div className="hh-unit-el" lang="el">{entries[0].unitTitleEl}</div>
               {entries.map(item => <button key={item.id} aria-current={item === lesson ? 'true' : undefined} className="hh-episode" onClick={() => choose(item, track, true)}>
                 <span className="hh-num">{String(item.lessonNumber).padStart(2, '0')}</span>
