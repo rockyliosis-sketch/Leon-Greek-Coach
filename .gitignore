@@ -31,3 +31,4 @@ scratch/ocr_work/
 scratch/ocr_text/
 scratch/pdf_verify/*.png
 scratch/pdf_verify/*.jpg
+frontend/public/audio/history/

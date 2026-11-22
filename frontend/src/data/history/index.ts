@@ -1,3 +1,5 @@
+import audioRevisions from './audioRevisions.json'
+
 export type Track = 'zh' | 'el'
 export interface PracticeQuestion {
   type: string
@@ -35,7 +37,14 @@ export interface HistoryLesson {
 const units = import.meta.glob<HistoryLesson[]>('./g*_unit*.json', { eager: true, import: 'default' })
 export const lessons = Object.values(units).flat().sort((a, b) =>
   a.grade - b.grade || a.unitNumber - b.unitNumber || a.lessonNumber - b.lessonNumber)
-export const HISTORY_AUDIO_BASE_URL = (import.meta.env.VITE_HISTORY_AUDIO_BASE_URL || '/audio/history').replace(/\/+$/, '')
+const cdnBase = import.meta.env.VITE_HISTORY_AUDIO_BASE_URL?.replace(/\/+$/, '')
+const firebaseObjects = 'https://firebasestorage.googleapis.com/v0/b/leon-greek-coach.firebasestorage.app/o/'
+
+export function historyAudioUrl(relativePath: string): string {
+  const objectPath = (audioRevisions as Record<string, string>)[relativePath] || relativePath
+  if (cdnBase) return cdnBase + '/' + objectPath.split('/').map(encodeURIComponent).join('/')
+  return firebaseObjects + 'history%2F' + encodeURIComponent(objectPath) + '?alt=media'
+}
 export const artwork = (lesson: HistoryLesson) =>
   ({ g3_u1_l1: '/zeus.png', g3_u1_l2: '/poseidon.png', g3_u1_l3: '/athena.png', g3_u1_l4: '/greek_gods.png' }[lesson.id] || '/greek_gods.png')
 

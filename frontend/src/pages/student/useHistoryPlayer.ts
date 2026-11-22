@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { artwork, HISTORY_AUDIO_BASE_URL, lessons, progress, read, write } from '../../data/history'
+import { artwork, historyAudioUrl, lessons, progress, read, write } from '../../data/history'
 import type { HistoryLesson, Track } from '../../data/history'
 
 export const speeds = [0.75, 0.85, 1, 1.15, 1.25, 1.5]
@@ -92,7 +92,7 @@ export function useHistoryPlayer() {
     setRate(preferredSpeed(language))
     setError('')
     setPlaying(false)
-    el.src = HISTORY_AUDIO_BASE_URL + '/' + (language === 'zh' ? next.audioZh : next.audioEl)
+    el.src = historyAudioUrl(language === 'zh' ? next.audioZh : next.audioEl)
     el.defaultPlaybackRate = preferredSpeed(language)
     el.playbackRate = el.defaultPlaybackRate
     el.load()
@@ -212,7 +212,7 @@ export function useHistoryPlayer() {
       clip.onended = () => finish(false)
       clip.onerror = () => finish(true)
       clip.volume = el.volume
-      clip.src = HISTORY_AUDIO_BASE_URL + '/' + lesson.id + '/word-' + (index + 1) + '.mp3'
+      clip.src = historyAudioUrl(lesson.id + '/word-' + (index + 1) + '.mp3')
       void clip.play().catch(() => finish(true))
     },
     changeRate(value: number) {

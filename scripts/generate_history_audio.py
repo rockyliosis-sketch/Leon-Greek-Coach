@@ -1,10 +1,12 @@
-"""Render history lesson MP3s. Requires edge-tts, ffmpeg and ffprobe on PATH.
+"""Render, fully decode and publish history MP3s with edge-tts, ffmpeg and gcloud.
 
     python3 scripts/generate_history_audio.py --lesson g3_u1_l1
     python3 scripts/generate_history_audio.py --cache-dir /tmp/leon-history-voices
+    python3 scripts/generate_history_audio.py --lesson g3_u1_l1 --local-only
 """
 
 import argparse
+import base64
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -27,6 +29,9 @@ EL_STORY = ("el-GR-NestorasNeural", "-22%")
 RATE = 24000
 TAG = re.compile(r"\[\[el:([^\[\]]+)\]\]")
 HISTORY = ROOT / "frontend/src/data/history"
+BUCKET = "gs://leon-greek-coach.firebasestorage.app/history"
+CACHE_CONTROL = "public, max-age=31536000, immutable"
+DEFAULT_OUTPUT = Path(tempfile.gettempdir()) / "leon-history-audio"
 UNIT_FILE = re.compile(r"g\d+_unit\d+\.json")
 GREEK_LETTER = re.compile(r"[Α-ΡΣ-ωάέήίόύώϊϋΐΰΆΈΉΊΌΎΏ]")
 TRIM = ("silenceremove=start_periods=1:start_silence=0.03:start_threshold=-45dB,"
@@ -193,21 +198,64 @@ def encode(sequence, clips, destination, tmp):
                     shutil.copyfileobj(audio, output)
     ffmpeg("-f", "s16le", "-ar", str(RATE), "-ac", "1", "-i", raw,
            "-codec:a", "libmp3lame", "-b:a", "64k", destination)
+    decoded = tmp / "verify.pcm"
+    ffmpeg("-xerror", "-err_detect", "explode", "-i", destination, "-map", "0:a:0",
+           "-f", "s16le", decoded)
+    if not raw.stat().st_size or raw.stat().st_size != decoded.stat().st_size:
+        raise ValueError(f"{destination.name}: incomplete MP3 audio")
     return starts
 
 
-def save_timings(path, lesson_id, starts):
-    # Parallel per-lesson runs share a single timing index.
+def update_index(path, values, removals=()):
+    # Concurrent lesson publishers share the frontend indexes.
     path.parent.mkdir(parents=True, exist_ok=True)
     lock_id = hashlib.sha256(str(path.resolve()).encode()).hexdigest()
     with (Path(tempfile.gettempdir()) / f"leon-history-{lock_id}.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        timings = json.loads(path.read_text()) if path.exists() else {}
-        timings[lesson_id] = starts
+        previous = json.loads(path.read_text()) if path.exists() else {}
+        updated_index = previous | values
+        for key in removals:
+            updated_index.pop(key, None)
+        if previous == updated_index and path.exists():
+            return
         with tempfile.NamedTemporaryFile("w", dir=path.parent, delete=False) as updated:
-            json.dump(timings, updated, indent=2, sort_keys=True)
+            json.dump(updated_index, updated, indent=2, sort_keys=True)
             updated.write("\n")
         Path(updated.name).replace(path)
+
+
+def object_metadata(url):
+    command = ["gcloud", "storage", "objects", "describe", url, "--raw", "--format=json"]
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode:
+        if re.search(r"HTTPError 404|not found: 404\b|\b404:|No URLs matched|matched no objects", result.stderr, re.I):
+            return None
+        raise RuntimeError(f"Could not read {url}: {result.stderr.strip()}")
+    return json.loads(result.stdout)
+
+
+def publish_asset(path, relative):
+    content = path.read_bytes()
+    md5 = base64.b64encode(hashlib.md5(content).digest()).decode()
+    revision = hashlib.sha256(content).hexdigest()
+    for name in (relative, f"revisions/{revision}/{relative}"):
+        url = f"{BUCKET}/{name}"
+        metadata = object_metadata(url)
+        if metadata is None:
+            # Only the first publisher can create a given name. Check the result
+            # even after a failed copy: a concurrent publisher may have won.
+            copied = subprocess.run(["gcloud", "storage", "cp", "--if-generation-match=0",
+                                     "--content-type=audio/mpeg", f"--cache-control={CACHE_CONTROL}",
+                                     str(path), url], capture_output=True, text=True)
+            metadata = object_metadata(url)
+            if metadata is None:
+                raise RuntimeError(f"Upload missing at {url}: {copied.stderr.strip()}")
+        if (metadata.get("md5Hash") == md5 and str(metadata.get("size")) == str(len(content))
+                and metadata.get("contentType") == "audio/mpeg"
+                and {v.strip() for v in metadata.get("cacheControl", "").split(",")} ==
+                    {v.strip() for v in CACHE_CONTROL.split(",")}):
+            return name
+    raise RuntimeError(f"Content or metadata conflict at immutable revision {url}")
 
 
 def prune_stale_cards(directory, count):
@@ -219,7 +267,7 @@ def prune_stale_cards(directory, count):
             path.unlink()
 
 
-def render(lesson, cache, output_dir, jobs, timings_path, zh_only=False):
+def render(lesson, cache, output_dir, jobs, timings_path, zh_only=False, revisions_path=None):
     if not re.fullmatch(r"[A-Za-z0-9_-]+", lesson["id"]):
         raise ValueError(f"Invalid lesson directory: {lesson['id']}")
     for key in ("audioZh", "audioEl"):
@@ -252,20 +300,44 @@ def render(lesson, cache, output_dir, jobs, timings_path, zh_only=False):
             duration["duration" + key + "Sec"] = round(float(seconds))
         for index, word in enumerate(cards, 1):
             encode([word], clips, card_dir / f"word-{index}.mp3", tmp)
-        for path in staging.rglob("*.mp3"):
+        assets = sorted(staging.rglob("*.mp3"))
+        uploaded = {}
+        if revisions_path is not None:
+            def publish(path):
+                relative = path.relative_to(staging).as_posix()
+                return relative, publish_asset(path, relative)
+
+            with ThreadPoolExecutor(min(4, jobs)) as pool:
+                uploaded = dict(pool.map(publish, assets))
+        for path in assets:
             target = output_dir / path.relative_to(staging)
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(path, target)
+            with tempfile.NamedTemporaryFile(dir=target.parent, delete=False) as pending:
+                try:
+                    with path.open("rb") as source:
+                        shutil.copyfileobj(source, pending)
+                    pending.close()
+                    Path(pending.name).replace(target)
+                finally:
+                    Path(pending.name).unlink(missing_ok=True)
+        if revisions_path is not None:
+            update_index(revisions_path,
+                         {k: v for k, v in uploaded.items() if k != v},
+                         [k for k, v in uploaded.items() if k == v])
         prune_stale_cards(output_dir / lesson["id"], len(cards))
         if not zh_only:
-            save_timings(timings_path, lesson["id"], paragraph_starts)
+            update_index(timings_path, {lesson["id"]: paragraph_starts})
         print(lesson["id"], json.dumps(duration), flush=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, help="Render one unit (default: all curriculum units)")
-    parser.add_argument("--output-dir", type=Path, default=ROOT / "frontend/public/audio/history")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT,
+                        help=f"Local verified MP3 output (default: {DEFAULT_OUTPUT})")
+    parser.add_argument("--local-only", action="store_true", help="Keep verified MP3s locally without uploading")
+    parser.add_argument("--revisions", type=Path, default=HISTORY / "audioRevisions.json",
+                        help="Frontend immutable audio path index")
     parser.add_argument("--timings", type=Path, help="Paragraph times (default: timings.json beside input)")
     parser.add_argument("--lesson", action="append", help="Render only this lesson ID (repeatable)")
     parser.add_argument("--cache-dir", type=Path, help="Reuse decoded phrases across runs")
@@ -290,7 +362,8 @@ def main():
         cache.mkdir(parents=True, exist_ok=True)
         for lesson in lessons:
             timings = args.timings or (args.input.parent if args.input else HISTORY) / "timings.json"
-            render(lesson, cache, args.output_dir, args.jobs, timings, args.zh_only)
+            render(lesson, cache, args.output_dir, args.jobs, timings, args.zh_only,
+                   None if args.local_only else args.revisions)
 
 
 if __name__ == "__main__":
