@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Play, 
   BrainCircuit, 
@@ -5293,6 +5294,18 @@ export default function StudentApp() {
         </div>
 
         {/* Stats Cards */}
+        <Link to="/history" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 16, padding: '18px 24px', marginBottom: 24, borderRadius: 16,
+          color: '#224943', background: '#edf5f0', border: '1px solid #c9ddd4',
+          textDecoration: 'none',
+        }}>
+          <span>
+            <strong style={{ display: 'block', fontSize: 20 }}>🏛️ 希腊历史故事馆</strong>
+            <span>三年级神话 · 四年级古希腊 · 睡前听故事 &amp; 重点小课堂</span>
+          </span>
+          <ChevronRight aria-hidden="true" style={{ flexShrink: 0 }} />
+        </Link>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">

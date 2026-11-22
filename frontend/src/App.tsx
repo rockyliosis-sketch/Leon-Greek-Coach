@@ -2,9 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import StudentApp from './pages/student/StudentApp';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 
 import ErrorBoundary from './components/ErrorBoundary';
+
+const HistoryStoryHall = lazy(() => import('./pages/student/HistoryStoryHall'));
 
 function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
@@ -27,6 +29,11 @@ function App() {
         <Routes>
           {/* Frontend Learning App */}
           <Route path="/" element={<StudentApp />} />
+          <Route path="/history" element={
+            <Suspense fallback={<p role="status">正在打开故事书架…</p>}>
+              <HistoryStoryHall />
+            </Suspense>
+          } />
 
           {/* Independent Admin Backend */}
           <Route path="/admin" element={
