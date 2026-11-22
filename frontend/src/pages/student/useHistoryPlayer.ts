@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { artwork, historyAudioUrl, lessons, progress, read, write } from '../../data/history'
+import { artwork, defaultHistoryArtwork, historyAudioUrl, lessons, progress, read, write } from '../../data/history'
 import type { HistoryLesson, Track } from '../../data/history'
 
 export const speeds = [0.75, 0.85, 1, 1.15, 1.25, 1.5]
@@ -156,9 +156,14 @@ export function useHistoryPlayer() {
   useEffect(() => {
     if (!('mediaSession' in navigator)) return
     const session = navigator.mediaSession
+    const cover = artwork(lesson)
+    const src = new URL(cover, window.location.origin).href
     if (typeof MediaMetadata !== 'undefined') session.metadata = new MediaMetadata({
       title: lesson.titleZh + ' · ' + (track === 'zh' ? '中文故事' : '希腊语故事'),
-      artist: '希腊历史故事馆', album: lesson.unitTitleZh, artwork: [{ src: artwork(lesson), type: 'image/png' }],
+      artist: '希腊历史故事馆', album: lesson.unitTitleZh,
+      artwork: cover === defaultHistoryArtwork
+        ? [{ src, type: 'image/png' }]
+        : [{ src, type: 'image/jpeg', sizes: '960x540' }],
     })
     const actions: Partial<Record<MediaSessionAction, MediaSessionActionHandler>> = {
       play, pause,

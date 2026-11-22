@@ -45,8 +45,15 @@ export function historyAudioUrl(relativePath: string): string {
   if (cdnBase) return cdnBase + '/' + objectPath.split('/').map(encodeURIComponent).join('/')
   return firebaseObjects + 'history%2F' + encodeURIComponent(objectPath) + '?alt=media'
 }
-export const artwork = (lesson: HistoryLesson) =>
-  ({ g3_u1_l1: '/zeus.png', g3_u1_l2: '/poseidon.png', g3_u1_l3: '/athena.png', g3_u1_l4: '/greek_gods.png' }[lesson.id] || '/greek_gods.png')
+export const defaultHistoryArtwork = '/greek_gods.png'
+const gradeThreeIllustratedLessons = [4, 7, 3, 3, 8, 6, 3, 2, 5, 6]
+
+export function artwork(lesson: HistoryLesson): string {
+  const { id, grade, unitNumber, lessonNumber } = lesson
+  const illustrated = grade === 3 && lessonNumber >= 1 &&
+    lessonNumber <= gradeThreeIllustratedLessons[unitNumber - 1]
+  return illustrated ? `/images/history/${id}.jpg` : defaultHistoryArtwork
+}
 
 export function clock(seconds: number) {
   const whole = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0))

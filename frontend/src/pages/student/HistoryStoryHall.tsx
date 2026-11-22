@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, BookOpen, ChevronDown, Headphones, Moon, Pause, Play, SkipBack, SkipForward, Sun, Volume2, RotateCcw, RotateCw } from 'lucide-react'
-import { artwork, clock, lessons, progress, read, write } from '../../data/history'
+import { artwork, clock, defaultHistoryArtwork, lessons, progress, read, write } from '../../data/history'
 import paragraphTimings from '../../data/history/timings.json'
 import type { HistoryLesson, Track } from '../../data/history'
 import HistoryPractice from './HistoryPractice'
@@ -90,7 +90,12 @@ export default function HistoryStoryHall() {
         </aside>
         <div className="hh-main">
           <section className="hh-player" aria-label="故事播放器">
-            <div className="hh-cover"><img src={artwork(lesson)} alt=""/><div><p>第 {lesson.lessonNumber} 课</p><h2>{lesson.titleZh}</h2><p lang="el">{lesson.titleEl}</p></div></div>
+            <div className="hh-cover">
+              <img key={lesson.id} src={artwork(lesson)} alt="" onError={({ currentTarget }) => {
+                if (currentTarget.getAttribute('src') !== defaultHistoryArtwork) currentTarget.src = defaultHistoryArtwork
+              }}/>
+              <div><p>第 {lesson.lessonNumber} 课</p><h2>{lesson.titleZh}</h2><p lang="el">{lesson.titleEl}</p></div>
+            </div>
             <div className="hh-controls">
               <div className="hh-tracks">{(['zh', 'el'] as const).map(t => <button key={t} aria-pressed={track === t} onClick={() => { if (t !== track) choose(lesson, t, p.playing) }}>{t === 'zh' ? '中文故事版' : '希腊语磨耳朵版'}</button>)}</div>
               <div className="hh-scrub"><input type="range" aria-label="播放进度" min="0" max={p.duration || 1} step="0.1" value={Math.min(p.position, p.duration || 1)} disabled={p.wordIndex !== null} onChange={e => p.seek(Number(e.target.value))}/><div><span>{clock(p.position)}</span><span>{clock(p.duration)}</span></div></div>
