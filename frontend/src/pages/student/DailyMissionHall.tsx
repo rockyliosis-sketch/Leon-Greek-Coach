@@ -439,7 +439,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
 }
 
 const DailyMissionHall: React.FC = () => {
-  const todayStr = useMemo(() => getTodayStr(), []);
+  // Reactive Greek date (Europe/Athens): automatically flips at 00:00 Greek time even if iPad tab stays open overnight!
+  const [todayStr, setTodayStr] = useState<string>(() => getTodayStr());
   const actualMode = useMemo(() => getDayMode(todayStr), [todayStr]);
 
   const [sharedState, setSharedState] = useState<SharedState>(() => getInitialLocalState());
@@ -478,6 +479,41 @@ const DailyMissionHall: React.FC = () => {
     );
     return () => unsub();
   }, []);
+
+  // Greek Midnight (00:00 Europe/Athens) Auto-Reset:
+  // Even if iPad Safari stays open overnight or wakes from sleep, clear all in-memory progress & switch to a clean 0% new day.
+  useEffect(() => {
+    const checkGreekDayRollover = () => {
+      const currentGreekDate = getTodayStr();
+      if (currentGreekDate !== todayStr) {
+        setTodayStr(currentGreekDate);
+        setActiveBlockId(null);
+        setTimerRunning(false);
+        setSessionElapsedSec(0);
+        setExtraMinutes(0);
+        setFiveMinRunning(false);
+        setFiveMinSec(300);
+        setRunningVocabSlot(null);
+        setEarlyFinishMsg(null);
+        setPreviewModeOverride(null);
+        setShowQuickRecorder(false);
+        setActiveFlashcardSlot(null);
+        setShowGlossaryPicker(false);
+        setHistorySyncMsg(null);
+      }
+    };
+    const intervalId = window.setInterval(checkGreekDayRollover, 30_000);
+    const onWake = () => {
+      if (document.visibilityState === 'visible') checkGreekDayRollover();
+    };
+    document.addEventListener('visibilitychange', onWake);
+    window.addEventListener('focus', checkGreekDayRollover);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onWake);
+      window.removeEventListener('focus', checkGreekDayRollover);
+    };
+  }, [todayStr]);
 
   const todayMission: DailyMissionRecord = useMemo(() => {
     const saved = sharedState.daily_missions?.[todayStr];
