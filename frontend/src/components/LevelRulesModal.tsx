@@ -18,12 +18,12 @@ const SaintAvatar: React.FC<{ level: LevelInfo; unlocked: boolean }> = ({ level,
         alt={level.saintTitle || level.name}
         onError={() => setImgFailed(true)}
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
+          width: 56,
+          height: 56,
+          borderRadius: 14,
           objectFit: 'cover',
-          border: unlocked ? '2px solid #f59e0b' : '1px solid #cbd5e1',
-          filter: unlocked ? 'none' : 'grayscale(0.75) opacity(0.65)',
+          border: unlocked ? '2px solid #f59e0b' : '1.5px solid #cbd5e1',
+          filter: unlocked ? 'none' : 'grayscale(0.35) opacity(0.88)',
           flexShrink: 0,
         }}
       />

@@ -59,7 +59,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #b8860b, #f5af19)',
     color: '#D97706',
     glowColor: 'rgba(245, 175, 25, 0.65)',
-    imageUrl: '/images/ranks/gold_01_pisces.jpg',
+    imageUrl: '/images/ranks/gold_01_pisces.png',
   },
   {
     id: 'gold_02_cancer',
@@ -75,7 +75,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #a16207, #eab308)',
     color: '#CA8A04',
     glowColor: 'rgba(234, 179, 8, 0.65)',
-    imageUrl: '/images/ranks/gold_02_cancer.jpg',
+    imageUrl: '/images/ranks/gold_02_cancer.png',
   },
   {
     id: 'gold_03_taurus',
@@ -91,7 +91,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #92400e, #f59e0b)',
     color: '#D97706',
     glowColor: 'rgba(245, 158, 11, 0.65)',
-    imageUrl: '/images/ranks/gold_03_taurus.jpg',
+    imageUrl: '/images/ranks/gold_03_taurus.png',
   },
   {
     id: 'gold_04_capricorn',
@@ -107,7 +107,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #b45309, #fbbf24)',
     color: '#B45309',
     glowColor: 'rgba(251, 191, 36, 0.7)',
-    imageUrl: '/images/ranks/gold_04_capricorn.jpg',
+    imageUrl: '/images/ranks/gold_04_capricorn.png',
   },
   {
     id: 'gold_05_aquarius',
@@ -123,7 +123,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #0284c7, #eab308)',
     color: '#0284C7',
     glowColor: 'rgba(2, 132, 199, 0.65)',
-    imageUrl: '/images/ranks/gold_05_aquarius.jpg',
+    imageUrl: '/images/ranks/gold_05_aquarius.png',
   },
   {
     id: 'gold_06_scorpio',
@@ -139,7 +139,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #dc2626, #f59e0b)',
     color: '#DC2626',
     glowColor: 'rgba(220, 38, 38, 0.65)',
-    imageUrl: '/images/ranks/gold_06_scorpio.jpg',
+    imageUrl: '/images/ranks/gold_06_scorpio.png',
   },
   {
     id: 'gold_07_leo',
@@ -155,7 +155,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #ea580c, #facc15)',
     color: '#EA580C',
     glowColor: 'rgba(234, 88, 12, 0.7)',
-    imageUrl: '/images/ranks/gold_07_leo.jpg',
+    imageUrl: '/images/ranks/gold_07_leo.png',
   },
   {
     id: 'gold_08_aries',
@@ -171,7 +171,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #7c3aed, #f59e0b)',
     color: '#7C3AED',
     glowColor: 'rgba(124, 58, 237, 0.65)',
-    imageUrl: '/images/ranks/gold_08_aries.jpg',
+    imageUrl: '/images/ranks/gold_08_aries.png',
   },
   {
     id: 'gold_09_sagittarius',
@@ -187,7 +187,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #d97706, #fde047)',
     color: '#D97706',
     glowColor: 'rgba(253, 224, 71, 0.75)',
-    imageUrl: '/images/ranks/gold_09_sagittarius.jpg',
+    imageUrl: '/images/ranks/gold_09_sagittarius.png',
   },
   {
     id: 'gold_10_libra',
@@ -203,7 +203,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #0f766e, #f59e0b)',
     color: '#0F766E',
     glowColor: 'rgba(15, 118, 110, 0.7)',
-    imageUrl: '/images/ranks/gold_10_libra.jpg',
+    imageUrl: '/images/ranks/gold_10_libra.png',
   },
   {
     id: 'gold_11_virgo',
@@ -219,7 +219,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #b45309, #fef08a, #d97706)',
     color: '#B45309',
     glowColor: 'rgba(254, 240, 138, 0.85)',
-    imageUrl: '/images/ranks/gold_11_virgo.jpg',
+    imageUrl: '/images/ranks/gold_11_virgo.png',
   },
   {
     id: 'gold_12_gemini',
@@ -235,7 +235,7 @@ export const SCOUT_LEVELS: LevelInfo[] = [
     gradient: 'linear-gradient(135deg, #1e1b4b, #d97706, #fde047)',
     color: '#F59E0B',
     glowColor: 'rgba(245, 158, 11, 0.9)',
-    imageUrl: '/images/ranks/gold_12_gemini.jpg',
+    imageUrl: '/images/ranks/gold_12_gemini.png',
   },
 ];
 

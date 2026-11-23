@@ -79,6 +79,7 @@ export interface DailyMissionRecord {
     listened: boolean;
     episodesCount: number;
     episodeNote: string;
+    episodeIds?: string[];
   };
   blockLogs?: DailyBlockLogs;
   blocks: Record<string, DailyMissionBlockState>;

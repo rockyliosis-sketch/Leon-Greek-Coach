@@ -48,6 +48,7 @@ import {
 import { getBookFrontier, makeMarkId } from '../../lib/pageProgress';
 import { getScoutLevelInfo } from '../../lib/levelSystem';
 import glossaryV2Data from '../../data/glossary_v2.json';
+import historyCatalogData from '../../data/history_catalog.json';
 import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
@@ -410,6 +411,7 @@ const DailyMissionHall: React.FC = () => {
   const [showGlossaryPicker, setShowGlossaryPicker] = useState(false);
   const [glossarySearch, setGlossarySearch] = useState('');
   const [glossarySavedMsg, setGlossarySavedMsg] = useState<string | null>(null);
+  const [historyGradeFilter, setHistoryGradeFilter] = useState<3 | 4>(4);
 
   // Subscribe to Firebase shared_state
   useEffect(() => {
@@ -2798,96 +2800,160 @@ const DailyMissionHall: React.FC = () => {
           </div>
         </section>
 
-        {/* Outside-the-3-Blocks Section B: Daily History Story Check-in (Independent of 3x40m) */}
-        <section
-          style={{
-            background: '#edf5f0',
-            borderRadius: 20,
-            padding: '16px 20px',
-            marginBottom: 22,
-            border: '1.5px solid #c9ddd4',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 14,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ flex: '1 1 260px' }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#13312c', display: 'flex', alignItems: 'center', gap: 7 }}>
-              <Headphones size={18} color="#224943" />
-              区块外日常 2：听希腊语历史故事（不占三大区块时间，睡前/饭后随时听）
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginTop: 8 }}>
-              <input
-                type="text"
-                placeholder="今天听了哪一课？（例如：四年级第2单元第1课）"
-                value={todayMission.historyLog?.episodeNote || ''}
-                onChange={(e) =>
-                  updateTodayMission((prev) => ({
-                    ...prev,
-                    historyLog: {
-                      listened: Boolean(prev.historyLog?.listened),
-                      episodesCount: prev.historyLog?.episodesCount || 1,
-                      episodeNote: e.target.value,
-                    },
-                  }))
-                }
-                style={{
-                  flex: 1,
-                  minWidth: 220,
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  border: '1px solid #a7d3c0',
-                  background: '#fff',
-                  fontSize: 13.5,
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const already = Boolean(todayMission.historyLog?.listened);
-                  const nextListened = !already;
-                  updateTodayMission((prev) => ({
-                    ...prev,
-                    historyLog: {
-                      listened: nextListened,
-                      episodesCount: nextListened ? Math.max(1, prev.historyLog?.episodesCount || 1) : 0,
-                      episodeNote: prev.historyLog?.episodeNote || '',
-                    },
-                  }));
-                }}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: todayMission.historyLog?.listened ? '#10b981' : '#224943',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                {todayMission.historyLog?.listened ? '✅ 今日已听故事' : '听完打卡'}
-              </button>
-              <Link
-                to="/history"
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 10,
-                  border: '1px solid #224943',
-                  background: '#fff',
-                  color: '#224943',
-                  fontWeight: 700,
-                  fontSize: 13,
-                  textDecoration: 'none',
-                }}
-              >
-                去故事馆 →
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* Outside-the-3-Blocks Section B: Daily History Story Check-in (Multi-Select Episode Picker!) */}
+        {(() => {
+          const catalog = historyCatalogData as Array<{
+            id: string;
+            grade: number;
+            unit: number;
+            lesson: number;
+            titleZh: string;
+          }>;
+          const filteredCatalog = catalog.filter((c) => c.grade === historyGradeFilter);
+          const selectedIds = todayMission.historyLog?.episodeIds || [];
+          const selectedEpisodes = selectedIds
+            .map((id) => catalog.find((c) => c.id === id))
+            .filter(Boolean) as typeof catalog;
+
+          const updateHistoryEpisodes = (nextIds: string[]) => {
+            const nextEps = nextIds
+              .map((id) => catalog.find((c) => c.id === id))
+              .filter(Boolean) as typeof catalog;
+            const noteStr = nextEps
+              .map((e) => `${e.grade}年级U${e.unit}L${e.lesson}《${e.titleZh}》`)
+              .join('、');
+            updateTodayMission((prev) => ({
+              ...prev,
+              historyLog: {
+                listened: nextIds.length > 0,
+                episodesCount: nextIds.length,
+                episodeNote: noteStr,
+                episodeIds: nextIds,
+              },
+            }));
+          };
+
+          return (
+            <section
+              style={{
+                background: '#edf5f0',
+                borderRadius: 20,
+                padding: '16px 20px',
+                marginBottom: 22,
+                border: '1.5px solid #c9ddd4',
+              }}
+            >
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#13312c', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <Headphones size={18} color="#224943" />
+                  区块外日常 2：听希腊语历史故事（直接选择今天听了哪几集）
+                </div>
+                <Link
+                  to="/history"
+                  style={{
+                    padding: '7px 14px',
+                    borderRadius: 10,
+                    border: '1px solid #224943',
+                    background: '#fff',
+                    color: '#224943',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    textDecoration: 'none',
+                  }}
+                >
+                  去故事馆听故事 →
+                </Link>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                <div style={{ display: 'inline-flex', gap: 4 }}>
+                  {([4, 3] as const).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setHistoryGradeFilter(g)}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 10,
+                        border: historyGradeFilter === g ? '2px solid #224943' : '1px solid #a7d3c0',
+                        background: historyGradeFilter === g ? '#224943' : '#fff',
+                        color: historyGradeFilter === g ? '#fff' : '#224943',
+                        fontWeight: 700,
+                        fontSize: 13,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {g === 4 ? '四年级 (44集)' : '三年级 (47集)'}
+                    </button>
+                  ))}
+                </div>
+
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (!id || selectedIds.includes(id)) return;
+                    updateHistoryEpisodes([...selectedIds, id]);
+                  }}
+                  style={{
+                    flex: 1,
+                    minWidth: 240,
+                    padding: '9px 12px',
+                    borderRadius: 10,
+                    border: '1.5px solid #a7d3c0',
+                    background: '#fff',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#13312c',
+                  }}
+                >
+                  <option value="">＋ 点这里选择今天听了哪一集（可连续选多集）…</option>
+                  {filteredCatalog.map((ep) => (
+                    <option key={ep.id} value={ep.id} disabled={selectedIds.includes(ep.id)}>
+                      {selectedIds.includes(ep.id) ? '✅ ' : ''}
+                      第{ep.unit}单元 第{ep.lesson}课 · {ep.titleZh}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedEpisodes.length > 0 && (
+                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center' }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#047857' }}>
+                    ✅ 今日已听 {selectedEpisodes.length} 集：
+                  </span>
+                  {selectedEpisodes.map((ep) => (
+                    <span
+                      key={ep.id}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '5px 10px',
+                        borderRadius: 999,
+                        background: '#ffffff',
+                        border: '1px solid #86efac',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: '#13312c',
+                      }}
+                    >
+                      {ep.grade}年级 U{ep.unit}L{ep.lesson} · {ep.titleZh}
+                      <button
+                        type="button"
+                        onClick={() => updateHistoryEpisodes(selectedIds.filter((x) => x !== ep.id))}
+                        style={{ border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer', fontSize: 12, padding: 0 }}
+                        title="移除"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })()}
 
         {/* Main 120-Minute Blocks (3 x 40m with Auto Time Carry-Over & Visible Checklists) */}
         <section style={{ marginBottom: 24 }}>
