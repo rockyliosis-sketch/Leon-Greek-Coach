@@ -250,6 +250,7 @@ export const subscribeToSharedState = (
 
   return onSnapshot(
     docRef,
+    { includeMetadataChanges: true },
     (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data() as SharedState;

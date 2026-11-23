@@ -1592,56 +1592,124 @@ const DailyMissionHall: React.FC = () => {
     dbStatus === 'connected-server'
       ? '#34C759'
       : dbStatus === 'connected-cache'
-        ? '#0071E3'
+        ? '#FF9500'
         : dbStatus === 'connecting'
-          ? '#FF9500'
+          ? '#007AFF'
           : '#FF3B30';
   const statusText =
     dbStatus === 'connected-server'
-      ? '云端同步'
+      ? '已同步'
       : dbStatus === 'connected-cache'
-        ? '离线缓存'
+        ? '同步中…'
         : dbStatus === 'connecting'
-          ? '连接中…'
-          : '仅本地';
+          ? '连接中'
+          : '离线/未同步';
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f7fb', paddingBottom: 64 }}>
-      {/* Classic Top Navbar ported from StudentApp (Logo + Sync + XP + Scout Level + Parent Portal) */}
-      <nav className="navbar">
-        <div className="navbar-content">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div className="brand-logo" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 22 }}>🏛️</span>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 16, color: '#1d1d1f', lineHeight: 1.1 }}>
-                  Leon Greek Coach
-                </div>
-                <div style={{ fontSize: 10, color: '#86868b', fontWeight: 600 }}>
-                  Ελληνικά με τον Leon
-                </div>
-              </div>
-            </div>
+    <div className="mission-root" style={{ minHeight: '100vh', background: '#f5f7fb', paddingBottom: 64 }}>
+      <style>{`
+        .mission-container {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 20px 24px 0;
+          box-sizing: border-box;
+        }
+        .mission-navbar-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: nowrap;
+        }
+        .mission-hero {
+          background: linear-gradient(135deg, #0071E3, #2563EB);
+          border-radius: 26px;
+          padding: 28px 32px 22px;
+          color: #FFFFFF;
+          box-shadow: 0 10px 32px rgba(0, 113, 227, 0.16);
+          margin-bottom: 20px;
+          position: relative;
+          overflow: hidden;
+        }
+        .mission-entry-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+        .mission-vocab-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .mission-blocks-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 16px;
+        }
+        @media (max-width: 1024px) {
+          .mission-container {
+            padding: 16px 18px 0;
+          }
+          .mission-blocks-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+          .mission-navbar-container .score-label {
+            display: none !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .mission-container {
+            padding: 14px 12px 0;
+          }
+          .mission-hero {
+            padding: 20px 16px 16px;
+            border-radius: 20px;
+          }
+          .mission-hero .welcome-banner-decor {
+            display: none !important;
+          }
+          .mission-entry-grid,
+          .mission-vocab-grid,
+          .mission-blocks-grid {
+            grid-template-columns: 1fr;
+          }
+          .mission-navbar-right {
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .mission-navbar-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+        }
+      `}</style>
 
+      {/* Classic Top Navbar — uses exact .navbar-container for crisp alignment across all widths */}
+      <nav className="navbar">
+        <div className="navbar-container mission-navbar-container">
+          <div className="navbar-left" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span className="navbar-brand">Leon Greek Coach</span>
             <div
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
-                padding: '4px 10px',
-                borderRadius: 999,
-                background: 'rgba(0,0,0,0.04)',
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 600,
-                color: '#515154',
+                color: '#64748b',
+                background: 'rgba(0,0,0,0.04)',
+                padding: '4px 9px',
+                borderRadius: 999,
+                whiteSpace: 'nowrap',
               }}
+              title="学习进度实时云端同步状态"
             >
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, display: 'inline-block' }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, display: 'inline-block' }} />
               <span>{statusText}</span>
             </div>
           </div>
 
-          <div className="navbar-right">
+          <div className="navbar-right mission-navbar-right">
             <div className="navbar-stats-row">
               <span className="score-label">
                 <span>学习总积分</span>
@@ -1663,7 +1731,7 @@ const DailyMissionHall: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div className="mission-navbar-actions">
               <button
                 type="button"
                 onClick={() => setShowQuickRecorder((v) => !v)}
@@ -1673,10 +1741,11 @@ const DailyMissionHall: React.FC = () => {
                   background: showQuickRecorder ? '#0f172a' : 'rgba(0, 113, 227, 0.1)',
                   color: showQuickRecorder ? '#fff' : '#0071E3',
                   border: '1px solid rgba(0, 113, 227, 0.25)',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: 5,
                   fontWeight: 700,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <Mic size={13} />
@@ -1690,36 +1759,25 @@ const DailyMissionHall: React.FC = () => {
                   background: 'rgba(255, 149, 0, 0.08)',
                   color: '#FF9500',
                   border: '1px solid rgba(255, 149, 0, 0.2)',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 6,
+                  gap: 5,
                   fontWeight: 600,
                   textDecoration: 'none',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <Settings size={13} />
-                <span>家长通道 | Γονείς</span>
+                <span>家长通道</span>
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      <div style={{ maxWidth: 1020, margin: '0 auto', padding: '20px 16px 0' }}>
+      <div className="mission-container">
         {/* Classic Welcome Banner with Leon Scout Photo + Greek Flag Wave + Daily Mission Controls */}
-        <div
-          className="welcome-banner"
-          style={{
-            background: 'linear-gradient(135deg, #0071E3, #2563EB)',
-            borderRadius: 28,
-            padding: '28px 32px 22px',
-            color: '#FFFFFF',
-            boxShadow: '0 10px 32px rgba(0, 113, 227, 0.16)',
-            marginBottom: 20,
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
+        <div className="mission-hero">
           {/* Greek Flag Wave SVG Decor */}
           <div
             className="welcome-banner-decor"
@@ -1911,14 +1969,7 @@ const DailyMissionHall: React.FC = () => {
         )}
 
         {/* Two Big Core Entry Cards: Daily Practice & History Story Hall */}
-        <section
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
-            gap: 14,
-            marginBottom: 20,
-          }}
-        >
+        <section className="mission-entry-grid">
           <Link
             to="/practice"
             style={{
@@ -2021,7 +2072,7 @@ const DailyMissionHall: React.FC = () => {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+          <div className="mission-vocab-grid">
             {(
               [
                 { slot: 'morning' as VocabSlot, label: '🌅 第 1 次（早/午）', desc: '复习昨天旧词 + 开今日新词' },
@@ -2341,7 +2392,7 @@ const DailyMissionHall: React.FC = () => {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+          <div className="mission-blocks-grid">
             {blocks.map((block) => {
               const st = todayMission.blocks?.[block.id];
               const isDone = st?.status === 'done';

@@ -225,6 +225,22 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
       </div>
 
       {/* Multi-row batch form */}
+      <style>{`
+        .qvr-row-grid {
+          display: grid;
+          grid-template-columns: 28px minmax(160px, 1fr) minmax(140px, 1fr) auto;
+          gap: 8px;
+          align-items: center;
+        }
+        @media (max-width: 640px) {
+          .qvr-row-grid {
+            grid-template-columns: 24px 1fr auto;
+          }
+          .qvr-zh-input {
+            grid-column: 2 / 4;
+          }
+        }
+      `}</style>
       <form onSubmit={handleBatchSave}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {rows.map((row, idx) => {
@@ -242,14 +258,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
                   padding: '10px 12px',
                 }}
               >
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '28px minmax(160px, 1fr) minmax(140px, 1fr) auto',
-                    gap: 8,
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="qvr-row-grid">
                   <span style={{ fontSize: 12, fontWeight: 800, color: '#64748b', textAlign: 'center' }}>
                     #{idx + 1}
                   </span>
@@ -297,6 +306,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
                   </div>
 
                   <input
+                    className="qvr-zh-input"
                     type="text"
                     lang="zh-CN"
                     autoComplete="off"
