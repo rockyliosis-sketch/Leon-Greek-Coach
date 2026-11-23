@@ -50,6 +50,7 @@ import glossaryV2Data from '../../data/glossary_v2.json';
 import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
+import { LevelRulesModal } from '../../components/LevelRulesModal';
 
 interface WizardStepDef {
   title: string;
@@ -309,6 +310,7 @@ const DailyMissionHall: React.FC = () => {
 
   // Modals & collapsible panels
   const [showQuickRecorder, setShowQuickRecorder] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
   const [activeFlashcardSlot, setActiveFlashcardSlot] = useState<VocabSlot | null>(null);
   const [selectedGlossaryBook, setSelectedGlossaryBook] = useState<'glossary-a2' | 'glossary-b1'>('glossary-a2');
   const [showGlossaryPicker, setShowGlossaryPicker] = useState(false);
@@ -445,7 +447,10 @@ const DailyMissionHall: React.FC = () => {
     return glossaryList.slice(startIdx, startIdx + 24);
   }, [glossaryList, glossaryFrontier, glossarySearch]);
 
-  // Persist helper
+  const dailyRewardKey = todayStr;
+  const dailyRewardClaimed = Boolean(sharedState.daily_rewards_awarded?.[dailyRewardKey]);
+
+  // Persist helper — automatically awards +10 XP ONCE per day when ALL tasks are done!
   const updateTodayMission = (
     updater: (prev: DailyMissionRecord) => DailyMissionRecord,
     extraUpdates?: Partial<SharedState>
@@ -455,14 +460,37 @@ const DailyMissionHall: React.FC = () => {
       ...(sharedState.daily_missions || {}),
       [todayStr]: nextRec,
     };
+
+    const allVocabDone =
+      Boolean(nextRec.vocabChecks?.morning) &&
+      Boolean(nextRec.vocabChecks?.afternoon) &&
+      Boolean(nextRec.vocabChecks?.night);
+    const historyDone = Boolean(nextRec.historyLog?.listened);
+    const allBlocksDone = blocks.every((b) => nextRec.blocks?.[b.id]?.status === 'done');
+
+    const alreadyAwarded = Boolean(sharedState.daily_rewards_awarded?.[dailyRewardKey]);
+    const shouldAwardDaily10 = !alreadyAwarded && allVocabDone && historyDone && allBlocksDone;
+
+    const rewardUpdates: Partial<SharedState> = shouldAwardDaily10
+      ? {
+          score: (sharedState.score || 0) + 10,
+          daily_rewards_awarded: {
+            ...(sharedState.daily_rewards_awarded || {}),
+            [dailyRewardKey]: true,
+          },
+        }
+      : {};
+
     const nextState: SharedState = {
       ...sharedState,
       ...(extraUpdates || {}),
+      ...rewardUpdates,
       daily_missions: nextAll,
     };
     setSharedState(nextState);
     saveSharedState({
       ...(extraUpdates || {}),
+      ...rewardUpdates,
       daily_missions: nextAll,
     });
   };
@@ -598,33 +626,28 @@ const DailyMissionHall: React.FC = () => {
   const handleFinishVocabSlot = (slot: VocabSlot) => {
     if (runningVocabSlot === slot) setRunningVocabSlot(null);
     const curSlot = vocabTimers[slot];
-    const alreadyChecked = Boolean(todayMission.vocabChecks?.[slot]);
-    const bonus = alreadyChecked ? 0 : 10;
 
-    updateTodayMission(
-      (prev) => {
-        const prevTimers = prev.vocabTimers || {
-          morning: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.morning) },
-          afternoon: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.afternoon) },
-          night: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.night) },
-        };
-        return {
-          ...prev,
-          vocabChecks: {
-            ...(prev.vocabChecks || { morning: false, afternoon: false, night: false }),
-            [slot]: true,
+    updateTodayMission((prev) => {
+      const prevTimers = prev.vocabTimers || {
+        morning: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.morning) },
+        afternoon: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.afternoon) },
+        night: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.night) },
+      };
+      return {
+        ...prev,
+        vocabChecks: {
+          ...(prev.vocabChecks || { morning: false, afternoon: false, night: false }),
+          [slot]: true,
+        },
+        vocabTimers: {
+          ...prevTimers,
+          [slot]: {
+            elapsedSec: curSlot.elapsedSec,
+            completed: true,
           },
-          vocabTimers: {
-            ...prevTimers,
-            [slot]: {
-              elapsedSec: curSlot.elapsedSec,
-              completed: true,
-            },
-          },
-        };
-      },
-      bonus > 0 ? { score: (sharedState.score || 0) + bonus } : undefined
-    );
+        },
+      };
+    });
   };
 
   const handleSelectGlossaryProgress = (word: { idx: number; word_greek: string; word_chinese: string }) => {
@@ -711,7 +734,6 @@ const DailyMissionHall: React.FC = () => {
     const nextStep = curState.currentStep + 1;
 
     if (nextStep >= activeBlock.steps.length) {
-      const alreadyDone = curState.status === 'done';
       const carrySec = blockCarryOverMap[activeBlock.id] || 0;
       const targetSec = (activeBlock.minutes + extraMinutes) * 60 + carrySec;
       const deficitSec = Math.max(0, targetSec - sessionElapsedSec);
@@ -719,32 +741,28 @@ const DailyMissionHall: React.FC = () => {
       setTimerRunning(false);
       setFiveMinRunning(false);
 
-      const bonus = alreadyDone ? 0 : 20;
-      updateTodayMission(
-        (prev) => ({
-          ...prev,
-          blocks: {
-            ...prev.blocks,
-            [activeBlock.id]: {
-              ...curState,
-              status: 'done',
-              currentStep: activeBlock.steps.length - 1,
-              elapsedSec: sessionElapsedSec,
-              extraMinutes,
-              completedAt: new Date().toISOString(),
-            },
+      updateTodayMission((prev) => ({
+        ...prev,
+        blocks: {
+          ...prev.blocks,
+          [activeBlock.id]: {
+            ...curState,
+            status: 'done',
+            currentStep: activeBlock.steps.length - 1,
+            elapsedSec: sessionElapsedSec,
+            extraMinutes,
+            completedAt: new Date().toISOString(),
           },
-        }),
-        bonus > 0 ? { score: (sharedState.score || 0) + bonus } : undefined
-      );
+        },
+      }));
 
       if (deficitMin >= 2) {
         setEarlyFinishMsg(
-          `「${activeBlock.title}」已完成！本区块未足的 ${deficitMin} 分钟已自动顺延叠加到下一个区块（确保今日 120 分钟学习量饱满）！${bonus > 0 ? ' 积分 +20 🎉' : ''}`
+          `「${activeBlock.title}」已完成！本区块未足的 ${deficitMin} 分钟已自动顺延叠加到下一个区块。全部任务做完后将自动发放今日 +10 XP！`
         );
       } else {
         setEarlyFinishMsg(
-          `太棒了！「${activeBlock.title}」已扎实通关！${bonus > 0 ? '积分 +20 🎉' : ''}`
+          `太棒了！「${activeBlock.title}」已扎实通关！全部任务做完后将自动发放今日 +10 XP 🎉`
         );
       }
     } else {
@@ -767,21 +785,17 @@ const DailyMissionHall: React.FC = () => {
   const handleSaveVocab = (
     nextCustomVocab: any[],
     nextUnitDates: Record<string, string>,
-    addedCount: number
+    _addedCount: number
   ) => {
-    const bonus = addedCount > 0 ? 5 * addedCount : 0;
-    const nextScore = (sharedState.score || 0) + bonus;
     const nextState: SharedState = {
       ...sharedState,
       custom_vocab: nextCustomVocab,
       unit_study_dates: nextUnitDates,
-      score: nextScore,
     };
     setSharedState(nextState);
     saveSharedState({
       custom_vocab: nextCustomVocab,
       unit_study_dates: nextUnitDates,
-      score: nextScore,
     });
   };
 
@@ -1734,6 +1748,25 @@ const DailyMissionHall: React.FC = () => {
             <div className="mission-navbar-actions">
               <button
                 type="button"
+                onClick={() => setShowRulesModal(true)}
+                className="rules-button"
+                style={{
+                  margin: 0,
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  color: '#b45309',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <Trophy size={13} />
+                <span>积分规则 &amp; 十二宫</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowQuickRecorder((v) => !v)}
                 className="rules-button"
                 style={{
@@ -1850,8 +1883,11 @@ const DailyMissionHall: React.FC = () => {
             {/* Progress bar */}
             <div style={{ marginTop: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
-                <span>今日总通关进度</span>
-                <span>{progressPct}%（{doneCheckUnits} / {totalCheckUnits}）</span>
+                <span>今日总通关进度（全部完成统一奖励 +10 XP）</span>
+                <span>
+                  {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）
+                  {dailyRewardClaimed ? ' · 🏅 今日 +10 XP 已到账' : ''}
+                </span>
               </div>
               <div style={{ height: 10, borderRadius: 999, background: 'rgba(255,255,255,0.24)', overflow: 'hidden' }}>
                 <div
@@ -2335,17 +2371,14 @@ const DailyMissionHall: React.FC = () => {
                 onClick={() => {
                   const already = Boolean(todayMission.historyLog?.listened);
                   const nextListened = !already;
-                  updateTodayMission(
-                    (prev) => ({
-                      ...prev,
-                      historyLog: {
-                        listened: nextListened,
-                        episodesCount: nextListened ? Math.max(1, prev.historyLog?.episodesCount || 1) : 0,
-                        episodeNote: prev.historyLog?.episodeNote || '',
-                      },
-                    }),
-                    !already ? { score: (sharedState.score || 0) + 10 } : undefined
-                  );
+                  updateTodayMission((prev) => ({
+                    ...prev,
+                    historyLog: {
+                      listened: nextListened,
+                      episodesCount: nextListened ? Math.max(1, prev.historyLog?.episodesCount || 1) : 0,
+                      episodeNote: prev.historyLog?.episodeNote || '',
+                    },
+                  }));
                 }}
                 style={{
                   padding: '8px 14px',
@@ -2358,7 +2391,7 @@ const DailyMissionHall: React.FC = () => {
                   cursor: 'pointer',
                 }}
               >
-                {todayMission.historyLog?.listened ? '✅ 今日已听故事' : '听完打卡 (+10 XP)'}
+                {todayMission.historyLog?.listened ? '✅ 今日已听故事' : '听完打卡'}
               </button>
               <Link
                 to="/history"
@@ -2606,6 +2639,15 @@ const DailyMissionHall: React.FC = () => {
           pageProgress={sharedState.page_progress || []}
         />
       </div>
+
+      {/* Level & 12 Gold Saints Rules Modal */}
+      {showRulesModal && (
+        <LevelRulesModal
+          score={sharedState.score || 0}
+          dailyRewardClaimedToday={dailyRewardClaimed}
+          onClose={() => setShowRulesModal(false)}
+        />
+      )}
 
       {/* Optional Electronic Flashcard Modal */}
       {activeFlashcardSlot && (

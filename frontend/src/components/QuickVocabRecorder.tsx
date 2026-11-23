@@ -153,7 +153,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
 
     setFeedback({
       type: 'ok',
-      msg: `成功批量入库 ${newWords.length} 个词（+${newWords.length * 5} XP）！已自动加入单词表与 7 天每日必练。${extraNotes.length ? `（${extraNotes.join('，')}）` : ''}`,
+      msg: `成功批量入库 ${newWords.length} 个词！已自动加入单词表、7 天每日必练与今日学习报告。${extraNotes.length ? `（${extraNotes.join('，')}）` : ''}`,
     });
   };
 

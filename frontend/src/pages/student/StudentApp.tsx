@@ -45,6 +45,8 @@ import bGrammarDrills from '../../data/b_grammar_drills.json';
 import a1UnitMap from '../../data/a1_unit_map.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus } from '../../dbService';
 import { APP_VERSION, LONG_AWAY_MS, reloadToBuild, watchForNewVersion } from '../../lib/autoUpdate';
+import { getScoutLevelInfo } from '../../lib/levelSystem';
+import { LevelRulesModal } from '../../components/LevelRulesModal';
 
 const speakGreek = (text: string) => {
   if ('speechSynthesis' in window) {
@@ -2075,12 +2077,7 @@ const LEVELS: LevelInfo[] = [
 ];
 
 const getLevelInfo = (pts: number): LevelInfo => {
-  for (const lvl of LEVELS) {
-    if (pts >= lvl.minPoints && pts <= lvl.maxPoints) {
-      return lvl;
-    }
-  }
-  return LEVELS[LEVELS.length - 1];
+  return getScoutLevelInfo(pts) as unknown as LevelInfo;
 };
 
 interface WritingSpeakingChallenge {
@@ -5041,22 +5038,11 @@ export default function StudentApp() {
     ];
     const allCoreDone = coreModules.every(mod => updated.includes(mod));
     
-    // Check if daily reward has been awarded for today
-    const dailyRewardsAwarded = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}');
     let pointsEarnedText = "";
-    
-    if (allCoreDone && !dailyRewardsAwarded[dateStr]) {
-      // Award exactly 10 points
-      const newScore = score + 10;
-      setScore(newScore);
-      updates.score = newScore;
-      
-      dailyRewardsAwarded[dateStr] = true;
-      updates.daily_rewards_awarded = dailyRewardsAwarded;
-      
-      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心特训模块，获得今日完成大奖 +10 XP！\n当前总积分: ${newScore} XP`;
+    if (allCoreDone) {
+      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心刷题模块！\n回到「今日学习通关首页」完成今日全部学习任务后，统一领取今日 +10 XP 大奖！\n当前总积分: ${score} XP`;
     } else {
-      pointsEarnedText = `\n今日已完成核心模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 8\n全部做完每天可积 10 分！\n当前总积分: ${score} XP`;
+      pointsEarnedText = `\n今日已完成核心刷题模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 8\n当天全部学习任务完成后统一得 10 XP！\n当前总积分: ${score} XP`;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -9126,8 +9112,17 @@ export default function StudentApp() {
         </button>
       </footer>
 
-      {/* 4. Score Rules & Level Progress Modal */}
-      {showRulesModal && (() => {
+      {/* 4. Score Rules & 12 Gold Saints Level Progress Modal */}
+      {showRulesModal && (
+        <LevelRulesModal
+          score={score}
+          dailyRewardClaimedToday={Boolean(
+            JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}')[selectedDateStr]
+          )}
+          onClose={() => setShowRulesModal(false)}
+        />
+      )}
+      {false && (() => {
         const currentLevel = getLevelInfo(score);
         return (
           <div style={{
