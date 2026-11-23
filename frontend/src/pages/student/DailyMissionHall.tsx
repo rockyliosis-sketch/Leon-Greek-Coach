@@ -33,6 +33,7 @@ import {
   type SchoolSubjectTaskLog,
   type SharedState,
   type VocabSrsEntry,
+  type WorkbookCheckLog,
 } from '../../dbService';
 import {
   calculateMissionStreak,
@@ -40,15 +41,18 @@ import {
   formatDurationMinSec,
   formatElapsedHuman,
   getDayMode,
+  getMondayDateStr,
   getTodayStr,
   getWeekdayLabel,
   normalizeGreekKey,
+  stripLeadingArticleParens,
   type DayMode,
 } from '../../lib/dailyMissionHelpers';
 import { getBookFrontier, makeMarkId } from '../../lib/pageProgress';
-import { getScoutLevelInfo } from '../../lib/levelSystem';
+import { getScoutLevelInfo, SCOUT_LEVELS } from '../../lib/levelSystem';
 import glossaryV2Data from '../../data/glossary_v2.json';
 import historyCatalogData from '../../data/history_catalog.json';
+import historyVocabIndexData from '../../data/history_vocab_index.json';
 import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
@@ -145,26 +149,65 @@ const NumberStepper: React.FC<{
 
 const HW_ACTION_OPTIONS = [
   '书面作业全做完',
+  '独立完成没查词',
+  '查词后才做完',
   '朗读了课文',
-  '订正了错题',
-  '有难题画了 ?',
+  '抄写了生词/句子',
+  '订正了上次错题',
+  '整理了错题本',
+  '做了数学计算题',
+  '完成了阅读理解',
+  '需要明天问老师',
 ];
 
 const TUTOR_ACTION_OPTIONS = [
   '查并标了新词',
   '铅笔先填了基础题',
-  '朗读了课文/对话',
+  '朗读了课文对话',
   '口头重做了上节错题',
-  '复习了语法笔记',
-  '整理了新笔记',
+  '复习了语法变格',
+  '复习了动词变位',
+  '整理了语法笔记',
+  '听了配套录音',
+  '试写了造句/短文',
+  '标出了课上重点提问',
 ];
 
 const WORKBOOK_CHECK_OPTIONS = [
-  '读懂了题目要求',
-  '标出了生词指令',
-  '发现了不确定的大题',
-  '画了 ? 待明天听讲',
+  '读懂了全部题干',
+  '标出了题目指令生词',
+  '看懂了选择题要求',
+  '看懂了填空题要求',
+  '看懂了写作/造句题',
+  '发现了较难的大题',
+  '提前想好了思路',
+  '标记了明天重点听讲题',
 ];
+
+/** 预留给 Codex 生图的卡片配图位（图片不存在时静默隐藏，生图放入 public/images/ui/ 后自动显示） */
+const OptionalMascot: React.FC<{ src: string; alt: string; size?: number }> = ({
+  src,
+  alt,
+  size = 64,
+}) => {
+  const [hidden, setHidden] = useState(false);
+  if (hidden) return null;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setHidden(true)}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 16,
+        objectFit: 'cover',
+        flexShrink: 0,
+        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.1)',
+      }}
+    />
+  );
+};
 
 interface MissionBlockDef {
   id: string;
@@ -186,11 +229,16 @@ const SCHOOL_SUBJECTS = [
 ];
 
 const PREVIEW_ACTIONS = [
-  '读了新课文',
-  '查并标了新单词',
-  '看了练习册题干',
+  '通读了新课文',
+  '查并标了重点词',
+  '看懂了大概意思',
+  '用中文复述了大意',
   '听了对应历史故事',
-  '用中文讲了课文大意',
+  '看了课本插图与词典框',
+  '找出了难懂长句子',
+  '预习了新语法点',
+  '朗读了重点段落',
+  '抄写了关键新词',
 ];
 
 const DEFAULT_VOCAB_SLOT_SEC = 10 * 60; // 10 minutes per vocab session (30m/day total)
@@ -198,10 +246,21 @@ const DEFAULT_VOCAB_SLOT_SEC = 10 * 60; // 10 minutes per vocab session (30m/day
 const makePreviewLog = (defaultSubj = ''): PreviewSubjectLog => ({
   id: `pv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
   subject: defaultSubj,
-  pages: '',
+  fromPage: 1,
+  toPage: 2,
+  pages: 'P.1-2',
   actions: [],
   newWordsCount: 0,
   summary: '',
+});
+
+const makeWorkbookCheckLog = (defaultBook = '希腊语 (Γλώσσα)'): WorkbookCheckLog => ({
+  id: `wb_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+  bookName: defaultBook,
+  fromPage: 1,
+  toPage: 2,
+  actions: [],
+  note: '',
 });
 
 function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionBlockDef[] {
@@ -412,6 +471,7 @@ const DailyMissionHall: React.FC = () => {
   const [glossarySearch, setGlossarySearch] = useState('');
   const [glossarySavedMsg, setGlossarySavedMsg] = useState<string | null>(null);
   const [historyGradeFilter, setHistoryGradeFilter] = useState<3 | 4>(4);
+  const [historySyncMsg, setHistorySyncMsg] = useState<string | null>(null);
 
   // Subscribe to Firebase shared_state
   useEffect(() => {
@@ -775,11 +835,14 @@ const DailyMissionHall: React.FC = () => {
 
   const openBlockWizard = (block: MissionBlockDef) => {
     const existing = todayMission.blocks?.[block.id];
+    const carryMin = Math.floor((blockCarryOverMap[block.id] || 0) / 60);
+    const effMin = block.minutes + (existing?.extraMinutes || 0) + carryMin;
+    const proportionalScanMin = Math.max(3, Math.min(15, Math.round((effMin / 40) * 5)));
     setActiveBlockId(block.id);
     setSessionElapsedSec(existing?.elapsedSec || 0);
     setExtraMinutes(existing?.extraMinutes || 0);
     setTimerRunning(existing?.status !== 'done');
-    setFiveMinSec(300);
+    setFiveMinSec(proportionalScanMin * 60);
     setFiveMinRunning(false);
     setEarlyFinishMsg(null);
 
@@ -798,6 +861,42 @@ const DailyMissionHall: React.FC = () => {
         },
       }));
     }
+  };
+
+  const handleResetBlock = (blockId: string) => {
+    if (activeBlockId === blockId) {
+      setSessionElapsedSec(0);
+      setExtraMinutes(0);
+      setTimerRunning(false);
+      setEarlyFinishMsg(null);
+    }
+    updateTodayMission((prev) => {
+      const nextBlocks = { ...(prev.blocks || {}) };
+      delete nextBlocks[blockId];
+      return { ...prev, blocks: nextBlocks };
+    });
+  };
+
+  const handleResetVocabSlot = (slot: 'morning' | 'afternoon' | 'night') => {
+    if (runningVocabSlot === slot) setRunningVocabSlot(null);
+    updateTodayMission((prev) => {
+      const prevTimers = prev.vocabTimers || {
+        morning: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.morning) },
+        afternoon: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.afternoon) },
+        night: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.night) },
+      };
+      return {
+        ...prev,
+        vocabChecks: {
+          ...(prev.vocabChecks || { morning: false, afternoon: false, night: false }),
+          [slot]: false,
+        },
+        vocabTimers: {
+          ...prevTimers,
+          [slot]: { elapsedSec: 0, completed: false },
+        },
+      };
+    });
   };
 
   const closeBlockWizard = () => {
@@ -978,13 +1077,31 @@ const DailyMissionHall: React.FC = () => {
       summary: '',
     };
 
-    const workbookCheck = todayMission.blockLogs?.workbookCheck || {
-      bookName: previewLogs[0]?.subject || '希腊语 (Γλώσσα)',
-      fromPage: 1,
-      toPage: 2,
-      actions: [],
-      note: '',
+    const workbookChecks: WorkbookCheckLog[] =
+      todayMission.blockLogs?.workbookChecks && todayMission.blockLogs.workbookChecks.length > 0
+        ? todayMission.blockLogs.workbookChecks
+        : todayMission.blockLogs?.workbookCheck
+          ? [{ id: 'wb_legacy', ...todayMission.blockLogs.workbookCheck }]
+          : [makeWorkbookCheckLog(previewLogs[0]?.subject || '希腊语 (Γλώσσα)')];
+
+    const syncWorkbookChecks = (nextList: WorkbookCheckLog[]) => {
+      updateBlockLogs((prev) => ({
+        ...prev,
+        workbookChecks: nextList,
+        workbookCheck: nextList[0]
+          ? {
+              bookName: nextList[0].bookName,
+              fromPage: nextList[0].fromPage,
+              toPage: nextList[0].toPage,
+              actions: nextList[0].actions,
+              note: nextList[0].note,
+            }
+          : undefined,
+      }));
     };
+
+    const effectiveBlockMin = Math.round(totalTargetSec / 60);
+    const proportionalScanMin = Math.max(3, Math.min(15, Math.round((effectiveBlockMin / 40) * 5)));
 
     return (
       <div style={{ minHeight: '100vh', background: '#f5f7fb', padding: '20px 16px 64px' }}>
@@ -1096,6 +1213,31 @@ const DailyMissionHall: React.FC = () => {
                 }}
               >
                 +10 分
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('确定要重置本区块的计时与完成状态吗？')) {
+                    handleResetBlock(activeBlock.id);
+                  }
+                }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  border: '1px solid #fecaca',
+                  background: '#fef2f2',
+                  color: '#b91c1c',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+                title="重置本区块计时与状态"
+              >
+                <RotateCcw size={14} />
+                重置
               </button>
             </div>
           </div>
@@ -1667,7 +1809,7 @@ const DailyMissionHall: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309' }}>
-                        方式 A · ⏱️ 纸质课本 5 分钟快扫旧标记
+                        方式 A · ⏱️ 纸质课本快扫旧标记（按本区块 {effectiveBlockMin} 分钟等比例分配：{proportionalScanMin} 分钟）
                       </div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
                         {formatDurationMinSec(fiveMinSec)}
@@ -1687,13 +1829,13 @@ const DailyMissionHall: React.FC = () => {
                           cursor: 'pointer',
                         }}
                       >
-                        {fiveMinRunning ? '暂停 5 分钟' : '开始 5 分钟快扫'}
+                        {fiveMinRunning ? `暂停 ${proportionalScanMin} 分钟` : `开始 ${proportionalScanMin} 分钟快扫`}
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           setFiveMinRunning(false);
-                          setFiveMinSec(300);
+                          setFiveMinSec(proportionalScanMin * 60);
                         }}
                         style={{
                           padding: '10px 12px',
@@ -1703,7 +1845,7 @@ const DailyMissionHall: React.FC = () => {
                           color: '#92400e',
                           cursor: 'pointer',
                         }}
-                        title="重置"
+                        title="重置快扫计时"
                       >
                         <RotateCcw size={16} />
                       </button>
@@ -1753,102 +1895,156 @@ const DailyMissionHall: React.FC = () => {
               )}
 
               {stepDef.kind === 'workbook_check' && (
-                <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#f5f3ff', border: '1.5px solid #ddd6fe', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#5b21b6' }}>
-                    📘 记录今天扫了哪本练习册、第几页，以及发现了什么问题（自动写入今日报告）：
+                    📘 记录今天扫了哪几本练习册、第几页，以及发现了什么问题（支持添加多本，自动写入今日报告）：
                   </div>
 
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid #ddd6fe' }}>
-                    <select
-                      value={workbookCheck.bookName}
-                      onChange={(e) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          workbookCheck: { ...workbookCheck, bookName: e.target.value },
-                        }))
-                      }
-                      style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
+                  {workbookChecks.map((wb, wbIdx) => (
+                    <div
+                      key={wb.id}
+                      style={{
+                        padding: 16,
+                        borderRadius: 16,
+                        background: '#f5f3ff',
+                        border: '1.5px solid #ddd6fe',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 10,
+                      }}
                     >
-                      {SCHOOL_SUBJECTS.map((s) => (
-                        <option key={s} value={s}>{s} 练习册</option>
-                      ))}
-                    </select>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ fontSize: 14, color: '#5b21b6' }}>练习册 {wbIdx + 1}</strong>
+                        {workbookChecks.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => syncWorkbookChecks(workbookChecks.filter((x) => x.id !== wb.id))}
+                            style={{ border: 'none', background: 'transparent', color: '#94a3b8', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}
+                          >
+                            <Trash2 size={14} /> 移除
+                          </button>
+                        )}
+                      </div>
 
-                    <NumberStepper
-                      prefix="第"
-                      suffix="页"
-                      min={1}
-                      max={300}
-                      value={workbookCheck.fromPage}
-                      onChange={(v) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          workbookCheck: { ...workbookCheck, fromPage: v, toPage: Math.max(v, workbookCheck.toPage) },
-                        }))
-                      }
-                    />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
-                    <NumberStepper
-                      prefix="第"
-                      suffix="页"
-                      min={workbookCheck.fromPage}
-                      max={300}
-                      value={workbookCheck.toPage}
-                      onChange={(v) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          workbookCheck: { ...workbookCheck, toPage: Math.max(workbookCheck.fromPage, v) },
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {WORKBOOK_CHECK_OPTIONS.map((act) => {
-                      const checked = (workbookCheck.actions || []).includes(act);
-                      return (
-                        <button
-                          key={act}
-                          type="button"
-                          onClick={() => {
-                            const nextActs = checked
-                              ? workbookCheck.actions.filter((a) => a !== act)
-                              : [...(workbookCheck.actions || []), act];
-                            updateBlockLogs((prev) => ({
-                              ...prev,
-                              workbookCheck: { ...workbookCheck, actions: nextActs },
-                            }));
-                          }}
-                          style={{
-                            padding: '7px 12px',
-                            borderRadius: 999,
-                            border: checked ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
-                            background: checked ? '#ede9fe' : '#fff',
-                            color: checked ? '#5b21b6' : '#475569',
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                          }}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid #ddd6fe' }}>
+                        <select
+                          value={wb.bookName}
+                          onChange={(e) =>
+                            syncWorkbookChecks(
+                              workbookChecks.map((x) => (x.id === wb.id ? { ...x, bookName: e.target.value } : x))
+                            )
+                          }
+                          style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
                         >
-                          {checked ? '✅ ' : '+ '}
-                          {act}
-                        </button>
-                      );
-                    })}
-                  </div>
+                          {SCHOOL_SUBJECTS.map((s) => (
+                            <option key={s} value={s}>{s} 练习册</option>
+                          ))}
+                        </select>
 
-                  <input
-                    type="text"
-                    placeholder="选填一句：明天上课最想重点听老师讲哪道题 / 哪个问题？"
-                    value={workbookCheck.note || ''}
-                    onChange={(e) =>
-                      updateBlockLogs((prev) => ({
-                        ...prev,
-                        workbookCheck: { ...workbookCheck, note: e.target.value },
-                      }))
+                        <NumberStepper
+                          prefix="第"
+                          suffix="页"
+                          min={1}
+                          max={300}
+                          value={wb.fromPage}
+                          onChange={(v) =>
+                            syncWorkbookChecks(
+                              workbookChecks.map((x) =>
+                                x.id === wb.id ? { ...x, fromPage: v, toPage: Math.max(v, x.toPage) } : x
+                              )
+                            )
+                          }
+                        />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                        <NumberStepper
+                          prefix="第"
+                          suffix="页"
+                          min={wb.fromPage}
+                          max={300}
+                          value={wb.toPage}
+                          onChange={(v) =>
+                            syncWorkbookChecks(
+                              workbookChecks.map((x) =>
+                                x.id === wb.id ? { ...x, toPage: Math.max(x.fromPage, v) } : x
+                              )
+                            )
+                          }
+                        />
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                        {WORKBOOK_CHECK_OPTIONS.map((act) => {
+                          const checked = (wb.actions || []).includes(act);
+                          return (
+                            <button
+                              key={act}
+                              type="button"
+                              onClick={() => {
+                                const nextActs = checked
+                                  ? wb.actions.filter((a) => a !== act)
+                                  : [...(wb.actions || []), act];
+                                syncWorkbookChecks(
+                                  workbookChecks.map((x) => (x.id === wb.id ? { ...x, actions: nextActs } : x))
+                                );
+                              }}
+                              style={{
+                                padding: '7px 12px',
+                                borderRadius: 999,
+                                border: checked ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
+                                background: checked ? '#ede9fe' : '#fff',
+                                color: checked ? '#5b21b6' : '#475569',
+                                fontSize: 12.5,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {checked ? '✅ ' : '+ '}
+                              {act}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <input
+                        type="text"
+                        placeholder="选填一句：明天上课最想重点听老师讲哪道题 / 哪个问题？"
+                        value={wb.note || ''}
+                        onChange={(e) =>
+                          syncWorkbookChecks(
+                            workbookChecks.map((x) => (x.id === wb.id ? { ...x, note: e.target.value } : x))
+                          )
+                        }
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                      />
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      syncWorkbookChecks([
+                        ...workbookChecks,
+                        makeWorkbookCheckLog(previewLogs[1]?.subject || '历史 (Ιστορία)'),
+                      ])
                     }
-                    style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
-                  />
+                    style={{
+                      alignSelf: 'flex-start',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '9px 16px',
+                      borderRadius: 12,
+                      border: '1.5px dashed #a78bfa',
+                      background: '#f5f3ff',
+                      color: '#6d28d9',
+                      fontWeight: 700,
+                      fontSize: 14,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Plus size={16} />
+                    再增加一本练习册
+                  </button>
                 </div>
               )}
 
@@ -1879,45 +2075,53 @@ const DailyMissionHall: React.FC = () => {
                         )}
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 10 }}>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-                            科目
-                          </label>
-                          <select
-                            value={pv.subject}
-                            onChange={(e) => updatePreviewRow(pv.id, { subject: e.target.value })}
-                            style={{ width: '100%', padding: '9px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, background: '#fff' }}
-                          >
-                            <option value="">选择科目...</option>
-                            {SCHOOL_SUBJECTS.map((s) => (
-                              <option key={s} value={s}>{s}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-                            预习哪几页
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="例如：P.32-34"
-                            value={pv.pages}
-                            onChange={(e) => updatePreviewRow(pv.id, { pages: e.target.value })}
-                            style={{ width: '100%', boxSizing: 'border-box', padding: '9px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10, padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid #ede9fe' }}>
+                        <select
+                          value={pv.subject}
+                          onChange={(e) => updatePreviewRow(pv.id, { subject: e.target.value })}
+                          style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
+                        >
+                          <option value="">选择科目...</option>
+                          {SCHOOL_SUBJECTS.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <NumberStepper
+                            prefix="第"
+                            suffix="页"
+                            min={1}
+                            max={300}
+                            value={pv.fromPage ?? 1}
+                            onChange={(v) => {
+                              const tp = Math.max(v, pv.toPage ?? v + 1);
+                              updatePreviewRow(pv.id, { fromPage: v, toPage: tp, pages: `P.${v}${tp > v ? `-${tp}` : ''}` });
+                            }}
+                          />
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#64748b' }}>至</span>
+                          <NumberStepper
+                            prefix="第"
+                            suffix="页"
+                            min={pv.fromPage ?? 1}
+                            max={300}
+                            value={pv.toPage ?? 2}
+                            onChange={(v) => {
+                              const fp = pv.fromPage ?? 1;
+                              const tp = Math.max(fp, v);
+                              updatePreviewRow(pv.id, { toPage: tp, pages: `P.${fp}${tp > fp ? `-${tp}` : ''}` });
+                            }}
                           />
                         </div>
-                        <div>
-                          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
-                            查了几个新单词
-                          </label>
-                          <input
-                            type="number"
+
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569' }}>新学词数：</span>
+                          <NumberStepper
                             min={0}
                             max={100}
+                            suffix="词"
                             value={pv.newWordsCount || 0}
-                            onChange={(e) => updatePreviewRow(pv.id, { newWordsCount: Math.max(0, Number(e.target.value) || 0) })}
-                            style={{ width: '100%', boxSizing: 'border-box', padding: '9px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                            onChange={(v) => updatePreviewRow(pv.id, { newWordsCount: v })}
                           />
                         </div>
                       </div>
@@ -2357,6 +2561,80 @@ const DailyMissionHall: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Dedicated Gold Saint / Rank Showcase Card (Reserved spacious slot for Gold Saints portraits!) */}
+              {(() => {
+                const scoreVal = sharedState.score || 0;
+                const nextIdx = SCOUT_LEVELS.findIndex((l) => l.id === currentLevel.id) + 1;
+                const nextLvl = nextIdx < SCOUT_LEVELS.length ? SCOUT_LEVELS[nextIdx] : null;
+                const span = Math.max(1, currentLevel.maxPoints - currentLevel.minPoints + 1);
+                const rankPct =
+                  currentLevel.maxPoints >= 999999
+                    ? 100
+                    : Math.min(100, Math.max(5, Math.round(((scoreVal - currentLevel.minPoints) / span) * 100)));
+                return (
+                  <button
+                    type="button"
+                    onClick={() => setShowRulesModal(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '12px 16px',
+                      borderRadius: 18,
+                      background: 'rgba(15, 23, 42, 0.28)',
+                      backdropFilter: 'blur(12px)',
+                      border: '1.5px solid rgba(255, 255, 255, 0.32)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      minWidth: 235,
+                    }}
+                    title="点击查看黄金十二宫完整天梯与积分规则"
+                  >
+                    {currentLevel.imageUrl ? (
+                      <img
+                        src={currentLevel.imageUrl}
+                        alt={currentLevel.name}
+                        style={{ width: 54, height: 54, borderRadius: 14, objectFit: 'cover', border: '2px solid #fbbf24', flexShrink: 0 }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 54,
+                          height: 54,
+                          borderRadius: 14,
+                          background: currentLevel.gradient,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 22,
+                          border: '2px solid rgba(255,255,255,0.6)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {currentLevel.icon.slice(0, 2)}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700 }}>
+                        当前段位 · {scoreVal} XP
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {currentLevel.name}
+                      </div>
+                      <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 5 }}>
+                        <div style={{ height: '100%', width: `${rankPct}%`, background: '#fde047', borderRadius: 999 }} />
+                      </div>
+                      {nextLvl && (
+                        <div style={{ fontSize: 10.5, opacity: 0.88, marginTop: 3 }}>
+                          距下一阶还差 {Math.max(0, nextLvl.minPoints - scoreVal)} XP →
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })()}
             </div>
 
             {/* Progress bar */}
@@ -2501,16 +2779,19 @@ const DailyMissionHall: React.FC = () => {
               boxShadow: '0 8px 20px rgba(0, 113, 227, 0.08)',
             }}
           >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 22 }}>📝</span>
-                <strong style={{ fontSize: 20, color: '#0f172a' }}>每日网站刷题训练</strong>
-              </div>
-              <div style={{ fontSize: 13, color: '#475569' }}>
-                八大模块智能出题 · 含今日语音录入生词与 7 天必练
-              </div>
-              <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#dbeafe', color: '#1d4ed8' }}>
-                今日进度：{todayWebCompleted.length} / 8 模块
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <OptionalMascot src="/images/ui/card_practice.png" alt="每日网站刷题训练" size={62} />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 22 }}>📝</span>
+                  <strong style={{ fontSize: 20, color: '#0f172a' }}>每日网站刷题训练</strong>
+                </div>
+                <div style={{ fontSize: 13, color: '#475569' }}>
+                  八大模块智能出题 · 含今日语音录入生词与 7 天必练
+                </div>
+                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#dbeafe', color: '#1d4ed8' }}>
+                  今日进度：{todayWebCompleted.length} / 8 模块
+                </div>
               </div>
             </div>
             <ChevronRight size={24} color="#0071E3" style={{ flexShrink: 0 }} />
@@ -2532,16 +2813,19 @@ const DailyMissionHall: React.FC = () => {
               boxShadow: '0 8px 20px rgba(34, 73, 67, 0.08)',
             }}
           >
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 22 }}>🏛️</span>
-                <strong style={{ fontSize: 20, color: '#13312c' }}>希腊历史故事馆</strong>
-              </div>
-              <div style={{ fontSize: 13, color: '#3b645c' }}>
-                三年级神话 · 四年级古希腊 · 全 91 课双语音频与点读词卡
-              </div>
-              <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#d7ebe2', color: '#1f4b43' }}>
-                区块外自由收听 · 睡前磨耳朵 &amp; 历史预习
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <OptionalMascot src="/images/ui/card_history.png" alt="希腊历史故事馆" size={62} />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <span style={{ fontSize: 22 }}>🏛️</span>
+                  <strong style={{ fontSize: 20, color: '#13312c' }}>希腊历史故事馆</strong>
+                </div>
+                <div style={{ fontSize: 13, color: '#3b645c' }}>
+                  三年级神话 · 四年级古希腊 · 全 91 课双语音频与点读词卡
+                </div>
+                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#d7ebe2', color: '#1f4b43' }}>
+                  区块外自由收听 · 睡前磨耳朵 &amp; 历史预习
+                </div>
               </div>
             </div>
             <ChevronRight size={24} color="#224943" style={{ flexShrink: 0 }} />
@@ -2668,6 +2952,23 @@ const DailyMissionHall: React.FC = () => {
                     >
                       {vt.completed ? '✅ 已完成' : '结束打卡'}
                     </button>
+                    {(vt.elapsedSec > 0 || vt.completed) && (
+                      <button
+                        type="button"
+                        onClick={() => handleResetVocabSlot(item.slot)}
+                        style={{
+                          padding: '7px 8px',
+                          borderRadius: 10,
+                          border: '1px solid #fecaca',
+                          background: '#fff',
+                          color: '#dc2626',
+                          cursor: 'pointer',
+                        }}
+                        title="重置本次背词计时与状态"
+                      >
+                        <RotateCcw size={13} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -2815,22 +3116,77 @@ const DailyMissionHall: React.FC = () => {
             .map((id) => catalog.find((c) => c.id === id))
             .filter(Boolean) as typeof catalog;
 
-          const updateHistoryEpisodes = (nextIds: string[]) => {
+          const updateHistoryEpisodes = (nextIds: string[], newlyAddedId?: string) => {
             const nextEps = nextIds
               .map((id) => catalog.find((c) => c.id === id))
               .filter(Boolean) as typeof catalog;
             const noteStr = nextEps
               .map((e) => `${e.grade}年级U${e.unit}L${e.lesson}《${e.titleZh}》`)
               .join('、');
-            updateTodayMission((prev) => ({
-              ...prev,
-              historyLog: {
-                listened: nextIds.length > 0,
-                episodesCount: nextIds.length,
-                episodeNote: noteStr,
-                episodeIds: nextIds,
-              },
-            }));
+
+            // Auto-inject that episode's history vocabulary into custom_vocab for daily training!
+            let extraVocabUpdate: Partial<SharedState> | undefined = undefined;
+            if (newlyAddedId) {
+              const vocabIdx = historyVocabIndexData as Record<string, Array<{ el: string; zh: string }>>;
+              const epWords = vocabIdx[newlyAddedId] || [];
+              if (epWords.length > 0) {
+                const existingCustom = sharedState.custom_vocab || [];
+                const seenNorm = new Set(
+                  existingCustom.map((w: any) => normalizeGreekKey(w?.word_greek || ''))
+                );
+                let maxId = existingCustom.reduce((acc: number, w: any) => {
+                  const n = Number(w?.id);
+                  return Number.isFinite(n) && n > acc ? n : acc;
+                }, 90000);
+                const toAdd: any[] = [];
+                for (const ew of epWords) {
+                  const cleanEl = stripLeadingArticleParens(ew.el);
+                  const cleanZh = String(ew.zh || '').replace(/[\u0370-\u03FF\u1F00-\u1FFF]/g, '').trim();
+                  if (!cleanEl || !cleanZh) continue;
+                  const norm = normalizeGreekKey(cleanEl);
+                  if (!norm || seenNorm.has(norm)) continue;
+                  seenNorm.add(norm);
+                  maxId += 1;
+                  toAdd.push({
+                    id: maxId,
+                    book_id: '历史故事词汇',
+                    unit: 103,
+                    word_greek: cleanEl,
+                    word_chinese: cleanZh,
+                    pronunciation: 'new',
+                    example_greek: '',
+                    example_chinese: '',
+                    note_date: todayStr,
+                    source: 'history_story',
+                    history_lesson_id: newlyAddedId,
+                  });
+                }
+                if (toAdd.length > 0) {
+                  extraVocabUpdate = {
+                    custom_vocab: [...existingCustom, ...toAdd],
+                    unit_study_dates: {
+                      ...(sharedState.unit_study_dates || {}),
+                      ['历史故事词汇_103']: getMondayDateStr(todayStr),
+                    },
+                  };
+                  setHistorySyncMsg(`✨ 已自动将该课 ${toAdd.length} 个希腊语历史核心词同步至每日刷题词库与 7 天必练！`);
+                  setTimeout(() => setHistorySyncMsg(null), 5000);
+                }
+              }
+            }
+
+            updateTodayMission(
+              (prev) => ({
+                ...prev,
+                historyLog: {
+                  listened: nextIds.length > 0,
+                  episodesCount: nextIds.length,
+                  episodeNote: noteStr,
+                  episodeIds: nextIds,
+                },
+              }),
+              extraVocabUpdate
+            );
           };
 
           return (
@@ -2893,7 +3249,7 @@ const DailyMissionHall: React.FC = () => {
                   onChange={(e) => {
                     const id = e.target.value;
                     if (!id || selectedIds.includes(id)) return;
-                    updateHistoryEpisodes([...selectedIds, id]);
+                    updateHistoryEpisodes([...selectedIds, id], id);
                   }}
                   style={{
                     flex: 1,
@@ -2916,6 +3272,12 @@ const DailyMissionHall: React.FC = () => {
                   ))}
                 </select>
               </div>
+
+              {historySyncMsg && (
+                <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#047857', fontSize: 13, fontWeight: 700 }}>
+                  {historySyncMsg}
+                </div>
+              )}
 
               {selectedEpisodes.length > 0 && (
                 <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center' }}>
@@ -2994,37 +3356,93 @@ const DailyMissionHall: React.FC = () => {
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                      <span
-                        style={{
-                          fontSize: 26,
-                          width: 46,
-                          height: 46,
-                          borderRadius: 14,
-                          background: block.bg,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        {block.icon}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 800,
-                          padding: '5px 11px',
-                          borderRadius: 999,
-                          background: isDone ? '#ecfdf5' : isInProgress ? '#fffbeb' : '#f1f5f9',
-                          color: isDone ? '#047857' : isInProgress ? '#b45309' : '#64748b',
-                        }}
-                      >
-                        {isDone
-                          ? `已通关 ✅ · ${formatElapsedHuman(elapsed)}`
-                          : isInProgress
-                            ? `进行中 · 第 ${(st?.currentStep || 0) + 1}/${block.steps.length} 步`
-                            : `目标 ${effectiveMinutes} 分钟`}
-                      </span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <OptionalMascot
+                          src={`/images/ui/${block.id === 'block_school' ? 'mascot_school.png' : block.id === 'block_web' ? 'mascot_practice_tutor.png' : 'mascot_preview.png'}`}
+                          alt={block.title}
+                          size={48}
+                        />
+                        <span
+                          style={{
+                            fontSize: 24,
+                            width: 44,
+                            height: 44,
+                            borderRadius: 14,
+                            background: block.bg,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          {block.icon}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            fontWeight: 800,
+                            padding: '5px 10px',
+                            borderRadius: 999,
+                            background: isDone ? '#ecfdf5' : isInProgress ? '#fffbeb' : '#f1f5f9',
+                            color: isDone ? '#047857' : isInProgress ? '#b45309' : '#64748b',
+                          }}
+                        >
+                          {isDone
+                            ? `已通关 ✅ · ${formatElapsedHuman(elapsed)}`
+                            : isInProgress
+                              ? `进行中 · 第 ${(st?.currentStep || 0) + 1}/${block.steps.length} 步`
+                              : `目标 ${effectiveMinutes} 分钟`}
+                        </span>
+                        {(isDone || isInProgress || elapsed > 0) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`确定要重置「${block.title}」的计时与完成状态吗？`)) {
+                                handleResetBlock(block.id);
+                              }
+                            }}
+                            style={{
+                              padding: '5px 7px',
+                              borderRadius: 8,
+                              border: '1px solid #fecaca',
+                              background: '#fef2f2',
+                              color: '#dc2626',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                            title="重置本区块"
+                          >
+                            <RotateCcw size={13} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Clear Domain Scope Tags */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                      {block.id === 'block_school' && (
+                        <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ccfbf1', color: '#0f766e' }}>
+                          🏫 学校课业 · 复习与作业
+                        </span>
+                      )}
+                      {block.id === 'block_web' && (
+                        <>
+                          <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#dbeafe', color: '#1d4ed8' }}>
+                            💻 网站刷题
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ffedd5', color: '#c2410c' }}>
+                            👨‍🏫 希腊语私教课
+                          </span>
+                        </>
+                      )}
+                      {block.id === 'block_preview' && (
+                        <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9' }}>
+                          🏫 学校课业 · 下节课预习与练习册
+                        </span>
+                      )}
                     </div>
 
                     <h3 style={{ margin: '0 0 6px', fontSize: 18, color: '#0f172a' }}>{block.title}</h3>

@@ -57,7 +57,12 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   const schoolLog = mission.blockLogs?.school;
   const schoolItems = schoolLog?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
-  const workbookCheck = mission.blockLogs?.workbookCheck;
+  const workbookChecks =
+    mission.blockLogs?.workbookChecks && mission.blockLogs.workbookChecks.length > 0
+      ? mission.blockLogs.workbookChecks
+      : mission.blockLogs?.workbookCheck
+        ? [{ id: 'wb_legacy', ...mission.blockLogs.workbookCheck }]
+        : [];
   const previews = (mission.blockLogs?.previews || []).filter(
     (p) => p.subject || p.pages || p.summary || (p.actions && p.actions.length > 0) || p.newWordsCount > 0
   );
@@ -251,7 +256,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
           <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6 }}>
             🚀 区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
           </div>
-          {previews.length === 0 && !workbookCheck ? (
+          {previews.length === 0 && workbookChecks.length === 0 ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日预习的科目、页码与中文大意</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -266,17 +271,19 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
                   {p.summary && <div style={{ marginTop: 3 }}><strong>中文大意：</strong>{p.summary}</div>}
                 </div>
               ))}
-              {workbookCheck && (workbookCheck.actions?.length > 0 || workbookCheck.note) && (
-                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ddd6fe' }}>
-                  <div style={{ fontWeight: 800, color: '#6d28d9' }}>
-                    📘 练习册扫雷：{workbookCheck.bookName} P.{workbookCheck.fromPage}{workbookCheck.toPage > workbookCheck.fromPage ? `-${workbookCheck.toPage}` : ''}
+              {workbookChecks
+                .filter((wb) => (wb.actions && wb.actions.length > 0) || wb.note)
+                .map((wb, i) => (
+                  <div key={wb.id || i} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ddd6fe' }}>
+                    <div style={{ fontWeight: 800, color: '#6d28d9' }}>
+                      📘 练习册扫雷 {workbookChecks.length > 1 ? i + 1 : ''}：{wb.bookName} P.{wb.fromPage}{wb.toPage > wb.fromPage ? `-${wb.toPage}` : ''}
+                    </div>
+                    {wb.actions?.length > 0 && (
+                      <div style={{ color: '#64748b', marginTop: 2 }}>{wb.actions.join(' / ')}</div>
+                    )}
+                    {wb.note && <div style={{ marginTop: 2 }}>重点问题：{wb.note}</div>}
                   </div>
-                  {workbookCheck.actions?.length > 0 && (
-                    <div style={{ color: '#64748b', marginTop: 2 }}>{workbookCheck.actions.join(' / ')}</div>
-                  )}
-                  {workbookCheck.note && <div style={{ marginTop: 2 }}>重点问题：{workbookCheck.note}</div>}
-                </div>
-              )}
+                ))}
             </div>
           )}
         </div>

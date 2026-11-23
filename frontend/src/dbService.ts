@@ -19,10 +19,21 @@ export interface VocabSlotTimerState {
 export interface PreviewSubjectLog {
   id: string;
   subject: string;
+  fromPage?: number;
+  toPage?: number;
   pages: string;
   actions: string[];
   newWordsCount: number;
   summary: string;
+}
+
+export interface WorkbookCheckLog {
+  id: string;
+  bookName: string;
+  fromPage: number;
+  toPage: number;
+  actions: string[];
+  note: string;
 }
 
 export interface SchoolSubjectTaskLog {
@@ -52,6 +63,7 @@ export interface DailyBlockLogs {
     summary: string;
   };
   previews?: PreviewSubjectLog[];
+  workbookChecks?: WorkbookCheckLog[];
   workbookCheck?: {
     bookName: string;
     fromPage: number;
