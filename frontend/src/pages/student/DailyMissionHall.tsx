@@ -5,6 +5,7 @@ import {
   BookOpen,
   CheckCircle2,
   Clock,
+  ExternalLink,
   Flame,
   Headphones,
   Lock,
@@ -12,6 +13,7 @@ import {
   Pause,
   Play,
   RotateCcw,
+  Settings,
   Sparkles,
   Trophy,
   ChevronRight,
@@ -35,13 +37,17 @@ import {
   getDayMode,
   getTodayStr,
   getWeekdayLabel,
+  normalizeGreekKey,
   type DayMode,
 } from '../../lib/dailyMissionHelpers';
+import { getBookFrontier, makeMarkId } from '../../lib/pageProgress';
+import glossaryV2Data from '../../data/glossary_v2.json';
 import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 
 interface WizardStepDef {
   title: string;
+  shortLabel: string;
   instruction: string;
   buttonText: string;
   kind?:
@@ -51,6 +57,8 @@ interface WizardStepDef {
     | 'history_audio'
     | 'subject_picker'
     | 'five_min_scan';
+  linkTo?: string;
+  linkLabel?: string;
   hint?: string;
 }
 
@@ -75,30 +83,39 @@ const SUBJECT_OPTIONS = [
 const PARENT_PIN = '1234';
 
 function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionBlockDef[] {
-  const previewMins = record.lightPreviewMode ? 20 : 40;
+  const isLight = Boolean(record.lightPreviewMode);
+  const previewMins = isLight ? 20 : 40;
 
   const websiteBlock: MissionBlockDef = {
     id: 'block_web',
     icon: '💻',
     title: '区块二：网站刷题 + 历史故事',
-    subtitle: '40 分钟 · 纳入 120 分钟主区块 · 自动同步刷题进度',
-    minutes: 40,
+    subtitle: isLight && mode === 'sunday'
+      ? '25 分钟轻享模式 · 保手感不断档'
+      : '40 分钟 · 纳入 120 分钟主区块 · 自动同步刷题进度',
+    minutes: isLight && mode === 'sunday' ? 25 : 40,
     accent: '#0071E3',
     bg: '#eff6ff',
     steps: [
       {
         title: 'Step 1：完成今日网站刷题',
+        shortLabel: '完成今日网站八大模块刷题',
         instruction:
-          '点下方按钮回到网站首页，完成今天的八大模块日常练习（你刚录入的学校生词和课堂笔记也会自动出现哦！）。',
+          '点下方按钮进入网站刷题中心，完成今天的八大模块日常练习（你刚录入的学校生词和课堂笔记也会自动出现哦！）。',
         buttonText: '网站刷题做完了，下一步',
         kind: 'website_drills',
+        linkTo: '/practice',
+        linkLabel: '去刷题 →',
       },
       {
         title: 'Step 2：听 1 集希腊语历史故事',
+        shortLabel: '听 1 集历史故事 + 点读新词卡',
         instruction:
           '打开「希腊历史故事馆」，听 1 集三/四年级双语历史故事（优先听学校近期要上的课），并点读片尾新词卡。',
         buttonText: '历史故事听完啦，区块通关！',
         kind: 'history_audio',
+        linkTo: '/history',
+        linkLabel: '去听故事 →',
       },
     ],
   };
@@ -108,20 +125,22 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       {
         id: 'sat_cleanup',
         icon: '🧹',
-        title: '周六任务 1：本周课本大清盘',
-        subtitle: '30 分钟 · 消灭本周遗留圈词和问号',
-        minutes: 30,
+        title: isLight ? '周六任务 1：本周课本快清盘（轻享 15 分）' : '周六任务 1：本周课本大清盘',
+        subtitle: isLight ? '15 分钟轻享 · 只看最难的 ? 并语音入库' : '30 分钟 · 消灭本周遗留圈词和问号',
+        minutes: isLight ? 15 : 30,
         accent: '#0f766e',
         bg: '#f0fdfa',
         steps: [
           {
             title: 'Step 1：翻看本周全部旧标记',
+            shortLabel: '翻本周课本/私教书旧圈词和 ?，懂了擦掉',
             instruction:
               '拿出本周所有的学校课本和私教教材，只看还留着铅笔圈和 ? 的地方。遮住中文考自己：已经看懂的直接擦掉或打勾 ✓！',
             buttonText: '旧标记都过了一遍，下一步',
           },
           {
             title: 'Step 2：顽固生词语音入库',
+            shortLabel: '没记住的顽固词语音录入单词表',
             instruction:
               '把还是没记住的顽固词，用 iPad 语音输入录进下面的框里，它们会自动留在每日背词和 7 天必练队列里滚动消灭！',
             buttonText: '周清盘完成，通关！',
@@ -137,32 +156,38 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       {
         id: 'sat_preview',
         icon: '📖',
-        title: '周六任务 3：下周一二重点课预习',
-        subtitle: '40 分钟 · 提前扫雷，周一上课不发懵',
-        minutes: 40,
+        title: isLight ? '周六任务 3：下周重点课预习（轻享 20 分）' : '周六任务 3：下周一二重点课预习',
+        subtitle: isLight ? '20 分钟轻享 · 挑最难的 1 课扫生词' : '40 分钟 · 提前扫雷，周一上课不发懵',
+        minutes: isLight ? 20 : 40,
         accent: '#7c3aed',
         bg: '#f5f3ff',
         steps: [
           {
             title: 'Step 1：选择下周要预习的科目',
+            shortLabel: '选定下周一/二重点预习科目',
             instruction: '看看下周一、周二的课表，选一门文字最多、最容易听不懂的重点课开始预习。',
             buttonText: '选好了，下一步',
             kind: 'subject_picker',
+            linkTo: '/history',
+            linkLabel: '历史先听故事 →',
           },
           {
             title: 'Step 2：扫描新课重点生词',
+            shortLabel: '圈出 10–15 个重点生词并用铅笔标中文',
             instruction:
               '不用逐字翻译，只把影响理解大意的 10–15 个重点名词和动词查好，用铅笔把中文写在旁边。',
             buttonText: '生词标好了，下一步',
           },
           {
             title: 'Step 3：通读 + 中文讲给爸妈听',
+            shortLabel: '出声通读 1 遍 + 用中文复述大意给爸妈',
             instruction:
               '把课文出声通读 1 遍。然后合上书，去找爸爸或妈妈，用中文讲一遍「这篇课文大概讲了个什么事」！',
             buttonText: '我讲完啦，下一步',
           },
           {
             title: 'Step 4：瞄一眼练习册题目',
+            shortLabel: '看懂练习册题干要求（先不做题）',
             instruction:
               '翻开对应练习册，不用做完，花 5 分钟看懂题目要求在问什么就行。',
             buttonText: '下周预习通关！',
@@ -182,26 +207,29 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       {
         id: 'sun_tutor',
         icon: '👨‍🏫',
-        title: '周日任务 2：周一私教课备课 & 收心',
-        subtitle: '30 分钟 · 备好周一私教课，顺手理书包',
-        minutes: 30,
+        title: isLight ? '周日任务 2：周一私教备课（轻享 15 分）' : '周日任务 2：周一私教课备课 & 收心',
+        subtitle: isLight ? '15 分钟轻享 · 快速扫新词 + 理书包' : '30 分钟 · 备好周一私教课，顺手理书包',
+        minutes: isLight ? 15 : 30,
         accent: '#ea580c',
         bg: '#fff7ed',
         steps: [
           {
             title: 'Step 1：复习上次私教课错题',
+            shortLabel: '盖住答案口头重做上节私教课错题',
             instruction:
               '拿出希腊语私教教材，把上节课的错题和语法笔记盖住答案，口头重做一遍。',
             buttonText: '复习好了，下一步',
           },
           {
             title: 'Step 2：预习下 2 页 + 铅笔先填基础题',
+            shortLabel: '扫下 2 页生词 + 铅笔先填简单题 + 难处画 ?',
             instruction:
               '翻到明天要学的新 2 页：把不认识的新词标上中文，能自己做的填空/选择题先用铅笔试填；真不会的地方画上大大的 ?，明天直接让老师讲！',
             buttonText: '备课好了，下一步',
           },
           {
             title: 'Step 3：整理周一书包',
+            shortLabel: '按周一课表整理课本与练习册进书包',
             instruction: '按周一课表把学校课本、练习册和笔袋装进书包，今晚好好休息！',
             buttonText: '周日收心通关！',
           },
@@ -223,12 +251,14 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       steps: [
         {
           title: 'Step 1：课堂排雷（标中文）',
+          shortLabel: '查今天课上圈出的词，铅笔标中文 + 页眉写日期',
           instruction:
             '拿出今天的学校课本和笔记本，把上课圈出来没听懂的词查好，用铅笔把中文写在旁边，并在页眉写上今天的日期。',
           buttonText: '我都标好了，下一步',
         },
         {
           title: 'Step 2：语音录入学校生词 / 课堂笔记',
+          shortLabel: '语音录入今日学校生词与课堂笔记',
           instruction:
             '用 iPad 语音输入法，把今天查到的重要生词或上课笔记录进下面！入库后会直接进入你的单词表、每天 3 次闪卡和网站 7 天必练。',
           buttonText: '录好了，去做作业',
@@ -237,6 +267,7 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         },
         {
           title: 'Step 3：专心完成学校书面作业',
+          shortLabel: '专心完成今日学校书面作业',
           instruction:
             '生词都排完雷啦！现在专心完成学校今天的书面作业吧。如果提前做完，省下来的时间归你自由支配！',
           buttonText: '学校作业全部完成，通关！',
@@ -259,12 +290,16 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       steps: [
         {
           title: 'Step 1：选择今天要预习的学校科目',
+          shortLabel: '选定今天要预习的学校重点科目',
           instruction: '看看明后天课表，选一门最需要提前准备的学校主课（每天专攻 1 门就够了）。',
           buttonText: '选好了，下一步',
           kind: 'subject_picker',
+          linkTo: '/history',
+          linkLabel: '历史先听故事 →',
         },
         {
           title: 'Step 2：5 分钟快扫上一课旧标记（防遗忘）',
+          shortLabel: '⏱️ 5 分钟遮中文快扫上一课旧标记（会打 ✓）',
           instruction:
             '先往前翻一页！用手遮住铅笔写的中文，花 5 分钟扫一遍上一课标过的词：记住的打勾 ✓，忘了的留着周六清盘。',
           buttonText: '旧词扫完了，看新课',
@@ -272,12 +307,14 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         },
         {
           title: 'Step 3：预习新课 + 中文复述给爸妈听',
+          shortLabel: '标 10–15 词 + 通读 + 中文讲大意 + 瞄练习册',
           instruction:
             '① 用铅笔圈出 10–15 个最妨碍理解的生词并标中文；② 出声通读 1 遍；③ 合上书用中文给爸爸或妈妈讲一遍大意；④ 瞄一眼练习册题目要求（先不做题）。',
           buttonText: '学校预习完成，下一步',
         },
         {
           title: 'Step 4：私教课教材复习与预习',
+          shortLabel: '私教课错题复习 + 下 2 页铅笔先做基础题画 ?',
           instruction: record.hasTutorClass
             ? '今天有私教课：先盖住答案重做上次错题；再把今天/下次要讲的 2 页生词查好、简单题用铅笔先填、不会的画大 ? 让老师重点讲！'
             : '今天无私教课：趁热复习上节私教课笔记与错题，把下 2 页新词提前查好标中文，帮老师加快下次上课进度！',
@@ -300,9 +337,16 @@ const DailyMissionHall: React.FC = () => {
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [sessionElapsedSec, setSessionElapsedSec] = useState(0);
+  const [extraMinutes, setExtraMinutes] = useState(0);
   const [fiveMinSec, setFiveMinSec] = useState(300);
   const [fiveMinRunning, setFiveMinRunning] = useState(false);
   const [earlyFinishMsg, setEarlyFinishMsg] = useState<string | null>(null);
+
+  // Paper glossary book progress picker state
+  const [selectedGlossaryBook, setSelectedGlossaryBook] = useState<'glossary-a2' | 'glossary-b1'>('glossary-a2');
+  const [showGlossaryPicker, setShowGlossaryPicker] = useState(false);
+  const [glossarySearch, setGlossarySearch] = useState('');
+  const [glossarySavedMsg, setGlossarySavedMsg] = useState<string | null>(null);
 
   // Modals
   const [showQuickRecorder, setShowQuickRecorder] = useState(false);
@@ -348,6 +392,83 @@ const DailyMissionHall: React.FC = () => {
     () => calculateMissionStreak(sharedState.daily_missions, todayStr),
     [sharedState.daily_missions, todayStr]
   );
+
+  // Paper glossary progress (syncs with shared_state.page_progress just like AdminDashboard!)
+  const glossaryList = useMemo(() => {
+    const key = selectedGlossaryBook === 'glossary-b1' ? 'B1' : 'A2';
+    return (((glossaryV2Data as any).lists || {})[key] || []) as Array<{
+      idx: number;
+      word_greek: string;
+      word_chinese: string;
+      unit?: number;
+    }>;
+  }, [selectedGlossaryBook]);
+
+  const glossaryFrontier = useMemo(() => {
+    return getBookFrontier(sharedState.page_progress || [], selectedGlossaryBook);
+  }, [sharedState.page_progress, selectedGlossaryBook]);
+
+  const currentFrontierWord = useMemo(() => {
+    if (!glossaryFrontier) return null;
+    return glossaryList.find((w) => w.idx === glossaryFrontier) || glossaryList[glossaryFrontier - 1] || null;
+  }, [glossaryList, glossaryFrontier]);
+
+  const glossaryCandidates = useMemo(() => {
+    const q = glossarySearch.trim();
+    if (q) {
+      const normQ = normalizeGreekKey(q);
+      const numQ = Number(q);
+      return glossaryList
+        .filter((w) => {
+          if (Number.isFinite(numQ) && numQ > 0 && w.idx === numQ) return true;
+          if (normQ && normalizeGreekKey(w.word_greek).includes(normQ)) return true;
+          if (w.word_chinese.includes(q)) return true;
+          return false;
+        })
+        .slice(0, 24);
+    }
+    const startIdx = Math.max(0, glossaryFrontier);
+    return glossaryList.slice(startIdx, startIdx + 24);
+  }, [glossaryList, glossaryFrontier, glossarySearch]);
+
+  const handleSelectGlossaryProgress = (word: { idx: number; word_greek: string; word_chinese: string }) => {
+    const existing = Array.isArray(sharedState.page_progress) ? sharedState.page_progress : [];
+    const filtered = existing.filter(
+      (m) => !(m.bookId === selectedGlossaryBook && m.date === todayStr)
+    );
+    const nextMarks = [
+      ...filtered,
+      {
+        id: makeMarkId(),
+        date: todayStr,
+        bookId: selectedGlossaryBook,
+        upToPage: word.idx,
+        note: `Leon自选：背到 #${word.idx} ${word.word_greek}`,
+      },
+    ];
+    setSharedState((prev) => ({ ...prev, page_progress: nextMarks }));
+    saveSharedState({ page_progress: nextMarks });
+    setGlossarySavedMsg(`✅ 已同步进度到第 ${word.idx} 词（${word.word_greek} = ${word.word_chinese}），刷题词库已自动解锁！`);
+    setShowGlossaryPicker(false);
+    setGlossarySearch('');
+    setTimeout(() => setGlossarySavedMsg(null), 4500);
+  };
+
+  const handleTogglePaperVocabCheck = (slot: VocabSlot) => {
+    const alreadyChecked = Boolean(todayMission.vocabChecks?.[slot]);
+    const nextVal = !alreadyChecked;
+    const bonus = !alreadyChecked && nextVal ? 10 : 0;
+    updateTodayMission(
+      (prev) => ({
+        ...prev,
+        vocabChecks: {
+          ...(prev.vocabChecks || { morning: false, afternoon: false, night: false }),
+          [slot]: nextVal,
+        },
+      }),
+      bonus > 0 ? { score: (sharedState.score || 0) + bonus } : undefined
+    );
+  };
 
   // Persist helper for today's mission record
   const updateTodayMission = (
@@ -403,6 +524,7 @@ const DailyMissionHall: React.FC = () => {
     const existing = todayMission.blocks?.[block.id];
     setActiveBlockId(block.id);
     setSessionElapsedSec(existing?.elapsedSec || 0);
+    setExtraMinutes(0);
     setTimerRunning(existing?.status !== 'done');
     setFiveMinSec(300);
     setFiveMinRunning(false);
@@ -458,7 +580,7 @@ const DailyMissionHall: React.FC = () => {
     if (nextStep >= activeBlock.steps.length) {
       // Completed the block!
       const alreadyDone = curState.status === 'done';
-      const targetSec = activeBlock.minutes * 60;
+      const targetSec = (activeBlock.minutes + extraMinutes) * 60;
       const savedMinutes = Math.floor((targetSec - sessionElapsedSec) / 60);
       setTimerRunning(false);
       setFiveMinRunning(false);
@@ -614,8 +736,9 @@ const DailyMissionHall: React.FC = () => {
     };
     const stepIndex = Math.min(blockState.currentStep || 0, activeBlock.steps.length - 1);
     const stepDef = activeBlock.steps[stepIndex];
-    const remainingSec = Math.max(0, activeBlock.minutes * 60 - sessionElapsedSec);
-    const isOvertime = sessionElapsedSec > activeBlock.minutes * 60;
+    const totalTargetSec = (activeBlock.minutes + extraMinutes) * 60;
+    const remainingSec = Math.max(0, totalTargetSec - sessionElapsedSec);
+    const isOvertime = sessionElapsedSec > totalTargetSec;
 
     return (
       <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '20px 16px 60px' }}>
@@ -656,10 +779,12 @@ const DailyMissionHall: React.FC = () => {
               保存并返回控制台
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-                  {isOvertime ? '已超过建议时长' : '区块倒计时'}（已专注 {formatElapsedHuman(sessionElapsedSec)}）
+                  {isOvertime ? '已超出计划（可点右侧延时）' : '灵活倒计时'}
+                  {extraMinutes > 0 ? ` · 已延长 +${extraMinutes} 分` : ''}
+                  （已用 {formatElapsedHuman(sessionElapsedSec)}）
                 </div>
                 <div
                   style={{
@@ -677,20 +802,56 @@ const DailyMissionHall: React.FC = () => {
                 type="button"
                 onClick={() => setTimerRunning((r) => !r)}
                 style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: 999,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '10px 14px',
+                  borderRadius: 12,
                   border: 'none',
                   background: timerRunning ? '#f59e0b' : activeBlock.accent,
                   color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: 14,
                   cursor: 'pointer',
                 }}
                 title={timerRunning ? '暂停计时' : '继续计时'}
               >
-                {timerRunning ? <Pause size={20} /> : <Play size={20} />}
+                {timerRunning ? <Pause size={16} /> : <Play size={16} />}
+                {timerRunning ? '暂停' : '继续'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setExtraMinutes((m) => m + 5)}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  border: '1.5px solid #cbd5e1',
+                  background: '#f8fafc',
+                  color: '#334155',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+                title="内容较多，手动延长 5 分钟"
+              >
+                +5 分
+              </button>
+              <button
+                type="button"
+                onClick={() => setExtraMinutes((m) => m + 10)}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  border: '1.5px solid #cbd5e1',
+                  background: '#f8fafc',
+                  color: '#334155',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+                title="内容较多，手动延长 10 分钟"
+              >
+                +10 分
               </button>
             </div>
           </div>
@@ -843,7 +1004,7 @@ const DailyMissionHall: React.FC = () => {
                     </div>
                   </div>
                   <Link
-                    to="/"
+                    to="/practice"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -857,7 +1018,7 @@ const DailyMissionHall: React.FC = () => {
                       fontSize: 16,
                     }}
                   >
-                    🚀 去首页刷题
+                    🚀 进入网站刷题中心
                     <ChevronRight size={18} />
                   </Link>
                 </div>
@@ -1115,7 +1276,7 @@ const DailyMissionHall: React.FC = () => {
           </div>
         )}
 
-        {/* Top Navigation Bar */}
+        {/* Top Navigation Bar (Homepage Header) */}
         <div
           style={{
             display: 'flex',
@@ -1128,41 +1289,29 @@ const DailyMissionHall: React.FC = () => {
         >
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <Link
-              to="/"
+              to="/admin"
+              title="进入家长控制后台"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
-                padding: '9px 14px',
-                borderRadius: 12,
+                gap: 8,
+                padding: '6px 12px 6px 6px',
+                borderRadius: 999,
                 background: '#fff',
                 border: '1px solid #dbe4ef',
                 color: '#1e293b',
                 textDecoration: 'none',
                 fontWeight: 700,
-                fontSize: 14,
+                fontSize: 13,
               }}
             >
-              <ArrowLeft size={16} />
-              返回刷题首页
-            </Link>
-            <Link
-              to="/history"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '9px 14px',
-                borderRadius: 12,
-                background: '#edf5f0',
-                border: '1px solid #c9ddd4',
-                color: '#224943',
-                textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: 14,
-              }}
-            >
-              🏛️ 历史故事馆
+              <img
+                src="/leon_avatar.png"
+                alt="Leon"
+                style={{ width: 28, height: 28, borderRadius: 999, objectFit: 'cover' }}
+              />
+              <span>Leon Greek Coach</span>
+              <Settings size={14} color="#64748b" />
             </Link>
           </div>
 
@@ -1279,8 +1428,32 @@ const DailyMissionHall: React.FC = () => {
               justifyContent: 'space-between',
             }}
           >
-            {activeMode === 'weekday' ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() =>
+                  updateTodayMission((prev) => ({
+                    ...prev,
+                    lightPreviewMode: !prev.lightPreviewMode,
+                  }))
+                }
+                style={{
+                  padding: '7px 13px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(255,255,255,0.45)',
+                  background: todayMission.lightPreviewMode ? '#fde047' : 'rgba(255,255,255,0.14)',
+                  color: todayMission.lightPreviewMode ? '#713f12' : '#fff',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                {todayMission.lightPreviewMode
+                  ? '⚡ 已开启忙碌日轻享模式（任务已减负）'
+                  : '⚡ 忙碌日切轻享模式（外出/时间紧时点我）'}
+              </button>
+
+              {activeMode === 'weekday' && (
                 <button
                   type="button"
                   onClick={() =>
@@ -1302,31 +1475,8 @@ const DailyMissionHall: React.FC = () => {
                 >
                   {todayMission.hasTutorClass ? '✅ 今天有私教课（90分）' : '今天无私教课'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateTodayMission((prev) => ({
-                      ...prev,
-                      lightPreviewMode: !prev.lightPreviewMode,
-                    }))
-                  }
-                  style={{
-                    padding: '7px 13px',
-                    borderRadius: 999,
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    background: todayMission.lightPreviewMode ? '#fde047' : 'rgba(255,255,255,0.12)',
-                    color: todayMission.lightPreviewMode ? '#713f12' : '#fff',
-                    fontWeight: 700,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {todayMission.lightPreviewMode ? '⚡ 已开启轻享模式（区块三 20 分）' : '⚡ 忙碌日切轻享模式'}
-                </button>
-              </div>
-            ) : (
-              <span style={{ fontSize: 13, opacity: 0.9 }}>周末节奏：重清盘、保手感、留足休息时间</span>
-            )}
+              )}
+            </div>
 
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <span style={{ fontSize: 12, opacity: 0.8 }}>切换视图：</span>
@@ -1353,7 +1503,79 @@ const DailyMissionHall: React.FC = () => {
           </div>
         </div>
 
-        {/* Fragment Section: Daily 3x Flashcard Vocab */}
+        {/* Two Big Core Entry Cards: Daily Practice & History Story Hall */}
+        <section
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
+            gap: 14,
+            marginBottom: 20,
+          }}
+        >
+          <Link
+            to="/practice"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+              padding: '20px 22px',
+              borderRadius: 20,
+              background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)',
+              border: '2px solid #93c5fd',
+              color: '#0b4f9c',
+              textDecoration: 'none',
+              boxShadow: '0 8px 20px rgba(0, 113, 227, 0.08)',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 22 }}>📝</span>
+                <strong style={{ fontSize: 20, color: '#0f172a' }}>每日网站刷题训练</strong>
+              </div>
+              <div style={{ fontSize: 13, color: '#475569' }}>
+                八大模块智能出题 · 含今日语音录入生词与 7 天必练
+              </div>
+              <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#dbeafe', color: '#1d4ed8' }}>
+                今日进度：{todayWebCompleted.length} / 8 模块
+              </div>
+            </div>
+            <ChevronRight size={24} color="#0071E3" style={{ flexShrink: 0 }} />
+          </Link>
+
+          <Link
+            to="/history"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+              padding: '20px 22px',
+              borderRadius: 20,
+              background: 'linear-gradient(135deg, #ffffff 0%, #edf5f0 100%)',
+              border: '2px solid #a7d3c0',
+              color: '#224943',
+              textDecoration: 'none',
+              boxShadow: '0 8px 20px rgba(34, 73, 67, 0.08)',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <span style={{ fontSize: 22 }}>🏛️</span>
+                <strong style={{ fontSize: 20, color: '#13312c' }}>希腊历史故事馆</strong>
+              </div>
+              <div style={{ fontSize: 13, color: '#3b645c' }}>
+                三年级神话 · 四年级古希腊 · 全 91 课双语音频与点读词卡
+              </div>
+              <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#d7ebe2', color: '#1f4b43' }}>
+                听故事预习历史课 · 点读新词卡
+              </div>
+            </div>
+            <ChevronRight size={24} color="#224943" style={{ flexShrink: 0 }} />
+          </Link>
+        </section>
+
+        {/* Fragment Section: Daily 3x Paper Vocab Check-in + Glossary Progress Self-Sync */}
         <section
           style={{
             background: '#ffffff',
@@ -1368,20 +1590,36 @@ const DailyMissionHall: React.FC = () => {
             <div>
               <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Sparkles size={18} color="#f59e0b" />
-                碎片背单词（每天 3 次 · 每次 5–10 分钟）
+                每日 3 次背单词（纸质单词书打卡 + 进度自选）
               </h2>
               <p style={{ margin: '3px 0 0', fontSize: 13, color: '#64748b' }}>
-                自动优先抽你语音录入的学校生词、课堂笔记词和 SRS 到期旧词
+                在纸质单词书上背完直接点打卡，并在下方选一下「今天背到哪个词」，系统自动同步解锁！
               </p>
             </div>
+            <button
+              type="button"
+              onClick={() => setActiveFlashcardSlot('morning')}
+              style={{
+                padding: '7px 12px',
+                borderRadius: 999,
+                border: '1px solid #bfdbfe',
+                background: '#eff6ff',
+                color: '#1d4ed8',
+                fontWeight: 700,
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              🃏 顺便刷生词电子闪卡
+            </button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
             {(
               [
-                { slot: 'morning' as VocabSlot, label: '🌅 早：新词 + 旧词', desc: '早起 / 午饭前 · 12词' },
-                { slot: 'afternoon' as VocabSlot, label: '☀️ 中：遮中文测新词', desc: '下午区块间隙 · 10词' },
-                { slot: 'night' as VocabSlot, label: '🌙 晚：睡前总抽查', desc: '睡前锁存记忆 · 10词' },
+                { slot: 'morning' as VocabSlot, label: '🌅 第 1 次（早/午）', desc: '复习昨天旧词 + 开今日新词' },
+                { slot: 'afternoon' as VocabSlot, label: '☀️ 第 2 次（下午）', desc: '遮中文快过一遍今日新词' },
+                { slot: 'night' as VocabSlot, label: '🌙 第 3 次（睡前）', desc: '睡前总抽查今日新词与难词' },
               ]
             ).map((item) => {
               const checked = Boolean(todayMission.vocabChecks?.[item.slot]);
@@ -1389,7 +1627,7 @@ const DailyMissionHall: React.FC = () => {
                 <button
                   key={item.slot}
                   type="button"
-                  onClick={() => setActiveFlashcardSlot(item.slot)}
+                  onClick={() => handleTogglePaperVocabCheck(item.slot)}
                   style={{
                     textAlign: 'left',
                     padding: '14px 16px',
@@ -1408,13 +1646,143 @@ const DailyMissionHall: React.FC = () => {
                       {item.label}
                     </div>
                     <div style={{ fontSize: 12, color: checked ? '#059669' : '#64748b', marginTop: 3 }}>
-                      {checked ? '今日已打卡 ✅（可再刷）' : item.desc}
+                      {checked ? '已完成打卡 ✅（+10分）' : item.desc}
                     </div>
                   </div>
-                  {checked ? <CheckCircle2 size={22} color="#10b981" /> : <ChevronRight size={18} color="#94a3b8" />}
+                  {checked ? <CheckCircle2 size={22} color="#10b981" /> : <span style={{ fontSize: 12, fontWeight: 700, color: '#0071E3' }}>点我打卡</span>}
                 </button>
               );
             })}
+          </div>
+
+          {/* Paper Glossary Progress Self-Update Bar */}
+          <div
+            style={{
+              marginTop: 14,
+              padding: '14px 16px',
+              borderRadius: 16,
+              background: '#f8fafc',
+              border: '1px solid #dbe4ef',
+            }}
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>📖 纸质单词表进度：</span>
+                <div style={{ display: 'inline-flex', gap: 4 }}>
+                  {(
+                    [
+                      { id: 'glossary-a2' as const, label: 'A2 词表' },
+                      { id: 'glossary-b1' as const, label: 'B 词表' },
+                    ]
+                  ).map((bk) => (
+                    <button
+                      key={bk.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedGlossaryBook(bk.id);
+                        setGlossarySearch('');
+                      }}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: 8,
+                        border: selectedGlossaryBook === bk.id ? '1.5px solid #0071E3' : '1px solid #cbd5e1',
+                        background: selectedGlossaryBook === bk.id ? '#eff6ff' : '#fff',
+                        color: selectedGlossaryBook === bk.id ? '#005bb5' : '#475569',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {bk.label}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ fontSize: 13, color: '#334155' }}>
+                  {currentFrontierWord
+                    ? <>当前已背到 <strong>第 {glossaryFrontier} 词：{currentFrontierWord.word_greek}</strong>（{currentFrontierWord.word_chinese}）</>
+                    : '尚未标记进度'}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowGlossaryPicker((v) => !v)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: showGlossaryPicker ? '#334155' : '#0071E3',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                {showGlossaryPicker ? '收起词表选择' : '选择今天背到哪里 →'}
+              </button>
+            </div>
+
+            {glossarySavedMsg && (
+              <div style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, background: '#ecfdf5', color: '#047857', fontSize: 13, fontWeight: 700 }}>
+                {glossarySavedMsg}
+              </div>
+            )}
+
+            {showGlossaryPicker && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #cbd5e1' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+                  <input
+                    type="text"
+                    placeholder="语音或输入你背到的最后一个词（希腊语 / 中文 / 序号），或直接点下方紧接的词"
+                    value={glossarySearch}
+                    onChange={(e) => setGlossarySearch(e.target.value)}
+                    style={{
+                      flex: 1,
+                      minWidth: 220,
+                      padding: '9px 12px',
+                      borderRadius: 10,
+                      border: '1.5px solid #cbd5e1',
+                      fontSize: 14,
+                    }}
+                  />
+                  {glossarySearch && (
+                    <button
+                      type="button"
+                      onClick={() => setGlossarySearch('')}
+                      style={{ padding: '8px 12px', borderRadius: 10, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontSize: 13 }}
+                    >
+                      清空
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
+                  {glossarySearch
+                    ? `搜索结果（点一下即可设为「今天背到这里」）：`
+                    : `紧接当前进度后面的 24 个词（点一下今天背到的最后一个词，家长后台会自动同步）：`}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', gap: 8, maxHeight: 240, overflowY: 'auto' }}>
+                  {glossaryCandidates.map((w) => (
+                    <button
+                      key={w.idx}
+                      type="button"
+                      onClick={() => handleSelectGlossaryProgress(w)}
+                      style={{
+                        textAlign: 'left',
+                        padding: '8px 10px',
+                        borderRadius: 10,
+                        border: '1px solid #cbd5e1',
+                        background: '#ffffff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <div style={{ fontSize: 11, color: '#0071E3', fontWeight: 700 }}>#{w.idx}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>{w.word_greek}</div>
+                      <div style={{ fontSize: 12, color: '#475569' }}>{w.word_chinese}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -1488,19 +1856,118 @@ const DailyMissionHall: React.FC = () => {
                     </div>
 
                     <h3 style={{ margin: '0 0 6px', fontSize: 18, color: '#0f172a' }}>{block.title}</h3>
-                    <p style={{ margin: 0, fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>{block.subtitle}</p>
+                    <p style={{ margin: '0 0 12px', fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>{block.subtitle}</p>
 
-                    {/* Live sync hint for Block 2 */}
-                    {block.id === 'block_web' && (
-                      <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#0071E3', background: '#eff6ff', padding: '6px 10px', borderRadius: 8 }}>
-                        今日网站刷题已同步：{todayWebCompleted.length} / 8 模块完成
+                    {/* Explicit Visible Checklist for this Block */}
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        borderRadius: 14,
+                        padding: '10px 12px',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#64748b', letterSpacing: 0.3 }}>
+                        本区块通关清单（{block.steps.length} 步）
                       </div>
-                    )}
-                    {block.id === 'block_school' && todayAddedWordsCount > 0 && (
-                      <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#0f766e', background: '#f0fdfa', padding: '6px 10px', borderRadius: 8 }}>
-                        今日已语音入库 {todayAddedWordsCount} 个生词/笔记
-                      </div>
-                    )}
+                      {block.steps.map((step, idx) => {
+                        const stepDone = isDone || (isInProgress && idx < (st?.currentStep || 0));
+                        const stepActive = isInProgress && idx === (st?.currentStep || 0);
+                        return (
+                          <div
+                            key={step.title}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              justifyContent: 'space-between',
+                              gap: 8,
+                              fontSize: 13,
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, flex: 1 }}>
+                              <span
+                                style={{
+                                  flexShrink: 0,
+                                  marginTop: 1,
+                                  fontWeight: 800,
+                                  color: stepDone ? '#10b981' : stepActive ? block.accent : '#94a3b8',
+                                }}
+                              >
+                                {stepDone ? '✅' : stepActive ? '🔵' : `${idx + 1}.`}
+                              </span>
+                              <span
+                                style={{
+                                  color: stepDone ? '#047857' : stepActive ? '#0f172a' : '#334155',
+                                  fontWeight: stepActive ? 700 : 500,
+                                  textDecoration: stepDone ? 'line-through' : 'none',
+                                  opacity: stepDone ? 0.85 : 1,
+                                }}
+                              >
+                                {step.shortLabel}
+                                {step.kind === 'website_drills' && (
+                                  <span style={{ marginLeft: 4, color: '#0071E3', fontWeight: 700 }}>
+                                    ({todayWebCompleted.length}/8)
+                                  </span>
+                                )}
+                                {step.kind === 'vocab_recorder' && todayAddedWordsCount > 0 && (
+                                  <span style={{ marginLeft: 4, color: '#0f766e', fontWeight: 700 }}>
+                                    (已录{todayAddedWordsCount}词)
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+
+                            {/* Direct hyperlink right inside the block checklist */}
+                            {step.linkTo && (
+                              <Link
+                                to={step.linkTo}
+                                style={{
+                                  flexShrink: 0,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 3,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: block.accent,
+                                  background: '#ffffff',
+                                  border: `1px solid ${block.accent}44`,
+                                  padding: '2px 8px',
+                                  borderRadius: 999,
+                                  textDecoration: 'none',
+                                }}
+                              >
+                                {step.linkLabel || '直达'}
+                                <ExternalLink size={11} />
+                              </Link>
+                            )}
+                            {step.kind === 'vocab_recorder' && (
+                              <button
+                                type="button"
+                                onClick={() => setShowQuickRecorder(true)}
+                                style={{
+                                  flexShrink: 0,
+                                  fontSize: 12,
+                                  fontWeight: 700,
+                                  color: '#0071E3',
+                                  background: '#ffffff',
+                                  border: '1px solid #93c5fd',
+                                  padding: '2px 8px',
+                                  borderRadius: 999,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                🎙️ 录词
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
                     {st?.subject && (
                       <div style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: '#6d28d9', background: '#f5f3ff', padding: '6px 10px', borderRadius: 8 }}>
                         已选预习科目：{st.subject}

@@ -1,15 +1,12 @@
 import type { DailyMissionRecord, VocabSrsEntry } from '../dbService';
+import { todayStr as greeceTodayStr } from './pageProgress';
 import vocabV2Data from '../data/vocabulary_v2.json';
 import glossaryV2Data from '../data/glossary_v2.json';
 
 export type DayMode = 'weekday' | 'saturday' | 'sunday';
 
 export function getTodayStr(): string {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  return greeceTodayStr();
 }
 
 export function getDayMode(dateStr: string): DayMode {
@@ -107,13 +104,14 @@ function getLookupIndex(): VocabSuggestion[] {
   const seen = new Set<string>();
 
   const v2Entries = ((vocabV2Data as any).entries || []) as Array<{
-    greek?: string;
-    zh?: string;
+    headword?: string;
+    word_greek?: string;
+    word_chinese?: string;
     book_id?: string;
   }>;
   for (const e of v2Entries) {
-    const gr = String(e.greek || '').trim();
-    const zh = String(e.zh || '').trim();
+    const gr = String(e.headword || e.word_greek || '').trim();
+    const zh = String(e.word_chinese || '').trim();
     if (!gr || !zh) continue;
     const key = normalizeGreekKey(gr);
     if (seen.has(key)) continue;
@@ -121,11 +119,14 @@ function getLookupIndex(): VocabSuggestion[] {
     list.push({ greek: gr, chinese: zh, source: String(e.book_id || '课本').toUpperCase() });
   }
 
-  const glossLists = ((glossaryV2Data as any).lists || {}) as Record<string, Array<{ greek?: string; zh?: string }>>;
+  const glossLists = ((glossaryV2Data as any).lists || {}) as Record<
+    string,
+    Array<{ word_greek?: string; word_chinese?: string }>
+  >;
   for (const [level, arr] of Object.entries(glossLists)) {
     for (const e of arr || []) {
-      const gr = String(e.greek || '').trim();
-      const zh = String(e.zh || '').trim();
+      const gr = String(e.word_greek || '').trim();
+      const zh = String(e.word_chinese || '').trim();
       if (!gr || !zh) continue;
       const key = normalizeGreekKey(gr);
       if (seen.has(key)) continue;

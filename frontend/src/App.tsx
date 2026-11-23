@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import StudentApp from './pages/student/StudentApp';
+import DailyMissionHall from './pages/student/DailyMissionHall';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import { lazy, Suspense, useState } from 'react';
 
 import ErrorBoundary from './components/ErrorBoundary';
 
+const StudentApp = lazy(() => import('./pages/student/StudentApp'));
 const HistoryStoryHall = lazy(() => import('./pages/student/HistoryStoryHall'));
-const DailyMissionHall = lazy(() => import('./pages/student/DailyMissionHall'));
 
 function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
@@ -28,11 +28,12 @@ function App() {
     <ErrorBoundary>
       <Router>
         <Routes>
-          {/* Frontend Learning App */}
-          <Route path="/" element={<StudentApp />} />
-          <Route path="/mission" element={
-            <Suspense fallback={<p role="status">正在打开今日学习通关台…</p>}>
-              <DailyMissionHall />
+          {/* Frontend Learning App: Daily Mission Dashboard is now Home */}
+          <Route path="/" element={<DailyMissionHall />} />
+          <Route path="/mission" element={<Navigate to="/" replace />} />
+          <Route path="/practice" element={
+            <Suspense fallback={<p role="status" style={{ padding: 24 }}>正在打开每日刷题训练中心…</p>}>
+              <StudentApp />
             </Suspense>
           } />
           <Route path="/history" element={

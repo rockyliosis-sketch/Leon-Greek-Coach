@@ -88,11 +88,14 @@ export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
     }
 
     // Priority D: Fill remaining with A2 official glossary
-    const a2List = (((glossaryV2Data as any).lists || {}).A2 || []) as Array<{ greek?: string; zh?: string }>;
+    const a2List = (((glossaryV2Data as any).lists || {}).A2 || []) as Array<{
+      word_greek?: string;
+      word_chinese?: string;
+    }>;
     for (let i = 0; i < a2List.length && items.length < targetCount; i++) {
       const e = a2List[(i * 17 + todayStr.charCodeAt(todayStr.length - 1)) % a2List.length];
-      if (e?.greek && e?.zh) {
-        pushIfValid(e.greek, e.zh, 'A2 词表');
+      if (e?.word_greek && e?.word_chinese) {
+        pushIfValid(e.word_greek, e.word_chinese, 'A2 词表');
       }
     }
 
