@@ -549,7 +549,12 @@ const DailyMissionHall: React.FC = () => {
   }, [sharedState.completed_date_modules, todayStr]);
 
   const todayWords = useMemo(() => {
-    return (sharedState.custom_vocab || []).filter((w: any) => w?.note_date === todayStr);
+    return (sharedState.custom_vocab || []).filter(
+      (w: any) =>
+        w?.note_date === todayStr &&
+        w?.source !== 'history_story' &&
+        w?.book_id !== '历史故事词汇'
+    );
   }, [sharedState.custom_vocab, todayStr]);
 
   const streak = useMemo(

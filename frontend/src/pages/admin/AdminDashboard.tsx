@@ -2555,7 +2555,10 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           const todayKey = getTodayStr();
           const rec = dailyMissions[todayKey] || createDefaultMissionRecord(todayKey);
           const todayStudentWords = cloudCustomVocab.filter(
-            (w: any) => w?.note_date === todayKey
+            (w: any) =>
+              w?.note_date === todayKey &&
+              w?.source !== 'history_story' &&
+              w?.book_id !== '历史故事词汇'
           );
           const handleDeleteStudentWord = (wordId: any) => {
             const nextCustom = cloudCustomVocab.filter((w: any) => w?.id !== wordId);

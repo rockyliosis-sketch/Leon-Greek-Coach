@@ -45,7 +45,13 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
 
   const todayEntries = useMemo(() => {
-    return (customVocab || []).filter((w: any) => w && w.note_date === todayStr);
+    return (customVocab || []).filter(
+      (w: any) =>
+        w &&
+        w.note_date === todayStr &&
+        w.source !== 'history_story' &&
+        w.book_id !== '历史故事词汇'
+    );
   }, [customVocab, todayStr]);
 
   const filledRowsCount = useMemo(
