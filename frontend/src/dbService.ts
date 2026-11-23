@@ -25,19 +25,40 @@ export interface PreviewSubjectLog {
   summary: string;
 }
 
+export interface SchoolSubjectTaskLog {
+  subject: string;
+  fromPage: number;
+  toPage: number;
+  hwActions?: string[];
+  questionMarks?: number;
+  note?: string;
+}
+
 export interface DailyBlockLogs {
   school?: {
     subjects: string[];
     pages: string;
     summary: string;
+    items?: SchoolSubjectTaskLog[];
   };
   tutor?: {
     mode: 'preview' | 'review' | 'both';
+    book?: string;
+    fromPage?: number;
+    toPage?: number;
     pages: string;
     questionMarks: number;
+    actions?: string[];
     summary: string;
   };
   previews?: PreviewSubjectLog[];
+  workbookCheck?: {
+    bookName: string;
+    fromPage: number;
+    toPage: number;
+    actions: string[];
+    note: string;
+  };
 }
 
 export interface DailyMissionRecord {

@@ -4,7 +4,7 @@ import type { VocabSrsEntry } from '../dbService';
 import { computeNextSrs, normalizeGreekKey, speakGreekWord } from '../lib/dailyMissionHelpers';
 import glossaryV2Data from '../data/glossary_v2.json';
 
-export type VocabSlot = 'morning' | 'afternoon' | 'night';
+export type VocabSlot = 'morning' | 'afternoon' | 'night' | 'quick_scan';
 
 interface FlashcardItem {
   key: string;
@@ -18,6 +18,7 @@ interface DailyFlashcardModalProps {
   todayStr: string;
   customVocab: any[];
   vocabSrs: Record<string, VocabSrsEntry>;
+  glossaryFrontier?: number;
   onUpdateSrs: (nextSrs: Record<string, VocabSrsEntry>) => void;
   onCompleteSlot: (slot: VocabSlot, reviewedCount: number) => void;
   onClose: () => void;
@@ -27,6 +28,7 @@ const SLOT_META: Record<VocabSlot, { title: string; subtitle: string; limit: num
   morning: { title: '🌅 早间背词（新词 + 旧词）', subtitle: '先看今天/近期新词，再快速复习到期旧词', limit: 12 },
   afternoon: { title: '☀️ 午后快刷（遮中文自测）', subtitle: '只看希腊语脱口而出中文，卡壳的点「忘了」', limit: 10 },
   night: { title: '🌙 睡前锁存（今日重点总抽查）', subtitle: '睡前过一遍今天新词与易忘词，记忆最牢', limit: 10 },
+  quick_scan: { title: '⚡ 5 分钟闪卡快扫（新录生词 + 白天词表）', subtitle: '自动混入你录入的课堂生词和白天刚背过的词表词，看词想中文极速自测！', limit: 15 },
 };
 
 export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
@@ -34,6 +36,7 @@ export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
   todayStr,
   customVocab,
   vocabSrs,
+  glossaryFrontier = 0,
   onUpdateSrs,
   onCompleteSlot,
   onClose,
@@ -87,11 +90,21 @@ export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
       }
     }
 
-    // Priority D: Fill remaining with A2 official glossary
+    // Priority D: Include today's paper-glossary frontier words (recent memorized words!)
     const a2List = (((glossaryV2Data as any).lists || {}).A2 || []) as Array<{
+      idx?: number;
       word_greek?: string;
       word_chinese?: string;
     }>;
+    if (glossaryFrontier > 0) {
+      const start = Math.max(0, glossaryFrontier - 15);
+      for (let i = glossaryFrontier - 1; i >= start && items.length < targetCount; i--) {
+        const e = a2List[i];
+        if (e?.word_greek && e?.word_chinese) {
+          pushIfValid(e.word_greek, e.word_chinese, '近期背过词表');
+        }
+      }
+    }
     for (let i = 0; i < a2List.length && items.length < targetCount; i++) {
       const e = a2List[(i * 17 + todayStr.charCodeAt(todayStr.length - 1)) % a2List.length];
       if (e?.word_greek && e?.word_chinese) {
@@ -100,7 +113,7 @@ export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
     }
 
     return items;
-  }, [customVocab, slot, todayStr, vocabSrs]);
+  }, [customVocab, glossaryFrontier, slot, todayStr, vocabSrs]);
 
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);

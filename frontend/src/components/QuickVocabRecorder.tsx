@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, NotebookPen, X } from 'lucide-react';
+import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X } from 'lucide-react';
 import {
   findVocabSuggestions,
   getMondayDateStr,
@@ -40,7 +40,6 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
   onSaveVocab,
   compact = false,
 }) => {
-  const [category, setCategory] = useState<VocabEntryCategory>(defaultCategory);
   const [rows, setRows] = useState<DraftRow[]>(() => makeEmptyRows(3));
   const [focusedRowUid, setFocusedRowUid] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
@@ -115,8 +114,8 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
       return Number.isFinite(n) && n > acc ? n : acc;
     }, 90000);
 
-    const bookId = category === 'school' ? '学校生词' : '课堂笔记';
-    const unitNum = category === 'school' ? 101 : 102;
+    const bookId = '今日生词笔记';
+    const unitNum = 101;
     const newWords = validPairs.map((pair) => {
       maxId += 1;
       return {
@@ -129,7 +128,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
         example_greek: '',
         example_chinese: '',
         note_date: todayStr,
-        source: category === 'school' ? 'student_school' : 'student_note',
+        source: defaultCategory === 'note' ? 'student_note' : 'student_school',
       };
     });
 
@@ -173,54 +172,16 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
         boxShadow: '0 4px 16px rgba(13, 94, 175, 0.06)',
       }}
     >
-      {/* Category selector */}
+      {/* Unified Header — School words & class notes merged in one stream */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setCategory('school')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 999,
-              border: category === 'school' ? '2px solid #0071E3' : '1px solid #d2d2d7',
-              background: category === 'school' ? '#eef6ff' : '#fff',
-              color: category === 'school' ? '#005bb5' : '#515154',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            <BookOpen size={15} />
-            学校查到的生词
-          </button>
-          <button
-            type="button"
-            onClick={() => setCategory('note')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 999,
-              border: category === 'note' ? '2px solid #7c3aed' : '1px solid #d2d2d7',
-              background: category === 'note' ? '#f5f0ff' : '#fff',
-              color: category === 'note' ? '#6d28d9' : '#515154',
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: 'pointer',
-            }}
-          >
-            <NotebookPen size={15} />
-            上课课堂笔记
-          </button>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+          <BookOpen size={17} color="#0071E3" />
+          今日新词 &amp; 课堂笔记（混在一起直接录入，不限数量）
         </div>
 
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#0071E3', fontWeight: 600 }}>
           <Mic size={14} />
-          可连续填多行（支持 iPad 语音输入），最后一键全部入库
+          直接用 iPad 语音输入，填完一键全部入库
         </span>
       </div>
 

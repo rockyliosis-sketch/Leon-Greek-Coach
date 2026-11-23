@@ -55,7 +55,9 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   const a2Word = a2Idx ? a2List.find((w) => w.idx === a2Idx) : null;
 
   const schoolLog = mission.blockLogs?.school;
+  const schoolItems = schoolLog?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
+  const workbookCheck = mission.blockLogs?.workbookCheck;
   const previews = (mission.blockLogs?.previews || []).filter(
     (p) => p.subject || p.pages || p.summary || (p.actions && p.actions.length > 0) || p.newWordsCount > 0
   );
@@ -200,11 +202,28 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
           <div style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', marginBottom: 6 }}>
             🏫 区块一 · 学校复习与作业（用时 {formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0)}）
           </div>
-          <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
-            <div><strong>科目：</strong>{schoolLog?.subjects?.length ? schoolLog.subjects.join('、') : '待填写'}</div>
-            <div><strong>页码：</strong>{schoolLog?.pages || '待填写'}</div>
-            <div><strong>今日成果 / 解决难点：</strong>{schoolLog?.summary || '待 Leon 语音/文字记录'}</div>
-          </div>
+          {schoolItems.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {schoolItems.map((it) => (
+                <div key={it.subject} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '7px 10px', borderRadius: 10, border: '1px solid #ccfbf1' }}>
+                  <div style={{ fontWeight: 800, color: '#0f766e' }}>
+                    {it.subject} · P.{it.fromPage}{it.toPage > it.fromPage ? `-${it.toPage}` : ''}
+                    {it.questionMarks ? ` · 画了 ${it.questionMarks} 个 ?` : ''}
+                  </div>
+                  {it.hwActions && it.hwActions.length > 0 && (
+                    <div style={{ color: '#475569', marginTop: 2 }}>完成：{it.hwActions.join(' / ')}</div>
+                  )}
+                  {it.note && <div style={{ color: '#334155', marginTop: 2 }}>备注：{it.note}</div>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
+              <div><strong>科目：</strong>{schoolLog?.subjects?.length ? schoolLog.subjects.join('、') : '待点选'}</div>
+              <div><strong>页码：</strong>{schoolLog?.pages || '待选择'}</div>
+              {schoolLog?.summary && <div><strong>备注：</strong>{schoolLog.summary}</div>}
+            </div>
+          )}
         </div>
 
         {/* Block 2 Output */}
@@ -216,18 +235,23 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
             <div><strong>网站刷题：</strong>今日已完成 {todayWebCompleted.length} / 8 个模块</div>
             <div>
               <strong>私教课：</strong>
-              {tutorLog ? `${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · 页码 ${tutorLog.pages || '未填'} · 标了 ${tutorLog.questionMarks || 0} 个 ?` : '待填写'}
+              {tutorLog
+                ? `${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''} · 标了 ${tutorLog.questionMarks || 0} 个 ?`
+                : '待记录'}
             </div>
-            <div><strong>私教课记录 / 难点：</strong>{tutorLog?.summary || '待 Leon 语音/文字记录'}</div>
+            {tutorLog?.actions && tutorLog.actions.length > 0 && (
+              <div><strong>完成动作：</strong>{tutorLog.actions.join(' / ')}</div>
+            )}
+            {tutorLog?.summary && <div><strong>备注：</strong>{tutorLog.summary}</div>}
           </div>
         </div>
 
         {/* Block 3 Output */}
         <div style={{ padding: 14, borderRadius: 14, background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6 }}>
-            🚀 区块三 · 下节课多科预习（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
+            🚀 区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
           </div>
-          {previews.length === 0 ? (
+          {previews.length === 0 && !workbookCheck ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日预习的科目、页码与中文大意</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -239,9 +263,20 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
                   {p.actions && p.actions.length > 0 && (
                     <div style={{ color: '#64748b', marginTop: 2 }}>动作：{p.actions.join(' / ')}</div>
                   )}
-                  <div style={{ marginTop: 3 }}><strong>中文大意：</strong>{p.summary || '未填写'}</div>
+                  {p.summary && <div style={{ marginTop: 3 }}><strong>中文大意：</strong>{p.summary}</div>}
                 </div>
               ))}
+              {workbookCheck && (workbookCheck.actions?.length > 0 || workbookCheck.note) && (
+                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ddd6fe' }}>
+                  <div style={{ fontWeight: 800, color: '#6d28d9' }}>
+                    📘 练习册扫雷：{workbookCheck.bookName} P.{workbookCheck.fromPage}{workbookCheck.toPage > workbookCheck.fromPage ? `-${workbookCheck.toPage}` : ''}
+                  </div>
+                  {workbookCheck.actions?.length > 0 && (
+                    <div style={{ color: '#64748b', marginTop: 2 }}>{workbookCheck.actions.join(' / ')}</div>
+                  )}
+                  {workbookCheck.note && <div style={{ marginTop: 2 }}>重点问题：{workbookCheck.note}</div>}
+                </div>
+              )}
             </div>
           )}
         </div>
