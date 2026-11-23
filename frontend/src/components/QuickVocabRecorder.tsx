@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, NotebookPen } from 'lucide-react';
+import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, NotebookPen, X } from 'lucide-react';
 import {
   findVocabSuggestions,
   getMondayDateStr,
@@ -10,6 +10,12 @@ import {
 
 export type VocabEntryCategory = 'school' | 'note';
 
+interface DraftRow {
+  uid: string;
+  greek: string;
+  chinese: string;
+}
+
 interface QuickVocabRecorderProps {
   todayStr: string;
   customVocab: any[];
@@ -18,6 +24,13 @@ interface QuickVocabRecorderProps {
   onSaveVocab: (nextCustomVocab: any[], nextUnitDates: Record<string, string>, addedCount: number) => void;
   compact?: boolean;
 }
+
+const makeEmptyRows = (count: number): DraftRow[] =>
+  Array.from({ length: count }, (_, i) => ({
+    uid: `row_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 6)}`,
+    greek: '',
+    chinese: '',
+  }));
 
 export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
   todayStr,
@@ -28,66 +41,119 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
   compact = false,
 }) => {
   const [category, setCategory] = useState<VocabEntryCategory>(defaultCategory);
-  const [greekInput, setGreekInput] = useState('');
-  const [chineseInput, setChineseInput] = useState('');
+  const [rows, setRows] = useState<DraftRow[]>(() => makeEmptyRows(3));
+  const [focusedRowUid, setFocusedRowUid] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
-
-  const suggestions = useMemo(() => findVocabSuggestions(greekInput, 4), [greekInput]);
 
   const todayEntries = useMemo(() => {
     return (customVocab || []).filter((w: any) => w && w.note_date === todayStr);
   }, [customVocab, todayStr]);
 
-  const handleAdd = (e?: React.FormEvent) => {
+  const filledRowsCount = useMemo(
+    () => rows.filter((r) => r.greek.trim() || r.chinese.trim()).length,
+    [rows]
+  );
+
+  const updateRow = (uid: string, field: 'greek' | 'chinese', value: string) => {
+    setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, [field]: value } : r)));
+    if (feedback) setFeedback(null);
+  };
+
+  const addRows = (count: number) => {
+    setRows((prev) => [...prev, ...makeEmptyRows(count)]);
+  };
+
+  const removeRow = (uid: string) => {
+    setRows((prev) => {
+      if (prev.length <= 1) return makeEmptyRows(1);
+      return prev.filter((r) => r.uid !== uid);
+    });
+  };
+
+  const handleBatchSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const res = validateNewVocabEntry(greekInput, chineseInput);
-    if (!res.ok) {
-      setFeedback({ type: 'err', msg: res.error });
+    const nonEmpty = rows.filter((r) => r.greek.trim() || r.chinese.trim());
+    if (nonEmpty.length === 0) {
+      setFeedback({ type: 'err', msg: '请至少在上面填写 1 个希腊语单词和中文意思哦！' });
       return;
     }
 
-    const normNew = normalizeGreekKey(res.greek);
-    const dup = todayEntries.some(
-      (w: any) => normalizeGreekKey(w.word_greek || '') === normNew
+    const errors: string[] = [];
+    const validPairs: Array<{ greek: string; chinese: string; uid: string }> = [];
+    const seenToday = new Set(
+      todayEntries.map((w: any) => normalizeGreekKey(w.word_greek || ''))
     );
-    if (dup) {
-      setFeedback({ type: 'err', msg: `「${res.greek}」今天已经录过啦，不用重复添加！` });
+    let skippedDup = 0;
+
+    nonEmpty.forEach((r, idx) => {
+      const res = validateNewVocabEntry(r.greek, r.chinese);
+      if (!res.ok) {
+        errors.push(`第 ${idx + 1} 行：${res.error}`);
+        return;
+      }
+      const norm = normalizeGreekKey(res.greek);
+      if (seenToday.has(norm)) {
+        skippedDup++;
+        return;
+      }
+      seenToday.add(norm);
+      validPairs.push({ greek: res.greek, chinese: res.chinese, uid: r.uid });
+    });
+
+    if (errors.length > 0 && validPairs.length === 0) {
+      setFeedback({ type: 'err', msg: errors[0] });
       return;
     }
 
-    const maxId = (customVocab || []).reduce((acc: number, w: any) => {
+    if (validPairs.length === 0 && skippedDup > 0) {
+      setFeedback({ type: 'err', msg: `填写的 ${skippedDup} 个词今天都已经录过啦，没有重复添加。` });
+      return;
+    }
+
+    let maxId = (customVocab || []).reduce((acc: number, w: any) => {
       const n = Number(w?.id);
       return Number.isFinite(n) && n > acc ? n : acc;
     }, 90000);
 
     const bookId = category === 'school' ? '学校生词' : '课堂笔记';
     const unitNum = category === 'school' ? 101 : 102;
-    const newWord = {
-      id: maxId + 1,
-      book_id: bookId,
-      unit: unitNum,
-      word_greek: res.greek,
-      word_chinese: res.chinese,
-      pronunciation: 'new',
-      example_greek: '',
-      example_chinese: '',
-      note_date: todayStr,
-      source: category === 'school' ? 'student_school' : 'student_note',
-    };
+    const newWords = validPairs.map((pair) => {
+      maxId += 1;
+      return {
+        id: maxId,
+        book_id: bookId,
+        unit: unitNum,
+        word_greek: pair.greek,
+        word_chinese: pair.chinese,
+        pronunciation: 'new',
+        example_greek: '',
+        example_chinese: '',
+        note_date: todayStr,
+        source: category === 'school' ? 'student_school' : 'student_note',
+      };
+    });
 
-    const nextCustom = [...(customVocab || []), newWord];
+    const nextCustom = [...(customVocab || []), ...newWords];
     const unitKey = `${bookId}_${unitNum}`;
     const nextDates = {
       ...(unitStudyDates || {}),
       [unitKey]: getMondayDateStr(todayStr),
     };
 
-    onSaveVocab(nextCustom, nextDates, 1);
-    setGreekInput('');
-    setChineseInput('');
+    onSaveVocab(nextCustom, nextDates, newWords.length);
+
+    // Keep rows that had errors so Leon can fix them, reset saved rows to 3 fresh empty rows
+    const savedUids = new Set(validPairs.map((p) => p.uid));
+    const remaining = rows.filter((r) => !savedUids.has(r.uid) && (r.greek.trim() || r.chinese.trim()));
+    setRows(remaining.length > 0 ? [...remaining, ...makeEmptyRows(2)] : makeEmptyRows(3));
+
+    const extraNotes: string[] = [];
+    if (skippedDup > 0) extraNotes.push(`自动跳过 ${skippedDup} 个重复词`);
+    if (errors.length > 0) extraNotes.push(`有 ${errors.length} 行需补全中文/希腊语`);
+
     setFeedback({
       type: 'ok',
-      msg: `已入库「${res.greek} = ${res.chinese}」！已自动加入今日背词与 7 天每日必练。`,
+      msg: `成功批量入库 ${newWords.length} 个词（+${newWords.length * 5} XP）！已自动加入单词表与 7 天每日必练。${extraNotes.length ? `（${extraNotes.join('，')}）` : ''}`,
     });
   };
 
@@ -109,7 +175,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
     >
       {/* Category selector */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={() => setCategory('school')}
@@ -154,146 +220,227 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
 
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#0071E3', fontWeight: 600 }}>
           <Mic size={14} />
-          直接用 iPad 语音输入法说出单词即可
+          可连续填多行（支持 iPad 语音输入），最后一键全部入库
         </span>
       </div>
 
-      {/* Input form */}
-      <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-        <div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#515154', marginBottom: 4 }}>
-            希腊语单词 / 短语（支持语音输入）
-          </label>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <input
-              type="text"
-              lang="el"
-              autoComplete="off"
-              autoCapitalize="none"
-              placeholder="例如：παράδειγμα"
-              value={greekInput}
-              onChange={(e) => {
-                setGreekInput(e.target.value);
-                if (feedback) setFeedback(null);
-              }}
-              style={{
-                flex: 1,
-                fontSize: 18,
-                padding: '11px 14px',
-                borderRadius: 12,
-                border: '1.5px solid #cbd5e1',
-                outline: 'none',
-                fontWeight: 600,
-                minWidth: 0,
-              }}
-            />
-            {greekInput.trim() && (
-              <button
-                type="button"
-                onClick={() => speakGreekWord(greekInput.trim())}
-                title="试听发音"
+      {/* Multi-row batch form */}
+      <form onSubmit={handleBatchSave}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {rows.map((row, idx) => {
+            const suggestions =
+              focusedRowUid === row.uid && row.greek.trim().length >= 2
+                ? findVocabSuggestions(row.greek, 4)
+                : [];
+            return (
+              <div
+                key={row.uid}
                 style={{
-                  padding: '0 12px',
-                  borderRadius: 12,
-                  border: '1px solid #cbd5e1',
                   background: '#f8fafc',
-                  color: '#0071E3',
-                  cursor: 'pointer',
-                  flexShrink: 0,
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 14,
+                  padding: '10px 12px',
                 }}
               >
-                <Volume2 size={18} />
-              </button>
-            )}
-          </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '28px minmax(160px, 1fr) minmax(140px, 1fr) auto',
+                    gap: 8,
+                    alignItems: 'center',
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#64748b', textAlign: 'center' }}>
+                    #{idx + 1}
+                  </span>
+
+                  <div style={{ display: 'flex', gap: 5 }}>
+                    <input
+                      type="text"
+                      lang="el"
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      placeholder="希腊语单词（语音说出）"
+                      value={row.greek}
+                      onFocus={() => setFocusedRowUid(row.uid)}
+                      onChange={(e) => updateRow(row.uid, 'greek', e.target.value)}
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        padding: '9px 11px',
+                        borderRadius: 10,
+                        border: '1.5px solid #cbd5e1',
+                        background: '#fff',
+                        outline: 'none',
+                        fontWeight: 600,
+                        minWidth: 0,
+                      }}
+                    />
+                    {row.greek.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => speakGreekWord(row.greek.trim())}
+                        title="试听发音"
+                        style={{
+                          padding: '0 9px',
+                          borderRadius: 10,
+                          border: '1px solid #cbd5e1',
+                          background: '#fff',
+                          color: '#0071E3',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Volume2 size={16} />
+                      </button>
+                    )}
+                  </div>
+
+                  <input
+                    type="text"
+                    lang="zh-CN"
+                    autoComplete="off"
+                    placeholder="中文意思"
+                    value={row.chinese}
+                    onFocus={() => setFocusedRowUid(row.uid)}
+                    onChange={(e) => updateRow(row.uid, 'chinese', e.target.value)}
+                    style={{
+                      fontSize: 16,
+                      padding: '9px 11px',
+                      borderRadius: 10,
+                      border: '1.5px solid #cbd5e1',
+                      background: '#fff',
+                      outline: 'none',
+                      minWidth: 0,
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => removeRow(row.uid)}
+                    title="移除此行"
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#94a3b8',
+                      cursor: 'pointer',
+                      padding: 6,
+                    }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {/* Live suggestion chips for this row */}
+                {suggestions.length > 0 && (
+                  <div style={{ marginTop: 8, paddingLeft: 36, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                      <Sparkles size={12} /> 点选自动填中文：
+                    </span>
+                    {suggestions.map((s) => (
+                      <button
+                        key={`${s.greek}-${s.source}`}
+                        type="button"
+                        onClick={() => {
+                          setRows((prev) =>
+                            prev.map((r) =>
+                              r.uid === row.uid ? { ...r, greek: s.greek, chinese: s.chinese } : r
+                            )
+                          );
+                        }}
+                        style={{
+                          fontSize: 12,
+                          padding: '4px 9px',
+                          borderRadius: 999,
+                          border: '1px solid #bfdbfe',
+                          background: '#eff6ff',
+                          color: '#1d4ed8',
+                          cursor: 'pointer',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {s.greek} → {s.chinese}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#515154', marginBottom: 4 }}>
-            中文意思
-          </label>
+        {/* Add more rows + Batch submit */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', justifyContent: 'space-between', marginTop: 12 }}>
           <div style={{ display: 'flex', gap: 8 }}>
-            <input
-              type="text"
-              lang="zh-CN"
-              autoComplete="off"
-              placeholder="例如：例子"
-              value={chineseInput}
-              onChange={(e) => {
-                setChineseInput(e.target.value);
-                if (feedback) setFeedback(null);
-              }}
-              style={{
-                flex: 1,
-                fontSize: 18,
-                padding: '11px 14px',
-                borderRadius: 12,
-                border: '1.5px solid #cbd5e1',
-                outline: 'none',
-                minWidth: 0,
-              }}
-            />
             <button
-              type="submit"
+              type="button"
+              onClick={() => addRows(1)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 6,
-                padding: '0 18px',
-                borderRadius: 12,
-                border: 'none',
-                background: '#0071E3',
-                color: '#fff',
+                gap: 5,
+                padding: '9px 14px',
+                borderRadius: 10,
+                border: '1.5px dashed #93c5fd',
+                background: '#f0f9ff',
+                color: '#0369a1',
                 fontWeight: 700,
-                fontSize: 15,
+                fontSize: 13,
                 cursor: 'pointer',
-                flexShrink: 0,
               }}
             >
-              <Plus size={18} />
-              入库
+              <Plus size={15} />
+              再加 1 行单词
+            </button>
+            <button
+              type="button"
+              onClick={() => addRows(3)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                padding: '9px 14px',
+                borderRadius: 10,
+                border: '1px solid #cbd5e1',
+                background: '#fff',
+                color: '#475569',
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              + 再加 3 行
             </button>
           </div>
+
+          <button
+            type="submit"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '11px 22px',
+              borderRadius: 12,
+              border: 'none',
+              background: '#0071E3',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: 15,
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0, 113, 227, 0.25)',
+            }}
+          >
+            <CheckCircle2 size={17} />
+            一键全部入库{filledRowsCount > 0 ? `（${filledRowsCount} 词）` : ''}
+          </button>
         </div>
       </form>
-
-      {/* Auto-suggestions from existing textbook/glossary */}
-      {suggestions.length > 0 && (
-        <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <Sparkles size={13} /> 词库已有，点一下自动填中文：
-          </span>
-          {suggestions.map((s) => (
-            <button
-              key={`${s.greek}-${s.source}`}
-              type="button"
-              onClick={() => {
-                setGreekInput(s.greek);
-                setChineseInput(s.chinese);
-                setFeedback(null);
-              }}
-              style={{
-                fontSize: 13,
-                padding: '5px 10px',
-                borderRadius: 999,
-                border: '1px solid #bfdbfe',
-                background: '#eff6ff',
-                color: '#1d4ed8',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
-            >
-              {s.greek} → {s.chinese}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Feedback banner */}
       {feedback && (
         <div
           style={{
-            marginTop: 10,
+            marginTop: 12,
             padding: '9px 12px',
             borderRadius: 10,
             fontSize: 13,
@@ -315,7 +462,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
       {todayEntries.length > 0 && (
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px dashed #e2e8f0' }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 8 }}>
-            今日已入库 {todayEntries.length} 个词（已同步至单词表 &amp; 每日训练）：
+            今日已入库 {todayEntries.length} 个词（已同步至单词表 &amp; 每日训练 &amp; 今日学习报告）：
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {todayEntries.map((w: any) => {

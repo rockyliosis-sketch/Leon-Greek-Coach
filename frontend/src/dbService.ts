@@ -5,9 +5,39 @@ export interface DailyMissionBlockState {
   status: 'idle' | 'in_progress' | 'done';
   currentStep: number;
   elapsedSec: number;
+  extraMinutes?: number;
   subject?: string;
   wordsAdded?: number;
   completedAt?: string;
+}
+
+export interface VocabSlotTimerState {
+  elapsedSec: number;
+  completed: boolean;
+}
+
+export interface PreviewSubjectLog {
+  id: string;
+  subject: string;
+  pages: string;
+  actions: string[];
+  newWordsCount: number;
+  summary: string;
+}
+
+export interface DailyBlockLogs {
+  school?: {
+    subjects: string[];
+    pages: string;
+    summary: string;
+  };
+  tutor?: {
+    mode: 'preview' | 'review' | 'both';
+    pages: string;
+    questionMarks: number;
+    summary: string;
+  };
+  previews?: PreviewSubjectLog[];
 }
 
 export interface DailyMissionRecord {
@@ -19,6 +49,17 @@ export interface DailyMissionRecord {
     afternoon: boolean;
     night: boolean;
   };
+  vocabTimers?: {
+    morning: VocabSlotTimerState;
+    afternoon: VocabSlotTimerState;
+    night: VocabSlotTimerState;
+  };
+  historyLog?: {
+    listened: boolean;
+    episodesCount: number;
+    episodeNote: string;
+  };
+  blockLogs?: DailyBlockLogs;
   blocks: Record<string, DailyMissionBlockState>;
   parentApproval?: {
     checkedBook: boolean;

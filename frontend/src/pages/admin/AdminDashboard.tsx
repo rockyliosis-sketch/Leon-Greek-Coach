@@ -35,7 +35,8 @@ import {
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
 import { subscribeToSharedState, saveSharedState, type DbConnectionStatus, type DailyMissionRecord } from '../../dbService';
-import { formatElapsedHuman, getTodayStr } from '../../lib/dailyMissionHelpers';
+import { createDefaultMissionRecord, getTodayStr } from '../../lib/dailyMissionHelpers';
+import { DailyStudyReport } from '../../components/DailyStudyReport';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -617,7 +618,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [isCustomBook, setIsCustomBook] = useState(false);
   const [dailyMissions, setDailyMissions] = useState<Record<string, DailyMissionRecord>>({});
   const [cloudCustomVocab, setCloudCustomVocab] = useState<any[]>([]);
-  const [cloudScore, setCloudScore] = useState<number>(0);
+  const [completedDateModules, setCompletedDateModules] = useState<Record<string, string[]>>({});
 
   // Load vocabulary & activation dates from Firestore
   useEffect(() => {
@@ -668,7 +669,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setAnswerLog(Array.isArray(state.answer_log) ? state.answer_log : []);
         setDailyMissions(state.daily_missions || {});
         setCloudCustomVocab(customVocab);
-        setCloudScore(state.score || 0);
+        setCompletedDateModules(state.completed_date_modules || {});
       },
       (status, error) => {
         setDbStatus(status);
@@ -2549,157 +2550,29 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* 今日通关验收 & Leon 语音自录生词看板 */}
+        {/* Leon 今日学习报告（与孩子首页实时同步，支持一键复制与删除误录词） */}
         {(() => {
           const todayKey = getTodayStr();
-          const rec = dailyMissions[todayKey];
+          const rec = dailyMissions[todayKey] || createDefaultMissionRecord(todayKey);
           const todayStudentWords = cloudCustomVocab.filter(
             (w: any) => w?.note_date === todayKey
           );
-          const blockEntries = Object.entries(rec?.blocks || {});
-          const vocabChecks = rec?.vocabChecks || { morning: false, afternoon: false, night: false };
-          const vocabCount = (vocabChecks.morning ? 1 : 0) + (vocabChecks.afternoon ? 1 : 0) + (vocabChecks.night ? 1 : 0);
-          const isApproved = Boolean(rec?.parentApproval?.approved);
-
-          const handleParentQuickApprove = () => {
-            const nextRec: DailyMissionRecord = rec
-              ? {
-                  ...rec,
-                  parentApproval: {
-                    checkedBook: true,
-                    heardSummary: true,
-                    approved: true,
-                    approvedAt: new Date().toISOString(),
-                  },
-                }
-              : {
-                  date: todayKey,
-                  hasTutorClass: true,
-                  lightPreviewMode: false,
-                  vocabChecks: { morning: false, afternoon: false, night: false },
-                  blocks: {},
-                  parentApproval: {
-                    checkedBook: true,
-                    heardSummary: true,
-                    approved: true,
-                    approvedAt: new Date().toISOString(),
-                  },
-                };
-            const nextAll = { ...dailyMissions, [todayKey]: nextRec };
-            const bonus = isApproved ? 0 : 30;
-            setDailyMissions(nextAll);
-            saveSharedState({
-              daily_missions: nextAll,
-              ...(bonus > 0 ? { score: cloudScore + bonus } : {}),
-            });
-          };
-
           const handleDeleteStudentWord = (wordId: any) => {
             const nextCustom = cloudCustomVocab.filter((w: any) => w?.id !== wordId);
             setCloudCustomVocab(nextCustom);
             saveSharedState({ custom_vocab: nextCustom });
           };
-
           return (
-            <div
-              style={{
-                background: '#ffffff',
-                border: isApproved ? '2px solid #10b981' : '1.5px solid #bfdbfe',
-                borderRadius: 16,
-                padding: 18,
-                marginBottom: 20,
-                boxShadow: '0 4px 16px rgba(15, 23, 42, 0.04)',
-              }}
-            >
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <div>
-                  <strong style={{ fontSize: 17, color: '#0f172a' }}>
-                    🎯 Leon 今日通关台实时进度（{todayKey}）
-                  </strong>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                    背词打卡：{vocabCount}/3 次 · 区块完成：{blockEntries.filter(([, b]) => b.status === 'done').length} 个 · 今日语音入库：{todayStudentWords.length} 词
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={isApproved}
-                  onClick={handleParentQuickApprove}
-                  style={{
-                    padding: '9px 16px',
-                    borderRadius: 10,
-                    border: 'none',
-                    background: isApproved ? '#d1fae5' : '#059669',
-                    color: isApproved ? '#047857' : '#ffffff',
-                    fontWeight: 700,
-                    fontSize: 14,
-                    cursor: isApproved ? 'default' : 'pointer',
-                  }}
-                >
-                  {isApproved ? '✅ 今日已验收盖章' : '🏅 手机一键盖章验收（+30分）'}
-                </button>
-              </div>
-
-              {blockEntries.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: todayStudentWords.length > 0 ? 12 : 0 }}>
-                  {blockEntries.map(([bid, b]) => (
-                    <span
-                      key={bid}
-                      style={{
-                        fontSize: 12,
-                        padding: '5px 10px',
-                        borderRadius: 8,
-                        background: b.status === 'done' ? '#ecfdf5' : '#f8fafc',
-                        border: `1px solid ${b.status === 'done' ? '#a7f3d0' : '#e2e8f0'}`,
-                        color: b.status === 'done' ? '#047857' : '#475569',
-                      }}
-                    >
-                      {bid === 'block_school'
-                        ? '🏫 学校清零'
-                        : bid === 'block_web'
-                          ? '💻 网站刷题'
-                          : bid === 'block_preview'
-                            ? '🚀 预习+私教'
-                            : bid}
-                      ：{b.status === 'done' ? '已通关' : '进行中'}（真实用时 {formatElapsedHuman(b.elapsedSec || 0)}）
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {todayStudentWords.length > 0 && (
-                <div style={{ paddingTop: 10, borderTop: '1px dashed #e2e8f0' }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
-                    今日录入生词 / 笔记（已自动进入训练池）：
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {todayStudentWords.map((w: any) => (
-                      <span
-                        key={w.id}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 13,
-                          padding: '4px 10px',
-                          borderRadius: 8,
-                          background: '#f1f5f9',
-                          color: '#0f172a',
-                        }}
-                      >
-                        <strong>{w.word_greek}</strong> = {w.word_chinese}
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteStudentWord(w.id)}
-                          style={{ border: 'none', background: 'transparent', color: '#dc2626', cursor: 'pointer', fontSize: 12, padding: 0 }}
-                          title="删除误录词"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div style={{ marginBottom: 20 }}>
+              <DailyStudyReport
+                todayStr={todayKey}
+                mission={rec}
+                todayWebCompleted={completedDateModules[todayKey] || []}
+                todayWords={todayStudentWords}
+                pageProgress={pageMarks}
+                onDeleteWord={handleDeleteStudentWord}
+                title="📊 Leon 今日学习报告（实时同步）"
+              />
             </div>
           );
         })()}
