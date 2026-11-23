@@ -28,7 +28,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   todayWords,
   pageProgress,
   onDeleteWord,
-  title = '📊 Leon 今日学习报告',
+  title = 'Leon 今日学习报告',
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -116,7 +116,10 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   return (
     <section
       style={{
-        background: '#ffffff',
+        backgroundColor: '#f8fafc',
+        backgroundImage: 'url(/images/ui/bg_card_report.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'right bottom',
         borderRadius: 22,
         padding: 22,
         border: '1.5px solid #cbd5e1',
@@ -124,14 +127,16 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
       }}
     >
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div>
-          <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FileText size={20} color="#0071E3" />
-            {title}（{todayStr}）
-          </h2>
-          <p style={{ margin: '3px 0 0', fontSize: 13, color: '#64748b' }}>
-            实时汇总 Leon 今天的实际学习内容、页码、新词数与中文复述，家长不用懂希腊语也能一眼看清学习质量
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/images/ui/icon_report.png" alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <div>
+            <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a' }}>
+              {title}（{todayStr}）
+            </h2>
+            <p style={{ margin: '3px 0 0', fontSize: 13, color: '#64748b' }}>
+              实时汇总 Leon 今天的实际学习内容、页码、新词数与中文复述，家长不用懂希腊语也能一眼看清学习质量
+            </p>
+          </div>
         </div>
         <button
           type="button"
@@ -203,9 +208,10 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
       {/* Detailed Content Output per Block */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginBottom: todayWords.length > 0 ? 16 : 0 }}>
         {/* Block 1 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: '#f0fdfa', border: '1px solid #99f6e4' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', marginBottom: 6 }}>
-            🏫 区块一 · 学校复习与作业（用时 {formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0)}）
+        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(240, 253, 250, 0.92)', border: '1px solid #99f6e4' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src="/images/ui/icon_block_school.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+            区块一 · 学校复习与作业（用时 {formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0)}）
           </div>
           {schoolItems.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -232,9 +238,10 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         </div>
 
         {/* Block 2 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6 }}>
-            💻 区块二 · 网站刷题 + 私教课（用时 {formatElapsedHuman(mission.blocks?.block_web?.elapsedSec || 0)}）
+        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(239, 246, 255, 0.92)', border: '1px solid #bfdbfe' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src="/images/ui/icon_block_web.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+            区块二 · 网站刷题 + 私教课（用时 {formatElapsedHuman(mission.blocks?.block_web?.elapsedSec || 0)}）
           </div>
           <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
             <div><strong>网站刷题：</strong>今日已完成 {todayWebCompleted.length} / 8 个模块</div>
@@ -252,9 +259,10 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         </div>
 
         {/* Block 3 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: '#f5f3ff', border: '1px solid #ddd6fe' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6 }}>
-            🚀 区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
+        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(245, 243, 255, 0.92)', border: '1px solid #ddd6fe' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src="/images/ui/icon_block_preview.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+            区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
           </div>
           {previews.length === 0 && workbookChecks.length === 0 ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日预习的科目、页码与中文大意</div>
@@ -276,7 +284,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
                 .map((wb, i) => (
                   <div key={wb.id || i} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ddd6fe' }}>
                     <div style={{ fontWeight: 800, color: '#6d28d9' }}>
-                      📘 练习册扫雷 {workbookChecks.length > 1 ? i + 1 : ''}：{wb.bookName} P.{wb.fromPage}{wb.toPage > wb.fromPage ? `-${wb.toPage}` : ''}
+                      练习册扫雷 {workbookChecks.length > 1 ? i + 1 : ''}：{wb.bookName} P.{wb.fromPage}{wb.toPage > wb.fromPage ? `-${wb.toPage}` : ''}
                     </div>
                     {wb.actions?.length > 0 && (
                       <div style={{ color: '#64748b', marginTop: 2 }}>{wb.actions.join(' / ')}</div>
@@ -292,8 +300,9 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
       {/* Today's entered vocab list */}
       {todayWords.length > 0 && (
         <div style={{ paddingTop: 12, borderTop: '1px dashed #cbd5e1' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', marginBottom: 8 }}>
-            🎙️ 今日语音入库的学校生词 &amp; 课堂笔记（共 {todayWords.length} 词，已自动进入训练池）：
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#334155', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src="/images/ui/icon_mic.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+            今日语音入库的学校生词 &amp; 课堂笔记（共 {todayWords.length} 词，已自动进入训练池）：
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {todayWords.map((w: any) => {

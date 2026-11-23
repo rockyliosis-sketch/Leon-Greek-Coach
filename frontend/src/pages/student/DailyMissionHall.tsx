@@ -49,7 +49,7 @@ import {
   type DayMode,
 } from '../../lib/dailyMissionHelpers';
 import { getBookFrontier, makeMarkId } from '../../lib/pageProgress';
-import { getScoutLevelInfo, SCOUT_LEVELS } from '../../lib/levelSystem';
+import { getScoutLevelInfo, RANK_STAR_URL, SCOUT_LEVELS } from '../../lib/levelSystem';
 import glossaryV2Data from '../../data/glossary_v2.json';
 import historyCatalogData from '../../data/history_catalog.json';
 import historyVocabIndexData from '../../data/history_vocab_index.json';
@@ -184,34 +184,30 @@ const WORKBOOK_CHECK_OPTIONS = [
   '标记了明天重点听讲题',
 ];
 
-/** 预留给 Codex 生图的卡片配图位（图片不存在时静默隐藏，生图放入 public/images/ui/ 后自动显示） */
-const OptionalMascot: React.FC<{ src: string; alt: string; size?: number }> = ({
-  src,
-  alt,
-  size = 64,
-}) => {
-  const [hidden, setHidden] = useState(false);
-  if (hidden) return null;
-  return (
-    <img
-      src={src}
-      alt={alt}
-      onError={() => setHidden(true)}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 16,
-        objectFit: 'cover',
-        flexShrink: 0,
-        boxShadow: '0 4px 12px rgba(15, 23, 42, 0.1)',
-      }}
-    />
-  );
-};
+/** 古希腊专属去 Emoji 图标组件 */
+const UiIcon: React.FC<{ name: string; size?: number; style?: React.CSSProperties }> = ({
+  name,
+  size = 20,
+  style,
+}) => (
+  <img
+    src={`/images/ui/${name}.png`}
+    alt=""
+    style={{
+      width: size,
+      height: size,
+      objectFit: 'contain',
+      flexShrink: 0,
+      verticalAlign: 'middle',
+      ...style,
+    }}
+  />
+);
 
 interface MissionBlockDef {
   id: string;
-  icon: string;
+  iconName: string;
+  bgImage: string;
   title: string;
   subtitle: string;
   minutes: number;
@@ -268,7 +264,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
 
   const blockSchool: MissionBlockDef = {
     id: 'block_school',
-    icon: '🏫',
+    iconName: 'icon_block_school',
+    bgImage: '/images/ui/bg_block_school.png',
     title: mode === 'saturday'
       ? (isLight ? '区块一：本周课本快清盘（轻享 20 分）' : '区块一：本周课本大清盘')
       : '区块一：学校复习 + 生词入库 + 作业',
@@ -330,7 +327,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
 
   const blockWebTutor: MissionBlockDef = {
     id: 'block_web',
-    icon: '💻',
+    iconName: 'icon_block_web',
+    bgImage: '/images/ui/bg_block_web_tutor.png',
     title: isLight && mode === 'sunday'
       ? '区块二：网站刷题 + 私教备课（轻享 25 分）'
       : '区块二：网站刷题 + 私教课灵活预习/复习',
@@ -376,7 +374,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
 
   const blockPreview: MissionBlockDef = {
     id: 'block_preview',
-    icon: '🚀',
+    iconName: 'icon_block_preview',
+    bgImage: '/images/ui/bg_block_preview.png',
     title: isLight
       ? '区块三：学校下节课多科预习（轻享 20 分）'
       : '区块三：学校下节课深度预习（至少 2 科）',
@@ -389,7 +388,7 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     steps: [
       {
         title: 'Step 1：5 分钟遮中文快扫上一课旧标记（防遗忘）',
-        shortLabel: '⏱️ 5 分钟遮中文快扫上一课旧标记（记住打 ✓）',
+        shortLabel: '5 分钟遮中文快扫上一课旧标记（记住打 ✓）',
         goal: '预习新课前，先花 5 分钟把上一课标过的生词快速过一遍，彻底杜绝「光记不看」。',
         howTo: [
           '点下方「开始 5 分钟快扫」倒计时。',
@@ -825,7 +824,7 @@ const DailyMissionHall: React.FC = () => {
     ];
     setSharedState((prev) => ({ ...prev, page_progress: nextMarks }));
     saveSharedState({ page_progress: nextMarks });
-    setGlossarySavedMsg(`✅ 已同步进度到第 ${word.idx} 词（${word.word_greek} = ${word.word_chinese}），刷题词库已自动解锁！`);
+    setGlossarySavedMsg(`✓ 已同步进度到第 ${word.idx} 词（${word.word_greek} = ${word.word_chinese}），刷题词库已自动解锁！`);
     setShowGlossaryPicker(false);
     setGlossarySearch('');
     setTimeout(() => setGlossarySavedMsg(null), 4500);
@@ -959,7 +958,7 @@ const DailyMissionHall: React.FC = () => {
         );
       } else {
         setEarlyFinishMsg(
-          `太棒了！「${activeBlock.title}」已扎实通关！全部任务做完后将自动发放今日 +10 XP 🎉`
+          `太棒了！「${activeBlock.title}」已扎实通关！全部任务做完后将自动发放今日 +10 XP `
         );
       }
     } else {
@@ -1289,7 +1288,7 @@ const DailyMissionHall: React.FC = () => {
                 border: '2px solid #a7f3d0',
               }}
             >
-              <div style={{ fontSize: 56, marginBottom: 12 }}>🏆</div>
+              <img src="/images/ui/icon_trophy.png" alt="" style={{ width: 64, height: 64, objectFit: "contain", marginBottom: 10 }} />
               <h2 style={{ margin: '0 0 12px', fontSize: 26, color: '#047857' }}>区块通关成功！</h2>
               <p style={{ margin: '0 0 28px', fontSize: 17, color: '#334155', lineHeight: 1.6 }}>
                 {earlyFinishMsg}
@@ -1326,7 +1325,9 @@ const DailyMissionHall: React.FC = () => {
             >
               <span
                 style={{
-                  display: 'inline-block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
                   fontSize: 13,
                   fontWeight: 800,
                   padding: '5px 12px',
@@ -1336,7 +1337,8 @@ const DailyMissionHall: React.FC = () => {
                   marginBottom: 10,
                 }}
               >
-                {activeBlock.icon} {activeBlock.title} · 第 {stepIndex + 1} / {activeBlock.steps.length} 步
+                <UiIcon name={activeBlock.iconName} size={18} />
+                {activeBlock.title} · 第 {stepIndex + 1} / {activeBlock.steps.length} 步
               </span>
 
               <h2 style={{ margin: '4px 0 16px', fontSize: 25, color: '#0f172a', lineHeight: 1.3 }}>
@@ -1354,7 +1356,7 @@ const DailyMissionHall: React.FC = () => {
 
                 <div style={{ padding: '14px 16px', borderRadius: 14, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6 }}>
-                    📋 具体怎么做（跟着一步步来）
+                    具体怎么做（跟着一步步来）
                   </div>
                   <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 15, color: '#1e293b', lineHeight: 1.6 }}>
                     {stepDef.howTo.map((line) => (
@@ -1365,7 +1367,7 @@ const DailyMissionHall: React.FC = () => {
 
                 <div style={{ padding: '12px 15px', borderRadius: 14, background: '#fffbeb', border: '1px solid #fde68a' }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <Lightbulb size={15} color="#d97706" /> 🧠 为什么要这样做（学习原理）
+                    <Lightbulb size={15} color="#d97706" /> 为什么要这样做（学习原理）
                   </div>
                   <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.65 }}>{stepDef.whyItWorks}</div>
                 </div>
@@ -1375,7 +1377,7 @@ const DailyMissionHall: React.FC = () => {
               {stepDef.kind === 'school_plan' && (
                 <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#f0fdfa', border: '1px solid #99f6e4' }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#0f766e', marginBottom: 10 }}>
-                    ✍️ 点选今天要处理的学校科目，直接点按选择每个科目的页码区间：
+                    点选今天要处理的学校科目，直接点按选择每个科目的页码区间：
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
                     {SCHOOL_SUBJECTS.map((subj) => {
@@ -1401,7 +1403,7 @@ const DailyMissionHall: React.FC = () => {
                             cursor: 'pointer',
                           }}
                         >
-                          {active ? '✅ ' : '+ '}
+                          {active ? '✓ ' : '+ '}
                           {subj}
                         </button>
                       );
@@ -1481,7 +1483,7 @@ const DailyMissionHall: React.FC = () => {
               {stepDef.kind === 'school_homework' && (
                 <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#f0fdfa', border: '1px solid #99f6e4', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#0f766e' }}>
-                    ✅ 逐科点选今天作业完成情况（点一点就行，备注选填）：
+                    ✓ 逐科点选今天作业完成情况（点一点就行，备注选填）：
                   </div>
                   {schoolItems.length === 0 ? (
                     <div style={{ fontSize: 13, color: '#64748b' }}>
@@ -1558,7 +1560,7 @@ const DailyMissionHall: React.FC = () => {
                                   cursor: 'pointer',
                                 }}
                               >
-                                {checked ? '✅ ' : '+ '}
+                                {checked ? '✓ ' : '+ '}
                                 {act}
                               </button>
                             );
@@ -1620,7 +1622,7 @@ const DailyMissionHall: React.FC = () => {
                       fontSize: 16,
                     }}
                   >
-                    🚀 进入网站刷题中心
+                    进入网站刷题中心
                     <ChevronRight size={18} />
                   </Link>
                 </div>
@@ -1630,7 +1632,7 @@ const DailyMissionHall: React.FC = () => {
                 <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                     <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
-                      👨‍🏫 私教课量化记录（后台 B 本当前已上到第 {b1Frontier} 页）：
+                      私教课量化记录（后台 B 本当前已上到第 {b1Frontier} 页）：
                     </div>
                   </div>
 
@@ -1663,7 +1665,7 @@ const DailyMissionHall: React.FC = () => {
                           cursor: 'pointer',
                         }}
                       >
-                        {tutorLog.mode === m.id ? '✅ ' : ''}
+                        {tutorLog.mode === m.id ? '✓ ' : ''}
                         {m.label}
                       </button>
                     ))}
@@ -1767,7 +1769,7 @@ const DailyMissionHall: React.FC = () => {
                             cursor: 'pointer',
                           }}
                         >
-                          {checked ? '✅ ' : '+ '}
+                          {checked ? '✓ ' : '+ '}
                           {act}
                         </button>
                       );
@@ -1807,7 +1809,7 @@ const DailyMissionHall: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309' }}>
-                        方式 A · ⏱️ 纸质课本快扫旧标记（按本区块 {effectiveBlockMin} 分钟等比例分配：{proportionalScanMin} 分钟）
+                        方式 A · 纸质课本快扫旧标记（按本区块 {effectiveBlockMin} 分钟等比例分配：{proportionalScanMin} 分钟）
                       </div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
                         {formatDurationMinSec(fiveMinSec)}
@@ -1866,7 +1868,7 @@ const DailyMissionHall: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
-                        方式 B · ⚡ 用系统闪卡 5 分钟极速自测（课本不好遮中文时用这个！）
+                        方式 B · 用系统闪卡 5 分钟极速自测（课本不好遮中文时用这个！）
                       </div>
                       <div style={{ fontSize: 12.5, color: '#475569', marginTop: 3 }}>
                         自动混入你录入的课堂生词 + 今天白天背过的词表词，点开就能刷！
@@ -1886,7 +1888,7 @@ const DailyMissionHall: React.FC = () => {
                         cursor: 'pointer',
                       }}
                     >
-                      🃏 启动 5 分钟闪卡快扫 →
+                      启动 5 分钟闪卡快扫 →
                     </button>
                   </div>
                 </div>
@@ -1895,7 +1897,7 @@ const DailyMissionHall: React.FC = () => {
               {stepDef.kind === 'workbook_check' && (
                 <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ fontSize: 14, fontWeight: 800, color: '#5b21b6' }}>
-                    📘 记录今天扫了哪几本练习册、第几页，以及发现了什么问题（支持添加多本，自动写入今日报告）：
+                    记录今天扫了哪几本练习册、第几页，以及发现了什么问题（支持添加多本，自动写入今日报告）：
                   </div>
 
                   {workbookChecks.map((wb, wbIdx) => (
@@ -1996,7 +1998,7 @@ const DailyMissionHall: React.FC = () => {
                                 cursor: 'pointer',
                               }}
                             >
-                              {checked ? '✅ ' : '+ '}
+                              {checked ? '✓ ' : '+ '}
                               {act}
                             </button>
                           );
@@ -2060,7 +2062,7 @@ const DailyMissionHall: React.FC = () => {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                         <strong style={{ fontSize: 15, color: '#5b21b6' }}>
-                          📖 预习科目 {idx + 1}
+                          预习科目 {idx + 1}
                         </strong>
                         {previewLogs.length > 1 && (
                           <button
@@ -2148,7 +2150,7 @@ const DailyMissionHall: React.FC = () => {
                                 cursor: 'pointer',
                               }}
                             >
-                              {checked ? '✅ ' : '+ '}
+                              {checked ? '✓ ' : '+ '}
                               {act}
                             </button>
                           );
@@ -2157,7 +2159,7 @@ const DailyMissionHall: React.FC = () => {
 
                       <div>
                         <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#5b21b6', marginBottom: 4 }}>
-                          🎙️ 用语音/文字写一句中文大意（这篇课文大概讲了个什么事？）：
+                          用语音/文字写一句中文大意（这篇课文大概讲了个什么事？）：
                         </label>
                         <textarea
                           rows={2}
@@ -2305,11 +2307,14 @@ const DailyMissionHall: React.FC = () => {
           flex-wrap: nowrap;
         }
         .mission-hero {
-          background: linear-gradient(135deg, #0071E3, #2563EB);
+          background-color: #0b4f9c;
+          background-image: linear-gradient(90deg, rgba(0, 86, 184, 0.72) 0%, rgba(11, 79, 156, 0.35) 56%, rgba(11, 79, 156, 0.05) 100%), url('/images/ui/banner_hero_greece.jpg');
+          background-size: cover;
+          background-position: right center;
           border-radius: 26px;
           padding: 28px 32px 22px;
           color: #FFFFFF;
-          box-shadow: 0 10px 32px rgba(0, 113, 227, 0.16);
+          box-shadow: 0 12px 34px rgba(0, 113, 227, 0.18);
           margin-bottom: 20px;
           position: relative;
           overflow: hidden;
@@ -2479,47 +2484,8 @@ const DailyMissionHall: React.FC = () => {
       </nav>
 
       <div className="mission-container">
-        {/* Classic Welcome Banner with Leon Scout Photo + Greek Flag Wave + Daily Mission Controls */}
+        {/* Classic Welcome Banner with Custom Greek Flag Backdrop + Leon Real Photo + Rank Card */}
         <div className="mission-hero">
-          {/* Greek Flag Wave SVG Decor */}
-          <div
-            className="welcome-banner-decor"
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: '42%',
-              minWidth: 280,
-              zIndex: 1,
-              pointerEvents: 'none',
-              opacity: 0.9,
-            }}
-          >
-            <svg viewBox="0 0 500 200" width="100%" height="100%" preserveAspectRatio="none">
-              <defs>
-                <clipPath id="missionFlagClip">
-                  <rect width="120" height="80" rx="8" />
-                </clipPath>
-              </defs>
-              <path d="M 80,0 C 220,-20 280,120 420,30 C 470,0 520,20 500,0 L 500,200 L 80,200 Z" fill="rgba(10, 75, 143, 0.55)" />
-              <g transform="translate(290, 32) rotate(-3) scale(1.15)">
-                <rect width="120" height="80" rx="8" fill="rgba(0,0,0,0.2)" transform="translate(3, 4)" />
-                <g clipPath="url(#missionFlagClip)">
-                  <rect width="120" height="80" fill="#FFFFFF" />
-                  <rect y="0" width="120" height="8.89" fill="#0D5EAF" />
-                  <rect y="17.78" width="120" height="8.89" fill="#0D5EAF" />
-                  <rect y="35.56" width="120" height="8.89" fill="#0D5EAF" />
-                  <rect y="53.33" width="120" height="8.89" fill="#0D5EAF" />
-                  <rect y="71.11" width="120" height="8.89" fill="#0D5EAF" />
-                  <rect x="0" y="0" width="44.44" height="44.44" fill="#0D5EAF" />
-                  <rect x="0" y="17.78" width="44.44" height="8.89" fill="#FFFFFF" />
-                  <rect x="17.78" y="0" width="8.89" height="44.44" fill="#FFFFFF" />
-                </g>
-              </g>
-            </svg>
-          </div>
-
           <div style={{ position: 'relative', zIndex: 2 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
@@ -2580,36 +2546,32 @@ const DailyMissionHall: React.FC = () => {
                     }}
                     title="点击查看黄金十二宫完整天梯与积分规则"
                   >
-                    {currentLevel.imageUrl ? (
-                      <img
-                        src={currentLevel.imageUrl}
-                        alt={currentLevel.name}
-                        style={{ width: 54, height: 54, borderRadius: 14, objectFit: 'cover', border: '2px solid #fbbf24', flexShrink: 0 }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 54,
-                          height: 54,
-                          borderRadius: 14,
-                          background: currentLevel.gradient,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: 22,
-                          border: '2px solid rgba(255,255,255,0.6)',
-                          flexShrink: 0,
-                        }}
-                      >
-                        {currentLevel.icon.slice(0, 2)}
-                      </div>
-                    )}
+                    <img
+                      src={currentLevel.badgeUrl}
+                      alt={currentLevel.name}
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 14,
+                        objectFit: 'cover',
+                        border: '2px solid #fbbf24',
+                        background: 'rgba(255,255,255,0.12)',
+                        flexShrink: 0,
+                      }}
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 11, opacity: 0.85, fontWeight: 700 }}>
+                      <div style={{ fontSize: 11, opacity: 0.88, fontWeight: 700 }}>
                         当前段位 · {scoreVal} XP
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {currentLevel.name}
+                      <div style={{ fontSize: 15, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span>{currentLevel.name}</span>
+                        {currentLevel.stars && (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                            {Array.from({ length: Math.min(currentLevel.stars, 5) }).map((_, i) => (
+                              <img key={i} src={RANK_STAR_URL} alt="" style={{ width: 12, height: 12, objectFit: 'contain' }} />
+                            ))}
+                          </span>
+                        )}
                       </div>
                       <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 5 }}>
                         <div style={{ height: '100%', width: `${rankPct}%`, background: '#fde047', borderRadius: 999 }} />
@@ -2631,7 +2593,7 @@ const DailyMissionHall: React.FC = () => {
                 <span>今日总通关进度（全部完成统一奖励 +10 XP）</span>
                 <span>
                   {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）
-                  {dailyRewardClaimed ? ' · 🏅 今日 +10 XP 已到账' : ''}
+                  {dailyRewardClaimed ? ' · 今日 +10 XP 已到账' : ''}
                 </span>
               </div>
               <div style={{ height: 10, borderRadius: 999, background: 'rgba(255,255,255,0.24)', overflow: 'hidden' }}>
@@ -2670,6 +2632,9 @@ const DailyMissionHall: React.FC = () => {
                     }))
                   }
                   style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
                     padding: '7px 13px',
                     borderRadius: 999,
                     border: '1px solid rgba(255,255,255,0.45)',
@@ -2680,9 +2645,10 @@ const DailyMissionHall: React.FC = () => {
                     cursor: 'pointer',
                   }}
                 >
+                  <UiIcon name="icon_bolt" size={16} />
                   {todayMission.lightPreviewMode
-                    ? '⚡ 已开启忙碌日轻享模式（已减负）'
-                    : '⚡ 忙碌日切轻享模式（外出/时间紧时点我）'}
+                    ? '已开启忙碌日轻享模式（已减负）'
+                    : '忙碌日切轻享模式（外出/时间紧时点我）'}
                 </button>
 
                 {activeMode === 'weekday' && (
@@ -2695,6 +2661,9 @@ const DailyMissionHall: React.FC = () => {
                       }))
                     }
                     style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
                       padding: '7px 13px',
                       borderRadius: 999,
                       border: '1px solid rgba(255,255,255,0.4)',
@@ -2705,7 +2674,8 @@ const DailyMissionHall: React.FC = () => {
                       cursor: 'pointer',
                     }}
                   >
-                    {todayMission.hasTutorClass ? '✅ 今天有私教课（90分）' : '今天无私教课'}
+                    <UiIcon name="icon_block_tutor" size={16} />
+                    {todayMission.hasTutorClass ? '今天有私教课（90分）' : '今天无私教课'}
                   </button>
                 )}
               </div>
@@ -2749,7 +2719,7 @@ const DailyMissionHall: React.FC = () => {
           </div>
         )}
 
-        {/* Two Big Core Entry Cards: Daily Practice & History Story Hall */}
+        {/* Two Big Core Entry Cards: Daily Practice & History Story Hall (with Watermark Backdrops & Custom Icons) */}
         <section className="mission-entry-grid">
           <Link
             to="/practice"
@@ -2760,7 +2730,10 @@ const DailyMissionHall: React.FC = () => {
               gap: 16,
               padding: '20px 22px',
               borderRadius: 20,
-              background: 'linear-gradient(135deg, #ffffff 0%, #eff6ff 100%)',
+              backgroundColor: '#f5f9ff',
+              backgroundImage: 'url(/images/ui/bg_card_practice.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'right bottom',
               border: '2px solid #93c5fd',
               color: '#0b4f9c',
               textDecoration: 'none',
@@ -2768,16 +2741,15 @@ const DailyMissionHall: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <OptionalMascot src="/images/ui/card_practice.png" alt="每日网站刷题训练" size={62} />
+              <UiIcon name="icon_practice" size={44} />
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 22 }}>📝</span>
-                  <strong style={{ fontSize: 20, color: '#0f172a' }}>每日网站刷题训练</strong>
-                </div>
+                <strong style={{ display: 'block', fontSize: 20, color: '#0f172a', marginBottom: 4 }}>
+                  每日网站刷题训练
+                </strong>
                 <div style={{ fontSize: 13, color: '#475569' }}>
                   八大模块智能出题 · 含今日语音录入生词与 7 天必练
                 </div>
-                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#dbeafe', color: '#1d4ed8' }}>
+                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: 'rgba(219, 234, 254, 0.92)', color: '#1d4ed8' }}>
                   今日进度：{todayWebCompleted.length} / 8 模块
                 </div>
               </div>
@@ -2794,7 +2766,10 @@ const DailyMissionHall: React.FC = () => {
               gap: 16,
               padding: '20px 22px',
               borderRadius: 20,
-              background: 'linear-gradient(135deg, #ffffff 0%, #edf5f0 100%)',
+              backgroundColor: '#f1f7f4',
+              backgroundImage: 'url(/images/ui/bg_card_history.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'right bottom',
               border: '2px solid #a7d3c0',
               color: '#224943',
               textDecoration: 'none',
@@ -2802,16 +2777,15 @@ const DailyMissionHall: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <OptionalMascot src="/images/ui/card_history.png" alt="希腊历史故事馆" size={62} />
+              <UiIcon name="icon_history" size={44} />
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 22 }}>🏛️</span>
-                  <strong style={{ fontSize: 20, color: '#13312c' }}>希腊历史故事馆</strong>
-                </div>
+                <strong style={{ display: 'block', fontSize: 20, color: '#13312c', marginBottom: 4 }}>
+                  希腊历史故事馆
+                </strong>
                 <div style={{ fontSize: 13, color: '#3b645c' }}>
                   三年级神话 · 四年级古希腊 · 全 91 课双语音频与点读词卡
                 </div>
-                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: '#d7ebe2', color: '#1f4b43' }}>
+                <div style={{ marginTop: 8, display: 'inline-block', fontSize: 12, fontWeight: 800, padding: '4px 10px', borderRadius: 999, background: 'rgba(215, 235, 226, 0.92)', color: '#1f4b43' }}>
                   区块外自由收听 · 睡前磨耳朵 &amp; 历史预习
                 </div>
               </div>
@@ -2820,10 +2794,13 @@ const DailyMissionHall: React.FC = () => {
           </Link>
         </section>
 
-        {/* Outside-the-3-Blocks Section A: Daily 3x Paper Vocab with Independent Carry-Over Timers + Self-Sync Progress */}
+        {/* Outside-the-3-Blocks Section A: Daily 3x Paper Vocab with Watermark Backdrop */}
         <section
           style={{
-            background: '#ffffff',
+            backgroundColor: '#fffdf5',
+            backgroundImage: 'url(/images/ui/bg_card_vocab.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'right bottom',
             borderRadius: 20,
             padding: 20,
             marginBottom: 16,
@@ -2832,39 +2809,45 @@ const DailyMissionHall: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Sparkles size={18} color="#f59e0b" />
-                区块外日常 1：每日 3 次背单词（独立计时 + 未足自动顺延 + 纸质词表自选）
-              </h2>
-              <p style={{ margin: '3px 0 0', fontSize: 13, color: '#64748b' }}>
-                默认每次 10 分钟（共 30 分钟）；如果第 1 次没背满，未足时间会自动顺延加到第 2 次、第 3 次！
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <UiIcon name="icon_vocab_morning" size={28} />
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18, color: '#0f172a' }}>
+                  区块外日常 1：每日 3 次背单词（独立计时 + 未足自动顺延 + 纸质词表自选）
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: 13, color: '#64748b' }}>
+                  默认每次 10 分钟（共 30 分钟）；如果第 1 次没背满，未足时间会自动顺延加到第 2 次、第 3 次
+                </p>
+              </div>
             </div>
             <button
               type="button"
               onClick={() => setActiveFlashcardSlot('morning')}
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
                 padding: '7px 12px',
                 borderRadius: 999,
                 border: '1px solid #bfdbfe',
-                background: '#eff6ff',
+                background: 'rgba(239, 246, 255, 0.95)',
                 color: '#1d4ed8',
                 fontWeight: 700,
                 fontSize: 12,
                 cursor: 'pointer',
               }}
             >
-              🃏 顺便刷生词电子闪卡
+              <UiIcon name="icon_flashcard" size={16} />
+              顺便刷生词电子闪卡
             </button>
           </div>
 
           <div className="mission-vocab-grid">
             {(
               [
-                { slot: 'morning' as const, label: '🌅 第 1 次（早/午）', desc: '复习昨天旧词 + 开今日新词' },
-                { slot: 'afternoon' as const, label: '☀️ 第 2 次（下午）', desc: '遮中文快过一遍今日新词' },
-                { slot: 'night' as const, label: '🌙 第 3 次（睡前）', desc: '睡前总抽查今日新词与难词' },
+                { slot: 'morning' as const, iconName: 'icon_vocab_morning', label: '第 1 次（早/午）', desc: '复习昨天旧词 + 开今日新词' },
+                { slot: 'afternoon' as const, iconName: 'icon_vocab_afternoon', label: '第 2 次（下午）', desc: '遮中文快过一遍今日新词' },
+                { slot: 'night' as const, iconName: 'icon_vocab_night', label: '第 3 次（睡前）', desc: '睡前总抽查今日新词与难词' },
               ]
             ).map((item) => {
               const vt = vocabTimers[item.slot];
@@ -2879,14 +2862,15 @@ const DailyMissionHall: React.FC = () => {
                     padding: '14px 16px',
                     borderRadius: 16,
                     border: vt.completed ? '2px solid #10b981' : isRunning ? '2px solid #0071E3' : '1.5px solid #e2e8f0',
-                    background: vt.completed ? '#ecfdf5' : isRunning ? '#eff6ff' : '#f8fafc',
+                    background: vt.completed ? 'rgba(236, 253, 245, 0.94)' : isRunning ? 'rgba(239, 246, 255, 0.94)' : 'rgba(255, 255, 255, 0.88)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 8,
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <strong style={{ fontSize: 15, color: vt.completed ? '#047857' : '#0f172a' }}>
+                    <strong style={{ fontSize: 15, color: vt.completed ? '#047857' : '#0f172a', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <UiIcon name={item.iconName} size={20} />
                       {item.label}
                     </strong>
                     <span style={{ fontSize: 18, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: isRunning ? '#0071E3' : '#334155' }}>
@@ -2897,7 +2881,7 @@ const DailyMissionHall: React.FC = () => {
                     {item.desc}
                     {carryMin > 0 && (
                       <span style={{ display: 'block', color: '#d97706', fontWeight: 700, marginTop: 2 }}>
-                        ⏱️ 含上次未足顺延 +{carryMin} 分钟（本次目标 {Math.round(vt.targetSec / 60)} 分）
+                        含上次未足顺延 +{carryMin} 分钟（本次目标 {Math.round(vt.targetSec / 60)} 分）
                       </span>
                     )}
                     {vt.elapsedSec > 0 && (
@@ -2922,7 +2906,7 @@ const DailyMissionHall: React.FC = () => {
                         cursor: 'pointer',
                       }}
                     >
-                      {isRunning ? '⏸ 暂停' : vt.elapsedSec > 0 ? '▶ 继续计时' : '▶ 开始计时'}
+                      {isRunning ? '暂停' : vt.elapsedSec > 0 ? '继续计时' : '开始计时'}
                     </button>
                     <button
                       type="button"
@@ -2938,7 +2922,7 @@ const DailyMissionHall: React.FC = () => {
                         cursor: 'pointer',
                       }}
                     >
-                      {vt.completed ? '✅ 已完成' : '结束打卡'}
+                      {vt.completed ? '已完成' : '结束打卡'}
                     </button>
                     {(vt.elapsedSec > 0 || vt.completed) && (
                       <button
@@ -2975,7 +2959,7 @@ const DailyMissionHall: React.FC = () => {
           >
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>📖 纸质单词表进度：</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: '#0f172a' }}>纸质单词表进度：</span>
                 <div style={{ display: 'inline-flex', gap: 4 }}>
                   {(
                     [
@@ -3157,7 +3141,7 @@ const DailyMissionHall: React.FC = () => {
                       ['历史故事词汇_103']: getMondayDateStr(todayStr),
                     },
                   };
-                  setHistorySyncMsg(`✨ 已自动将该课 ${toAdd.length} 个希腊语历史核心词同步至每日刷题词库与 7 天必练！`);
+                  setHistorySyncMsg(`已自动将该课 ${toAdd.length} 个希腊语历史核心词同步至每日刷题词库与 7 天必练！`);
                   setTimeout(() => setHistorySyncMsg(null), 5000);
                 }
               }
@@ -3180,7 +3164,10 @@ const DailyMissionHall: React.FC = () => {
           return (
             <section
               style={{
-                background: '#edf5f0',
+                backgroundColor: '#eef6f2',
+                backgroundImage: 'url(/images/ui/bg_card_story_daily.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'right bottom',
                 borderRadius: 20,
                 padding: '16px 20px',
                 marginBottom: 22,
@@ -3188,8 +3175,8 @@ const DailyMissionHall: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#13312c', display: 'flex', alignItems: 'center', gap: 7 }}>
-                  <Headphones size={18} color="#224943" />
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#13312c', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <UiIcon name="icon_history" size={24} />
                   区块外日常 2：听希腊语历史故事（直接选择今天听了哪几集）
                 </div>
                 <Link
@@ -3254,7 +3241,7 @@ const DailyMissionHall: React.FC = () => {
                   <option value="">＋ 点这里选择今天听了哪一集（可连续选多集）…</option>
                   {filteredCatalog.map((ep) => (
                     <option key={ep.id} value={ep.id} disabled={selectedIds.includes(ep.id)}>
-                      {selectedIds.includes(ep.id) ? '✅ ' : ''}
+                      {selectedIds.includes(ep.id) ? '✓ ' : ''}
                       第{ep.unit}单元 第{ep.lesson}课 · {ep.titleZh}
                     </option>
                   ))}
@@ -3270,7 +3257,7 @@ const DailyMissionHall: React.FC = () => {
               {selectedEpisodes.length > 0 && (
                 <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center' }}>
                   <span style={{ fontSize: 12.5, fontWeight: 800, color: '#047857' }}>
-                    ✅ 今日已听 {selectedEpisodes.length} 集：
+                    ✓ 今日已听 {selectedEpisodes.length} 集：
                   </span>
                   {selectedEpisodes.map((ep) => (
                     <span
@@ -3332,7 +3319,10 @@ const DailyMissionHall: React.FC = () => {
                 <div
                   key={block.id}
                   style={{
-                    background: '#ffffff',
+                    backgroundColor: '#ffffff',
+                    backgroundImage: `url(${block.bgImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'right bottom',
                     borderRadius: 22,
                     padding: 20,
                     border: isDone ? '2px solid #10b981' : `1.5px solid ${block.accent}33`,
@@ -3345,26 +3335,19 @@ const DailyMissionHall: React.FC = () => {
                 >
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <OptionalMascot
-                          src={`/images/ui/${block.id === 'block_school' ? 'mascot_school.png' : block.id === 'block_web' ? 'mascot_practice_tutor.png' : 'mascot_preview.png'}`}
-                          alt={block.title}
-                          size={48}
-                        />
-                        <span
-                          style={{
-                            fontSize: 24,
-                            width: 44,
-                            height: 44,
-                            borderRadius: 14,
-                            background: block.bg,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          {block.icon}
-                        </span>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 14,
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          border: `1px solid ${block.accent}33`,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <UiIcon name={block.iconName} size={34} />
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span
@@ -3373,12 +3356,12 @@ const DailyMissionHall: React.FC = () => {
                             fontWeight: 800,
                             padding: '5px 10px',
                             borderRadius: 999,
-                            background: isDone ? '#ecfdf5' : isInProgress ? '#fffbeb' : '#f1f5f9',
+                            background: isDone ? '#ecfdf5' : isInProgress ? '#fffbeb' : 'rgba(241, 245, 249, 0.92)',
                             color: isDone ? '#047857' : isInProgress ? '#b45309' : '#64748b',
                           }}
                         >
                           {isDone
-                            ? `已通关 ✅ · ${formatElapsedHuman(elapsed)}`
+                            ? `已通关 · ${formatElapsedHuman(elapsed)}`
                             : isInProgress
                               ? `进行中 · 第 ${(st?.currentStep || 0) + 1}/${block.steps.length} 步`
                               : `目标 ${effectiveMinutes} 分钟`}
@@ -3409,26 +3392,26 @@ const DailyMissionHall: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Clear Domain Scope Tags */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 }}>
+                    {/* Clear Domain Scope Tags — Zero Emoji, Custom Icons */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
                       {block.id === 'block_school' && (
-                        <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ccfbf1', color: '#0f766e' }}>
-                          🏫 学校课业 · 复习与作业
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#ccfbf1', color: '#0f766e' }}>
+                          <UiIcon name="icon_block_school" size={14} /> 学校课业 · 复习与作业
                         </span>
                       )}
                       {block.id === 'block_web' && (
                         <>
-                          <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#dbeafe', color: '#1d4ed8' }}>
-                            💻 网站刷题
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#dbeafe', color: '#1d4ed8' }}>
+                            <UiIcon name="icon_block_web" size={14} /> 网站刷题
                           </span>
-                          <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ffedd5', color: '#c2410c' }}>
-                            👨‍🏫 希腊语私教课
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#ffedd5', color: '#c2410c' }}>
+                            <UiIcon name="icon_block_tutor" size={14} /> 希腊语私教课
                           </span>
                         </>
                       )}
                       {block.id === 'block_preview' && (
-                        <span style={{ fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9' }}>
-                          🏫 学校课业 · 下节课预习与练习册
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9' }}>
+                          <UiIcon name="icon_block_preview" size={14} /> 学校课业 · 下节课预习与练习册
                         </span>
                       )}
                     </div>
@@ -3438,14 +3421,15 @@ const DailyMissionHall: React.FC = () => {
 
                     {carryMin > 0 && (
                       <div style={{ marginBottom: 10, fontSize: 12, fontWeight: 800, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', padding: '6px 10px', borderRadius: 10 }}>
-                        ⏱️ 已自动顺延上一区块未足的 +{carryMin} 分钟（本次总计 {effectiveMinutes} 分钟）
+                        已自动顺延上一区块未足的 +{carryMin} 分钟（本次总计 {effectiveMinutes} 分钟）
                       </div>
                     )}
 
-                    {/* Visible Checklist with Direct Links */}
+                    {/* Visible Checklist with Direct Links — translucent card over watermark */}
                     <div
                       style={{
-                        background: '#f8fafc',
+                        background: 'rgba(255, 255, 255, 0.86)',
+                        backdropFilter: 'blur(4px)',
                         borderRadius: 14,
                         padding: '10px 12px',
                         border: '1px solid #e2e8f0',
@@ -3481,7 +3465,7 @@ const DailyMissionHall: React.FC = () => {
                                   color: stepDone ? '#10b981' : stepActive ? block.accent : '#94a3b8',
                                 }}
                               >
-                                {stepDone ? '✅' : stepActive ? '🔵' : `${idx + 1}.`}
+                                {stepDone ? <CheckCircle2 size={14} color="#10b981" style={{ verticalAlign: -2 }} /> : stepActive ? '●' : `${idx + 1}.`}
                               </span>
                               <span
                                 style={{
@@ -3533,6 +3517,9 @@ const DailyMissionHall: React.FC = () => {
                                 onClick={() => setShowQuickRecorder(true)}
                                 style={{
                                   flexShrink: 0,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
                                   fontSize: 12,
                                   fontWeight: 700,
                                   color: '#0071E3',
@@ -3543,7 +3530,8 @@ const DailyMissionHall: React.FC = () => {
                                   cursor: 'pointer',
                                 }}
                               >
-                                🎙️ 录词
+                                <UiIcon name="icon_mic" size={13} />
+                                录词
                               </button>
                             )}
                           </div>
