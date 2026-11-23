@@ -2330,6 +2330,9 @@ const DailyMissionHall: React.FC = () => {
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 16px;
         }
+        .mission-rank-slot {
+          margin-right: 175px;
+        }
         @media (max-width: 1024px) {
           .mission-container {
             padding: 16px 18px 0;
@@ -2340,8 +2343,15 @@ const DailyMissionHall: React.FC = () => {
           .mission-navbar-container .score-label {
             display: none !important;
           }
+          .mission-rank-slot {
+            margin-right: 110px;
+          }
         }
         @media (max-width: 767px) {
+          .mission-rank-slot {
+            margin-right: 0;
+            width: 100%;
+          }
           .mission-container {
             padding: 14px 12px 0;
           }
@@ -2402,16 +2412,6 @@ const DailyMissionHall: React.FC = () => {
               <div className="score-badge">
                 <Trophy size={13} />
                 <span>{sharedState.score || 0} XP</span>
-              </div>
-              <div
-                className="level-badge"
-                style={{
-                  background: currentLevel.gradient,
-                  boxShadow: `0 4px 10px ${currentLevel.glowColor}`,
-                }}
-              >
-                <span>{currentLevel.icon}</span>
-                <span>{currentLevel.name}</span>
               </div>
             </div>
 
@@ -2562,6 +2562,7 @@ const DailyMissionHall: React.FC = () => {
                 return (
                   <button
                     type="button"
+                    className="mission-rank-slot"
                     onClick={() => setShowRulesModal(true)}
                     style={{
                       display: 'flex',
