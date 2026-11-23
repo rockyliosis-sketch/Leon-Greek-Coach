@@ -7,6 +7,7 @@ import { lazy, Suspense, useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const HistoryStoryHall = lazy(() => import('./pages/student/HistoryStoryHall'));
+const DailyMissionHall = lazy(() => import('./pages/student/DailyMissionHall'));
 
 function App() {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
@@ -29,6 +30,11 @@ function App() {
         <Routes>
           {/* Frontend Learning App */}
           <Route path="/" element={<StudentApp />} />
+          <Route path="/mission" element={
+            <Suspense fallback={<p role="status">正在打开今日学习通关台…</p>}>
+              <DailyMissionHall />
+            </Suspense>
+          } />
           <Route path="/history" element={
             <Suspense fallback={<p role="status">正在打开故事书架…</p>}>
               <HistoryStoryHall />

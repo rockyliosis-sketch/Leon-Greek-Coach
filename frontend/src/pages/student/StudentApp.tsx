@@ -5293,19 +5293,34 @@ export default function StudentApp() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <Link to="/history" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: 16, padding: '18px 24px', marginBottom: 24, borderRadius: 16,
-          color: '#224943', background: '#edf5f0', border: '1px solid #c9ddd4',
-          textDecoration: 'none',
-        }}>
-          <span>
-            <strong style={{ display: 'block', fontSize: 20 }}>🏛️ 希腊历史故事馆</strong>
-            <span>三年级神话 · 四年级古希腊 · 睡前听故事 &amp; 重点小课堂</span>
-          </span>
-          <ChevronRight aria-hidden="true" style={{ flexShrink: 0 }} />
-        </Link>
+        {/* Daily Mission & History Hall Entry Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14, marginBottom: 24 }}>
+          <Link to="/mission" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 16, padding: '18px 22px', borderRadius: 16,
+            color: '#0b4f9c', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', border: '1.5px solid #93c5fd',
+            textDecoration: 'none', boxShadow: '0 4px 14px rgba(0, 113, 227, 0.08)',
+          }}>
+            <span>
+              <strong style={{ display: 'block', fontSize: 20 }}>🎯 今日学习通关台</strong>
+              <span style={{ fontSize: 13 }}>3×40分向导打卡 · 语音录学校生词/笔记 · 每日3次闪卡</span>
+            </span>
+            <ChevronRight aria-hidden="true" style={{ flexShrink: 0 }} />
+          </Link>
+
+          <Link to="/history" style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 16, padding: '18px 22px', borderRadius: 16,
+            color: '#224943', background: '#edf5f0', border: '1px solid #c9ddd4',
+            textDecoration: 'none',
+          }}>
+            <span>
+              <strong style={{ display: 'block', fontSize: 20 }}>🏛️ 希腊历史故事馆</strong>
+              <span style={{ fontSize: 13 }}>三年级神话 · 四年级古希腊 · 睡前听故事 &amp; 重点小课堂</span>
+            </span>
+            <ChevronRight aria-hidden="true" style={{ flexShrink: 0 }} />
+          </Link>
+        </div>
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">

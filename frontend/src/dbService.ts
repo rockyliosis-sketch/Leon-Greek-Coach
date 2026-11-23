@@ -1,6 +1,39 @@
 import { doc, onSnapshot, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
+export interface DailyMissionBlockState {
+  status: 'idle' | 'in_progress' | 'done';
+  currentStep: number;
+  elapsedSec: number;
+  subject?: string;
+  wordsAdded?: number;
+  completedAt?: string;
+}
+
+export interface DailyMissionRecord {
+  date: string;
+  hasTutorClass: boolean;
+  lightPreviewMode: boolean;
+  vocabChecks: {
+    morning: boolean;
+    afternoon: boolean;
+    night: boolean;
+  };
+  blocks: Record<string, DailyMissionBlockState>;
+  parentApproval?: {
+    checkedBook: boolean;
+    heardSummary: boolean;
+    approved: boolean;
+    approvedAt?: string;
+  };
+}
+
+export interface VocabSrsEntry {
+  level: number;
+  nextDue: string;
+  lastReviewed: string;
+}
+
 export interface SharedState {
   unit_study_dates: Record<string, string>;
   /** 按课本页码的课堂进度：每次课记一笔「上到第几页」 */
@@ -51,6 +84,10 @@ export interface SharedState {
     ms: number;       // 本题耗时（毫秒）
     v?: string;       // 当时页面的版本号（2026-10-04 起）
   }>;
+  /** 每日学习通关系统记录（按 YYYY-MM-DD 索引） */
+  daily_missions?: Record<string, DailyMissionRecord>;
+  /** 轻量 SRS 闪卡背词进度（按归一化希腊语词索引） */
+  vocab_srs?: Record<string, VocabSrsEntry>;
 }
 
 export const getInitialLocalState = (): SharedState => {
@@ -65,6 +102,18 @@ export const getInitialLocalState = (): SharedState => {
   let page_progress: SharedState['page_progress'] = [];
   let disabled_words: string[] = [];
   let answer_log: SharedState['answer_log'] = [];
+  let daily_missions: Record<string, DailyMissionRecord> = {};
+  let vocab_srs: Record<string, VocabSrsEntry> = {};
+
+  try {
+    const dm = localStorage.getItem("leon_daily_missions");
+    if (dm) daily_missions = JSON.parse(dm);
+  } catch (e) {}
+
+  try {
+    const vs = localStorage.getItem("leon_vocab_srs");
+    if (vs) vocab_srs = JSON.parse(vs);
+  } catch (e) {}
 
   try {
     const al = localStorage.getItem("leon_answer_log");
@@ -133,6 +182,8 @@ export const getInitialLocalState = (): SharedState => {
     daily_rewards_awarded,
     alternative_translations,
     user_feedback,
+    daily_missions,
+    vocab_srs,
   };
 };
 
@@ -174,6 +225,8 @@ export const subscribeToSharedState = (
           localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(data.daily_rewards_awarded || {}));
           localStorage.setItem("leon_alternative_translations", JSON.stringify(data.alternative_translations || {}));
           localStorage.setItem("leon_user_feedback", JSON.stringify(data.user_feedback || []));
+          localStorage.setItem("leon_daily_missions", JSON.stringify(data.daily_missions || {}));
+          localStorage.setItem("leon_vocab_srs", JSON.stringify(data.vocab_srs || {}));
         } catch (e) {}
         
         const next: SharedState = {
@@ -188,6 +241,8 @@ export const subscribeToSharedState = (
           daily_rewards_awarded: data.daily_rewards_awarded || {},
           alternative_translations: data.alternative_translations || {},
           user_feedback: data.user_feedback || [],
+          daily_missions: data.daily_missions || {},
+          vocab_srs: data.vocab_srs || {},
         };
 
         // 内容一模一样就不往上推(见上面 lastSignature 的说明)
@@ -265,6 +320,12 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
       }
       if (updates.user_feedback) {
         localStorage.setItem("leon_user_feedback", JSON.stringify(updates.user_feedback));
+      }
+      if (updates.daily_missions) {
+        localStorage.setItem("leon_daily_missions", JSON.stringify(updates.daily_missions));
+      }
+      if (updates.vocab_srs) {
+        localStorage.setItem("leon_vocab_srs", JSON.stringify(updates.vocab_srs));
       }
     } catch (e) {}
   }
