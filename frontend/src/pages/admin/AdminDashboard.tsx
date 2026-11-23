@@ -2574,7 +2574,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 todayWords={todayStudentWords}
                 pageProgress={pageMarks}
                 onDeleteWord={handleDeleteStudentWord}
-                title="📊 Leon 今日学习报告（实时同步）"
+                title="Leon 今日学习报告（实时同步）"
               />
             </div>
           );

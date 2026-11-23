@@ -94,4 +94,15 @@
 ## 五、 交付与自动接入说明
 - **UI 配图 23 张**（1 张 Hero Banner + 8 张卡片水印底图 + 14 枚去 Emoji 专属图标）输出至：`frontend/public/images/ui/`
 - **基础段位徽章 7 枚** 输出至：`frontend/public/images/ranks/`
-- **总计 30 张图片**。图片全部生成放好后告诉我一声，我会立刻把全站（含首页、向导页、积分规则弹窗与基础段位条）所有 Emoji 彻底清零并全部挂载上线，再做桌面/iPad/手机全尺寸视觉验收。
+---
+
+## 六、 每日学习报告单竖版海报专属背景图（可选增强，1 张）
+
+> **说明**：目前系统已内置精致的淡象牙羊皮纸 + 淡金边框海报底纹，直接点击「导出高清 PNG 日报」即可立刻使用；如果希望学习日报单子更有仪式感，可再让 Codex 生成下面这 1 张竖版背景图放入 `frontend/public/images/ui/bg_report_poster.png`，系统会自动无缝铺底。
+
+### `bg_report_poster.png`
+- **输出路径**：`frontend/public/images/ui/bg_report_poster.png`
+- **尺寸格式**：`1080 × 1920 px`（9:16 竖版 PNG）
+- **构图铁律**：中央 **84% 区域** 为极其干净、柔和的暖象牙羊皮纸浅底（`#fdfcf8`），绝无杂乱纹理干扰文字；四周边缘配有精致细腻的**古希腊淡金回字纹（Meander）细框**，底部左右两角轻轻点缀极淡的金色橄榄月桂枝水印（透明度约 15%），整体典雅高级、零文字、零黑边。
+- **Prompt (EN)**：
+  > Elegant vertical A4/poster parchment background for an ancient Greek academy daily study report card, 1080x1920 portrait PNG. Center 84% is ultra-clean, smooth warm ivory-cream paper (#fdfcf8) completely free of clutter for crisp dark typography. Subtle delicate pale-gold ancient Greek meander (Greek key) thin ornamental border framing the outer edges, with faint translucent pale-gold olive laurel branches gracefully tucked into the bottom corners at ~15% visual opacity. Refined institutional museum aesthetic, airy light, zero text, zero letters, zero watermark.

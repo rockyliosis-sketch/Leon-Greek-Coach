@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BookOpen, CheckCircle2, Clock, Copy, FileText, Headphones, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock, Copy, Download, Headphones, Printer, Sparkles } from 'lucide-react';
 import type { DailyMissionRecord } from '../dbService';
 import { formatElapsedHuman } from '../lib/dailyMissionHelpers';
 import { getBookFrontier } from '../lib/pageProgress';
+import { exportDailyReportPdf, exportDailyReportPng } from '../lib/exportStudyReport';
 import glossaryV2Data from '../data/glossary_v2.json';
 
 interface DailyStudyReportProps {
@@ -11,6 +12,8 @@ interface DailyStudyReportProps {
   todayWebCompleted: string[];
   todayWords: any[];
   pageProgress: any[];
+  score?: number;
+  streak?: number;
   onDeleteWord?: (wordId: any) => void;
   title?: string;
 }
@@ -27,10 +30,13 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   todayWebCompleted,
   todayWords,
   pageProgress,
+  score = 0,
+  streak = 0,
   onDeleteWord,
   title = 'Leon 今日学习报告',
 }) => {
   const [copied, setCopied] = useState(false);
+  const [exportingPng, setExportingPng] = useState(false);
 
   const blockEntries = Object.entries(mission.blocks || {});
   const totalBlockSec = blockEntries.reduce((sum, [, b]) => sum + (b.elapsedSec || 0), 0);
@@ -138,26 +144,95 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleCopy}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '9px 14px',
-            borderRadius: 10,
-            border: '1px solid #bfdbfe',
-            background: copied ? '#ecfdf5' : '#eff6ff',
-            color: copied ? '#047857' : '#1d4ed8',
-            fontWeight: 700,
-            fontSize: 13,
-            cursor: 'pointer',
-          }}
-        >
-          {copied ? <CheckCircle2 size={15} /> : <Copy size={15} />}
-          {copied ? '已复制今日报告！' : '复制报告文本'}
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <button
+            type="button"
+            disabled={exportingPng}
+            onClick={async () => {
+              setExportingPng(true);
+              try {
+                await exportDailyReportPng({
+                  todayStr,
+                  mission,
+                  todayWebCompleted,
+                  todayWords,
+                  pageProgress,
+                  score,
+                  streak,
+                });
+              } finally {
+                setExportingPng(false);
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '9px 15px',
+              borderRadius: 10,
+              border: 'none',
+              background: '#0071E3',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: exportingPng ? 'wait' : 'pointer',
+              boxShadow: '0 4px 12px rgba(0, 113, 227, 0.25)',
+            }}
+          >
+            <Download size={15} />
+            {exportingPng ? '正在生成高清海报…' : '导出高清 PNG 日报'}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              exportDailyReportPdf({
+                todayStr,
+                mission,
+                todayWebCompleted,
+                todayWords,
+                pageProgress,
+                score,
+                streak,
+              })
+            }
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '9px 14px',
+              borderRadius: 10,
+              border: '1px solid #cbd5e1',
+              background: '#ffffff',
+              color: '#0f172a',
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            <Printer size={15} />
+            导出 PDF / 打印
+          </button>
+          <button
+            type="button"
+            onClick={handleCopy}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '9px 14px',
+              borderRadius: 10,
+              border: '1px solid #bfdbfe',
+              background: copied ? '#ecfdf5' : '#eff6ff',
+              color: copied ? '#047857' : '#1d4ed8',
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            {copied ? <CheckCircle2 size={15} /> : <Copy size={15} />}
+            {copied ? '已复制文本' : '复制文本'}
+          </button>
+        </div>
       </div>
 
       {/* Top KPI summary strip */}

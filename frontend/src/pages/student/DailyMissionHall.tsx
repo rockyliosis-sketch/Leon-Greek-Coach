@@ -3572,13 +3572,15 @@ const DailyMissionHall: React.FC = () => {
           </div>
         </section>
 
-        {/* Bottom Section: Rich Daily Study Report (Replaces 2-min Parent Stamp!) */}
+        {/* Bottom Section: Rich Daily Study Report (with PNG & PDF Export!) */}
         <DailyStudyReport
           todayStr={todayStr}
           mission={todayMission}
           todayWebCompleted={todayWebCompleted}
           todayWords={todayWords}
           pageProgress={sharedState.page_progress || []}
+          score={sharedState.score || 0}
+          streak={streak}
         />
       </div>
 
