@@ -521,7 +521,7 @@ export function exportDailyReportPdf(payload: ExportReportPayload): void {
 <style>
   @page { size: A4 portrait; margin: 14mm; }
   body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; color: #0f172a; margin: 0; background: #fff; }
-  .sheet { max-width: 780px; margin: 0 auto; border: 1.5px solid #e2c98d; border-radius: 18px; padding: 24px; background: #fdfcf8; }
+  .sheet { max-width: 780px; margin: 0 auto; border: 1.5px solid #e2c98d; border-radius: 18px; padding: 24px; background: #fdfcf8 url('/images/ui/bg_report_poster.png') center/cover no-repeat; }
   .hero { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #005bb5, #1d4ed8); color: #fff; padding: 20px 24px; border-radius: 16px; margin-bottom: 18px; }
   .hero h1 { margin: 4px 0 2px; font-size: 24px; }
   .hero .sub { font-size: 12px; opacity: 0.9; }
