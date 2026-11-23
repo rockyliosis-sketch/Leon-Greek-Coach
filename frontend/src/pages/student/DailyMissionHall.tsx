@@ -233,12 +233,12 @@ const PREVIEW_ACTIONS = [
   '查并标了重点词',
   '看懂了大概意思',
   '用中文复述了大意',
-  '听了对应历史故事',
   '看了课本插图与词典框',
   '找出了难懂长句子',
   '预习了新语法点',
   '朗读了重点段落',
   '抄写了关键新词',
+  '标注了课上重点提问',
 ];
 
 const DEFAULT_VOCAB_SLOT_SEC = 10 * 60; // 10 minutes per vocab session (30m/day total)
@@ -408,15 +408,13 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         howTo: [
           '默认给你准备了「预习科目 1」和「预习科目 2」（还可以点按钮继续加科目），分别选好科目并填上页码。',
           '不要逐字翻译整篇文章！用铅笔圈出 10–15 个最影响理解大意的重点名词和动词，查好中文标在旁边。',
-          '借着中文标注把课文出声通读 1 遍；如果是历史课，强烈建议先点「历史故事馆」听完对应中文+希腊语双语故事再看课本！',
-          '合上书，在下方用语音输入用【中文】说一句「这篇课文大概讲了个什么事」（费曼复述法），并填上大概学了几个新单词。',
+          '借着中文标注把课文出声通读 1 遍，顺手把课本里的页边词典框和插图说明也扫一遍。',
+          '合上书，在下方用语音输入用【中文】说一句「这篇课文大概讲了个什么事」（费曼复述法），并选上大概学了几个新单词。',
         ],
         whyItWorks:
           '你在学校听不懂老师讲课，不是因为笨，而是因为同时要「认生词 + 听语速 + 懂背景」大脑超载了。提前在家里搞懂大意和 10 几个关键实词，明天坐进教室就像「开卷听课」，能瞬间听懂 70% 以上！而用中文写下大意（费曼学习法）是检验你到底真懂没懂的唯一金标准。',
         buttonText: '预习记录写好了，去扫练习册',
         kind: 'multi_preview',
-        linkTo: '/history',
-        linkLabel: '历史先听故事 →',
       },
       {
         title: 'Step 3：瞄一眼对应练习册题干（不做题，只看懂问题）',
@@ -2125,17 +2123,6 @@ const DailyMissionHall: React.FC = () => {
                           />
                         </div>
                       </div>
-
-                      {pv.subject.includes('历史') && (
-                        <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 10, background: '#edf5f0', border: '1px solid #c9ddd4', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 700, color: '#224943' }}>
-                            💡 历史预习捷径：先去故事馆听双语音频，再看希腊语课本快 3 倍！
-                          </span>
-                          <Link to="/history" style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: '#224943', padding: '5px 10px', borderRadius: 8, textDecoration: 'none', flexShrink: 0 }}>
-                            去听故事 →
-                          </Link>
-                        </div>
-                      )}
 
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                         {PREVIEW_ACTIONS.map((act) => {
