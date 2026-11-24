@@ -177,10 +177,20 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
       ? `P.${tutorLog.fromPage}${tutorLog.toPage && tutorLog.toPage > tutorLog.fromPage ? `-${tutorLog.toPage}` : ''}`
       : tutorLog.pages || '未填';
     b2Lines.push(
-      `• 希腊语私教课：${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} ${tPage} · 标了 ${tutorLog.questionMarks || 0} 个问号`
+      `• 私教课复习：${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} ${tPage}`
     );
-    if (tutorLog.actions?.length) b2Lines.push(`  完成动作：${tutorLog.actions.join(' / ')}`);
-    if (tutorLog.summary) b2Lines.push(`  备注：${tutorLog.summary}`);
+    if (tutorLog.actions?.length) b2Lines.push(`  复习动作：${tutorLog.actions.join(' / ')}`);
+    if (tutorLog.summary) b2Lines.push(`  复习备注：${tutorLog.summary}`);
+    if (tutorLog.mode === 'both') {
+      const pvPage = tutorLog.previewFromPage
+        ? `P.${tutorLog.previewFromPage}${tutorLog.previewToPage && tutorLog.previewToPage > tutorLog.previewFromPage ? `-${tutorLog.previewToPage}` : ''}`
+        : '未填';
+      b2Lines.push(
+        `• 私教课预习：${tutorLog.previewBook || tutorLog.book || 'B本'} ${pvPage} · 标了 ${tutorLog.previewQuestionMarks ?? tutorLog.questionMarks ?? 0} 个问号`
+      );
+      if (tutorLog.previewActions?.length) b2Lines.push(`  预习动作：${tutorLog.previewActions.join(' / ')}`);
+      if (tutorLog.previewSummary) b2Lines.push(`  预习备注：${tutorLog.previewSummary}`);
+    }
   } else {
     b2Lines.push('• 希腊语私教课：暂无记录');
   }
@@ -198,6 +208,8 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
     b3Lines.push(
       `• 规律复习旧笔记：${oldNotesReview.subject} P.${oldNotesReview.fromPage}${oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}`
     );
+    if (oldNotesReview.actions?.length) b3Lines.push(`  复习内容：${oldNotesReview.actions.join(' / ')}`);
+    if (oldNotesReview.note) b3Lines.push(`  备注：${oldNotesReview.note}`);
   }
   if (previews.length > 0) {
     previews.forEach((p, idx) => {

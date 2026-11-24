@@ -322,15 +322,27 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
           <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
             <div><strong>网站刷题：</strong>今日已完成 {todayWebCompleted.length} / 8 个模块</div>
             <div>
-              <strong>私教课：</strong>
+              <strong>私教课复习：</strong>
               {tutorLog
-                ? `${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''} · 标了 ${tutorLog.questionMarks || 0} 个 ?`
+                ? `${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''}`
                 : '待记录'}
             </div>
             {tutorLog?.actions && tutorLog.actions.length > 0 && (
-              <div><strong>完成动作：</strong>{tutorLog.actions.join(' / ')}</div>
+              <div><strong>复习动作：</strong>{tutorLog.actions.join(' / ')}</div>
             )}
-            {tutorLog?.summary && <div><strong>备注：</strong>{tutorLog.summary}</div>}
+            {tutorLog?.summary && <div><strong>复习备注：</strong>{tutorLog.summary}</div>}
+            {tutorLog?.mode === 'both' && (
+              <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px dashed #bfdbfe' }}>
+                <div>
+                  <strong>私教课预习：</strong>
+                  {tutorLog.previewBook || tutorLog.book || 'B本'} P.{tutorLog.previewFromPage ?? ''}{tutorLog.previewToPage ? `-${tutorLog.previewToPage}` : ''} · 标了 {tutorLog.previewQuestionMarks ?? tutorLog.questionMarks ?? 0} 个 ?
+                </div>
+                {tutorLog.previewActions && tutorLog.previewActions.length > 0 && (
+                  <div><strong>预习动作：</strong>{tutorLog.previewActions.join(' / ')}</div>
+                )}
+                {tutorLog.previewSummary && <div><strong>预习备注：</strong>{tutorLog.previewSummary}</div>}
+              </div>
+            )}
           </div>
         </div>
 
@@ -349,6 +361,10 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
                   <div style={{ fontWeight: 800, color: '#b45309' }}>
                     规律复习旧笔记：{oldNotesReview.subject} P.{oldNotesReview.fromPage}{oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}
                   </div>
+                  {oldNotesReview.actions && oldNotesReview.actions.length > 0 && (
+                    <div style={{ color: '#64748b', marginTop: 2 }}>内容：{oldNotesReview.actions.join(' / ')}</div>
+                  )}
+                  {oldNotesReview.note && <div style={{ marginTop: 2 }}>备注：{oldNotesReview.note}</div>}
                 </div>
               )}
               {previews.map((p, idx) => (

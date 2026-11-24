@@ -159,18 +159,58 @@ const HW_ACTION_OPTIONS = [
   '需要明天问老师',
 ];
 
-const TUTOR_ACTION_OPTIONS = [
-  '查并标了新词',
-  '铅笔先填了基础题',
-  '朗读了课文对话',
+const TUTOR_REVIEW_ACTIONS = [
   '口头重做了上节错题',
   '复习了语法变格',
   '复习了动词变位',
   '整理了语法笔记',
+  '出声朗读了本单元课文',
   '听了配套录音',
-  '试写了造句/短文',
-  '标出了课上重点提问',
+  '复习了重点句型',
 ];
+
+const TUTOR_PREVIEW_ACTIONS = [
+  '未来1-2页生词全查懂',
+  '每道练习题干都看懂',
+  '基础题已用铅笔试填',
+  '不会的已画问号待问老师',
+  '提前通读了新对话',
+];
+
+const OLD_NOTES_REVIEW_ACTIONS = [
+  '遮中文考了自己',
+  '重读了旧课文与句子',
+  '复习了旧语法笔记',
+  '擦掉了已记住的标记',
+  '圈出了顽固词明天入库',
+];
+
+/** 把清单中的【重点词】渲染为大一号、加粗、标红高亮 */
+const renderHighlightedText = (text: string) => {
+  const parts = text.split(/(【[^】]+】)/g);
+  return parts.map((part, idx) => {
+    if (part.startsWith('【') && part.endsWith('】')) {
+      const inner = part.slice(1, -1);
+      return (
+        <span
+          key={idx}
+          style={{
+            color: '#dc2626',
+            fontWeight: 900,
+            fontSize: '1.14em',
+            background: '#fef2f2',
+            padding: '1px 6px',
+            borderRadius: 6,
+            margin: '0 2px',
+          }}
+        >
+          {inner}
+        </span>
+      );
+    }
+    return <React.Fragment key={idx}>{part}</React.Fragment>;
+  });
+};
 
 const WORKBOOK_CHECK_OPTIONS = [
   '读懂了全部题干',
@@ -287,9 +327,9 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
             ]
           : [
               '下方点选今天上过的学校科目和页码',
-              '逐页检查今天课文：确认【每一个单词】都看懂（不懂立刻查、铅笔标中文）',
-              '课本页眉写上今天日期（方便日后规律复习）',
-              '把今天学的新句子出声通读 1 遍',
+              '逐页检查今天课文：确认【每一个单词】都看懂，不懂立刻【铅笔标中文】',
+              '课本页眉【写上今天日期】（方便以后规律复习）',
+              '把今天新接触的所有句子和单词，全部【出声朗读 3 遍】',
             ],
         buttonText: '当天课本排雷完成，去录生词',
         kind: 'school_plan',
@@ -300,8 +340,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         whyShort: '录词 = 再学一遍！哪怕昨天预习标过、今天又记的词，只要不熟就全录进来。',
         checklist: [
           '翻开今天学过的课本和笔记本，找出【所有还不完全熟的生词】',
-          '用 iPad 语音输入批量填进下方（不够就点「+ 再加 1 行」）',
-          '点「一键全部入库」，未来 7 天网站每天自动帮你巩固',
+          '用 iPad 语音输入批量填进下方（不够就点【+ 再加 1 行】）',
+          '点【一键全部入库】，未来 7 天网站每天自动帮你巩固',
         ],
         buttonText: '生词全部入库了，去写作业',
         kind: 'vocab_recorder',
@@ -311,9 +351,9 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         shortLabel: '完成各科书面作业并点选完成项',
         whyShort: '趁刚查完词一口气写完！如果提前做完，可直接去推进一部分区块二的私教课。',
         checklist: [
-          '一口气完成今天各科书面作业',
-          '卡壳超过 3 分钟直接画 ? 跳过，明天问老师',
-          '在下方逐科点选完成项，有需要再补一句简短备注',
+          '一口气认真完成今天各科的【全部书面作业】',
+          '实在不会做的题目【先标出来】，全部写完后再查书或明天问老师',
+          '在下方逐科点选完成项（提前做完可直接去做【区块二私教课】）',
         ],
         buttonText: '区块一全部通关！',
         kind: 'school_homework',
@@ -381,10 +421,10 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         shortLabel: '用 1/3 时间按页码规律复习旧笔记（或闪卡快扫）',
         whyShort: '只记不看 = 白查！每次拿出本区块 1/3 时间规律回头看，旧词才能真正变成你的。',
         checklist: [
-          '在下方选好今天要回头复习的【科目和旧页码】，保持规律推进',
-          '遮住中文逐词自测（课本不好遮就直接点下方【系统闪卡快扫】）',
-          '记住的打 ✓，忘了的画 ○ 留着重点消灭',
-          '复习过的顽固词，明天区块一时可以再次录进系统巩固',
+          '在下方选好今天复习的【科目和旧页码】，保持规律推进',
+          '拿出本区块【1/3 时间】遮住中文逐词自测，【认真看旧笔记】',
+          '记住的打 ✓，忘了的画 ○ 重点重读',
+          '在下方点选【今天复习了哪些内容】，顽固词明天区块一入库',
         ],
         buttonText: '旧笔记复习完了，去预习明天新课',
         kind: 'five_min_scan',
@@ -395,8 +435,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         whyShort: '预习做好了，明天听课像开卷，区块一的工作量也会越来越少！（预习不用录词，明天区块一再录）',
         checklist: [
           '选好明天要预习的【科目和页码】（建议至少 2 科）',
-          '把未来 1–2 页里【所有看不懂的重点词和句子】提前查好标中文',
-          '出声通读 1 遍，确保看懂大概讲了什么事',
+          '把未来 1–2 页里所有看不懂的词句【提前标中文】',
+          '出声通读 1 遍，确保【看懂大概讲了什么事】',
           '合上书，在下方用语音写一句【中文大意】',
         ],
         buttonText: '新课预习完成，去扫练习册',
@@ -407,8 +447,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         shortLabel: '把练习册每道题干读懂、标出不懂的词（支持多本）',
         whyShort: '不要求提前做完，但必须把每道题干读懂、生词标好，明天上课立刻抓住重点！',
         checklist: [
-          '翻开明天对应练习册，选好书目和页码（多本可点「+ 再增加一本」）',
-          '把每一道题的【题目要求读一遍】，看不懂的指令词提前标中文',
+          '翻开明天对应练习册，选好书目和页码（多本可点【+ 再增加一本】）',
+          '把每一道题的题目要求读一遍，看不懂的指令词【提前标中文】',
           '勾选发现情况，把最想明天听老师讲的题记一句备注',
         ],
         buttonText: '区块三全部通关！',
@@ -1091,15 +1131,24 @@ const DailyMissionHall: React.FC = () => {
     };
 
     const tutorLog = todayMission.blockLogs?.tutor || {
-      mode: 'preview' as const,
+      mode: 'review' as const,
       book: 'B 本 (Ελληνικά Β΄)',
-      fromPage: b1Frontier + 1,
-      toPage: b1Frontier + 2,
-      pages: `B本 P.${b1Frontier + 1}-${b1Frontier + 2}`,
+      unitNo: 1,
+      fromPage: Math.max(1, b1Frontier - 2),
+      toPage: b1Frontier,
+      pages: `B本 P.${Math.max(1, b1Frontier - 2)}-${b1Frontier}`,
       questionMarks: 0,
       actions: [],
       summary: '',
+      previewBook: 'B 本 (Ελληνικά Β΄)',
+      previewFromPage: b1Frontier + 1,
+      previewToPage: b1Frontier + 2,
+      previewQuestionMarks: 0,
+      previewActions: [],
+      previewSummary: '',
     };
+    const effectiveTutorMode: 'review' | 'both' =
+      tutorLog.mode === 'both' || tutorLog.mode === 'preview' ? 'both' : 'review';
 
     const workbookChecks: WorkbookCheckLog[] =
       todayMission.blockLogs?.workbookChecks && todayMission.blockLogs.workbookChecks.length > 0
@@ -1131,6 +1180,8 @@ const DailyMissionHall: React.FC = () => {
       subject: '希腊语 (Γλώσσα)',
       fromPage: 1,
       toPage: 5,
+      actions: [],
+      note: '',
     };
 
     const toggleChecklistKey = (key: string) => {
@@ -1459,7 +1510,7 @@ const DailyMissionHall: React.FC = () => {
                           {isCk ? '✓' : ci + 1}
                         </span>
                         <span style={{ textDecoration: isCk ? 'line-through' : 'none', opacity: isCk ? 0.78 : 1 }}>
-                          {itemText}
+                          {renderHighlightedText(itemText)}
                         </span>
                       </button>
                     );
@@ -1723,20 +1774,17 @@ const DailyMissionHall: React.FC = () => {
               )}
 
               {stepDef.kind === 'tutor_prep' && (
-                <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
-                      私教课量化记录（后台 B 本当前已上到第 {b1Frontier} 页）：
-                    </div>
+                <div style={{ marginBottom: 22, padding: 18, borderRadius: 16, background: '#eff6ff', border: '1px solid #bfdbfe', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
+                    私教课模式选择（后台 B 本当前已上到第 {b1Frontier} 页 · 只有「只复习」或「预习 + 复习」）：
                   </div>
 
-                  {/* Mode buttons */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {/* Only 2 modes: Review Only OR Preview + Review */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                     {(
                       [
-                        { id: 'preview' as const, label: '课前预习' },
-                        { id: 'review' as const, label: '课后复习' },
-                        { id: 'both' as const, label: '预习 + 复习' },
+                        { id: 'review' as const, label: '只复习（课后复习）' },
+                        { id: 'both' as const, label: '预习 + 复习（两者都做）' },
                       ]
                     ).map((m) => (
                       <button
@@ -1749,33 +1797,192 @@ const DailyMissionHall: React.FC = () => {
                           }))
                         }
                         style={{
-                          padding: '8px 14px',
+                          padding: '10px 18px',
                           borderRadius: 999,
-                          border: tutorLog.mode === m.id ? '2px solid #0071E3' : '1px solid #cbd5e1',
-                          background: tutorLog.mode === m.id ? '#dbeafe' : '#fff',
-                          color: tutorLog.mode === m.id ? '#1d4ed8' : '#334155',
-                          fontWeight: 700,
-                          fontSize: 13.5,
+                          border: effectiveTutorMode === m.id ? '2px solid #0071E3' : '1px solid #cbd5e1',
+                          background: effectiveTutorMode === m.id ? '#dbeafe' : '#fff',
+                          color: effectiveTutorMode === m.id ? '#1d4ed8' : '#334155',
+                          fontWeight: 800,
+                          fontSize: 14.5,
                           cursor: 'pointer',
                         }}
                       >
-                        {tutorLog.mode === m.id ? '✓ ' : ''}
+                        {effectiveTutorMode === m.id ? '✓ ' : ''}
                         {m.label}
                       </button>
                     ))}
                   </div>
 
-                  {/* Dynamic Highlighted Preview / Review Checklists for Private Greek Class */}
-                  {(tutorLog.mode === 'preview' || tutorLog.mode === 'both') && (
+                  {/* Highlighted Review Checklist (Always shown) */}
+                  <div style={{ padding: '14px 16px', borderRadius: 14, background: '#fff', border: '2px solid #ea580c' }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#c2410c', marginBottom: 8 }}>
+                      复习必做清单（自己复习才能省出上课时间学新课！大单元可分多次）
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                      {[
+                        '选好今天复习的【单元号与页码区间】（大单元分几次扎实复习完）',
+                        '盖住答案，把上次老师改过的【错题口头重做一遍】',
+                        '把本单元【语法笔记、变格/变位和重点句】完整过一遍',
+                        '把当天或本单元的课文【出声朗读 1 遍】',
+                      ].map((line, i) => {
+                        const k = `tutor_rv_${i}`;
+                        const ck = Boolean(checkedItems[k]);
+                        return (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => toggleChecklistKey(k)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              textAlign: 'left',
+                              padding: '9px 12px',
+                              borderRadius: 10,
+                              border: ck ? '1.5px solid #10b981' : '1px solid #fed7aa',
+                              background: ck ? '#ecfdf5' : '#fff7ed',
+                              color: ck ? '#047857' : '#0f172a',
+                              fontSize: 14.5,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <span style={{ fontWeight: 800, color: ck ? '#10b981' : '#ea580c' }}>{ck ? '✓' : `${i + 1}.`}</span>
+                            <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{renderHighlightedText(line)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Review Content Recorder */}
+                    <div style={{ fontSize: 13, fontWeight: 800, color: '#c2410c', marginBottom: 8 }}>
+                      记录今日私教课【复习内容】：
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                      <select
+                        value={tutorLog.book || 'B 本 (Ελληνικά Β΄)'}
+                        onChange={(e) => {
+                          const bk = e.target.value;
+                          const fp = tutorLog.fromPage ?? Math.max(1, b1Frontier - 2);
+                          const tp = tutorLog.toPage ?? b1Frontier;
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            tutor: { ...tutorLog, mode: effectiveTutorMode, book: bk, pages: `${bk.split(' ')[0]} P.${fp}-${tp}` },
+                          }));
+                        }}
+                        style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
+                      >
+                        <option value="B 本 (Ελληνικά Β΄)">B 本 (Ελληνικά Β΄) · 在学</option>
+                        <option value="A2 (ΚΛΙΚ Α2)">A2 (ΚΛΙΚ Α2)</option>
+                        <option value="私教补充讲义">私教补充讲义</option>
+                      </select>
+
+                      <NumberStepper
+                        prefix="第"
+                        suffix="单元"
+                        min={1}
+                        max={30}
+                        value={tutorLog.unitNo ?? 1}
+                        onChange={(v) =>
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            tutor: { ...tutorLog, mode: effectiveTutorMode, unitNo: v },
+                          }))
+                        }
+                      />
+
+                      <NumberStepper
+                        prefix="第"
+                        suffix="页"
+                        min={1}
+                        max={400}
+                        value={tutorLog.fromPage ?? Math.max(1, b1Frontier - 2)}
+                        onChange={(v) => {
+                          const tp = Math.max(v, tutorLog.toPage ?? v);
+                          const bk = (tutorLog.book || 'B本').split(' ')[0];
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            tutor: { ...tutorLog, mode: effectiveTutorMode, fromPage: v, toPage: tp, pages: `${bk} P.${v}-${tp}` },
+                          }));
+                        }}
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                      <NumberStepper
+                        prefix="第"
+                        suffix="页"
+                        min={tutorLog.fromPage ?? 1}
+                        max={400}
+                        value={tutorLog.toPage ?? b1Frontier}
+                        onChange={(v) => {
+                          const fp = tutorLog.fromPage ?? Math.max(1, b1Frontier - 2);
+                          const bk = (tutorLog.book || 'B本').split(' ')[0];
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            tutor: { ...tutorLog, mode: effectiveTutorMode, toPage: Math.max(fp, v), pages: `${bk} P.${fp}-${Math.max(fp, v)}` },
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 }}>
+                      {TUTOR_REVIEW_ACTIONS.map((act) => {
+                        const checked = (tutorLog.actions || []).includes(act);
+                        return (
+                          <button
+                            key={act}
+                            type="button"
+                            onClick={() => {
+                              const nextActs = checked
+                                ? (tutorLog.actions || []).filter((a) => a !== act)
+                                : [...(tutorLog.actions || []), act];
+                              updateBlockLogs((prev) => ({
+                                ...prev,
+                                tutor: { ...tutorLog, mode: effectiveTutorMode, actions: nextActs },
+                              }));
+                            }}
+                            style={{
+                              padding: '7px 12px',
+                              borderRadius: 999,
+                              border: checked ? '1.5px solid #ea580c' : '1px solid #cbd5e1',
+                              background: checked ? '#ffedd5' : '#fff',
+                              color: checked ? '#c2410c' : '#475569',
+                              fontSize: 13,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {checked ? '✓ ' : '+ '}
+                            {act}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="选填一句复习备注（例如：复习了第4单元过去时变位，错题都会做了）"
+                      value={tutorLog.summary || ''}
+                      onChange={(e) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          tutor: { ...tutorLog, mode: effectiveTutorMode, summary: e.target.value },
+                        }))
+                      }
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                    />
+                  </div>
+
+                  {/* Highlighted Preview Checklist + Separate Preview Recorder (Shown when '预习 + 复习' is selected) */}
+                  {effectiveTutorMode === 'both' && (
                     <div style={{ padding: '14px 16px', borderRadius: 14, background: '#fff', border: '2px solid #0071E3' }}>
                       <div style={{ fontSize: 15, fontWeight: 800, color: '#005bb5', marginBottom: 8 }}>
                         课前预习必做清单（核心：看懂未来 1–2 页所有内容和题干！）
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                         {[
-                          '翻开未来 1–2 页：把【所有看不懂的词和句子】全部查懂标中文',
-                          '看未来 1–2 页相关练习题：不求全会做，但【必须把每道题干看懂】',
-                          '会做的先用铅笔试填，真不会的地方画大 ? 上课直接问老师',
+                          '翻开【未来 1–2 页】：把所有看不懂的词句全部查懂【提前标中文】',
+                          '看【未来 1–2 页练习题】：不求全会做，但必须【把每道题干看懂】',
+                          '会做的先用铅笔试填，真不会的地方【画大 ?】上课直接问老师',
                         ].map((line, i) => {
                           const k = `tutor_pv_${i}`;
                           const ck = Boolean(checkedItems[k]);
@@ -1800,259 +2007,137 @@ const DailyMissionHall: React.FC = () => {
                               }}
                             >
                               <span style={{ fontWeight: 800, color: ck ? '#10b981' : '#0071E3' }}>{ck ? '✓' : `${i + 1}.`}</span>
-                              <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{line}</span>
+                              <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{renderHighlightedText(line)}</span>
                             </button>
                           );
                         })}
                       </div>
-                    </div>
-                  )}
 
-                  {(tutorLog.mode === 'review' || tutorLog.mode === 'both') && (
-                    <div style={{ padding: '14px 16px', borderRadius: 14, background: '#fff', border: '2px solid #ea580c' }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: '#c2410c', marginBottom: 8 }}>
-                        课后复习必做清单（自己复习才能省出上课时间学新课！大单元可分多次）
+                      <div style={{ fontSize: 13, fontWeight: 800, color: '#005bb5', marginBottom: 8 }}>
+                        记录今日私教课【预习内容】：
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {[
-                          '选好今天复习的【单元号与页码区间】（大单元分几次扎实复习完）',
-                          '盖住答案，把上次老师改过的【错题口头重做一遍】',
-                          '把本单元【语法笔记、变格/变位和重点句】完整过一遍',
-                          '把当天或本单元的课文【出声朗读 1 遍】',
-                        ].map((line, i) => {
-                          const k = `tutor_rv_${i}`;
-                          const ck = Boolean(checkedItems[k]);
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10 }}>
+                        <select
+                          value={tutorLog.previewBook || tutorLog.book || 'B 本 (Ελληνικά Β΄)'}
+                          onChange={(e) =>
+                            updateBlockLogs((prev) => ({
+                              ...prev,
+                              tutor: { ...tutorLog, mode: 'both', previewBook: e.target.value },
+                            }))
+                          }
+                          style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
+                        >
+                          <option value="B 本 (Ελληνικά Β΄)">B 本 (Ελληνικά Β΄) · 在学</option>
+                          <option value="A2 (ΚΛΙΚ Α2)">A2 (ΚΛΙΚ Α2)</option>
+                          <option value="私教补充讲义">私教补充讲义</option>
+                        </select>
+
+                        <NumberStepper
+                          prefix="第"
+                          suffix="页"
+                          min={1}
+                          max={400}
+                          value={tutorLog.previewFromPage ?? b1Frontier + 1}
+                          onChange={(v) => {
+                            const tp = Math.max(v, tutorLog.previewToPage ?? v + 1);
+                            updateBlockLogs((prev) => ({
+                              ...prev,
+                              tutor: { ...tutorLog, mode: 'both', previewFromPage: v, previewToPage: tp },
+                            }));
+                          }}
+                        />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                        <NumberStepper
+                          prefix="第"
+                          suffix="页"
+                          min={tutorLog.previewFromPage ?? 1}
+                          max={400}
+                          value={tutorLog.previewToPage ?? b1Frontier + 2}
+                          onChange={(v) => {
+                            const fp = tutorLog.previewFromPage ?? b1Frontier + 1;
+                            updateBlockLogs((prev) => ({
+                              ...prev,
+                              tutor: { ...tutorLog, mode: 'both', previewToPage: Math.max(fp, v) },
+                            }));
+                          }}
+                        />
+
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#475569' }}>预习标了几个 ?：</span>
+                          <NumberStepper
+                            min={0}
+                            max={50}
+                            value={tutorLog.previewQuestionMarks ?? tutorLog.questionMarks ?? 0}
+                            onChange={(v) =>
+                              updateBlockLogs((prev) => ({
+                                ...prev,
+                                tutor: { ...tutorLog, mode: 'both', previewQuestionMarks: v, questionMarks: v },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 }}>
+                        {TUTOR_PREVIEW_ACTIONS.map((act) => {
+                          const checked = (tutorLog.previewActions || []).includes(act);
                           return (
                             <button
-                              key={k}
+                              key={act}
                               type="button"
-                              onClick={() => toggleChecklistKey(k)}
+                              onClick={() => {
+                                const nextActs = checked
+                                  ? (tutorLog.previewActions || []).filter((a) => a !== act)
+                                  : [...(tutorLog.previewActions || []), act];
+                                updateBlockLogs((prev) => ({
+                                  ...prev,
+                                  tutor: { ...tutorLog, mode: 'both', previewActions: nextActs },
+                                }));
+                              }}
                               style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                textAlign: 'left',
-                                padding: '9px 12px',
-                                borderRadius: 10,
-                                border: ck ? '1.5px solid #10b981' : '1px solid #fed7aa',
-                                background: ck ? '#ecfdf5' : '#fff7ed',
-                                color: ck ? '#047857' : '#0f172a',
-                                fontSize: 14.5,
+                                padding: '7px 12px',
+                                borderRadius: 999,
+                                border: checked ? '1.5px solid #0071E3' : '1px solid #cbd5e1',
+                                background: checked ? '#dbeafe' : '#fff',
+                                color: checked ? '#1d4ed8' : '#475569',
+                                fontSize: 13,
                                 fontWeight: 700,
                                 cursor: 'pointer',
                               }}
                             >
-                              <span style={{ fontWeight: 800, color: ck ? '#10b981' : '#ea580c' }}>{ck ? '✓' : `${i + 1}.`}</span>
-                              <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{line}</span>
+                              {checked ? '✓ ' : '+ '}
+                              {act}
                             </button>
                           );
                         })}
                       </div>
-                    </div>
-                  )}
 
-                  {/* Book + Unit + Page Range Steppers + Question Marks Stepper */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', padding: '12px 14px', borderRadius: 12, background: '#fff', border: '1px solid #bfdbfe' }}>
-                    <select
-                      value={tutorLog.book || 'B 本 (Ελληνικά Β΄)'}
-                      onChange={(e) => {
-                        const bk = e.target.value;
-                        const fp = tutorLog.fromPage ?? b1Frontier + 1;
-                        const tp = tutorLog.toPage ?? b1Frontier + 2;
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          tutor: { ...tutorLog, book: bk, pages: `${bk.split(' ')[0]} P.${fp}-${tp}` },
-                        }));
-                      }}
-                      style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
-                    >
-                      <option value="B 本 (Ελληνικά Β΄)">B 本 (Ελληνικά Β΄) · 在学</option>
-                      <option value="A2 (ΚΛΙΚ Α2)">A2 (ΚΛΙΚ Α2)</option>
-                      <option value="私教补充讲义">私教补充讲义</option>
-                    </select>
-
-                    <NumberStepper
-                      prefix="第"
-                      suffix="单元"
-                      min={1}
-                      max={30}
-                      value={tutorLog.unitNo ?? 1}
-                      onChange={(v) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          tutor: { ...tutorLog, unitNo: v },
-                        }))
-                      }
-                    />
-
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      <NumberStepper
-                        prefix="第"
-                        suffix="页"
-                        min={1}
-                        max={400}
-                        value={tutorLog.fromPage ?? b1Frontier + 1}
-                        onChange={(v) => {
-                          const tp = Math.max(v, tutorLog.toPage ?? v + 1);
-                          const bk = (tutorLog.book || 'B本').split(' ')[0];
+                      <input
+                        type="text"
+                        placeholder="选填一句预习备注（例如：第97页第3道语法填空画了?，明天上课问老师）"
+                        value={tutorLog.previewSummary || ''}
+                        onChange={(e) =>
                           updateBlockLogs((prev) => ({
                             ...prev,
-                            tutor: { ...tutorLog, fromPage: v, toPage: tp, pages: `${bk} P.${v}-${tp}` },
-                          }));
-                        }}
-                      />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
-                      <NumberStepper
-                        prefix="第"
-                        suffix="页"
-                        min={tutorLog.fromPage ?? 1}
-                        max={400}
-                        value={tutorLog.toPage ?? b1Frontier + 2}
-                        onChange={(v) => {
-                          const fp = tutorLog.fromPage ?? b1Frontier + 1;
-                          const bk = (tutorLog.book || 'B本').split(' ')[0];
-                          updateBlockLogs((prev) => ({
-                            ...prev,
-                            tutor: { ...tutorLog, toPage: Math.max(fp, v), pages: `${bk} P.${fp}-${Math.max(fp, v)}` },
-                          }));
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#475569' }}>标了几个 ?：</span>
-                      <NumberStepper
-                        min={0}
-                        max={50}
-                        value={tutorLog.questionMarks || 0}
-                        onChange={(v) =>
-                          updateBlockLogs((prev) => ({
-                            ...prev,
-                            tutor: { ...tutorLog, questionMarks: v },
+                            tutor: { ...tutorLog, mode: 'both', previewSummary: e.target.value },
                           }))
                         }
+                        style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
                       />
                     </div>
-                  </div>
-
-                  {/* Quantized Tutor Action Chips */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                    {TUTOR_ACTION_OPTIONS.map((act) => {
-                      const checked = (tutorLog.actions || []).includes(act);
-                      return (
-                        <button
-                          key={act}
-                          type="button"
-                          onClick={() => {
-                            const nextActs = checked
-                              ? (tutorLog.actions || []).filter((a) => a !== act)
-                              : [...(tutorLog.actions || []), act];
-                            updateBlockLogs((prev) => ({
-                              ...prev,
-                              tutor: { ...tutorLog, actions: nextActs },
-                            }));
-                          }}
-                          style={{
-                            padding: '7px 12px',
-                            borderRadius: 999,
-                            border: checked ? '1.5px solid #0071E3' : '1px solid #cbd5e1',
-                            background: checked ? '#dbeafe' : '#fff',
-                            color: checked ? '#1d4ed8' : '#475569',
-                            fontSize: 13,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {checked ? '✓ ' : '+ '}
-                          {act}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <input
-                    type="text"
-                    placeholder="选填一句简短备注（例如：第3题语法变格不太懂，已画?）"
-                    value={tutorLog.summary || ''}
-                    onChange={(e) =>
-                      updateBlockLogs((prev) => ({
-                        ...prev,
-                        tutor: { ...tutorLog, summary: e.target.value },
-                      }))
-                    }
-                    style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
-                  />
+                  )}
                 </div>
               )}
 
               {stepDef.kind === 'five_min_scan' && (
                 <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* Old Notes Review Page Recorder */}
-                  <div
-                    style={{
-                      padding: 14,
-                      borderRadius: 16,
-                      background: '#f5f3ff',
-                      border: '1.5px solid #ddd6fe',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      gap: 10,
-                    }}
-                  >
-                    <span style={{ fontSize: 13.5, fontWeight: 800, color: '#5b21b6' }}>
-                      今日规律复习旧笔记范围：
-                    </span>
-                    <select
-                      value={oldNotesReview.subject}
-                      onChange={(e) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          oldNotesReview: { ...oldNotesReview, subject: e.target.value },
-                        }))
-                      }
-                      style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#fff' }}
-                    >
-                      {SCHOOL_SUBJECTS.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                    <NumberStepper
-                      prefix="第"
-                      suffix="页"
-                      min={1}
-                      max={300}
-                      value={oldNotesReview.fromPage}
-                      onChange={(v) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          oldNotesReview: { ...oldNotesReview, fromPage: v, toPage: Math.max(v, oldNotesReview.toPage) },
-                        }))
-                      }
-                    />
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
-                    <NumberStepper
-                      prefix="第"
-                      suffix="页"
-                      min={oldNotesReview.fromPage}
-                      max={300}
-                      value={oldNotesReview.toPage}
-                      onChange={(v) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          oldNotesReview: { ...oldNotesReview, toPage: Math.max(oldNotesReview.fromPage, v) },
-                        }))
-                      }
-                    />
-                  </div>
-
-                  {/* Option A: 1/3 Time Paper Book Old-Notes Review Timer */}
+                  {/* 1/3 Time Old-Notes Review Timer (Auto-calculated as 1/3 of current block duration) */}
                   <div
                     style={{
                       padding: 16,
                       borderRadius: 16,
                       background: '#fffbeb',
-                      border: '1px solid #fde68a',
+                      border: '1.5px solid #fcd34d',
                       display: 'flex',
                       flexWrap: 'wrap',
                       alignItems: 'center',
@@ -2061,10 +2146,10 @@ const DailyMissionHall: React.FC = () => {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309' }}>
-                        方式 A · 纸质课本规律复习旧笔记（占本区块 1/3 时长：{proportionalScanMin} 分钟）
+                      <div style={{ fontSize: 13.5, fontWeight: 800, color: '#b45309' }}>
+                        旧笔记规律复习专属计时（自动按本区块 {effectiveBlockMin} 分钟的 1/3 计算：{proportionalScanMin} 分钟）
                       </div>
-                      <div style={{ fontSize: 28, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
+                      <div style={{ fontSize: 30, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
                         {formatDurationMinSec(fiveMinSec)}
                       </div>
                     </div>
@@ -2073,12 +2158,12 @@ const DailyMissionHall: React.FC = () => {
                         type="button"
                         onClick={() => setFiveMinRunning((r) => !r)}
                         style={{
-                          padding: '10px 16px',
+                          padding: '10px 18px',
                           borderRadius: 12,
                           border: 'none',
                           background: fiveMinRunning ? '#d97706' : '#f59e0b',
                           color: '#fff',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           cursor: 'pointer',
                         }}
                       >
@@ -2098,51 +2183,118 @@ const DailyMissionHall: React.FC = () => {
                           color: '#92400e',
                           cursor: 'pointer',
                         }}
-                        title="重置复习计时"
+                        title="按当前 1/3 时长重置计时"
                       >
                         <RotateCcw size={16} />
                       </button>
                     </div>
                   </div>
 
-                  {/* Option B: Instant System Flashcard Quick Scan (Entered words + Today's glossary words!) */}
+                  {/* Old Notes Review Content Recorder (Subject + Page Range + Actions + Note) */}
                   <div
                     style={{
                       padding: 16,
                       borderRadius: 16,
-                      background: '#eff6ff',
-                      border: '1.5px solid #93c5fd',
+                      background: '#f5f3ff',
+                      border: '1.5px solid #ddd6fe',
                       display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
+                      flexDirection: 'column',
                       gap: 12,
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
-                        方式 B · 用系统闪卡 5 分钟极速自测（课本不好遮中文时用这个！）
-                      </div>
-                      <div style={{ fontSize: 12.5, color: '#475569', marginTop: 3 }}>
-                        自动混入你录入的课堂生词 + 今天白天背过的词表词，点开就能刷！
-                      </div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#5b21b6' }}>
+                      记录今天复习了哪些旧笔记内容（自动写入今日学习报告）：
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveFlashcardSlot('quick_scan')}
-                      style={{
-                        padding: '11px 18px',
-                        borderRadius: 12,
-                        border: 'none',
-                        background: '#0071E3',
-                        color: '#fff',
-                        fontWeight: 800,
-                        fontSize: 14,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      启动 5 分钟闪卡快扫 →
-                    </button>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+                      <select
+                        value={oldNotesReview.subject}
+                        onChange={(e) =>
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            oldNotesReview: { ...oldNotesReview, subject: e.target.value },
+                          }))
+                        }
+                        style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#fff' }}
+                      >
+                        {SCHOOL_SUBJECTS.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                      <NumberStepper
+                        prefix="第"
+                        suffix="页"
+                        min={1}
+                        max={300}
+                        value={oldNotesReview.fromPage}
+                        onChange={(v) =>
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            oldNotesReview: { ...oldNotesReview, fromPage: v, toPage: Math.max(v, oldNotesReview.toPage) },
+                          }))
+                        }
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                      <NumberStepper
+                        prefix="第"
+                        suffix="页"
+                        min={oldNotesReview.fromPage}
+                        max={300}
+                        value={oldNotesReview.toPage}
+                        onChange={(v) =>
+                          updateBlockLogs((prev) => ({
+                            ...prev,
+                            oldNotesReview: { ...oldNotesReview, toPage: Math.max(oldNotesReview.fromPage, v) },
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                      {OLD_NOTES_REVIEW_ACTIONS.map((act) => {
+                        const checked = (oldNotesReview.actions || []).includes(act);
+                        return (
+                          <button
+                            key={act}
+                            type="button"
+                            onClick={() => {
+                              const nextActs = checked
+                                ? (oldNotesReview.actions || []).filter((a) => a !== act)
+                                : [...(oldNotesReview.actions || []), act];
+                              updateBlockLogs((prev) => ({
+                                ...prev,
+                                oldNotesReview: { ...oldNotesReview, actions: nextActs },
+                              }));
+                            }}
+                            style={{
+                              padding: '7px 12px',
+                              borderRadius: 999,
+                              border: checked ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
+                              background: checked ? '#ede9fe' : '#fff',
+                              color: checked ? '#5b21b6' : '#475569',
+                              fontSize: 13,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {checked ? '✓ ' : '+ '}
+                            {act}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="选填一句：今天复习旧笔记时发现了哪些还没记住的词或知识点？"
+                      value={oldNotesReview.note || ''}
+                      onChange={(e) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          oldNotesReview: { ...oldNotesReview, note: e.target.value },
+                        }))
+                      }
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                    />
                   </div>
                 </div>
               )}

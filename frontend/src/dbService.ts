@@ -53,7 +53,7 @@ export interface DailyBlockLogs {
     items?: SchoolSubjectTaskLog[];
   };
   tutor?: {
-    mode: 'preview' | 'review' | 'both';
+    mode: 'review' | 'both' | 'preview';
     book?: string;
     unitNo?: number;
     fromPage?: number;
@@ -62,11 +62,19 @@ export interface DailyBlockLogs {
     questionMarks: number;
     actions?: string[];
     summary: string;
+    previewBook?: string;
+    previewFromPage?: number;
+    previewToPage?: number;
+    previewQuestionMarks?: number;
+    previewActions?: string[];
+    previewSummary?: string;
   };
   oldNotesReview?: {
     subject: string;
     fromPage: number;
     toPage: number;
+    actions?: string[];
+    note?: string;
   };
   previews?: PreviewSubjectLog[];
   workbookChecks?: WorkbookCheckLog[];
