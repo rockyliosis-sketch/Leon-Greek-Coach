@@ -104,6 +104,7 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
   const schoolLog = mission.blockLogs?.school;
   const schoolItems = schoolLog?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
+  const oldNotesReview = mission.blockLogs?.oldNotesReview;
   const previews = (mission.blockLogs?.previews || []).filter(
     (p) => p.subject || p.pages || p.summary || (p.actions && p.actions.length > 0) || p.newWordsCount > 0
   );
@@ -176,7 +177,7 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
       ? `P.${tutorLog.fromPage}${tutorLog.toPage && tutorLog.toPage > tutorLog.fromPage ? `-${tutorLog.toPage}` : ''}`
       : tutorLog.pages || '未填';
     b2Lines.push(
-      `• 希腊语私教课：${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'} ${tPage} · 标了 ${tutorLog.questionMarks || 0} 个问号`
+      `• 希腊语私教课：${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} ${tPage} · 标了 ${tutorLog.questionMarks || 0} 个问号`
     );
     if (tutorLog.actions?.length) b2Lines.push(`  完成动作：${tutorLog.actions.join(' / ')}`);
     if (tutorLog.summary) b2Lines.push(`  备注：${tutorLog.summary}`);
@@ -193,6 +194,11 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
 
   // Block 3
   const b3Lines: string[] = [];
+  if (oldNotesReview) {
+    b3Lines.push(
+      `• 规律复习旧笔记：${oldNotesReview.subject} P.${oldNotesReview.fromPage}${oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}`
+    );
+  }
   if (previews.length > 0) {
     previews.forEach((p, idx) => {
       b3Lines.push(
@@ -495,6 +501,7 @@ export function exportDailyReportPdf(payload: ExportReportPayload): void {
   const a2Idx = getBookFrontier(pageProgress || [], 'glossary-a2');
   const schoolItems = mission.blockLogs?.school?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
+  const oldNotesReview = mission.blockLogs?.oldNotesReview;
   const previews = (mission.blockLogs?.previews || []).filter(
     (p) => p.subject || p.pages || p.summary || (p.actions && p.actions.length > 0) || p.newWordsCount > 0
   );

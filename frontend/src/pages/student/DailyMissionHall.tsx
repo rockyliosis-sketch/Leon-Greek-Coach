@@ -61,9 +61,8 @@ import { LevelRulesModal } from '../../components/LevelRulesModal';
 interface WizardStepDef {
   title: string;
   shortLabel: string;
-  goal: string;
-  howTo: string[];
-  whyItWorks: string;
+  whyShort: string;
+  checklist: string[];
   buttonText: string;
   kind?:
     | 'default'
@@ -268,57 +267,54 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     bgImage: '/images/ui/bg_block_school.png',
     title: mode === 'saturday'
       ? (isLight ? '区块一：本周课本快清盘（轻享 20 分）' : '区块一：本周课本大清盘')
-      : '区块一：学校复习 + 生词入库 + 作业',
+      : '区块一：学校当天复习 + 生词入库 + 作业',
     subtitle: mode === 'saturday'
-      ? '消灭本周课本与私教书遗留的圈词和 ?'
-      : '40 分钟 · 先填今天要处理的科目和页码，再排雷、录词、写作业',
+      ? '集中消灭本周残留的圈词和 ?'
+      : '40 分钟 · 重点是当天内容排雷与生词全入库（提前做完可先做区块二私教课）',
     minutes: mode === 'saturday' ? (isLight ? 20 : 35) : 40,
     accent: '#0f766e',
     bg: '#f0fdfa',
     steps: [
       {
-        title: mode === 'saturday' ? 'Step 1：确定本周清盘范围 & 翻看旧标记' : 'Step 1：明确今日学校任务 & 课堂排雷',
-        shortLabel: mode === 'saturday' ? '翻本周所有课本旧圈词和 ?，懂了擦掉' : '填今日科目与页码 + 查课堂圈词并标中文与日期',
-        goal: mode === 'saturday'
-          ? '把本周五天所有课本里还留着铅笔圈和 ? 的地方集中扫一遍，彻底清账。'
-          : '先把今天课堂上没听懂、圈出来的词全部搞懂，再开始写作业，避免写作业时反复卡壳。',
-        howTo: [
-          '先在下方勾选今天要处理的学校科目，填好课本或练习册的页码（如 P.24-26）。',
-          '翻开今天上课的课本，把上课圈出来没听懂的词查好，用铅笔把中文小字写在旁边。',
-          '在课本这一页的右上角写上今天的日期（例如 11/23），方便过 1 天和周末回头复习。',
-          '把标过生词的那几句话小声读一遍，确认整句意思通顺。',
-        ],
-        whyItWorks:
-          '大脑如果在「词都不认识」的状态下硬写作业，会消耗双倍精力且极易走神。先花 10 分钟排雷并标上日期，既能让写作业速度翻倍，又能给大脑留下「这页是哪天学的」复习锚点。',
-        buttonText: '排雷与目标填好了，下一步',
+        title: mode === 'saturday' ? 'Step 1：本周课本旧标记清盘' : 'Step 1：学校当天课本复习排雷',
+        shortLabel: mode === 'saturday' ? '翻本周旧圈词和 ?，懂了擦掉' : '选今日科目页码 + 查懂当天书上每个生词',
+        whyShort: '先扫清今天课本里每一个不懂的词，写作业才不卡壳！',
+        checklist: mode === 'saturday'
+          ? [
+              '翻开本周所有学校课本，只看留着圈和 ? 的地方',
+              '遮住中文考自己：看懂的直接擦掉或打 ✓',
+              '还是没记住的词，留到下一步全部录进系统',
+            ]
+          : [
+              '下方点选今天上过的学校科目和页码',
+              '逐页检查今天课文：确认【每一个单词】都看懂（不懂立刻查、铅笔标中文）',
+              '课本页眉写上今天日期（方便日后规律复习）',
+              '把今天学的新句子出声通读 1 遍',
+            ],
+        buttonText: '当天课本排雷完成，去录生词',
         kind: 'school_plan',
       },
       {
-        title: 'Step 2：多行语音批量录入学校生词 / 课堂笔记',
-        shortLabel: '语音批量录入多个学校生词与课堂笔记',
-        goal: '把今天纸质课本和笔记里最常见、最容易忘的新词（不限数量）批量录进网站词库。',
-        howTo: [
-          '先选好类别：「学校查到的生词」或「上课课堂笔记」。',
-          '点进希腊语输入框，直接用 iPad 语音输入法说出单词，可连续填多行（不够就点「+ 再加 1 行单词」）。',
-          '如果词库里已经有这个词，下方会自动弹出中文建议，点一下就能自动填好中文。',
-          '全部填完后点「一键全部入库」，这些词立刻进入你的单词表和 7 天每日必练！',
+        title: 'Step 2：把今天所有生词全部入库（本区块最核心！）',
+        shortLabel: '把今天标过/记过的生词全部语音入库',
+        whyShort: '录词 = 再学一遍！哪怕昨天预习标过、今天又记的词，只要不熟就全录进来。',
+        checklist: [
+          '翻开今天学过的课本和笔记本，找出【所有还不完全熟的生词】',
+          '用 iPad 语音输入批量填进下方（不够就点「+ 再加 1 行」）',
+          '点「一键全部入库」，未来 7 天网站每天自动帮你巩固',
         ],
-        whyItWorks:
-          '纸上查完词如果不回头看，3 天后就会忘掉 80%（艾宾浩斯遗忘曲线）。把最核心的新词录进系统，网站会自动在接下来 7 天每天用拼写、选择、翻译等多种题型帮你考一遍，把「短期记忆」变成「永久记忆」。',
-        buttonText: '生词都入库了，去做作业',
+        buttonText: '生词全部入库了，去写作业',
         kind: 'vocab_recorder',
       },
       {
-        title: 'Step 3：专心完成学校作业 + 记录今日成果',
-        shortLabel: '完成学校书面作业 + 语音写一句今日成果',
-        goal: '一口气高质量完成学校今天的书面作业，并用一句话总结今天搞懂了什么。',
-        howTo: [
-          '把手机、玩具放到看不见的地方，趁着刚刚查完生词的热乎劲专心写作业。',
-          '遇到实在不会的题目不要死磕超过 3 分钟，在题号旁画一个大大的 ?，先跳过做下一题。',
-          '写完后在下方输入框用语音说一句「今天完成了什么作业 / 解决了什么难题」，系统会自动写进今日学习报告给爸妈看。',
+        title: 'Step 3：完成今日学校书面作业',
+        shortLabel: '完成各科书面作业并点选完成项',
+        whyShort: '趁刚查完词一口气写完！如果提前做完，可直接去推进一部分区块二的私教课。',
+        checklist: [
+          '一口气完成今天各科书面作业',
+          '卡壳超过 3 分钟直接画 ? 跳过，明天问老师',
+          '在下方逐科点选完成项，有需要再补一句简短备注',
         ],
-        whyItWorks:
-          '每次做完作业用自己的话总结一句「我今天学会了什么」，会强迫大脑把零散的知识点重新打包归档（元认知复盘），同时让爸爸妈妈一眼看清你的真实进步！',
         buttonText: '区块一全部通关！',
         kind: 'school_homework',
       },
@@ -331,8 +327,8 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     bgImage: '/images/ui/bg_block_web_tutor.png',
     title: isLight && mode === 'sunday'
       ? '区块二：网站刷题 + 私教备课（轻享 25 分）'
-      : '区块二：网站刷题 + 私教课灵活预习/复习',
-    subtitle: '40 分钟 · 网站八大模块刷题 + 按当天私教课时间灵活做预习或复习',
+      : '区块二：网站刷题 + 希腊语私教课',
+    subtitle: '40 分钟 · 工作量较大，私教课清单可随时拆到区块一/三接力完成',
     minutes: isLight && mode === 'sunday' ? 25 : 40,
     accent: '#0071E3',
     bg: '#eff6ff',
@@ -340,32 +336,26 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       {
         title: 'Step 1：完成今日网站八大模块刷题',
         shortLabel: '完成今日网站八大模块日常刷题',
-        goal: '完成系统根据遗忘曲线为你生成的今日训练题（包含你刚刚语音录入的学校生词和课堂笔记）。',
-        howTo: [
-          '点击下方「进入网站刷题中心」，按顺序完成今日八大训练模块。',
-          '遇到拼写或翻译卡壳时，先努力在脑海里回忆 3 秒再点提示，不要胡乱按键。',
-          '如果某道题真的有问题，点「跳过」先过，或者点「报错」让爸爸妈妈在后台处理。',
-          '刷完后点顶部「返回今日学习通关首页」，这里的进度会自动同步更新！',
+        whyShort: '听、说、拼、译四维反复提取，记忆效率比死看书高 3 倍！',
+        checklist: [
+          '点下方按钮进入刷题中心，完成今日八大模块',
+          '卡壳时先想 3 秒再点提示，不胡乱按键',
+          '刷完返回首页，继续推进私教课清单',
         ],
-        whyItWorks:
-          '网站里的拼字、听音、希译中、中译希、连连看从「听、说、读、写」四个角度刺激同一批单词。比起死盯着书本发呆，主动提取（Active Recall）的记忆效率高出 3 倍以上。',
-        buttonText: '网站刷题完成，去做私教课备课',
+        buttonText: '网站刷题完成，去做私教课',
         kind: 'website_drills',
         linkTo: '/practice',
         linkLabel: '去刷题 →',
       },
       {
-        title: 'Step 2：私教课灵活预习 / 复习（倒逼老师提速）',
-        shortLabel: '私教课预习下2页（标?）或复习上节错题 + 记录页码',
-        goal: '根据今天私教课的时间（中午/下午/明天），灵活选择做「课前预习」或「课后复习」，并把具体页码和问号数记进今日报告。',
-        howTo: [
-          '先在下方选择今天私教课是做「课前预习」、「课后复习」还是「两者都做」，并填好教材页码（例如 B本 P.37-38）。',
-          '如果是【课前预习】：提前看下 2 页，把新词查好标中文；能自己做的填空/选择题先用铅笔试填；真不会的地方画上大大的 ?，上课直接让老师重点讲！',
-          '如果是【课后复习】：把上节课老师改错的地方和语法笔记盖住答案，口头重做一遍，再把当天课文出声读 1 遍。',
-          '最后在下方记下你今天标了几个 ?，并用语音说一句最难的语法或收获。',
+        title: 'Step 2：希腊语私教课（预习 / 复习专属清单）',
+        shortLabel: '按私教课预习/复习清单逐项打勾并记录单元页码',
+        whyShort: '自己把复习和预习做好，老师上课才不用陪你炒冷饭，全堂直接学新课、进度翻倍！',
+        checklist: [
+          '先选今天私教课模式（课前预习 / 课后复习 / 预习+复习）',
+          '对照下方亮出的【预习清单】或【复习清单】逐条打勾完成',
+          '选好教材、单元号、页码区间与问号数，记入今日学习报告',
         ],
-        whyItWorks:
-          '一周只有 5 节 90 分钟的私教课，非常宝贵！如果你课前自己先把生词查好、简单题用铅笔做好、难处画上 ?，老师一上课就不用陪你查词发呆，能直接讲核心难点，整体学习进度会直接翻倍！',
         buttonText: '区块二全部通关！',
         kind: 'tutor_prep',
       },
@@ -377,55 +367,50 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     iconName: 'icon_block_preview',
     bgImage: '/images/ui/bg_block_preview.png',
     title: isLight
-      ? '区块三：学校下节课多科预习（轻享 20 分）'
-      : '区块三：学校下节课深度预习（至少 2 科）',
+      ? '区块三：旧笔记复习 + 明天预习（轻享 20 分）'
+      : '区块三：旧笔记规律复习 + 明天新课/练习册预习',
     subtitle: isLight
-      ? '20 分钟轻享 · 快速扫 1 门最难科目的生词与大意'
-      : '40 分钟 · 5分扫旧词 + 深度预习 2 个科目（填页码/新词数/中文大意）',
+      ? '20 分钟轻享 · 1/3 时间看旧笔记 + 重点预习 1 科'
+      : '40 分钟 · 1/3 时间规律复习旧笔记 + 预习明天至少 2 科与练习册',
     minutes: isLight ? 20 : 40,
     accent: '#7c3aed',
     bg: '#f5f3ff',
     steps: [
       {
-        title: 'Step 1：5 分钟遮中文快扫上一课旧标记（防遗忘）',
-        shortLabel: '5 分钟遮中文快扫上一课旧标记（记住打 ✓）',
-        goal: '预习新课前，先花 5 分钟把上一课标过的生词快速过一遍，彻底杜绝「光记不看」。',
-        howTo: [
-          '点下方「开始 5 分钟快扫」倒计时。',
-          '把课本往前翻一页，找到你上次写着日期和铅笔中文的那一课。',
-          '用手遮住中文注释，只看希腊语单词：立刻想起来的在旁边打小勾 ✓；想不起来的画个小圆圈 ○ 留着周六清盘。',
+        title: 'Step 1：拿出 1/3 时间，有规律复习之前的旧笔记',
+        shortLabel: '用 1/3 时间按页码规律复习旧笔记（或闪卡快扫）',
+        whyShort: '只记不看 = 白查！每次拿出本区块 1/3 时间规律回头看，旧词才能真正变成你的。',
+        checklist: [
+          '在下方选好今天要回头复习的【科目和旧页码】，保持规律推进',
+          '遮住中文逐词自测（课本不好遮就直接点下方【系统闪卡快扫】）',
+          '记住的打 ✓，忘了的画 ○ 留着重点消灭',
+          '复习过的顽固词，明天区块一时可以再次录进系统巩固',
         ],
-        whyItWorks:
-          '只记笔记不回看等于白查。神经科学研究表明：在刚要忘记的第 1–2 天花短短 2–5 分钟「遮住答案自测」，比当天死背半小时的留存率高得多！',
-        buttonText: '旧标记扫完了，开始预习新课',
+        buttonText: '旧笔记复习完了，去预习明天新课',
         kind: 'five_min_scan',
       },
       {
-        title: 'Step 2：深度预习至少 2 个科目（填页码、动作与中文大意）',
-        shortLabel: '预习至少 2 门学校主课（填页码/新词数/写中文大意）',
-        goal: '提前扫清明天/后天学校主课（如希腊语、历史、环境学）的文字障碍，并把每科预习结果真实记录下来。',
-        howTo: [
-          '默认给你准备了「预习科目 1」和「预习科目 2」（还可以点按钮继续加科目），分别选好科目并填上页码。',
-          '不要逐字翻译整篇文章！用铅笔圈出 10–15 个最影响理解大意的重点名词和动词，查好中文标在旁边。',
-          '借着中文标注把课文出声通读 1 遍，顺手把课本里的页边词典框和插图说明也扫一遍。',
-          '合上书，在下方用语音输入用【中文】说一句「这篇课文大概讲了个什么事」（费曼复述法），并选上大概学了几个新单词。',
+        title: 'Step 2：预习明天学校新课（至少 2 科 · 预习时不用录生词）',
+        shortLabel: '预习明天至少 2 科：标生词、通读、写中文大意',
+        whyShort: '预习做好了，明天听课像开卷，区块一的工作量也会越来越少！（预习不用录词，明天区块一再录）',
+        checklist: [
+          '选好明天要预习的【科目和页码】（建议至少 2 科）',
+          '把未来 1–2 页里【所有看不懂的重点词和句子】提前查好标中文',
+          '出声通读 1 遍，确保看懂大概讲了什么事',
+          '合上书，在下方用语音写一句【中文大意】',
         ],
-        whyItWorks:
-          '你在学校听不懂老师讲课，不是因为笨，而是因为同时要「认生词 + 听语速 + 懂背景」大脑超载了。提前在家里搞懂大意和 10 几个关键实词，明天坐进教室就像「开卷听课」，能瞬间听懂 70% 以上！而用中文写下大意（费曼学习法）是检验你到底真懂没懂的唯一金标准。',
-        buttonText: '预习记录写好了，去扫练习册',
+        buttonText: '新课预习完成，去扫练习册',
         kind: 'multi_preview',
       },
       {
-        title: 'Step 3：瞄一眼对应练习册题干（不做题，只看懂问题）',
-        shortLabel: '翻开练习册只看懂题目要求（先不做题）',
-        goal: '提前知道明天课堂上老师会要求做什么题，带着问题去听课。',
-        howTo: [
-          '翻开刚才预习那两门课对应的练习册页面。',
-          '不需要现在就把题做完！只花 3–5 分钟把每一道大题的「题目要求（题干）」读一遍，不认识的指令词查一下标上中文。',
-          '合上书，今天的预习就大功告成啦！',
+        title: 'Step 3：预习对应练习册（和私教课方法一样！）',
+        shortLabel: '把练习册每道题干读懂、标出不懂的词（支持多本）',
+        whyShort: '不要求提前做完，但必须把每道题干读懂、生词标好，明天上课立刻抓住重点！',
+        checklist: [
+          '翻开明天对应练习册，选好书目和页码（多本可点「+ 再增加一本」）',
+          '把每一道题的【题目要求读一遍】，看不懂的指令词提前标中文',
+          '勾选发现情况，把最想明天听老师讲的题记一句备注',
         ],
-        whyItWorks:
-          '大脑有一个「网状激活系统」：当你提前看懂了练习册要问哪 3 个问题，明天老师讲到对应知识点时，你的耳朵会自动竖起来抓住重点，听课效率翻倍！',
         buttonText: '区块三全部通关！',
         kind: 'workbook_check',
       },
@@ -453,9 +438,10 @@ const DailyMissionHall: React.FC = () => {
   const [timerRunning, setTimerRunning] = useState(false);
   const [sessionElapsedSec, setSessionElapsedSec] = useState(0);
   const [extraMinutes, setExtraMinutes] = useState(0);
-  const [fiveMinSec, setFiveMinSec] = useState(300);
+  const [fiveMinSec, setFiveMinSec] = useState(800);
   const [fiveMinRunning, setFiveMinRunning] = useState(false);
   const [earlyFinishMsg, setEarlyFinishMsg] = useState<string | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
   // Active vocab timer state (outside the 3 blocks, with carry-over!)
   const [runningVocabSlot, setRunningVocabSlot] = useState<'morning' | 'afternoon' | 'night' | null>(null);
@@ -875,7 +861,7 @@ const DailyMissionHall: React.FC = () => {
     const existing = todayMission.blocks?.[block.id];
     const carryMin = Math.floor((blockCarryOverMap[block.id] || 0) / 60);
     const effMin = block.minutes + (existing?.extraMinutes || 0) + carryMin;
-    const proportionalScanMin = Math.max(3, Math.min(15, Math.round((effMin / 40) * 5)));
+    const proportionalScanMin = Math.max(8, Math.min(25, Math.round(effMin / 3)));
     setActiveBlockId(block.id);
     setSessionElapsedSec(existing?.elapsedSec || 0);
     setExtraMinutes(existing?.extraMinutes || 0);
@@ -1139,7 +1125,17 @@ const DailyMissionHall: React.FC = () => {
     };
 
     const effectiveBlockMin = Math.round(totalTargetSec / 60);
-    const proportionalScanMin = Math.max(3, Math.min(15, Math.round((effectiveBlockMin / 40) * 5)));
+    const proportionalScanMin = Math.max(8, Math.min(25, Math.round(effectiveBlockMin / 3)));
+
+    const oldNotesReview = todayMission.blockLogs?.oldNotesReview || {
+      subject: '希腊语 (Γλώσσα)',
+      fromPage: 1,
+      toPage: 5,
+    };
+
+    const toggleChecklistKey = (key: string) => {
+      setCheckedItems((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
 
     return (
       <div style={{ minHeight: '100vh', background: '#f5f7fb', padding: '20px 16px 64px' }}>
@@ -1386,31 +1382,88 @@ const DailyMissionHall: React.FC = () => {
                 {stepDef.title}
               </h2>
 
-              {/* Detailed 3-part Pedagogical Guide: Goal + How-to + Why it works */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 22 }}>
-                <div style={{ padding: '12px 15px', borderRadius: 14, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <Target size={15} color={activeBlock.accent} /> 这一步的目标
-                  </div>
-                  <div style={{ fontSize: 15, color: '#334155', lineHeight: 1.6 }}>{stepDef.goal}</div>
-                </div>
+              {/* Crisp 1-Line Highlighted Why + High-Contrast Interactive Pilot Checklist */}
+              <div
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: 14,
+                  background: '#fffbeb',
+                  border: '1.5px solid #fcd34d',
+                  color: '#92400e',
+                  fontSize: 15,
+                  fontWeight: 800,
+                  lineHeight: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 16,
+                }}
+              >
+                <Lightbulb size={18} color="#d97706" style={{ flexShrink: 0 }} />
+                <span>{stepDef.whyShort}</span>
+              </div>
 
-                <div style={{ padding: '14px 16px', borderRadius: 14, background: '#eff6ff', border: '1px solid #bfdbfe' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6 }}>
-                    具体怎么做（跟着一步步来）
-                  </div>
-                  <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6, fontSize: 15, color: '#1e293b', lineHeight: 1.6 }}>
-                    {stepDef.howTo.map((line) => (
-                      <li key={line}>{line}</li>
-                    ))}
-                  </ol>
+              <div
+                style={{
+                  padding: '16px 18px',
+                  borderRadius: 18,
+                  background: '#f8fafc',
+                  border: `2px solid ${activeBlock.accent}44`,
+                  marginBottom: 22,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 800, color: activeBlock.accent, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Target size={15} /> 本步操作清单（做完一条点掉一条）
                 </div>
-
-                <div style={{ padding: '12px 15px', borderRadius: 14, background: '#fffbeb', border: '1px solid #fde68a' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    <Lightbulb size={15} color="#d97706" /> 为什么要这样做（学习原理）
-                  </div>
-                  <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.65 }}>{stepDef.whyItWorks}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {stepDef.checklist.map((itemText, ci) => {
+                    const ckKey = `${activeBlock.id}_${stepIndex}_${ci}`;
+                    const isCk = Boolean(checkedItems[ckKey]);
+                    return (
+                      <button
+                        key={ckKey}
+                        type="button"
+                        onClick={() => toggleChecklistKey(ckKey)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                          textAlign: 'left',
+                          padding: '12px 14px',
+                          borderRadius: 12,
+                          border: isCk ? '1.5px solid #10b981' : '1.5px solid #cbd5e1',
+                          background: isCk ? '#ecfdf5' : '#ffffff',
+                          color: isCk ? '#047857' : '#0f172a',
+                          fontSize: 16,
+                          fontWeight: 700,
+                          lineHeight: 1.45,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 7,
+                            border: isCk ? 'none' : `2px solid ${activeBlock.accent}`,
+                            background: isCk ? '#10b981' : '#fff',
+                            color: '#fff',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 14,
+                            fontWeight: 800,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isCk ? '✓' : ci + 1}
+                        </span>
+                        <span style={{ textDecoration: isCk ? 'line-through' : 'none', opacity: isCk ? 0.78 : 1 }}>
+                          {itemText}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1712,7 +1765,93 @@ const DailyMissionHall: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Book + Page Range Steppers + Question Marks Stepper */}
+                  {/* Dynamic Highlighted Preview / Review Checklists for Private Greek Class */}
+                  {(tutorLog.mode === 'preview' || tutorLog.mode === 'both') && (
+                    <div style={{ padding: '14px 16px', borderRadius: 14, background: '#fff', border: '2px solid #0071E3' }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: '#005bb5', marginBottom: 8 }}>
+                        课前预习必做清单（核心：看懂未来 1–2 页所有内容和题干！）
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {[
+                          '翻开未来 1–2 页：把【所有看不懂的词和句子】全部查懂标中文',
+                          '看未来 1–2 页相关练习题：不求全会做，但【必须把每道题干看懂】',
+                          '会做的先用铅笔试填，真不会的地方画大 ? 上课直接问老师',
+                        ].map((line, i) => {
+                          const k = `tutor_pv_${i}`;
+                          const ck = Boolean(checkedItems[k]);
+                          return (
+                            <button
+                              key={k}
+                              type="button"
+                              onClick={() => toggleChecklistKey(k)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                textAlign: 'left',
+                                padding: '9px 12px',
+                                borderRadius: 10,
+                                border: ck ? '1.5px solid #10b981' : '1px solid #bfdbfe',
+                                background: ck ? '#ecfdf5' : '#f0f9ff',
+                                color: ck ? '#047857' : '#0f172a',
+                                fontSize: 14.5,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span style={{ fontWeight: 800, color: ck ? '#10b981' : '#0071E3' }}>{ck ? '✓' : `${i + 1}.`}</span>
+                              <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{line}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {(tutorLog.mode === 'review' || tutorLog.mode === 'both') && (
+                    <div style={{ padding: '14px 16px', borderRadius: 14, background: '#fff', border: '2px solid #ea580c' }}>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: '#c2410c', marginBottom: 8 }}>
+                        课后复习必做清单（自己复习才能省出上课时间学新课！大单元可分多次）
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {[
+                          '选好今天复习的【单元号与页码区间】（大单元分几次扎实复习完）',
+                          '盖住答案，把上次老师改过的【错题口头重做一遍】',
+                          '把本单元【语法笔记、变格/变位和重点句】完整过一遍',
+                          '把当天或本单元的课文【出声朗读 1 遍】',
+                        ].map((line, i) => {
+                          const k = `tutor_rv_${i}`;
+                          const ck = Boolean(checkedItems[k]);
+                          return (
+                            <button
+                              key={k}
+                              type="button"
+                              onClick={() => toggleChecklistKey(k)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 10,
+                                textAlign: 'left',
+                                padding: '9px 12px',
+                                borderRadius: 10,
+                                border: ck ? '1.5px solid #10b981' : '1px solid #fed7aa',
+                                background: ck ? '#ecfdf5' : '#fff7ed',
+                                color: ck ? '#047857' : '#0f172a',
+                                fontSize: 14.5,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <span style={{ fontWeight: 800, color: ck ? '#10b981' : '#ea580c' }}>{ck ? '✓' : `${i + 1}.`}</span>
+                              <span style={{ textDecoration: ck ? 'line-through' : 'none' }}>{line}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Book + Unit + Page Range Steppers + Question Marks Stepper */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', padding: '12px 14px', borderRadius: 12, background: '#fff', border: '1px solid #bfdbfe' }}>
                     <select
                       value={tutorLog.book || 'B 本 (Ελληνικά Β΄)'}
@@ -1731,6 +1870,20 @@ const DailyMissionHall: React.FC = () => {
                       <option value="A2 (ΚΛΙΚ Α2)">A2 (ΚΛΙΚ Α2)</option>
                       <option value="私教补充讲义">私教补充讲义</option>
                     </select>
+
+                    <NumberStepper
+                      prefix="第"
+                      suffix="单元"
+                      min={1}
+                      max={30}
+                      value={tutorLog.unitNo ?? 1}
+                      onChange={(v) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          tutor: { ...tutorLog, unitNo: v },
+                        }))
+                      }
+                    />
 
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                       <NumberStepper
@@ -1834,7 +1987,66 @@ const DailyMissionHall: React.FC = () => {
 
               {stepDef.kind === 'five_min_scan' && (
                 <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* Option A: 5-min Paper Book Scan Timer */}
+                  {/* Old Notes Review Page Recorder */}
+                  <div
+                    style={{
+                      padding: 14,
+                      borderRadius: 16,
+                      background: '#f5f3ff',
+                      border: '1.5px solid #ddd6fe',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}
+                  >
+                    <span style={{ fontSize: 13.5, fontWeight: 800, color: '#5b21b6' }}>
+                      今日规律复习旧笔记范围：
+                    </span>
+                    <select
+                      value={oldNotesReview.subject}
+                      onChange={(e) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          oldNotesReview: { ...oldNotesReview, subject: e.target.value },
+                        }))
+                      }
+                      style={{ padding: '7px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#fff' }}
+                    >
+                      {SCHOOL_SUBJECTS.map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                    <NumberStepper
+                      prefix="第"
+                      suffix="页"
+                      min={1}
+                      max={300}
+                      value={oldNotesReview.fromPage}
+                      onChange={(v) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          oldNotesReview: { ...oldNotesReview, fromPage: v, toPage: Math.max(v, oldNotesReview.toPage) },
+                        }))
+                      }
+                    />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                    <NumberStepper
+                      prefix="第"
+                      suffix="页"
+                      min={oldNotesReview.fromPage}
+                      max={300}
+                      value={oldNotesReview.toPage}
+                      onChange={(v) =>
+                        updateBlockLogs((prev) => ({
+                          ...prev,
+                          oldNotesReview: { ...oldNotesReview, toPage: Math.max(oldNotesReview.fromPage, v) },
+                        }))
+                      }
+                    />
+                  </div>
+
+                  {/* Option A: 1/3 Time Paper Book Old-Notes Review Timer */}
                   <div
                     style={{
                       padding: 16,
@@ -1850,7 +2062,7 @@ const DailyMissionHall: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 800, color: '#b45309' }}>
-                        方式 A · 纸质课本快扫旧标记（按本区块 {effectiveBlockMin} 分钟等比例分配：{proportionalScanMin} 分钟）
+                        方式 A · 纸质课本规律复习旧笔记（占本区块 1/3 时长：{proportionalScanMin} 分钟）
                       </div>
                       <div style={{ fontSize: 28, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
                         {formatDurationMinSec(fiveMinSec)}
@@ -1870,7 +2082,7 @@ const DailyMissionHall: React.FC = () => {
                           cursor: 'pointer',
                         }}
                       >
-                        {fiveMinRunning ? `暂停 ${proportionalScanMin} 分钟` : `开始 ${proportionalScanMin} 分钟快扫`}
+                        {fiveMinRunning ? `暂停 ${proportionalScanMin} 分钟` : `开始 ${proportionalScanMin} 分钟复习`}
                       </button>
                       <button
                         type="button"
@@ -1886,7 +2098,7 @@ const DailyMissionHall: React.FC = () => {
                           color: '#92400e',
                           cursor: 'pointer',
                         }}
-                        title="重置快扫计时"
+                        title="重置复习计时"
                       >
                         <RotateCcw size={16} />
                       </button>

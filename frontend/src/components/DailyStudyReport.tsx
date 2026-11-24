@@ -63,6 +63,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   const schoolLog = mission.blockLogs?.school;
   const schoolItems = schoolLog?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
+  const oldNotesReview = mission.blockLogs?.oldNotesReview;
   const workbookChecks =
     mission.blockLogs?.workbookChecks && mission.blockLogs.workbookChecks.length > 0
       ? mission.blockLogs.workbookChecks
@@ -323,7 +324,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
             <div>
               <strong>私教课：</strong>
               {tutorLog
-                ? `${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''} · 标了 ${tutorLog.questionMarks || 0} 个 ?`
+                ? `${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'} · ${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''} · 标了 ${tutorLog.questionMarks || 0} 个 ?`
                 : '待记录'}
             </div>
             {tutorLog?.actions && tutorLog.actions.length > 0 && (
@@ -339,10 +340,17 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
             <img src="/images/ui/icon_block_preview.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
             区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
           </div>
-          {previews.length === 0 && workbookChecks.length === 0 ? (
-            <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日预习的科目、页码与中文大意</div>
+          {previews.length === 0 && workbookChecks.length === 0 && !oldNotesReview ? (
+            <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日旧笔记复习与预习的科目、页码与中文大意</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {oldNotesReview && (
+                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #fde68a' }}>
+                  <div style={{ fontWeight: 800, color: '#b45309' }}>
+                    规律复习旧笔记：{oldNotesReview.subject} P.{oldNotesReview.fromPage}{oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}
+                  </div>
+                </div>
+              )}
               {previews.map((p, idx) => (
                 <div key={p.id} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ede9fe' }}>
                   <div style={{ fontWeight: 800, color: '#5b21b6' }}>

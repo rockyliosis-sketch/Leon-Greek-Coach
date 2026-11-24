@@ -55,12 +55,18 @@ export interface DailyBlockLogs {
   tutor?: {
     mode: 'preview' | 'review' | 'both';
     book?: string;
+    unitNo?: number;
     fromPage?: number;
     toPage?: number;
     pages: string;
     questionMarks: number;
     actions?: string[];
     summary: string;
+  };
+  oldNotesReview?: {
+    subject: string;
+    fromPage: number;
+    toPage: number;
   };
   previews?: PreviewSubjectLog[];
   workbookChecks?: WorkbookCheckLog[];
