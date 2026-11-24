@@ -1,16 +1,19 @@
 import React from 'react';
 import { X, Shield, CheckCircle2, Clock } from 'lucide-react';
 import { getScoutLevelInfo, RANK_STAR_URL, SCOUT_LEVELS } from '../lib/levelSystem';
+import type { DailyXpBreakdown } from '../lib/dailyMissionHelpers';
 
 interface LevelRulesModalProps {
   score: number;
   dailyRewardClaimedToday?: boolean;
+  dailyXpBreakdown?: DailyXpBreakdown;
   onClose: () => void;
 }
 
 export const LevelRulesModal: React.FC<LevelRulesModalProps> = ({
   score,
   dailyRewardClaimedToday = false,
+  dailyXpBreakdown,
   onClose,
 }) => {
   const currentLevel = getScoutLevelInfo(score);
@@ -146,7 +149,7 @@ export const LevelRulesModal: React.FC<LevelRulesModalProps> = ({
           </div>
         </div>
 
-        {/* Strict 10 XP / Day Rule */}
+        {/* Daily 20 XP Milestone Breakdown */}
         <div
           style={{
             padding: '14px 16px',
@@ -156,29 +159,59 @@ export const LevelRulesModal: React.FC<LevelRulesModalProps> = ({
             marginBottom: 20,
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-            <img src="/images/ui/icon_bolt.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            新版积分获取规则（严控水分，每一分都超值）
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src="/images/ui/icon_bolt.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+              每日积分规则（一天满分可达 20 XP）
+            </div>
+            <span
+              style={{
+                fontSize: 12.5,
+                fontWeight: 800,
+                padding: '3px 10px',
+                borderRadius: 999,
+                background: dailyRewardClaimedToday ? '#d1fae5' : '#dbeafe',
+                color: dailyRewardClaimedToday ? '#047857' : '#1d4ed8',
+              }}
+            >
+              今日已获 {dailyXpBreakdown ? dailyXpBreakdown.earnedToday : 0} / 20 XP
+            </span>
           </div>
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: '#1e293b', lineHeight: 1.7 }}>
-            <li>
-              <strong>每日全通关统一奖励：+10 XP / 天</strong>（当天完成：3 次背单词 + 听历史故事 + 全部攻坚区块后自动发放，每天限领 1 次）。
-            </li>
-            <li>
-              单项打卡、录生词、听故事不再重复加分，确保升级节奏扎实稳健，一路挑战圣域黄金十二宫。
-            </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: 6, listStyle: 'none', marginLeft: -18, marginTop: 4 }}>
-              {dailyRewardClaimedToday ? (
-                <CheckCircle2 size={15} color="#047857" />
-              ) : (
-                <Clock size={15} color="#d97706" />
-              )}
-              <span>今日奖励状态：</span>
-              <strong style={{ color: dailyRewardClaimedToday ? '#047857' : '#d97706' }}>
-                {dailyRewardClaimedToday ? '今日 +10 XP 已到账' : '完成今日全部任务后自动发放 +10 XP'}
-              </strong>
-            </li>
-          </ul>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {(
+              dailyXpBreakdown?.items || [
+                { key: 'drills', label: '每日网站刷题（8 大核心模块全通关）', points: 4, awarded: false, eligible: false },
+                { key: 'history', label: '希腊历史故事（听 1 集及以上）', points: 1, awarded: false, eligible: false },
+                { key: 'vocab3x', label: '完成 3 次背单词打卡', points: 4, awarded: false, eligible: false },
+                { key: 'vocab30m', label: '3 次背单词累计满 30 分钟加奖', points: 1, awarded: false, eligible: false },
+                { key: 'blocks120m', label: '三大区块全部通关且满 120 分钟（3 × 40 分钟）', points: 10, awarded: false, eligible: false },
+              ]
+            ).map((it) => (
+              <div
+                key={it.key}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  padding: '7px 10px',
+                  borderRadius: 10,
+                  background: it.awarded ? '#ecfdf5' : '#ffffff',
+                  border: it.awarded ? '1px solid #a7f3d0' : '1px solid #dbeafe',
+                  fontSize: 13,
+                }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: it.awarded ? '#047857' : '#1e293b', fontWeight: it.awarded ? 800 : 600 }}>
+                  {it.awarded ? <CheckCircle2 size={15} color="#047857" /> : <Clock size={14} color="#64748b" />}
+                  {it.label}
+                </span>
+                <strong style={{ color: it.awarded ? '#047857' : '#1d4ed8', whiteSpace: 'nowrap' }}>
+                  +{it.points} XP{it.awarded ? ' · 已到账' : ''}
+                </strong>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Saint Seiya 12 Gold Saints Hall (Combat Power Order) */}

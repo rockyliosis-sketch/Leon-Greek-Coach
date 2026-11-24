@@ -38,6 +38,7 @@ import {
 import {
   calculateMissionStreak,
   createDefaultMissionRecord,
+  evaluateDailyXpRewards,
   formatDurationMinSec,
   formatElapsedHuman,
   getDayMode,
@@ -697,11 +698,27 @@ const DailyMissionHall: React.FC = () => {
     return glossaryList.slice(startIdx, startIdx + 24);
   }, [glossaryList, glossaryFrontier, glossarySearch]);
 
-  const dailyRewardKey = todayStr;
-  const dailyRewardClaimed = Boolean(sharedState.daily_rewards_awarded?.[dailyRewardKey]);
+  const targetBlockTotalSec = useMemo(
+    () => blocks.reduce((sum, b) => sum + b.minutes * 60, 0),
+    [blocks]
+  );
+
+  const dailyXpBreakdown = useMemo(() => {
+    return evaluateDailyXpRewards({
+      todayStr,
+      mission: todayMission,
+      completedModules: todayWebCompleted,
+      dailyRewardsAwarded: sharedState.daily_rewards_awarded,
+      blockIds: blocks.map((b) => b.id),
+      targetBlockTotalSec,
+      nowMs,
+    }).breakdown;
+  }, [todayStr, todayMission, todayWebCompleted, sharedState.daily_rewards_awarded, blocks, targetBlockTotalSec, nowMs]);
+
+  const dailyRewardClaimed = dailyXpBreakdown.earnedToday >= dailyXpBreakdown.maxDaily;
 
   // Persist helper — uses sharedStateRef.current to eliminate stale-closure overwrites,
-  // synchronously persists to localStorage via saveSharedState, and awards +10 XP ONCE per day when ALL tasks are done!
+  // synchronously persists to localStorage via saveSharedState, and evaluates all 5 daily XP milestones (max 20 XP/day).
   const updateTodayMission = (
     updater: (prev: DailyMissionRecord) => DailyMissionRecord,
     extraUpdates?: Partial<SharedState>
@@ -714,25 +731,23 @@ const DailyMissionHall: React.FC = () => {
       [todayStr]: nextRec,
     };
 
-    const allVocabDone =
-      Boolean(nextRec.vocabChecks?.morning) &&
-      Boolean(nextRec.vocabChecks?.afternoon) &&
-      Boolean(nextRec.vocabChecks?.night);
-    const historyDone = Boolean(nextRec.historyLog?.listened);
-    const allBlocksDone = blocks.every((b) => nextRec.blocks?.[b.id]?.status === 'done');
+    const evalRes = evaluateDailyXpRewards({
+      todayStr,
+      mission: nextRec,
+      completedModules: latest.completed_date_modules?.[todayStr] || [],
+      dailyRewardsAwarded: latest.daily_rewards_awarded,
+      blockIds: blocks.map((b) => b.id),
+      targetBlockTotalSec,
+      nowMs: Date.now(),
+    });
 
-    const alreadyAwarded = Boolean(latest.daily_rewards_awarded?.[dailyRewardKey]);
-    const shouldAwardDaily10 = !alreadyAwarded && allVocabDone && historyDone && allBlocksDone;
-
-    const rewardUpdates: Partial<SharedState> = shouldAwardDaily10
-      ? {
-          score: (latest.score || 0) + 10,
-          daily_rewards_awarded: {
-            ...(latest.daily_rewards_awarded || {}),
-            [dailyRewardKey]: true,
-          },
-        }
-      : {};
+    const rewardUpdates: Partial<SharedState> =
+      evalRes.newlyEarnedXp > 0
+        ? {
+            score: (latest.score || 0) + evalRes.newlyEarnedXp,
+            daily_rewards_awarded: evalRes.nextDailyRewardsAwarded,
+          }
+        : {};
 
     const nextState: SharedState = {
       ...latest,
@@ -1194,11 +1209,11 @@ const DailyMissionHall: React.FC = () => {
 
       if (deficitMin >= 2) {
         setEarlyFinishMsg(
-          `「${activeBlock.title}」已完成！本区块未足的 ${deficitMin} 分钟已自动顺延叠加到下一个区块。全部任务做完后将自动发放今日 +10 XP！`
+          `「${activeBlock.title}」已完成！本区块未足的 ${deficitMin} 分钟已自动顺延叠加到下一个区块。三大区块全部完成且满 ${Math.round(targetBlockTotalSec / 60)} 分钟自动发放 +10 XP！`
         );
       } else {
         setEarlyFinishMsg(
-          `太棒了！「${activeBlock.title}」已扎实通关！全部任务做完后将自动发放今日 +10 XP `
+          `太棒了！「${activeBlock.title}」已扎实通关！三大区块全部完成且满 ${Math.round(targetBlockTotalSec / 60)} 分钟自动发放 +10 XP！`
         );
       }
     } else {
@@ -3180,10 +3195,9 @@ const DailyMissionHall: React.FC = () => {
             {/* Progress bar */}
             <div style={{ marginTop: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
-                <span>今日总通关进度（全部完成统一奖励 +10 XP）</span>
+                <span>今日总通关进度（今日满分 20 XP）</span>
                 <span>
-                  {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）
-                  {dailyRewardClaimed ? ' · 今日 +10 XP 已到账' : ''}
+                  {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）· 今日已获 {dailyXpBreakdown.earnedToday} / 20 XP
                 </span>
               </div>
               <div style={{ height: 10, borderRadius: 999, background: 'rgba(255,255,255,0.24)', overflow: 'hidden' }}>
@@ -4245,6 +4259,7 @@ const DailyMissionHall: React.FC = () => {
         <LevelRulesModal
           score={sharedState.score || 0}
           dailyRewardClaimedToday={dailyRewardClaimed}
+          dailyXpBreakdown={dailyXpBreakdown}
           onClose={() => setShowRulesModal(false)}
         />
       )}

@@ -242,6 +242,140 @@ export function getLiveElapsedSec(
   return base + Math.min(delta, 14400);
 }
 
+export const CORE_DRILL_MODULES = [
+  'matching',
+  'spelling',
+  'truefalse',
+  'quiz',
+  'translation_gr_zh',
+  'translation_zh_gr',
+  'glossary_review',
+  'grammar_drill',
+] as const;
+
+export interface DailyXpMilestoneItem {
+  key: string;
+  label: string;
+  points: number;
+  awarded: boolean;
+  eligible: boolean;
+}
+
+export interface DailyXpBreakdown {
+  items: DailyXpMilestoneItem[];
+  earnedToday: number;
+  maxDaily: number;
+}
+
+/**
+ * 统一核算每日 20 分积分规则（每项每天限领 1 次，绝不重复加分）：
+ * 1. 每日网站刷题（8 大核心模块全部完成）：+4 XP
+ * 2. 希腊历史故事（听 1 集及以上）：+1 XP
+ * 3. 完成 3 次背单词打卡：+4 XP
+ * 4. 3 次背单词累计满 30 分钟（1800 秒）：+1 XP
+ * 5. 三大攻坚区块全部完成且累计达标（平日 3×40=120 分钟）：+10 XP
+ * 合计每日满分：20 XP
+ */
+export function evaluateDailyXpRewards(params: {
+  todayStr: string;
+  mission: DailyMissionRecord;
+  completedModules: string[];
+  dailyRewardsAwarded: Record<string, boolean> | undefined;
+  blockIds: string[];
+  targetBlockTotalSec: number;
+  nowMs?: number;
+}): {
+  breakdown: DailyXpBreakdown;
+  newlyEarnedXp: number;
+  nextDailyRewardsAwarded: Record<string, boolean>;
+} {
+  const {
+    todayStr,
+    mission,
+    completedModules,
+    dailyRewardsAwarded,
+    blockIds,
+    targetBlockTotalSec,
+    nowMs = Date.now(),
+  } = params;
+
+  const existing = { ...(dailyRewardsAwarded || {}) };
+
+  const drillsKey = `${todayStr}:drills`;
+  const historyKey = `${todayStr}:history`;
+  const vocab3xKey = `${todayStr}:vocab_3x`;
+  const vocab30mKey = `${todayStr}:vocab_30m`;
+  const blocksKey = `${todayStr}:blocks_120m`;
+
+  const drillsEligible = CORE_DRILL_MODULES.every((m) => completedModules.includes(m));
+  const historyEligible = Boolean(
+    mission.historyLog?.listened ||
+      (mission.historyLog?.episodesCount || 0) >= 1 ||
+      (mission.historyLog?.episodeIds?.length || 0) >= 1
+  );
+  const vocab3xEligible = Boolean(
+    mission.vocabChecks?.morning && mission.vocabChecks?.afternoon && mission.vocabChecks?.night
+  );
+
+  const vt = mission.vocabTimers;
+  const totalVocabSec =
+    getLiveElapsedSec(vt?.morning?.elapsedSec, vt?.morning?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt?.afternoon?.elapsedSec, vt?.afternoon?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt?.night?.elapsedSec, vt?.night?.runningSinceMs, nowMs);
+  const vocab30mEligible = vocab3xEligible && totalVocabSec >= 30 * 60;
+
+  const allBlocksDone =
+    blockIds.length > 0 && blockIds.every((id) => mission.blocks?.[id]?.status === 'done');
+  const totalBlockSec = blockIds.reduce((sum, id) => {
+    const b = mission.blocks?.[id];
+    return sum + getLiveElapsedSec(b?.elapsedSec, b?.runningSinceMs, nowMs);
+  }, 0);
+  const blocksEligible = allBlocksDone && totalBlockSec >= targetBlockTotalSec;
+
+  const specs: Array<{ key: string; label: string; points: number; eligible: boolean }> = [
+    { key: drillsKey, label: '每日网站刷题（8 大核心模块全通关）', points: 4, eligible: drillsEligible },
+    { key: historyKey, label: '希腊历史故事（听 1 集及以上）', points: 1, eligible: historyEligible },
+    { key: vocab3xKey, label: '完成 3 次背单词打卡', points: 4, eligible: vocab3xEligible },
+    { key: vocab30mKey, label: '3 次背单词累计满 30 分钟加奖', points: 1, eligible: vocab30mEligible },
+    {
+      key: blocksKey,
+      label: `三大区块全部通关且满 ${Math.round(targetBlockTotalSec / 60)} 分钟`,
+      points: 10,
+      eligible: blocksEligible,
+    },
+  ];
+
+  let newlyEarnedXp = 0;
+  const nextDailyRewardsAwarded = { ...existing };
+
+  const items: DailyXpMilestoneItem[] = specs.map((s) => {
+    const already = Boolean(existing[s.key]);
+    if (!already && s.eligible) {
+      newlyEarnedXp += s.points;
+      nextDailyRewardsAwarded[s.key] = true;
+    }
+    return {
+      key: s.key,
+      label: s.label,
+      points: s.points,
+      awarded: Boolean(nextDailyRewardsAwarded[s.key]),
+      eligible: s.eligible,
+    };
+  });
+
+  const earnedToday = items.reduce((sum, it) => sum + (it.awarded ? it.points : 0), 0);
+
+  return {
+    breakdown: {
+      items,
+      earnedToday,
+      maxDaily: 20,
+    },
+    newlyEarnedXp,
+    nextDailyRewardsAwarded,
+  };
+}
+
 export function calculateMissionStreak(
   missions: Record<string, DailyMissionRecord> | undefined,
   todayStr: string

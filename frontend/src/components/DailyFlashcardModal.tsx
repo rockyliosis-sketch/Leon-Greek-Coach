@@ -199,7 +199,7 @@ export const DailyFlashcardModal: React.FC<DailyFlashcardModalProps> = ({
               本次背词打卡完成！
             </h4>
             <p style={{ margin: '0 0 20px', fontSize: 15, color: '#475569' }}>
-              刚刚一口气过了 <strong>{doneCount}</strong> 个词，系统已自动安排下次复习时间，积分 +10！
+              刚刚一口气过了 <strong>{doneCount}</strong> 个词，系统已自动安排下次复习时间！完成今日全部 3 次背单词得 +4 XP，累计满 30 分钟再 +1 XP！
             </p>
             <button
               type="button"

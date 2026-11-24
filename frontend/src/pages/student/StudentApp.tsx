@@ -4969,6 +4969,7 @@ export default function StudentApp() {
     try { rewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}'); } catch (e) {}
     delete completed[dateStr];
     delete rewards[dateStr];
+    delete rewards[`${dateStr}:drills`];
     let skipped: any = {};
     try { skipped = JSON.parse(localStorage.getItem('leon_skipped_date_modules') || '{}'); } catch (e) {}
     delete skipped[dateStr];
@@ -5040,9 +5041,21 @@ export default function StudentApp() {
     
     let pointsEarnedText = "";
     if (allCoreDone) {
-      pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心刷题模块！\n回到「今日学习通关首页」完成今日全部学习任务后，统一领取今日 +10 XP 大奖！\n当前总积分: ${score} XP`;
+      let rewards: Record<string, boolean> = {};
+      try { rewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}'); } catch (e) {}
+      const drillsRewardKey = `${dateStr}:drills`;
+      if (!rewards[drillsRewardKey]) {
+        const nextScore = score + 4;
+        rewards[drillsRewardKey] = true;
+        updates.score = nextScore;
+        updates.daily_rewards_awarded = rewards;
+        setScore(nextScore);
+        pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心刷题模块，自动获得 +4 XP！\n回到「今日学习通关首页」继续背单词、听历史与三大区块，今日满分可达 20 XP！\n当前总积分: ${nextScore} XP`;
+      } else {
+        pointsEarnedText = `\n🌟 太棒了！今天八大核心刷题模块全部通关（今日刷题 +4 XP 已到账）！\n当前总积分: ${score} XP`;
+      }
     } else {
-      pointsEarnedText = `\n今日已完成核心刷题模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 8\n当天全部学习任务完成后统一得 10 XP！\n当前总积分: ${score} XP`;
+      pointsEarnedText = `\n今日已完成核心刷题模块: ${updated.filter((m: string) => coreModules.includes(m)).length} / 8\n全部八项完成后自动得 +4 XP（今日满分 20 XP）！\n当前总积分: ${score} XP`;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -5953,7 +5966,7 @@ export default function StudentApp() {
                         {isAllDone && <span style={{ fontSize: '13px' }}>🎉</span>}
                       </div>
                       <span style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
-                        {isAllDone ? '已达成今日 +10 XP 积分大奖！' : '做完八项即可获得今日 10 分大奖'}
+                        {isAllDone ? '已达成今日刷题 +4 XP 奖励！' : '做完八项即可获得今日 +4 XP 奖励'}
                       </span>
                       {/* 跳过的题不算做完 —— 这条规矩要写在孩子看得见的地方, 否则红圈冒出来他不知道为什么 */}
                       <span style={{ fontSize: '10.5px', color: '#FF9500', marginTop: '1px', fontWeight: 650 }}>
@@ -9206,12 +9219,15 @@ export default function StudentApp() {
                 }}>
                   <Award size={24} style={{ color: '#0071E3', flexShrink: 0, marginTop: '2px' }} />
                   <div>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#1D1D1F', margin: '0 0 6px 0' }}>今日积分奖励规则</h4>
-                    <p style={{ fontSize: '13px', color: '#48484B', lineHeight: 1.5, margin: 0 }}>
-                      Leon 每天把<strong>自适应特训模块</strong>下的<strong>八大必做特训题</strong>（单词连连看、拼字大作战、判断对错、智能选择题、希腊语翻译汉语、汉语翻译希腊语、单词表每日复习、单元语法与情景特训）全部做完，即可自动积 <strong>10 分</strong>！
+                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#1D1D1F', margin: '0 0 6px 0' }}>今日积分奖励规则（每日满分 20 XP）</h4>
+                    <p style={{ fontSize: '13px', color: '#48484B', lineHeight: 1.6, margin: 0 }}>
+                      1. 每日网站刷题（完成全部八大必做特训模块）：<strong>+4 XP</strong><br />
+                      2. 希腊历史故事（听 1 集及以上）：<strong>+1 XP</strong><br />
+                      3. 完成 3 次背单词打卡：<strong>+4 XP</strong>；3 次累计满 30 分钟再加 <strong>+1 XP</strong><br />
+                      4. 三大攻坚区块全部完成且满 40 分钟/区块（共 120 分钟）：<strong>+10 XP</strong>
                     </p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: '6px 0 0 0', fontStyle: 'italic' }}>
-                      * 不论答题正确与否，只要完成全部八大项题库，即视作完成今日学习，即可获得当日积分奖励。
+                      * 各项奖励每天限领 1 次，达成后自动入账，一天满分可达 20 XP。
                     </p>
                   </div>
                 </div>
