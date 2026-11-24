@@ -5,6 +5,8 @@ export interface DailyMissionBlockState {
   status: 'idle' | 'in_progress' | 'done';
   currentStep: number;
   elapsedSec: number;
+  /** 正在计时时的墙钟起始毫秒时间戳（Date.now()）；null/undefined 表示已暂停 */
+  runningSinceMs?: number | null;
   extraMinutes?: number;
   subject?: string;
   wordsAdded?: number;
@@ -13,7 +15,14 @@ export interface DailyMissionBlockState {
 
 export interface VocabSlotTimerState {
   elapsedSec: number;
+  /** 正在计时时的墙钟起始毫秒时间戳（Date.now()）；null/undefined 表示已暂停 */
+  runningSinceMs?: number | null;
   completed: boolean;
+}
+
+export interface OldNotesTimerState {
+  elapsedSec: number;
+  runningSinceMs?: number | null;
 }
 
 export interface PreviewSubjectLog {
@@ -101,6 +110,7 @@ export interface DailyMissionRecord {
     afternoon: VocabSlotTimerState;
     night: VocabSlotTimerState;
   };
+  oldNotesTimer?: OldNotesTimerState;
   historyLog?: {
     listened: boolean;
     episodesCount: number;
@@ -364,59 +374,71 @@ export const subscribeToSharedState = (
   );
 };
 
+const persistUpdatesToLocalStorage = (updates: Partial<SharedState>) => {
+  try {
+    if (updates.unit_study_dates) {
+      localStorage.setItem("leon_unit_study_dates", JSON.stringify(updates.unit_study_dates));
+    }
+    if (updates.page_progress) {
+      localStorage.setItem("leon_page_progress", JSON.stringify(updates.page_progress));
+    }
+    if (updates.disabled_words) {
+      localStorage.setItem("leon_disabled_words", JSON.stringify(updates.disabled_words));
+    }
+    if (updates.answer_log) {
+      localStorage.setItem("leon_answer_log", JSON.stringify(updates.answer_log));
+    }
+    if (updates.custom_vocab) {
+      localStorage.setItem("leon_custom_vocab", JSON.stringify(updates.custom_vocab));
+    }
+    if (updates.score !== undefined) {
+      localStorage.setItem("leon_score", updates.score.toString());
+    }
+    if (updates.completed_date_modules) {
+      localStorage.setItem("leon_completed_date_modules", JSON.stringify(updates.completed_date_modules));
+    }
+    if (updates.skipped_date_modules) {
+      localStorage.setItem("leon_skipped_date_modules", JSON.stringify(updates.skipped_date_modules));
+    }
+    if (updates.daily_rewards_awarded) {
+      localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(updates.daily_rewards_awarded));
+    }
+    if (updates.alternative_translations) {
+      localStorage.setItem("leon_alternative_translations", JSON.stringify(updates.alternative_translations));
+    }
+    if (updates.user_feedback) {
+      localStorage.setItem("leon_user_feedback", JSON.stringify(updates.user_feedback));
+    }
+    if (updates.daily_missions) {
+      localStorage.setItem("leon_daily_missions", JSON.stringify(updates.daily_missions));
+    }
+    if (updates.vocab_srs) {
+      localStorage.setItem("leon_vocab_srs", JSON.stringify(updates.vocab_srs));
+    }
+  } catch (e) {}
+};
+
 export const saveSharedState = async (updates: Partial<SharedState>) => {
+  // 1. 同步立即写入 localStorage，防止刷新/关闭标签/切后台导致未落盘丢失
+  persistUpdatesToLocalStorage(updates);
+
   const docRef = doc(db, "leon_greek_coach", "shared_state");
   try {
-    const snapshot = await getDoc(docRef);
-    if (!snapshot.exists()) {
-      const fullState = { ...getInitialLocalState(), ...updates };
-      await setDoc(docRef, fullState);
-    } else {
-      await updateDoc(docRef, updates);
+    await updateDoc(docRef, updates as any);
+  } catch (err: any) {
+    // 仅当文档尚不存在时回退 setDoc
+    if (err?.code === "not-found") {
+      try {
+        const snapshot = await getDoc(docRef);
+        if (!snapshot.exists()) {
+          const fullState = { ...getInitialLocalState(), ...updates };
+          await setDoc(docRef, fullState);
+          return;
+        }
+      } catch (innerErr) {
+        console.error("Error creating Firestore doc:", innerErr);
+      }
     }
-  } catch (err) {
     console.error("Error updating Firestore:", err);
-    // Fallback to updating localStorage directly in case database rules or connection fails
-    try {
-      if (updates.unit_study_dates) {
-        localStorage.setItem("leon_unit_study_dates", JSON.stringify(updates.unit_study_dates));
-      }
-      if (updates.page_progress) {
-        localStorage.setItem("leon_page_progress", JSON.stringify(updates.page_progress));
-      }
-      if (updates.disabled_words) {
-        localStorage.setItem("leon_disabled_words", JSON.stringify(updates.disabled_words));
-      }
-      if (updates.answer_log) {
-        localStorage.setItem("leon_answer_log", JSON.stringify(updates.answer_log));
-      }
-      if (updates.custom_vocab) {
-        localStorage.setItem("leon_custom_vocab", JSON.stringify(updates.custom_vocab));
-      }
-      if (updates.score !== undefined) {
-        localStorage.setItem("leon_score", updates.score.toString());
-      }
-      if (updates.completed_date_modules) {
-        localStorage.setItem("leon_completed_date_modules", JSON.stringify(updates.completed_date_modules));
-      }
-      if (updates.skipped_date_modules) {
-        localStorage.setItem("leon_skipped_date_modules", JSON.stringify(updates.skipped_date_modules));
-      }
-      if (updates.daily_rewards_awarded) {
-        localStorage.setItem("leon_daily_rewards_awarded", JSON.stringify(updates.daily_rewards_awarded));
-      }
-      if (updates.alternative_translations) {
-        localStorage.setItem("leon_alternative_translations", JSON.stringify(updates.alternative_translations));
-      }
-      if (updates.user_feedback) {
-        localStorage.setItem("leon_user_feedback", JSON.stringify(updates.user_feedback));
-      }
-      if (updates.daily_missions) {
-        localStorage.setItem("leon_daily_missions", JSON.stringify(updates.daily_missions));
-      }
-      if (updates.vocab_srs) {
-        localStorage.setItem("leon_vocab_srs", JSON.stringify(updates.vocab_srs));
-      }
-    } catch (e) {}
   }
 };

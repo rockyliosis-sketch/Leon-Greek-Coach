@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpen, CheckCircle2, Clock, Copy, Download, Headphones, Printer, Sparkles } from 'lucide-react';
 import type { DailyMissionRecord } from '../dbService';
-import { formatElapsedHuman } from '../lib/dailyMissionHelpers';
+import { formatElapsedHuman, getLiveElapsedSec } from '../lib/dailyMissionHelpers';
 import { getBookFrontier } from '../lib/pageProgress';
 import { exportDailyReportPdf, exportDailyReportPng } from '../lib/exportStudyReport';
 import glossaryV2Data from '../data/glossary_v2.json';
@@ -38,18 +38,25 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   const [copied, setCopied] = useState(false);
   const [exportingPng, setExportingPng] = useState(false);
 
+  const nowMs = Date.now();
   const blockEntries = Object.entries(mission.blocks || {});
-  const totalBlockSec = blockEntries.reduce((sum, [, b]) => sum + (b.elapsedSec || 0), 0);
+  const totalBlockSec = blockEntries.reduce(
+    (sum, [, b]) => sum + getLiveElapsedSec(b?.elapsedSec, b?.runningSinceMs, nowMs),
+    0
+  );
 
   const vt = mission.vocabTimers || {
-    morning: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.morning) },
-    afternoon: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.afternoon) },
-    night: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.night) },
+    morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.morning) },
+    afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.afternoon) },
+    night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.night) },
   };
   const totalVocabSec =
-    (vt.morning?.elapsedSec || 0) +
-    (vt.afternoon?.elapsedSec || 0) +
-    (vt.night?.elapsedSec || 0);
+    getLiveElapsedSec(vt.morning?.elapsedSec, vt.morning?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.afternoon?.elapsedSec, vt.afternoon?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.night?.elapsedSec, vt.night?.runningSinceMs, nowMs);
+  const b1Elapsed = getLiveElapsedSec(mission.blocks?.block_school?.elapsedSec, mission.blocks?.block_school?.runningSinceMs, nowMs);
+  const b2Elapsed = getLiveElapsedSec(mission.blocks?.block_web?.elapsedSec, mission.blocks?.block_web?.runningSinceMs, nowMs);
+  const b3Elapsed = getLiveElapsedSec(mission.blocks?.block_preview?.elapsedSec, mission.blocks?.block_preview?.runningSinceMs, nowMs);
   const vocabDoneCount =
     (mission.vocabChecks?.morning ? 1 : 0) +
     (mission.vocabChecks?.afternoon ? 1 : 0) +
@@ -287,7 +294,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         <div style={{ padding: 14, borderRadius: 14, background: 'rgba(240, 253, 250, 0.92)', border: '1px solid #99f6e4' }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
             <img src="/images/ui/icon_block_school.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块一 · 学校复习与作业（用时 {formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0)}）
+            区块一 · 学校复习与作业（用时 {formatElapsedHuman(b1Elapsed)}）
           </div>
           {schoolItems.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -317,7 +324,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         <div style={{ padding: 14, borderRadius: 14, background: 'rgba(239, 246, 255, 0.92)', border: '1px solid #bfdbfe' }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
             <img src="/images/ui/icon_block_web.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块二 · 网站刷题 + 私教课（用时 {formatElapsedHuman(mission.blocks?.block_web?.elapsedSec || 0)}）
+            区块二 · 网站刷题 + 私教课（用时 {formatElapsedHuman(b2Elapsed)}）
           </div>
           <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
             <div><strong>网站刷题：</strong>今日已完成 {todayWebCompleted.length} / 8 个模块</div>
@@ -350,7 +357,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         <div style={{ padding: 14, borderRadius: 14, background: 'rgba(245, 243, 255, 0.92)', border: '1px solid #ddd6fe' }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
             <img src="/images/ui/icon_block_preview.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）
+            区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(b3Elapsed)}）
           </div>
           {previews.length === 0 && workbookChecks.length === 0 && !oldNotesReview ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日旧笔记复习与预习的科目、页码与中文大意</div>

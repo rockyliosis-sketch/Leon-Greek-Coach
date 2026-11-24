@@ -225,6 +225,23 @@ export function formatElapsedHuman(totalSeconds: number): string {
   return `${m} 分钟`;
 }
 
+/**
+ * 墙钟驱动的实时已用秒数计算：
+ * baseElapsedSec（已累计落盘秒数） + （当前时间 - runningSinceMs）/ 1000。
+ * 无论刷新浏览器、切换标签页、跳转到 /practice 刷题、还是 iPad 锁屏/切 App，都不会丢失一秒进度。
+ * 单次连续未暂停上限保护 4 小时（14400 秒），防止忘记暂停跨天失真。
+ */
+export function getLiveElapsedSec(
+  baseElapsedSec?: number,
+  runningSinceMs?: number | null,
+  nowMs: number = Date.now()
+): number {
+  const base = Math.max(0, Math.floor(baseElapsedSec || 0));
+  if (!runningSinceMs || !Number.isFinite(runningSinceMs)) return base;
+  const delta = Math.max(0, Math.floor((nowMs - runningSinceMs) / 1000));
+  return base + Math.min(delta, 14400);
+}
+
 export function calculateMissionStreak(
   missions: Record<string, DailyMissionRecord> | undefined,
   todayStr: string

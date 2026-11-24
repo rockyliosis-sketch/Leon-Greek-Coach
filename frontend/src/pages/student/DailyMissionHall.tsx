@@ -41,6 +41,7 @@ import {
   formatDurationMinSec,
   formatElapsedHuman,
   getDayMode,
+  getLiveElapsedSec,
   getMondayDateStr,
   getTodayStr,
   getWeekdayLabel,
@@ -469,22 +470,38 @@ const DailyMissionHall: React.FC = () => {
   const actualMode = useMemo(() => getDayMode(todayStr), [todayStr]);
 
   const [sharedState, setSharedState] = useState<SharedState>(() => getInitialLocalState());
+  const sharedStateRef = useRef<SharedState>(sharedState);
+  sharedStateRef.current = sharedState;
+
   const [dbStatus, setDbStatus] = useState<DbConnectionStatus>('connecting');
   const [previewModeOverride, setPreviewModeOverride] = useState<DayMode | null>(null);
   const activeMode: DayMode = previewModeOverride || actualMode;
 
-  // Active wizard state
-  const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
-  const [timerRunning, setTimerRunning] = useState(false);
-  const [sessionElapsedSec, setSessionElapsedSec] = useState(0);
-  const [extraMinutes, setExtraMinutes] = useState(0);
-  const [fiveMinSec, setFiveMinSec] = useState(800);
-  const [fiveMinRunning, setFiveMinRunning] = useState(false);
+  // Global wall-clock tick (only active when at least one timer is running)
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
+
+  // Active wizard state (restored across browser refresh via sessionStorage)
+  const [activeBlockId, setActiveBlockId] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem(`leon_active_wizard_${getTodayStr()}`) || null;
+    } catch {
+      return null;
+    }
+  });
   const [earlyFinishMsg, setEarlyFinishMsg] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
-  // Active vocab timer state (outside the 3 blocks, with carry-over!)
-  const [runningVocabSlot, setRunningVocabSlot] = useState<'morning' | 'afternoon' | 'night' | null>(null);
+  const setActiveWizardBlock = (blockId: string | null) => {
+    setActiveBlockId(blockId);
+    try {
+      const key = `leon_active_wizard_${todayStr}`;
+      if (blockId) {
+        sessionStorage.setItem(key, blockId);
+      } else {
+        sessionStorage.removeItem(key);
+      }
+    } catch {}
+  };
 
   // Modals & collapsible panels
   const [showQuickRecorder, setShowQuickRecorder] = useState(false);
@@ -512,32 +529,37 @@ const DailyMissionHall: React.FC = () => {
     const checkGreekDayRollover = () => {
       const currentGreekDate = getTodayStr();
       if (currentGreekDate !== todayStr) {
+        try {
+          sessionStorage.removeItem(`leon_active_wizard_${todayStr}`);
+        } catch {}
         setTodayStr(currentGreekDate);
         setActiveBlockId(null);
-        setTimerRunning(false);
-        setSessionElapsedSec(0);
-        setExtraMinutes(0);
-        setFiveMinRunning(false);
-        setFiveMinSec(300);
-        setRunningVocabSlot(null);
         setEarlyFinishMsg(null);
         setPreviewModeOverride(null);
         setShowQuickRecorder(false);
         setActiveFlashcardSlot(null);
         setShowGlossaryPicker(false);
         setHistorySyncMsg(null);
+        setNowMs(Date.now());
       }
     };
     const intervalId = window.setInterval(checkGreekDayRollover, 30_000);
     const onWake = () => {
-      if (document.visibilityState === 'visible') checkGreekDayRollover();
+      if (document.visibilityState === 'visible') {
+        setNowMs(Date.now());
+        checkGreekDayRollover();
+      }
+    };
+    const onFocus = () => {
+      setNowMs(Date.now());
+      checkGreekDayRollover();
     };
     document.addEventListener('visibilitychange', onWake);
-    window.addEventListener('focus', checkGreekDayRollover);
+    window.addEventListener('focus', onFocus);
     return () => {
       window.clearInterval(intervalId);
       document.removeEventListener('visibilitychange', onWake);
-      window.removeEventListener('focus', checkGreekDayRollover);
+      window.removeEventListener('focus', onFocus);
     };
   }, [todayStr]);
 
@@ -580,26 +602,30 @@ const DailyMissionHall: React.FC = () => {
       afternoon: { elapsedSec: 0, completed: Boolean(todayMission.vocabChecks?.afternoon) },
       night: { elapsedSec: 0, completed: Boolean(todayMission.vocabChecks?.night) },
     };
+    const mLive = getLiveElapsedSec(raw.morning?.elapsedSec, raw.morning?.runningSinceMs, nowMs);
+    const aLive = getLiveElapsedSec(raw.afternoon?.elapsedSec, raw.afternoon?.runningSinceMs, nowMs);
+    const nLive = getLiveElapsedSec(raw.night?.elapsedSec, raw.night?.runningSinceMs, nowMs);
+
     const mTarget = DEFAULT_VOCAB_SLOT_SEC;
     const mDeficit =
-      raw.morning.completed && raw.morning.elapsedSec < mTarget
-        ? mTarget - raw.morning.elapsedSec
+      raw.morning.completed && mLive < mTarget
+        ? mTarget - mLive
         : 0;
 
     const aTarget = DEFAULT_VOCAB_SLOT_SEC + mDeficit;
     const aDeficit =
-      raw.afternoon.completed && raw.afternoon.elapsedSec < aTarget
-        ? aTarget - raw.afternoon.elapsedSec
+      raw.afternoon.completed && aLive < aTarget
+        ? aTarget - aLive
         : 0;
 
     const nTarget = DEFAULT_VOCAB_SLOT_SEC + aDeficit;
 
     return {
-      morning: { ...raw.morning, targetSec: mTarget, carrySec: 0 },
-      afternoon: { ...raw.afternoon, targetSec: aTarget, carrySec: mDeficit },
-      night: { ...raw.night, targetSec: nTarget, carrySec: aDeficit },
+      morning: { ...raw.morning, elapsedSec: mLive, isRunning: Boolean(raw.morning?.runningSinceMs), targetSec: mTarget, carrySec: 0 },
+      afternoon: { ...raw.afternoon, elapsedSec: aLive, isRunning: Boolean(raw.afternoon?.runningSinceMs), targetSec: aTarget, carrySec: mDeficit },
+      night: { ...raw.night, elapsedSec: nLive, isRunning: Boolean(raw.night?.runningSinceMs), targetSec: nTarget, carrySec: aDeficit },
     };
-  }, [todayMission.vocabTimers, todayMission.vocabChecks]);
+  }, [todayMission.vocabTimers, todayMission.vocabChecks, nowMs]);
 
   const activeBlock = useMemo(
     () => blocks.find((b) => b.id === activeBlockId) || null,
@@ -674,14 +700,17 @@ const DailyMissionHall: React.FC = () => {
   const dailyRewardKey = todayStr;
   const dailyRewardClaimed = Boolean(sharedState.daily_rewards_awarded?.[dailyRewardKey]);
 
-  // Persist helper — automatically awards +10 XP ONCE per day when ALL tasks are done!
+  // Persist helper — uses sharedStateRef.current to eliminate stale-closure overwrites,
+  // synchronously persists to localStorage via saveSharedState, and awards +10 XP ONCE per day when ALL tasks are done!
   const updateTodayMission = (
     updater: (prev: DailyMissionRecord) => DailyMissionRecord,
     extraUpdates?: Partial<SharedState>
   ) => {
-    const nextRec = updater(todayMission);
+    const latest = sharedStateRef.current;
+    const prevRec = latest.daily_missions?.[todayStr] || createDefaultMissionRecord(todayStr);
+    const nextRec = updater(prevRec);
     const nextAll = {
-      ...(sharedState.daily_missions || {}),
+      ...(latest.daily_missions || {}),
       [todayStr]: nextRec,
     };
 
@@ -692,25 +721,26 @@ const DailyMissionHall: React.FC = () => {
     const historyDone = Boolean(nextRec.historyLog?.listened);
     const allBlocksDone = blocks.every((b) => nextRec.blocks?.[b.id]?.status === 'done');
 
-    const alreadyAwarded = Boolean(sharedState.daily_rewards_awarded?.[dailyRewardKey]);
+    const alreadyAwarded = Boolean(latest.daily_rewards_awarded?.[dailyRewardKey]);
     const shouldAwardDaily10 = !alreadyAwarded && allVocabDone && historyDone && allBlocksDone;
 
     const rewardUpdates: Partial<SharedState> = shouldAwardDaily10
       ? {
-          score: (sharedState.score || 0) + 10,
+          score: (latest.score || 0) + 10,
           daily_rewards_awarded: {
-            ...(sharedState.daily_rewards_awarded || {}),
+            ...(latest.daily_rewards_awarded || {}),
             [dailyRewardKey]: true,
           },
         }
       : {};
 
     const nextState: SharedState = {
-      ...sharedState,
+      ...latest,
       ...(extraUpdates || {}),
       ...rewardUpdates,
       daily_missions: nextAll,
     };
+    sharedStateRef.current = nextState;
     setSharedState(nextState);
     saveSharedState({
       ...(extraUpdates || {}),
@@ -774,89 +804,81 @@ const DailyMissionHall: React.FC = () => {
     });
   };
 
-  // Main wizard timer tick
-  const timerRef = useRef<number | null>(null);
-  useEffect(() => {
-    if (activeBlockId && timerRunning) {
-      timerRef.current = window.setInterval(() => {
-        setSessionElapsedSec((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [activeBlockId, timerRunning]);
+  // Unified wall-clock ticker: runs ONLY while at least one timer has an active runningSinceMs.
+  // Because all elapsed times are derived from (baseElapsedSec + (nowMs - runningSinceMs)/1000),
+  // refreshing, switching tabs, jumping to /practice, or locking the iPad NEVER loses a single second.
+  const hasAnyRunningTimer = useMemo(() => {
+    const anyBlock = Object.values(todayMission.blocks || {}).some((b) => Boolean(b?.runningSinceMs));
+    const vt = todayMission.vocabTimers;
+    const anyVocab = Boolean(
+      vt?.morning?.runningSinceMs || vt?.afternoon?.runningSinceMs || vt?.night?.runningSinceMs
+    );
+    const anyOldNotes = Boolean(todayMission.oldNotesTimer?.runningSinceMs);
+    return anyBlock || anyVocab || anyOldNotes;
+  }, [todayMission.blocks, todayMission.vocabTimers, todayMission.oldNotesTimer]);
 
-  // Vocab 3x timer tick (saves every 10s to avoid spamming Firestore)
-  const vocabTickCountRef = useRef(0);
   useEffect(() => {
-    if (!runningVocabSlot) return;
+    if (!hasAnyRunningTimer) return;
+    setNowMs(Date.now());
     const id = window.setInterval(() => {
-      vocabTickCountRef.current += 1;
-      const shouldSave = vocabTickCountRef.current % 10 === 0;
-      setSharedState((prev) => {
-        const curRec = prev.daily_missions?.[todayStr] || createDefaultMissionRecord(todayStr);
-        const curTimers = curRec.vocabTimers || {
-          morning: { elapsedSec: 0, completed: Boolean(curRec.vocabChecks?.morning) },
-          afternoon: { elapsedSec: 0, completed: Boolean(curRec.vocabChecks?.afternoon) },
-          night: { elapsedSec: 0, completed: Boolean(curRec.vocabChecks?.night) },
-        };
-        const slotState = curTimers[runningVocabSlot];
-        const nextTimers = {
-          ...curTimers,
-          [runningVocabSlot]: {
-            ...slotState,
-            elapsedSec: (slotState?.elapsedSec || 0) + 1,
-          },
-        };
-        const nextMissions = {
-          ...(prev.daily_missions || {}),
-          [todayStr]: { ...curRec, vocabTimers: nextTimers },
-        };
-        if (shouldSave) {
-          saveSharedState({ daily_missions: nextMissions });
-        }
-        return { ...prev, daily_missions: nextMissions };
-      });
+      setNowMs(Date.now());
     }, 1000);
     return () => window.clearInterval(id);
-  }, [runningVocabSlot, todayStr]);
-
-  // 5-minute scan mini-timer tick
-  useEffect(() => {
-    if (!fiveMinRunning) return;
-    const id = window.setInterval(() => {
-      setFiveMinSec((prev) => {
-        if (prev <= 1) {
-          setFiveMinRunning(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, [fiveMinRunning]);
+  }, [hasAnyRunningTimer]);
 
   const handleToggleVocabTimer = (slot: 'morning' | 'afternoon' | 'night') => {
-    if (runningVocabSlot === slot) {
-      // Pause & persist current elapsedSec
-      setRunningVocabSlot(null);
-      saveSharedState({ daily_missions: sharedState.daily_missions });
-    } else {
-      setRunningVocabSlot(slot);
-    }
+    const now = Date.now();
+    setNowMs(now);
+    updateTodayMission((prev) => {
+      const prevTimers = prev.vocabTimers || {
+        morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
+        afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
+        night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.night) },
+      };
+      const curSlot = prevTimers[slot] || { elapsedSec: 0, runningSinceMs: null, completed: false };
+      const isCurrentlyRunning = Boolean(curSlot.runningSinceMs);
+
+      const nextTimers = { ...prevTimers };
+      // Freeze any other running vocab slot first so only 1 vocab timer runs at a time
+      (['morning', 'afternoon', 'night'] as const).forEach((k) => {
+        const s = nextTimers[k] || { elapsedSec: 0, runningSinceMs: null, completed: false };
+        if (s.runningSinceMs && k !== slot) {
+          nextTimers[k] = {
+            ...s,
+            elapsedSec: getLiveElapsedSec(s.elapsedSec, s.runningSinceMs, now),
+            runningSinceMs: null,
+          };
+        }
+      });
+
+      if (isCurrentlyRunning) {
+        // Pause & freeze exact accumulated seconds
+        nextTimers[slot] = {
+          ...curSlot,
+          elapsedSec: getLiveElapsedSec(curSlot.elapsedSec, curSlot.runningSinceMs, now),
+          runningSinceMs: null,
+        };
+      } else {
+        // Start / Resume from exact accumulated seconds
+        nextTimers[slot] = {
+          ...curSlot,
+          runningSinceMs: now,
+        };
+      }
+      return { ...prev, vocabTimers: nextTimers };
+    });
   };
 
   const handleFinishVocabSlot = (slot: 'morning' | 'afternoon' | 'night') => {
-    if (runningVocabSlot === slot) setRunningVocabSlot(null);
-    const curSlot = vocabTimers[slot];
-
+    const now = Date.now();
+    setNowMs(now);
     updateTodayMission((prev) => {
       const prevTimers = prev.vocabTimers || {
-        morning: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.morning) },
-        afternoon: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.afternoon) },
-        night: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.night) },
+        morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
+        afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
+        night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.night) },
       };
+      const curSlot = prevTimers[slot] || { elapsedSec: 0, runningSinceMs: null, completed: false };
       return {
         ...prev,
         vocabChecks: {
@@ -866,7 +888,8 @@ const DailyMissionHall: React.FC = () => {
         vocabTimers: {
           ...prevTimers,
           [slot]: {
-            elapsedSec: curSlot.elapsedSec,
+            elapsedSec: getLiveElapsedSec(curSlot.elapsedSec, curSlot.runningSinceMs, now),
+            runningSinceMs: null,
             completed: true,
           },
         },
@@ -898,56 +921,173 @@ const DailyMissionHall: React.FC = () => {
   };
 
   const openBlockWizard = (block: MissionBlockDef) => {
-    const existing = todayMission.blocks?.[block.id];
-    const carryMin = Math.floor((blockCarryOverMap[block.id] || 0) / 60);
-    const effMin = block.minutes + (existing?.extraMinutes || 0) + carryMin;
-    const proportionalScanMin = Math.max(8, Math.min(25, Math.round(effMin / 3)));
-    setActiveBlockId(block.id);
-    setSessionElapsedSec(existing?.elapsedSec || 0);
-    setExtraMinutes(existing?.extraMinutes || 0);
-    setTimerRunning(existing?.status !== 'done');
-    setFiveMinSec(proportionalScanMin * 60);
-    setFiveMinRunning(false);
+    const now = Date.now();
+    setNowMs(now);
+    setActiveWizardBlock(block.id);
     setEarlyFinishMsg(null);
 
-    if (!existing || existing.status === 'idle') {
-      updateTodayMission((prev) => ({
+    updateTodayMission((prev) => {
+      const nextBlocks: Record<string, DailyMissionBlockState> = { ...(prev.blocks || {}) };
+      // 先冻结其他正在计时的区块，避免两个区块同时计时
+      Object.keys(nextBlocks).forEach((k) => {
+        const b = nextBlocks[k];
+        if (k !== block.id && b?.runningSinceMs) {
+          nextBlocks[k] = {
+            ...b,
+            elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, now),
+            runningSinceMs: null,
+          };
+        }
+      });
+
+      const existing = nextBlocks[block.id];
+      if (!existing || existing.status === 'idle') {
+        nextBlocks[block.id] = {
+          status: 'in_progress',
+          currentStep: 0,
+          elapsedSec: existing?.elapsedSec || 0,
+          runningSinceMs: now,
+          extraMinutes: existing?.extraMinutes || 0,
+          subject: existing?.subject,
+        };
+      } else if (existing.status !== 'done' && !existing.runningSinceMs) {
+        // 已在进行中但此前暂停了：恢复计时，保留全部已用秒数
+        nextBlocks[block.id] = {
+          ...existing,
+          runningSinceMs: now,
+        };
+      }
+      // 如果已在计时（existing.runningSinceMs != null）或已通关（done），保持原样不动！
+      return { ...prev, blocks: nextBlocks };
+    });
+  };
+
+  const handleToggleBlockTimer = (blockId: string) => {
+    const now = Date.now();
+    setNowMs(now);
+    updateTodayMission((prev) => {
+      const nextBlocks: Record<string, DailyMissionBlockState> = { ...(prev.blocks || {}) };
+      const cur = nextBlocks[blockId] || {
+        status: 'in_progress' as const,
+        currentStep: 0,
+        elapsedSec: 0,
+        runningSinceMs: null,
+        extraMinutes: 0,
+      };
+      if (cur.runningSinceMs) {
+        // 暂停：精准冻结累计秒数
+        nextBlocks[blockId] = {
+          ...cur,
+          elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
+          runningSinceMs: null,
+        };
+      } else {
+        // 恢复/开始：先暂停其他区块，再从当前累计秒数无缝续计
+        Object.keys(nextBlocks).forEach((k) => {
+          const b = nextBlocks[k];
+          if (k !== blockId && b?.runningSinceMs) {
+            nextBlocks[k] = {
+              ...b,
+              elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, now),
+              runningSinceMs: null,
+            };
+          }
+        });
+        nextBlocks[blockId] = {
+          ...cur,
+          status: cur.status === 'idle' ? 'in_progress' : cur.status,
+          runningSinceMs: now,
+        };
+      }
+      return { ...prev, blocks: nextBlocks };
+    });
+  };
+
+  const handleAddBlockExtraMinutes = (blockId: string, deltaMin: number) => {
+    updateTodayMission((prev) => {
+      const cur = prev.blocks?.[blockId] || {
+        status: 'in_progress' as const,
+        currentStep: 0,
+        elapsedSec: 0,
+        runningSinceMs: null,
+        extraMinutes: 0,
+      };
+      return {
         ...prev,
         blocks: {
-          ...prev.blocks,
-          [block.id]: {
-            status: 'in_progress',
-            currentStep: 0,
-            elapsedSec: existing?.elapsedSec || 0,
-            extraMinutes: existing?.extraMinutes || 0,
-            subject: existing?.subject,
+          ...(prev.blocks || {}),
+          [blockId]: {
+            ...cur,
+            extraMinutes: Math.max(0, (cur.extraMinutes || 0) + deltaMin),
           },
         },
-      }));
+      };
+    });
+  };
+
+  const handleToggleOldNotesTimer = () => {
+    const now = Date.now();
+    setNowMs(now);
+    updateTodayMission((prev) => {
+      const cur = prev.oldNotesTimer || { elapsedSec: 0, runningSinceMs: null };
+      if (cur.runningSinceMs) {
+        return {
+          ...prev,
+          oldNotesTimer: {
+            elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
+            runningSinceMs: null,
+          },
+        };
+      }
+      return {
+        ...prev,
+        oldNotesTimer: {
+          elapsedSec: cur.elapsedSec || 0,
+          runningSinceMs: now,
+        },
+      };
+    });
+  };
+
+  const handleResetOldNotesTimer = () => {
+    const cur = todayMission.oldNotesTimer;
+    const live = getLiveElapsedSec(cur?.elapsedSec, cur?.runningSinceMs, Date.now());
+    if (live >= 30 && !window.confirm(`旧笔记复习已计时 ${formatElapsedHuman(live)}，确定要重置吗？`)) {
+      return;
     }
+    updateTodayMission((prev) => ({
+      ...prev,
+      oldNotesTimer: { elapsedSec: 0, runningSinceMs: null },
+    }));
   };
 
   const handleResetBlock = (blockId: string) => {
     if (activeBlockId === blockId) {
-      setSessionElapsedSec(0);
-      setExtraMinutes(0);
-      setTimerRunning(false);
       setEarlyFinishMsg(null);
     }
     updateTodayMission((prev) => {
       const nextBlocks = { ...(prev.blocks || {}) };
       delete nextBlocks[blockId];
-      return { ...prev, blocks: nextBlocks };
+      return {
+        ...prev,
+        blocks: nextBlocks,
+        ...(blockId === 'block_preview' ? { oldNotesTimer: { elapsedSec: 0, runningSinceMs: null } } : {}),
+      };
     });
   };
 
-  const handleResetVocabSlot = (slot: 'morning' | 'afternoon' | 'night') => {
-    if (runningVocabSlot === slot) setRunningVocabSlot(null);
+  const handleResetVocabSlot = (slot: 'morning' | 'afternoon' | 'night', label?: string) => {
+    const cur = vocabTimers[slot];
+    const msg =
+      cur.elapsedSec >= 10
+        ? `确定要重置「${label || slot}」吗？当前已累计 ${formatElapsedHuman(cur.elapsedSec)} 将被清空。`
+        : `确定要重置「${label || slot}」的打卡状态吗？`;
+    if (!window.confirm(msg)) return;
     updateTodayMission((prev) => {
       const prevTimers = prev.vocabTimers || {
-        morning: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.morning) },
-        afternoon: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.afternoon) },
-        night: { elapsedSec: 0, completed: Boolean(prev.vocabChecks?.night) },
+        morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
+        afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
+        night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.night) },
       };
       return {
         ...prev,
@@ -957,67 +1097,100 @@ const DailyMissionHall: React.FC = () => {
         },
         vocabTimers: {
           ...prevTimers,
-          [slot]: { elapsedSec: 0, completed: false },
+          [slot]: { elapsedSec: 0, runningSinceMs: null, completed: false },
         },
       };
     });
   };
 
   const closeBlockWizard = () => {
+    const now = Date.now();
+    setNowMs(now);
     if (activeBlockId) {
-      const prevBlock = todayMission.blocks?.[activeBlockId];
-      updateTodayMission((prev) => ({
-        ...prev,
-        blocks: {
-          ...prev.blocks,
-          [activeBlockId]: {
-            status: prevBlock?.status || 'in_progress',
-            currentStep: prevBlock?.currentStep || 0,
-            elapsedSec: sessionElapsedSec,
-            extraMinutes,
-            subject: prevBlock?.subject,
-            completedAt: prevBlock?.completedAt,
+      const blockToPause = activeBlockId;
+      updateTodayMission((prev) => {
+        const prevBlock = prev.blocks?.[blockToPause];
+        const nextOldNotes = prev.oldNotesTimer?.runningSinceMs
+          ? {
+              elapsedSec: getLiveElapsedSec(
+                prev.oldNotesTimer.elapsedSec,
+                prev.oldNotesTimer.runningSinceMs,
+                now
+              ),
+              runningSinceMs: null,
+            }
+          : prev.oldNotesTimer;
+
+        if (!prevBlock) {
+          return nextOldNotes !== prev.oldNotesTimer ? { ...prev, oldNotesTimer: nextOldNotes } : prev;
+        }
+        return {
+          ...prev,
+          oldNotesTimer: nextOldNotes,
+          blocks: {
+            ...(prev.blocks || {}),
+            [blockToPause]: {
+              ...prevBlock,
+              elapsedSec: getLiveElapsedSec(prevBlock.elapsedSec, prevBlock.runningSinceMs, now),
+              runningSinceMs: null,
+            },
           },
-        },
-      }));
+        };
+      });
     }
-    setTimerRunning(false);
-    setFiveMinRunning(false);
-    setActiveBlockId(null);
+    setActiveWizardBlock(null);
   };
 
   const handleAdvanceStep = () => {
     if (!activeBlock) return;
+    const now = Date.now();
+    setNowMs(now);
     const curState: DailyMissionBlockState = todayMission.blocks?.[activeBlock.id] || {
       status: 'in_progress',
       currentStep: 0,
-      elapsedSec: sessionElapsedSec,
-      extraMinutes,
+      elapsedSec: 0,
+      runningSinceMs: null,
+      extraMinutes: 0,
     };
+    const liveElapsed = getLiveElapsedSec(curState.elapsedSec, curState.runningSinceMs, now);
+    const curExtraMin = curState.extraMinutes || 0;
     const nextStep = curState.currentStep + 1;
 
     if (nextStep >= activeBlock.steps.length) {
       const carrySec = blockCarryOverMap[activeBlock.id] || 0;
-      const targetSec = (activeBlock.minutes + extraMinutes) * 60 + carrySec;
-      const deficitSec = Math.max(0, targetSec - sessionElapsedSec);
+      const targetSec = (activeBlock.minutes + curExtraMin) * 60 + carrySec;
+      const deficitSec = Math.max(0, targetSec - liveElapsed);
       const deficitMin = Math.floor(deficitSec / 60);
-      setTimerRunning(false);
-      setFiveMinRunning(false);
 
-      updateTodayMission((prev) => ({
-        ...prev,
-        blocks: {
-          ...prev.blocks,
-          [activeBlock.id]: {
-            ...curState,
-            status: 'done',
-            currentStep: activeBlock.steps.length - 1,
-            elapsedSec: sessionElapsedSec,
-            extraMinutes,
-            completedAt: new Date().toISOString(),
+      updateTodayMission((prev) => {
+        const latestBlock = prev.blocks?.[activeBlock.id] || curState;
+        const latestElapsed = getLiveElapsedSec(latestBlock.elapsedSec, latestBlock.runningSinceMs, now);
+        const nextOldNotes = prev.oldNotesTimer?.runningSinceMs
+          ? {
+              elapsedSec: getLiveElapsedSec(
+                prev.oldNotesTimer.elapsedSec,
+                prev.oldNotesTimer.runningSinceMs,
+                now
+              ),
+              runningSinceMs: null,
+            }
+          : prev.oldNotesTimer;
+        return {
+          ...prev,
+          oldNotesTimer: nextOldNotes,
+          blocks: {
+            ...(prev.blocks || {}),
+            [activeBlock.id]: {
+              ...latestBlock,
+              status: 'done',
+              currentStep: activeBlock.steps.length - 1,
+              elapsedSec: latestElapsed,
+              runningSinceMs: null,
+              completedAt: new Date().toISOString(),
+            },
           },
-        },
-      }));
+        };
+      });
 
       if (deficitMin >= 2) {
         setEarlyFinishMsg(
@@ -1029,19 +1202,20 @@ const DailyMissionHall: React.FC = () => {
         );
       }
     } else {
-      updateTodayMission((prev) => ({
-        ...prev,
-        blocks: {
-          ...prev.blocks,
-          [activeBlock.id]: {
-            ...curState,
-            status: 'in_progress',
-            currentStep: nextStep,
-            elapsedSec: sessionElapsedSec,
-            extraMinutes,
+      updateTodayMission((prev) => {
+        const latestBlock = prev.blocks?.[activeBlock.id] || curState;
+        return {
+          ...prev,
+          blocks: {
+            ...(prev.blocks || {}),
+            [activeBlock.id]: {
+              ...latestBlock,
+              status: 'in_progress',
+              currentStep: nextStep,
+            },
           },
-        },
-      }));
+        };
+      });
     }
   };
 
@@ -1088,18 +1262,22 @@ const DailyMissionHall: React.FC = () => {
   // ACTIVE WIZARD FOCUS VIEW
   // ==========================
   if (activeBlock) {
-    const blockState = todayMission.blocks?.[activeBlock.id] || {
+    const blockState: DailyMissionBlockState = todayMission.blocks?.[activeBlock.id] || {
       status: 'in_progress' as const,
       currentStep: 0,
-      elapsedSec: sessionElapsedSec,
-      extraMinutes,
+      elapsedSec: 0,
+      runningSinceMs: null,
+      extraMinutes: 0,
     };
+    const isBlockRunning = Boolean(blockState.runningSinceMs);
+    const liveElapsedSec = getLiveElapsedSec(blockState.elapsedSec, blockState.runningSinceMs, nowMs);
+    const blockExtraMinutes = blockState.extraMinutes || 0;
     const stepIndex = Math.min(blockState.currentStep || 0, activeBlock.steps.length - 1);
     const stepDef = activeBlock.steps[stepIndex];
     const carrySec = blockCarryOverMap[activeBlock.id] || 0;
-    const totalTargetSec = (activeBlock.minutes + extraMinutes) * 60 + carrySec;
-    const remainingSec = Math.max(0, totalTargetSec - sessionElapsedSec);
-    const isOvertime = sessionElapsedSec > totalTargetSec;
+    const totalTargetSec = (activeBlock.minutes + blockExtraMinutes) * 60 + carrySec;
+    const remainingSec = Math.max(0, totalTargetSec - liveElapsedSec);
+    const isOvertime = liveElapsedSec > totalTargetSec;
 
     const schoolLog = todayMission.blockLogs?.school || { subjects: [], pages: '', summary: '', items: [] };
     const schoolItems: SchoolSubjectTaskLog[] =
@@ -1175,6 +1353,10 @@ const DailyMissionHall: React.FC = () => {
 
     const effectiveBlockMin = Math.round(totalTargetSec / 60);
     const proportionalScanMin = Math.max(8, Math.min(25, Math.round(effectiveBlockMin / 3)));
+    const ot = todayMission.oldNotesTimer || { elapsedSec: 0, runningSinceMs: null };
+    const oldNotesRunning = Boolean(ot.runningSinceMs);
+    const oldNotesElapsed = getLiveElapsedSec(ot.elapsedSec, ot.runningSinceMs, nowMs);
+    const oldNotesRemSec = Math.max(0, proportionalScanMin * 60 - oldNotesElapsed);
 
     const oldNotesReview = todayMission.blockLogs?.oldNotesReview || {
       subject: '希腊语 (Γλώσσα)',
@@ -1230,10 +1412,10 @@ const DailyMissionHall: React.FC = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-                  {isOvertime ? '已超出计划（可点右侧延时）' : '灵活倒计时'}
+                  {isOvertime ? '已超出计划（可点右侧延时）' : isBlockRunning ? '后台持续计时中（刷新/切页不丢）' : '已暂停（进度已自动保存）'}
                   {carrySec >= 60 ? ` · 含顺延 +${Math.floor(carrySec / 60)}分` : ''}
-                  {extraMinutes > 0 ? ` · 延时 +${extraMinutes}分` : ''}
-                  （已用 {formatElapsedHuman(sessionElapsedSec)}）
+                  {blockExtraMinutes > 0 ? ` · 延时 +${blockExtraMinutes}分` : ''}
+                  （已用 {formatElapsedHuman(liveElapsedSec)}）
                 </div>
                 <div
                   style={{
@@ -1249,7 +1431,7 @@ const DailyMissionHall: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => setTimerRunning((r) => !r)}
+                onClick={() => handleToggleBlockTimer(activeBlock.id)}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -1257,19 +1439,19 @@ const DailyMissionHall: React.FC = () => {
                   padding: '10px 14px',
                   borderRadius: 12,
                   border: 'none',
-                  background: timerRunning ? '#f59e0b' : activeBlock.accent,
+                  background: isBlockRunning ? '#f59e0b' : activeBlock.accent,
                   color: '#fff',
                   fontWeight: 700,
                   fontSize: 14,
                   cursor: 'pointer',
                 }}
               >
-                {timerRunning ? <Pause size={16} /> : <Play size={16} />}
-                {timerRunning ? '暂停' : '继续'}
+                {isBlockRunning ? <Pause size={16} /> : <Play size={16} />}
+                {isBlockRunning ? '暂停' : '继续'}
               </button>
               <button
                 type="button"
-                onClick={() => setExtraMinutes((m) => m + 5)}
+                onClick={() => handleAddBlockExtraMinutes(activeBlock.id, 5)}
                 style={{
                   padding: '10px 12px',
                   borderRadius: 12,
@@ -1285,7 +1467,7 @@ const DailyMissionHall: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => setExtraMinutes((m) => m + 10)}
+                onClick={() => handleAddBlockExtraMinutes(activeBlock.id, 10)}
                 style={{
                   padding: '10px 12px',
                   borderRadius: 12,
@@ -1302,7 +1484,11 @@ const DailyMissionHall: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm('确定要重置本区块的计时与完成状态吗？')) {
+                  const msg =
+                    liveElapsedSec >= 10
+                      ? `确定要重置「${activeBlock.title}」吗？当前已累计 ${formatElapsedHuman(liveElapsedSec)} 的计时与完成状态将被清空！`
+                      : `确定要重置「${activeBlock.title}」的计时与完成状态吗？`;
+                  if (window.confirm(msg)) {
                     handleResetBlock(activeBlock.id);
                   }
                 }}
@@ -1334,18 +1520,19 @@ const DailyMissionHall: React.FC = () => {
                 key={st.title}
                 type="button"
                 onClick={() =>
-                  updateTodayMission((prev) => ({
-                    ...prev,
-                    blocks: {
-                      ...prev.blocks,
-                      [activeBlock.id]: {
-                        ...blockState,
-                        currentStep: idx,
-                        elapsedSec: sessionElapsedSec,
-                        extraMinutes,
+                  updateTodayMission((prev) => {
+                    const latest = prev.blocks?.[activeBlock.id] || blockState;
+                    return {
+                      ...prev,
+                      blocks: {
+                        ...(prev.blocks || {}),
+                        [activeBlock.id]: {
+                          ...latest,
+                          currentStep: idx,
+                        },
                       },
-                    },
-                  }))
+                    };
+                  })
                 }
                 style={{
                   flex: 1,
@@ -2147,34 +2334,31 @@ const DailyMissionHall: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: 13.5, fontWeight: 800, color: '#b45309' }}>
-                        旧笔记规律复习专属计时（自动按本区块 {effectiveBlockMin} 分钟的 1/3 计算：{proportionalScanMin} 分钟）
+                        旧笔记规律复习专属计时（自动按本区块 {effectiveBlockMin} 分钟的 1/3 计算：{proportionalScanMin} 分钟{oldNotesElapsed > 0 ? ` · 已复习 ${formatElapsedHuman(oldNotesElapsed)}` : ''}）
                       </div>
                       <div style={{ fontSize: 30, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
-                        {formatDurationMinSec(fiveMinSec)}
+                        {formatDurationMinSec(oldNotesRemSec)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button
                         type="button"
-                        onClick={() => setFiveMinRunning((r) => !r)}
+                        onClick={handleToggleOldNotesTimer}
                         style={{
                           padding: '10px 18px',
                           borderRadius: 12,
                           border: 'none',
-                          background: fiveMinRunning ? '#d97706' : '#f59e0b',
+                          background: oldNotesRunning ? '#d97706' : '#f59e0b',
                           color: '#fff',
                           fontWeight: 800,
                           cursor: 'pointer',
                         }}
                       >
-                        {fiveMinRunning ? `暂停 ${proportionalScanMin} 分钟` : `开始 ${proportionalScanMin} 分钟复习`}
+                        {oldNotesRunning ? `暂停 ${proportionalScanMin} 分钟` : oldNotesElapsed > 0 ? '继续复习计时' : `开始 ${proportionalScanMin} 分钟复习`}
                       </button>
                       <button
                         type="button"
-                        onClick={() => {
-                          setFiveMinRunning(false);
-                          setFiveMinSec(proportionalScanMin * 60);
-                        }}
+                        onClick={handleResetOldNotesTimer}
                         style={{
                           padding: '10px 12px',
                           borderRadius: 12,
@@ -2607,18 +2791,19 @@ const DailyMissionHall: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      updateTodayMission((prev) => ({
-                        ...prev,
-                        blocks: {
-                          ...prev.blocks,
-                          [activeBlock.id]: {
-                            ...blockState,
-                            currentStep: stepIndex - 1,
-                            elapsedSec: sessionElapsedSec,
-                            extraMinutes,
+                      updateTodayMission((prev) => {
+                        const latest = prev.blocks?.[activeBlock.id] || blockState;
+                        return {
+                          ...prev,
+                          blocks: {
+                            ...(prev.blocks || {}),
+                            [activeBlock.id]: {
+                              ...latest,
+                              currentStep: stepIndex - 1,
+                            },
                           },
-                        },
-                      }))
+                        };
+                      })
                     }
                     style={{
                       padding: '13px 18px',
@@ -3256,7 +3441,7 @@ const DailyMissionHall: React.FC = () => {
               ]
             ).map((item) => {
               const vt = vocabTimers[item.slot];
-              const isRunning = runningVocabSlot === item.slot;
+              const isRunning = vt.isRunning;
               const remSec = Math.max(0, vt.targetSec - vt.elapsedSec);
               const carryMin = Math.floor(vt.carrySec / 60);
 
@@ -3332,7 +3517,7 @@ const DailyMissionHall: React.FC = () => {
                     {(vt.elapsedSec > 0 || vt.completed) && (
                       <button
                         type="button"
-                        onClick={() => handleResetVocabSlot(item.slot)}
+                        onClick={() => handleResetVocabSlot(item.slot, item.label)}
                         style={{
                           padding: '7px 8px',
                           borderRadius: 10,
@@ -3699,6 +3884,70 @@ const DailyMissionHall: React.FC = () => {
 
         {/* Main 120-Minute Blocks (3 x 40m with Auto Time Carry-Over & Visible Checklists) */}
         <section style={{ marginBottom: 24 }}>
+          {(() => {
+            const runningBlock = blocks.find((b) => Boolean(todayMission.blocks?.[b.id]?.runningSinceMs));
+            if (!runningBlock) return null;
+            const rbState = todayMission.blocks?.[runningBlock.id];
+            const rbLiveSec = getLiveElapsedSec(rbState?.elapsedSec, rbState?.runningSinceMs, nowMs);
+            return (
+              <div
+                style={{
+                  marginBottom: 14,
+                  padding: '12px 16px',
+                  borderRadius: 16,
+                  background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                  border: '2px solid #3b82f6',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#1e3a8a', fontWeight: 800, fontSize: 14.5 }}>
+                  <Clock size={18} color="#2563eb" />
+                  <span>
+                    「{runningBlock.title}」正在后台持续计时中 · 已用 {formatDurationMinSec(rbLiveSec)}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => openBlockWizard(runningBlock)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      border: 'none',
+                      background: '#2563eb',
+                      color: '#fff',
+                      fontWeight: 800,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    回到该区块继续 →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleBlockTimer(runningBlock.id)}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 10,
+                      border: '1px solid #93c5fd',
+                      background: '#fff',
+                      color: '#1d4ed8',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    暂停计时
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
             <h2 style={{ margin: 0, fontSize: 20, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Clock size={20} color="#0071E3" />
@@ -3715,10 +3964,11 @@ const DailyMissionHall: React.FC = () => {
               const st = todayMission.blocks?.[block.id];
               const isDone = st?.status === 'done';
               const isInProgress = st?.status === 'in_progress';
-              const elapsed = st?.elapsedSec || 0;
+              const isRunning = Boolean(st?.runningSinceMs);
+              const elapsed = getLiveElapsedSec(st?.elapsedSec, st?.runningSinceMs, nowMs);
               const carrySec = blockCarryOverMap[block.id] || 0;
               const carryMin = Math.floor(carrySec / 60);
-              const effectiveMinutes = block.minutes + carryMin;
+              const effectiveMinutes = block.minutes + carryMin + (st?.extraMinutes || 0);
 
               return (
                 <div
@@ -3730,7 +3980,7 @@ const DailyMissionHall: React.FC = () => {
                     backgroundPosition: 'right bottom',
                     borderRadius: 22,
                     padding: 20,
-                    border: isDone ? '2px solid #10b981' : `1.5px solid ${block.accent}33`,
+                    border: isDone ? '2px solid #10b981' : isRunning ? '2px solid #2563eb' : `1.5px solid ${block.accent}33`,
                     boxShadow: '0 8px 22px rgba(15, 23, 42, 0.05)',
                     display: 'flex',
                     flexDirection: 'column',
@@ -3761,21 +4011,27 @@ const DailyMissionHall: React.FC = () => {
                             fontWeight: 800,
                             padding: '5px 10px',
                             borderRadius: 999,
-                            background: isDone ? '#ecfdf5' : isInProgress ? '#fffbeb' : 'rgba(241, 245, 249, 0.92)',
-                            color: isDone ? '#047857' : isInProgress ? '#b45309' : '#64748b',
+                            background: isDone ? '#ecfdf5' : isRunning ? '#dbeafe' : isInProgress ? '#fffbeb' : 'rgba(241, 245, 249, 0.92)',
+                            color: isDone ? '#047857' : isRunning ? '#1d4ed8' : isInProgress ? '#b45309' : '#64748b',
                           }}
                         >
                           {isDone
                             ? `已通关 · ${formatElapsedHuman(elapsed)}`
-                            : isInProgress
-                              ? `进行中 · 第 ${(st?.currentStep || 0) + 1}/${block.steps.length} 步`
-                              : `目标 ${effectiveMinutes} 分钟`}
+                            : isRunning
+                              ? `计时中 · ${formatDurationMinSec(elapsed)}`
+                              : isInProgress
+                                ? `已暂停 · ${formatElapsedHuman(elapsed)}（第 ${(st?.currentStep || 0) + 1}/${block.steps.length} 步）`
+                                : `目标 ${effectiveMinutes} 分钟`}
                         </span>
                         {(isDone || isInProgress || elapsed > 0) && (
                           <button
                             type="button"
                             onClick={() => {
-                              if (window.confirm(`确定要重置「${block.title}」的计时与完成状态吗？`)) {
+                              const msg =
+                                elapsed >= 10
+                                  ? `确定要重置「${block.title}」吗？当前已累计 ${formatElapsedHuman(elapsed)} 的计时与完成状态将被清空！`
+                                  : `确定要重置「${block.title}」的计时与完成状态吗？`;
+                              if (window.confirm(msg)) {
                                 handleResetBlock(block.id);
                               }
                             }}

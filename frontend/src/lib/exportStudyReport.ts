@@ -1,5 +1,5 @@
 import type { DailyMissionRecord } from '../dbService';
-import { formatElapsedHuman, getWeekdayLabel } from './dailyMissionHelpers';
+import { formatElapsedHuman, getLiveElapsedSec, getWeekdayLabel } from './dailyMissionHelpers';
 import { getBookFrontier } from './pageProgress';
 import { getScoutLevelInfo } from './levelSystem';
 import glossaryV2Data from '../data/glossary_v2.json';
@@ -76,18 +76,25 @@ function wrapTextLines(
 export async function exportDailyReportPng(payload: ExportReportPayload): Promise<void> {
   const { todayStr, mission, todayWebCompleted, todayWords, pageProgress, score, streak } = payload;
 
+  const nowMs = Date.now();
   const level = getScoutLevelInfo(score);
   const blockEntries = Object.entries(mission.blocks || {});
-  const totalBlockSec = blockEntries.reduce((sum, [, b]) => sum + (b.elapsedSec || 0), 0);
+  const totalBlockSec = blockEntries.reduce(
+    (sum, [, b]) => sum + getLiveElapsedSec(b?.elapsedSec, b?.runningSinceMs, nowMs),
+    0
+  );
   const vt = mission.vocabTimers || {
-    morning: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.morning) },
-    afternoon: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.afternoon) },
-    night: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.night) },
+    morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.morning) },
+    afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.afternoon) },
+    night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.night) },
   };
   const totalVocabSec =
-    (vt.morning?.elapsedSec || 0) +
-    (vt.afternoon?.elapsedSec || 0) +
-    (vt.night?.elapsedSec || 0);
+    getLiveElapsedSec(vt.morning?.elapsedSec, vt.morning?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.afternoon?.elapsedSec, vt.afternoon?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.night?.elapsedSec, vt.night?.runningSinceMs, nowMs);
+  const b1Elapsed = getLiveElapsedSec(mission.blocks?.block_school?.elapsedSec, mission.blocks?.block_school?.runningSinceMs, nowMs);
+  const b2Elapsed = getLiveElapsedSec(mission.blocks?.block_web?.elapsedSec, mission.blocks?.block_web?.runningSinceMs, nowMs);
+  const b3Elapsed = getLiveElapsedSec(mission.blocks?.block_preview?.elapsedSec, mission.blocks?.block_preview?.runningSinceMs, nowMs);
   const vocabDoneCount =
     (mission.vocabChecks?.morning ? 1 : 0) +
     (mission.vocabChecks?.afternoon ? 1 : 0) +
@@ -163,7 +170,7 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
     b1Lines.push('• 暂无记录');
   }
   sections.push({
-    title: `区块一 · 学校复习与作业（用时 ${formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0)}）`,
+    title: `区块一 · 学校复习与作业（用时 ${formatElapsedHuman(b1Elapsed)}）`,
     accent: '#0f766e',
     bg: '#f0fdfa',
     border: '#99f6e4',
@@ -195,7 +202,7 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
     b2Lines.push('• 希腊语私教课：暂无记录');
   }
   sections.push({
-    title: `区块二 · 网站刷题 + 希腊语私教课（用时 ${formatElapsedHuman(mission.blocks?.block_web?.elapsedSec || 0)}）`,
+    title: `区块二 · 网站刷题 + 希腊语私教课（用时 ${formatElapsedHuman(b2Elapsed)}）`,
     accent: '#1d4ed8',
     bg: '#eff6ff',
     border: '#bfdbfe',
@@ -228,7 +235,7 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
   });
   if (b3Lines.length === 0) b3Lines.push('• 暂无记录');
   sections.push({
-    title: `区块三 · 学校下节课预习 & 练习册扫雷（用时 ${formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0)}）`,
+    title: `区块三 · 学校下节课预习 & 练习册扫雷（用时 ${formatElapsedHuman(b3Elapsed)}）`,
     accent: '#6d28d9',
     bg: '#f5f3ff',
     border: '#ddd6fe',
@@ -494,18 +501,25 @@ export async function exportDailyReportPng(payload: ExportReportPayload): Promis
  */
 export function exportDailyReportPdf(payload: ExportReportPayload): void {
   const { todayStr, mission, todayWebCompleted, todayWords, pageProgress, score, streak } = payload;
+  const nowMs = Date.now();
   const level = getScoutLevelInfo(score);
   const blockEntries = Object.entries(mission.blocks || {});
-  const totalBlockSec = blockEntries.reduce((sum, [, b]) => sum + (b.elapsedSec || 0), 0);
+  const totalBlockSec = blockEntries.reduce(
+    (sum, [, b]) => sum + getLiveElapsedSec(b?.elapsedSec, b?.runningSinceMs, nowMs),
+    0
+  );
   const vt = mission.vocabTimers || {
-    morning: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.morning) },
-    afternoon: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.afternoon) },
-    night: { elapsedSec: 0, completed: Boolean(mission.vocabChecks?.night) },
+    morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.morning) },
+    afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.afternoon) },
+    night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(mission.vocabChecks?.night) },
   };
   const totalVocabSec =
-    (vt.morning?.elapsedSec || 0) +
-    (vt.afternoon?.elapsedSec || 0) +
-    (vt.night?.elapsedSec || 0);
+    getLiveElapsedSec(vt.morning?.elapsedSec, vt.morning?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.afternoon?.elapsedSec, vt.afternoon?.runningSinceMs, nowMs) +
+    getLiveElapsedSec(vt.night?.elapsedSec, vt.night?.runningSinceMs, nowMs);
+  const b1Elapsed = getLiveElapsedSec(mission.blocks?.block_school?.elapsedSec, mission.blocks?.block_school?.runningSinceMs, nowMs);
+  const b2Elapsed = getLiveElapsedSec(mission.blocks?.block_web?.elapsedSec, mission.blocks?.block_web?.runningSinceMs, nowMs);
+  const b3Elapsed = getLiveElapsedSec(mission.blocks?.block_preview?.elapsedSec, mission.blocks?.block_preview?.runningSinceMs, nowMs);
   const vocabDoneCount =
     (mission.vocabChecks?.morning ? 1 : 0) +
     (mission.vocabChecks?.afternoon ? 1 : 0) +
@@ -583,7 +597,7 @@ export function exportDailyReportPdf(payload: ExportReportPayload): void {
     </div>
 
     <div class="sec s1">
-      <h3>区块一 · 学校复习与作业（用时 ${esc(formatElapsedHuman(mission.blocks?.block_school?.elapsedSec || 0))}）</h3>
+      <h3>区块一 · 学校复习与作业（用时 ${esc(formatElapsedHuman(b1Elapsed))}）</h3>
       ${
         schoolItems.length > 0
           ? schoolItems
@@ -597,7 +611,7 @@ export function exportDailyReportPdf(payload: ExportReportPayload): void {
     </div>
 
     <div class="sec">
-      <h3>区块二 · 网站刷题 + 希腊语私教课（用时 ${esc(formatElapsedHuman(mission.blocks?.block_web?.elapsedSec || 0))}）</h3>
+      <h3>区块二 · 网站刷题 + 希腊语私教课（用时 ${esc(formatElapsedHuman(b2Elapsed))}）</h3>
       <p><strong>网站刷题：</strong>今日已完成 ${todayWebCompleted.length} / 8 个模块</p>
       ${
         tutorLog
@@ -607,7 +621,7 @@ export function exportDailyReportPdf(payload: ExportReportPayload): void {
     </div>
 
     <div class="sec s3">
-      <h3>区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 ${esc(formatElapsedHuman(mission.blocks?.block_preview?.elapsedSec || 0))}）</h3>
+      <h3>区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 ${esc(formatElapsedHuman(b3Elapsed))}）</h3>
       ${
         previews.length > 0
           ? previews
