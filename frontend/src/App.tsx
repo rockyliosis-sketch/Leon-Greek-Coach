@@ -5,6 +5,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import { lazy, Suspense, useState } from 'react';
 
 import ErrorBoundary from './components/ErrorBoundary';
+import { GlobalTimerWidget } from './components/GlobalTimerWidget';
 
 const StudentApp = lazy(() => import('./pages/student/StudentApp'));
 const HistoryStoryHall = lazy(() => import('./pages/student/HistoryStoryHall'));
@@ -58,6 +59,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <GlobalTimerWidget />
       </Router>
     </ErrorBoundary>
   );

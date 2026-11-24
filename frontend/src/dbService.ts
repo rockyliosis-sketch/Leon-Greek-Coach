@@ -306,7 +306,20 @@ export const subscribeToSharedState = (
   // 内容没变就不再往上推, 这些「自己写自己触发」的重算全部消失。
   let lastSignature = '';
 
-  return onSnapshot(
+  const onLocalUpdate = () => {
+    const next = getInitialLocalState();
+    let signature = '';
+    try { signature = JSON.stringify(next); } catch (e) { signature = ''; }
+    if (!signature || signature !== lastSignature) {
+      lastSignature = signature;
+      onUpdate(next);
+    }
+  };
+  if (typeof window !== 'undefined') {
+    window.addEventListener('leon-shared-state-updated', onLocalUpdate);
+  }
+
+  const unsubSnapshot = onSnapshot(
     docRef,
     { includeMetadataChanges: true },
     (snapshot) => {
@@ -372,6 +385,13 @@ export const subscribeToSharedState = (
       }
     }
   );
+
+  return () => {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('leon-shared-state-updated', onLocalUpdate);
+    }
+    unsubSnapshot();
+  };
 };
 
 const persistUpdatesToLocalStorage = (updates: Partial<SharedState>) => {
@@ -421,6 +441,9 @@ const persistUpdatesToLocalStorage = (updates: Partial<SharedState>) => {
 export const saveSharedState = async (updates: Partial<SharedState>) => {
   // 1. 同步立即写入 localStorage，防止刷新/关闭标签/切后台导致未落盘丢失
   persistUpdatesToLocalStorage(updates);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('leon-shared-state-updated'));
+  }
 
   const docRef = doc(db, "leon_greek_coach", "shared_state");
   try {
