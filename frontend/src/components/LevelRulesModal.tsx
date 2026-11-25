@@ -174,7 +174,7 @@ export const LevelRulesModal: React.FC<LevelRulesModalProps> = ({
                 color: dailyRewardClaimedToday ? '#047857' : '#1d4ed8',
               }}
             >
-              今日已获 {dailyXpBreakdown ? dailyXpBreakdown.earnedToday : 0} / 20 XP
+              今日已获 {dailyXpBreakdown ? dailyXpBreakdown.earnedToday : 0} / {dailyXpBreakdown ? dailyXpBreakdown.maxDaily : 20} XP
             </span>
           </div>
 
@@ -211,6 +211,51 @@ export const LevelRulesModal: React.FC<LevelRulesModalProps> = ({
                 </strong>
               </div>
             ))}
+          </div>
+
+          {/* Consecutive Full-Score Combo Multiplier Rule */}
+          <div
+            style={{
+              marginTop: 10,
+              padding: '10px 12px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
+              border: '1px solid #fcd34d',
+              fontSize: 12.5,
+              color: '#78350f',
+              lineHeight: 1.6,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
+              <strong style={{ fontSize: 13, color: '#92400e' }}>
+                连续满分 Combo 倍率加奖（最高锁定 2.0× = 40 XP/天）
+              </strong>
+              {dailyXpBreakdown && (
+                <span
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 800,
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                    background: '#ffffff',
+                    border: '1px solid #f59e0b',
+                    color: '#b45309',
+                  }}
+                >
+                  今日冲击第 {dailyXpBreakdown.comboDay} 天 · {dailyXpBreakdown.comboMultiplier.toFixed(1)}×（满分 {dailyXpBreakdown.maxDaily} XP）
+                </span>
+              )}
+            </div>
+            <div>
+              连续每日达成 20 分满分：<strong>第 1 天 1.0×（20 分）</strong> → <strong>第 2 天 1.1×（22 分）</strong> → <strong>第 3 天 1.2×（24 分）</strong> → 每天递增 0.1× → <strong>第 11 天起锁定 2.0×（40 分）</strong>。若中断 1 天未满 20 分，则下次满分从第 1 天 1.0× 重新累计。
+            </div>
+            {dailyXpBreakdown && dailyXpBreakdown.comboBonusXp > 0 && (
+              <div style={{ marginTop: 4, fontWeight: 700, color: dailyXpBreakdown.comboBonusAwarded ? '#047857' : '#b45309' }}>
+                {dailyXpBreakdown.comboBonusAwarded
+                  ? `今日连击加奖 +${dailyXpBreakdown.comboBonusXp} XP 已自动到账！`
+                  : `今日达成 20 分基础满分后，将自动再加奖 +${dailyXpBreakdown.comboBonusXp} XP！`}
+              </div>
+            )}
           </div>
         </div>
 

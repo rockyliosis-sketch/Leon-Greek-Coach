@@ -3194,10 +3194,16 @@ const DailyMissionHall: React.FC = () => {
 
             {/* Progress bar */}
             <div style={{ marginTop: 18 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
-                <span>今日总通关进度（今日满分 20 XP）</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, fontSize: 13, fontWeight: 700, marginBottom: 6 }}>
                 <span>
-                  {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）· 今日已获 {dailyXpBreakdown.earnedToday} / 20 XP
+                  今日总通关进度（满分 {dailyXpBreakdown.maxDaily} XP
+                  {dailyXpBreakdown.comboMultiplier > 1
+                    ? ` · 连续第 ${dailyXpBreakdown.comboDay} 天 ${dailyXpBreakdown.comboMultiplier.toFixed(1)}× Combo`
+                    : ' · 连续满分次日起 1.1× 起递增至 2.0×'}
+                  ）
+                </span>
+                <span>
+                  {progressPct}%（{doneCheckUnits} / {totalCheckUnits}）· 今日已获 {dailyXpBreakdown.earnedToday} / {dailyXpBreakdown.maxDaily} XP
                 </span>
               </div>
               <div style={{ height: 10, borderRadius: 999, background: 'rgba(255,255,255,0.24)', overflow: 'hidden' }}>

@@ -5045,12 +5045,53 @@ export default function StudentApp() {
       try { rewards = JSON.parse(localStorage.getItem('leon_daily_rewards_awarded') || '{}'); } catch (e) {}
       const drillsRewardKey = `${dateStr}:drills`;
       if (!rewards[drillsRewardKey]) {
-        const nextScore = score + 4;
+        let addedXp = 4;
         rewards[drillsRewardKey] = true;
+        // 若完成刷题后今日 5 项基础满分（20分）已全部集齐，顺便核算并立即发放连续满分 Combo 倍率加奖
+        const allFiveDone = Boolean(
+          rewards[`${dateStr}:drills`] &&
+            rewards[`${dateStr}:history`] &&
+            rewards[`${dateStr}:vocab_3x`] &&
+            rewards[`${dateStr}:vocab_30m`] &&
+            rewards[`${dateStr}:blocks_120m`]
+        );
+        let comboText = '';
+        if (allFiveDone) {
+          rewards[`${dateStr}:full_20`] = true;
+          if (!rewards[`${dateStr}:combo_bonus`]) {
+            // 向前统计连续满分天数
+            let prior = 0;
+            const [yy, mm, dd] = dateStr.split('-').map(Number);
+            const dt = new Date(yy, (mm || 1) - 1, dd || 1);
+            for (let i = 0; i < 60; i++) {
+              dt.setDate(dt.getDate() - 1);
+              const dStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+              const wasFull = Boolean(
+                rewards[`${dStr}:full_20`] ||
+                  (rewards[`${dStr}:drills`] &&
+                    rewards[`${dStr}:history`] &&
+                    rewards[`${dStr}:vocab_3x`] &&
+                    rewards[`${dStr}:vocab_30m`] &&
+                    rewards[`${dStr}:blocks_120m`])
+              );
+              if (wasFull) prior++;
+              else break;
+            }
+            const comboDay = prior + 1;
+            const mult = Math.min(2.0, Number((1.0 + 0.1 * (comboDay - 1)).toFixed(1)));
+            const bonus = Math.max(0, Math.round(20 * mult) - 20);
+            rewards[`${dateStr}:combo_bonus`] = true;
+            if (bonus > 0) {
+              addedXp += bonus;
+              comboText = `\n🔥 连续第 ${comboDay} 天 20 分满分 Combo（${mult.toFixed(1)}×），额外加奖 +${bonus} XP！`;
+            }
+          }
+        }
+        const nextScore = score + addedXp;
         updates.score = nextScore;
         updates.daily_rewards_awarded = rewards;
         setScore(nextScore);
-        pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心刷题模块，自动获得 +4 XP！\n回到「今日学习通关首页」继续背单词、听历史与三大区块，今日满分可达 20 XP！\n当前总积分: ${nextScore} XP`;
+        pointsEarnedText = `\n🌟 太棒了！今天你已完成了全部八大核心刷题模块，自动获得 +4 XP！${comboText}\n当前总积分: ${nextScore} XP`;
       } else {
         pointsEarnedText = `\n🌟 太棒了！今天八大核心刷题模块全部通关（今日刷题 +4 XP 已到账）！\n当前总积分: ${score} XP`;
       }
@@ -9227,7 +9268,7 @@ export default function StudentApp() {
                       4. 三大攻坚区块全部完成且满 40 分钟/区块（共 120 分钟）：<strong>+10 XP</strong>
                     </p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: '6px 0 0 0', fontStyle: 'italic' }}>
-                      * 各项奖励每天限领 1 次，达成后自动入账，一天满分可达 20 XP。
+                      * 连续每日 20 分满分触发 Combo 倍率：第 1 天 1.0×（20 分），第 2 天 1.1×（22 分），每天 +0.1×，第 11 天起锁定 2.0×（40 分）；若断签则回第 1 天 1.0× 重新开始。
                     </p>
                   </div>
                 </div>

@@ -263,18 +263,77 @@ export interface DailyXpMilestoneItem {
 
 export interface DailyXpBreakdown {
   items: DailyXpMilestoneItem[];
+  earnedBaseToday: number;
+  comboBonusAwarded: boolean;
+  comboBonusXp: number;
+  comboDay: number;
+  comboMultiplier: number;
+  priorFullScoreStreak: number;
   earnedToday: number;
+  maxBaseDaily: number;
   maxDaily: number;
 }
 
+/** 判断某一天是否达成 20 分基础满分 */
+export function isFullScoreDay(
+  dailyRewardsAwarded: Record<string, boolean> | undefined,
+  dateStr: string
+): boolean {
+  if (!dailyRewardsAwarded) return false;
+  if (dailyRewardsAwarded[`${dateStr}:full_20`]) return true;
+  return Boolean(
+    dailyRewardsAwarded[`${dateStr}:drills`] &&
+      dailyRewardsAwarded[`${dateStr}:history`] &&
+      dailyRewardsAwarded[`${dateStr}:vocab_3x`] &&
+      dailyRewardsAwarded[`${dateStr}:vocab_30m`] &&
+      dailyRewardsAwarded[`${dateStr}:blocks_120m`]
+  );
+}
+
+/** 计算截至昨天（不含今天）的连续 20 分满分天数，以及今日若满分的连击天数与倍率 */
+export function getFullScoreComboInfo(
+  dailyRewardsAwarded: Record<string, boolean> | undefined,
+  todayStr: string
+): {
+  priorFullScoreStreak: number;
+  comboDay: number;
+  multiplier: number;
+  comboBonusXp: number;
+  maxDailyWithCombo: number;
+} {
+  let prior = 0;
+  let cursor = addDaysStr(todayStr, -1);
+  for (let i = 0; i < 60; i++) {
+    if (isFullScoreDay(dailyRewardsAwarded, cursor)) {
+      prior++;
+      cursor = addDaysStr(cursor, -1);
+    } else {
+      break;
+    }
+  }
+  const comboDay = prior + 1;
+  // 第 1 天 1.0x，第 2 天 1.1x ... 第 11 天起锁定 2.0x
+  const multiplier = Math.min(2.0, Number((1.0 + 0.1 * (comboDay - 1)).toFixed(1)));
+  const maxDailyWithCombo = Math.round(20 * multiplier);
+  const comboBonusXp = Math.max(0, maxDailyWithCombo - 20);
+  return {
+    priorFullScoreStreak: prior,
+    comboDay,
+    multiplier,
+    comboBonusXp,
+    maxDailyWithCombo,
+  };
+}
+
 /**
- * 统一核算每日 20 分积分规则（每项每天限领 1 次，绝不重复加分）：
+ * 统一核算每日 20 分积分规则 + 连续满分 Combo 倍率（每项每天限领 1 次，绝不重复加分）：
  * 1. 每日网站刷题（8 大核心模块全部完成）：+4 XP
  * 2. 希腊历史故事（听 1 集及以上）：+1 XP
  * 3. 完成 3 次背单词打卡：+4 XP
  * 4. 3 次背单词累计满 30 分钟（1800 秒）：+1 XP
  * 5. 三大攻坚区块全部完成且累计达标（平日 3×40=120 分钟）：+10 XP
- * 合计每日满分：20 XP
+ * 基础满分：20 XP
+ * 连续满分 Combo：第1天 1.0x (20分) → 第2天 1.1x (22分) → ... → 第11天起锁定 2.0x (40分)；中断则回第1天 1.0x。
  */
 export function evaluateDailyXpRewards(params: {
   todayStr: string;
@@ -306,6 +365,8 @@ export function evaluateDailyXpRewards(params: {
   const vocab3xKey = `${todayStr}:vocab_3x`;
   const vocab30mKey = `${todayStr}:vocab_30m`;
   const blocksKey = `${todayStr}:blocks_120m`;
+  const full20Key = `${todayStr}:full_20`;
+  const comboBonusKey = `${todayStr}:combo_bonus`;
 
   const drillsEligible = CORE_DRILL_MODULES.every((m) => completedModules.includes(m));
   const historyEligible = Boolean(
@@ -363,13 +424,36 @@ export function evaluateDailyXpRewards(params: {
     };
   });
 
-  const earnedToday = items.reduce((sum, it) => sum + (it.awarded ? it.points : 0), 0);
+  const earnedBaseToday = items.reduce((sum, it) => sum + (it.awarded ? it.points : 0), 0);
+  const comboInfo = getFullScoreComboInfo(nextDailyRewardsAwarded, todayStr);
+
+  // 当基础 5 项全部达成（满 20 分），记录 full_20 并发放当日 Combo 倍率加奖（限 1 次）
+  const reachedFull20 = earnedBaseToday >= 20;
+  if (reachedFull20) {
+    nextDailyRewardsAwarded[full20Key] = true;
+    if (!existing[comboBonusKey]) {
+      if (comboInfo.comboBonusXp > 0) {
+        newlyEarnedXp += comboInfo.comboBonusXp;
+      }
+      nextDailyRewardsAwarded[comboBonusKey] = true;
+    }
+  }
+
+  const comboBonusAwarded = Boolean(nextDailyRewardsAwarded[comboBonusKey]);
+  const earnedToday = earnedBaseToday + (comboBonusAwarded ? comboInfo.comboBonusXp : 0);
 
   return {
     breakdown: {
       items,
+      earnedBaseToday,
+      comboBonusAwarded,
+      comboBonusXp: comboInfo.comboBonusXp,
+      comboDay: comboInfo.comboDay,
+      comboMultiplier: comboInfo.multiplier,
+      priorFullScoreStreak: comboInfo.priorFullScoreStreak,
       earnedToday,
-      maxDaily: 20,
+      maxBaseDaily: 20,
+      maxDaily: comboInfo.maxDailyWithCombo,
     },
     newlyEarnedXp,
     nextDailyRewardsAwarded,
