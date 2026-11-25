@@ -288,116 +288,332 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
         </div>
       </div>
 
-      {/* Detailed Content Output per Block */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, marginBottom: todayWords.length > 0 ? 16 : 0 }}>
-        {/* Block 1 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(240, 253, 250, 0.92)', border: '1px solid #99f6e4' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#0f766e', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src="/images/ui/icon_block_school.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块一 · 学校复习与作业（用时 {formatElapsedHuman(b1Elapsed)}）
-          </div>
-          {schoolItems.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {schoolItems.map((it) => (
-                <div key={it.subject} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '7px 10px', borderRadius: 10, border: '1px solid #ccfbf1' }}>
-                  <div style={{ fontWeight: 800, color: '#0f766e' }}>
-                    {it.subject} · P.{it.fromPage}{it.toPage > it.fromPage ? `-${it.toPage}` : ''}
-                    {it.questionMarks ? ` · 画了 ${it.questionMarks} 个 ?` : ''}
+      {/* Detailed Content Output per Block — Bento 2+1 Layout (Row 1: Block 1 + Block 2, Row 2: Block 3 Full-Width) */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: todayWords.length > 0 ? 16 : 0 }}>
+        {/* Row 1: Block 1 & Block 2 Side-by-Side (50% / 50%) */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14, alignItems: 'stretch' }}>
+          {/* Block 1 Output */}
+          <div style={{ padding: 16, borderRadius: 16, background: 'rgba(240, 253, 250, 0.94)', border: '1px solid #99f6e4', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: '#0f766e', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <img src="/images/ui/icon_block_school.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                区块一 · 学校复习与作业
+              </div>
+              <span style={{ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 999, background: '#ccfbf1', color: '#0f766e' }}>
+                用时 {formatElapsedHuman(b1Elapsed)}
+              </span>
+            </div>
+            {schoolItems.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {schoolItems.map((it) => (
+                  <div key={it.subject} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #ccfbf1', boxShadow: '0 1px 3px rgba(15, 118, 110, 0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                      <span style={{ fontWeight: 800, color: '#0f766e', fontSize: 13 }}>
+                        {it.subject} · P.{it.fromPage}{it.toPage > it.fromPage ? `-${it.toPage}` : ''}
+                      </span>
+                      {it.questionMarks ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#fef3c7', color: '#b45309' }}>
+                          画了 {it.questionMarks} 个 ?
+                        </span>
+                      ) : null}
+                    </div>
+                    {it.hwActions && it.hwActions.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+                        {it.hwActions.map((act) => (
+                          <span
+                            key={act}
+                            style={{
+                              fontSize: 11.5,
+                              fontWeight: 600,
+                              padding: '2px 8px',
+                              borderRadius: 999,
+                              background: '#f0fdfa',
+                              border: '1px solid #99f6e4',
+                              color: '#115e59',
+                            }}
+                          >
+                            {act}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {it.note && (
+                      <div style={{ color: '#334155', marginTop: 6, fontSize: 12, background: '#f8fafc', padding: '5px 8px', borderRadius: 8 }}>
+                        <strong>备注：</strong>{it.note}
+                      </div>
+                    )}
                   </div>
-                  {it.hwActions && it.hwActions.length > 0 && (
-                    <div style={{ color: '#475569', marginTop: 2 }}>完成：{it.hwActions.join(' / ')}</div>
-                  )}
-                  {it.note && <div style={{ color: '#334155', marginTop: 2 }}>备注：{it.note}</div>}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
-              <div><strong>科目：</strong>{schoolLog?.subjects?.length ? schoolLog.subjects.join('、') : '待点选'}</div>
-              <div><strong>页码：</strong>{schoolLog?.pages || '待选择'}</div>
-              {schoolLog?.summary && <div><strong>备注：</strong>{schoolLog.summary}</div>}
-            </div>
-          )}
-        </div>
-
-        {/* Block 2 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(239, 246, 255, 0.92)', border: '1px solid #bfdbfe' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#1d4ed8', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src="/images/ui/icon_block_web.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块二 · 网站刷题 + 私教课（用时 {formatElapsedHuman(b2Elapsed)}）
-          </div>
-          <div style={{ fontSize: 13, color: '#1e293b', lineHeight: 1.6 }}>
-            <div><strong>网站刷题：</strong>今日已完成 {todayWebCompleted.length} / 8 个模块</div>
-            <div>
-              <strong>私教课复习：</strong>
-              {tutorLog
-                ? `${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''}`
-                : '待记录'}
-            </div>
-            {tutorLog?.actions && tutorLog.actions.length > 0 && (
-              <div><strong>复习动作：</strong>{tutorLog.actions.join(' / ')}</div>
-            )}
-            {tutorLog?.summary && <div><strong>复习备注：</strong>{tutorLog.summary}</div>}
-            {tutorLog?.mode === 'both' && (
-              <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px dashed #bfdbfe' }}>
-                <div>
-                  <strong>私教课预习：</strong>
-                  {tutorLog.previewBook || tutorLog.book || 'B本'} P.{tutorLog.previewFromPage ?? ''}{tutorLog.previewToPage ? `-${tutorLog.previewToPage}` : ''} · 标了 {tutorLog.previewQuestionMarks ?? tutorLog.questionMarks ?? 0} 个 ?
-                </div>
-                {tutorLog.previewActions && tutorLog.previewActions.length > 0 && (
-                  <div><strong>预习动作：</strong>{tutorLog.previewActions.join(' / ')}</div>
-                )}
-                {tutorLog.previewSummary && <div><strong>预习备注：</strong>{tutorLog.previewSummary}</div>}
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 12.5, color: '#475569', background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #ccfbf1', lineHeight: 1.6 }}>
+                <div><strong>科目：</strong>{schoolLog?.subjects?.length ? schoolLog.subjects.join('、') : '待点选'}</div>
+                <div><strong>页码：</strong>{schoolLog?.pages || '待选择'}</div>
+                {schoolLog?.summary && <div><strong>备注：</strong>{schoolLog.summary}</div>}
               </div>
             )}
           </div>
+
+          {/* Block 2 Output */}
+          <div style={{ padding: 16, borderRadius: 16, background: 'rgba(239, 246, 255, 0.94)', border: '1px solid #bfdbfe', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 13.5, fontWeight: 800, color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <img src="/images/ui/icon_block_web.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+                区块二 · 网站刷题 + 私教课
+              </div>
+              <span style={{ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 999, background: '#dbeafe', color: '#1d4ed8' }}>
+                用时 {formatElapsedHuman(b2Elapsed)}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Sub-card 1: Website Drills */}
+              <div style={{ background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#1e3a8a' }}>网站八大核心刷题</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    padding: '3px 10px',
+                    borderRadius: 999,
+                    background: todayWebCompleted.length >= 8 ? '#ecfdf5' : '#eff6ff',
+                    color: todayWebCompleted.length >= 8 ? '#047857' : '#1d4ed8',
+                    border: `1px solid ${todayWebCompleted.length >= 8 ? '#a7f3d0' : '#bfdbfe'}`,
+                  }}
+                >
+                  已完成 {todayWebCompleted.length} / 8 模块
+                </span>
+              </div>
+
+              {/* Sub-card 2: Tutor Review */}
+              <div style={{ background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #dbeafe', fontSize: 12.5, color: '#1e293b' }}>
+                <div style={{ fontWeight: 800, color: '#1d4ed8', fontSize: 13 }}>
+                  私教课复习：
+                  {tutorLog
+                    ? `${tutorLog.book || 'B本'}${tutorLog.unitNo ? ` 第${tutorLog.unitNo}单元` : ''} P.${tutorLog.fromPage ?? ''}${tutorLog.toPage ? `-${tutorLog.toPage}` : ''}`
+                    : '待记录'}
+                </div>
+                {tutorLog?.actions && tutorLog.actions.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+                    {tutorLog.actions.map((act) => (
+                      <span
+                        key={act}
+                        style={{
+                          fontSize: 11.5,
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: 999,
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          color: '#1e40af',
+                        }}
+                      >
+                        {act}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {tutorLog?.summary && (
+                  <div style={{ color: '#334155', marginTop: 6, fontSize: 12, background: '#f8fafc', padding: '5px 8px', borderRadius: 8 }}>
+                    <strong>复习备注：</strong>{tutorLog.summary}
+                  </div>
+                )}
+              </div>
+
+              {/* Sub-card 3: Tutor Preview (when mode === 'both') */}
+              {tutorLog?.mode === 'both' && (
+                <div style={{ background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #c7d2fe', fontSize: 12.5, color: '#1e293b' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                    <span style={{ fontWeight: 800, color: '#4338ca', fontSize: 13 }}>
+                      私教课预习：{tutorLog.previewBook || tutorLog.book || 'B本'} P.{tutorLog.previewFromPage ?? ''}{tutorLog.previewToPage ? `-${tutorLog.previewToPage}` : ''}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#fef3c7', color: '#b45309' }}>
+                      标了 {tutorLog.previewQuestionMarks ?? tutorLog.questionMarks ?? 0} 个 ?
+                    </span>
+                  </div>
+                  {tutorLog.previewActions && tutorLog.previewActions.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
+                      {tutorLog.previewActions.map((act) => (
+                        <span
+                          key={act}
+                          style={{
+                            fontSize: 11.5,
+                            fontWeight: 600,
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            background: '#eef2ff',
+                            border: '1px solid #c7d2fe',
+                            color: '#3730a3',
+                          }}
+                        >
+                          {act}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {tutorLog.previewSummary && (
+                    <div style={{ color: '#334155', marginTop: 6, fontSize: 12, background: '#f8fafc', padding: '5px 8px', borderRadius: 8 }}>
+                      <strong>预习备注：</strong>{tutorLog.previewSummary}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Block 3 Output */}
-        <div style={{ padding: 14, borderRadius: 14, background: 'rgba(245, 243, 255, 0.92)', border: '1px solid #ddd6fe' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#6d28d9', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
-            <img src="/images/ui/icon_block_preview.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
-            区块三 · 下节课多科预习 &amp; 练习册扫雷（用时 {formatElapsedHuman(b3Elapsed)}）
+        {/* Row 2: Block 3 Full-Width Bento Panel */}
+        <div style={{ padding: 16, borderRadius: 16, background: 'rgba(245, 243, 255, 0.94)', border: '1px solid #ddd6fe', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: '#6d28d9', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src="/images/ui/icon_block_preview.png" alt="" style={{ width: 18, height: 18, objectFit: 'contain' }} />
+              区块三 · 下节课多科预习 &amp; 练习册扫雷
+            </div>
+            <span style={{ fontSize: 11.5, fontWeight: 800, padding: '3px 9px', borderRadius: 999, background: '#ede9fe', color: '#6d28d9' }}>
+              用时 {formatElapsedHuman(b3Elapsed)}
+            </span>
           </div>
+
           {previews.length === 0 && workbookChecks.length === 0 && !oldNotesReview ? (
             <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日旧笔记复习与预习的科目、页码与中文大意</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Full-width Old Notes Review Banner */}
               {oldNotesReview && (
-                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #fde68a' }}>
-                  <div style={{ fontWeight: 800, color: '#b45309' }}>
-                    规律复习旧笔记：{oldNotesReview.subject} P.{oldNotesReview.fromPage}{oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}
+                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fffbeb', padding: '10px 14px', borderRadius: 12, border: '1px solid #fde68a', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ fontWeight: 800, color: '#b45309', fontSize: 13 }}>
+                    规律复习旧笔记：{oldNotesReview.subject} · P.{oldNotesReview.fromPage}{oldNotesReview.toPage > oldNotesReview.fromPage ? `-${oldNotesReview.toPage}` : ''}
                   </div>
-                  {oldNotesReview.actions && oldNotesReview.actions.length > 0 && (
-                    <div style={{ color: '#64748b', marginTop: 2 }}>内容：{oldNotesReview.actions.join(' / ')}</div>
-                  )}
-                  {oldNotesReview.note && <div style={{ marginTop: 2 }}>备注：{oldNotesReview.note}</div>}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 5 }}>
+                    {(oldNotesReview.actions || []).map((act) => (
+                      <span
+                        key={act}
+                        style={{
+                          fontSize: 11.5,
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: 999,
+                          background: '#ffffff',
+                          border: '1px solid #fcd34d',
+                          color: '#92400e',
+                        }}
+                      >
+                        {act}
+                      </span>
+                    ))}
+                    {oldNotesReview.note && (
+                      <span style={{ fontSize: 12, color: '#78350f', marginLeft: 4 }}>备注：{oldNotesReview.note}</span>
+                    )}
+                  </div>
                 </div>
               )}
-              {previews.map((p, idx) => (
-                <div key={p.id} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ede9fe' }}>
-                  <div style={{ fontWeight: 800, color: '#5b21b6' }}>
-                    科目 {idx + 1}：{p.subject || '未选'} {p.pages ? `(${p.pages})` : ''} · 新学 {p.newWordsCount || 0} 词
-                  </div>
-                  {p.actions && p.actions.length > 0 && (
-                    <div style={{ color: '#64748b', marginTop: 2 }}>动作：{p.actions.join(' / ')}</div>
-                  )}
-                  {p.summary && <div style={{ marginTop: 3 }}><strong>中文大意：</strong>{p.summary}</div>}
-                </div>
-              ))}
-              {workbookChecks
-                .filter((wb) => (wb.actions && wb.actions.length > 0) || wb.note)
-                .map((wb, i) => (
-                  <div key={wb.id || i} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '8px 10px', borderRadius: 10, border: '1px solid #ddd6fe' }}>
-                    <div style={{ fontWeight: 800, color: '#6d28d9' }}>
-                      练习册扫雷 {workbookChecks.length > 1 ? i + 1 : ''}：{wb.bookName} P.{wb.fromPage}{wb.toPage > wb.fromPage ? `-${wb.toPage}` : ''}
-                    </div>
-                    {wb.actions?.length > 0 && (
-                      <div style={{ color: '#64748b', marginTop: 2 }}>{wb.actions.join(' / ')}</div>
+
+              {/* 2-Column Sub-Grid: Previews (Left) & Workbook Checks (Right) */}
+              {(() => {
+                const activeWorkbooks = workbookChecks.filter((wb) => (wb.actions && wb.actions.length > 0) || wb.note);
+                const hasPreviews = previews.length > 0;
+                const hasWorkbooks = activeWorkbooks.length > 0;
+                if (!hasPreviews && !hasWorkbooks) return null;
+
+                return (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns:
+                        hasPreviews && hasWorkbooks
+                          ? 'repeat(auto-fit, minmax(300px, 1fr))'
+                          : '1fr',
+                      gap: 12,
+                      alignItems: 'start',
+                    }}
+                  >
+                    {hasPreviews && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#5b21b6', paddingLeft: 2 }}>
+                          下节课多科预习（{previews.length} 科）
+                        </div>
+                        {previews.map((p, idx) => (
+                          <div key={p.id} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #ede9fe', boxShadow: '0 1px 3px rgba(109, 40, 217, 0.05)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                              <span style={{ fontWeight: 800, color: '#5b21b6', fontSize: 13 }}>
+                                科目 {idx + 1}：{p.subject || '未选'} {p.pages ? `(${p.pages})` : ''}
+                              </span>
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: '#f5f3ff', color: '#6d28d9', border: '1px solid #ddd6fe' }}>
+                                新学 {p.newWordsCount || 0} 词
+                              </span>
+                            </div>
+                            {p.actions && p.actions.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
+                                {p.actions.map((act) => (
+                                  <span
+                                    key={act}
+                                    style={{
+                                      fontSize: 11.5,
+                                      fontWeight: 600,
+                                      padding: '2px 8px',
+                                      borderRadius: 999,
+                                      background: '#faf5ff',
+                                      border: '1px solid #e9d5ff',
+                                      color: '#6b21a8',
+                                    }}
+                                  >
+                                    {act}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {p.summary && (
+                              <div style={{ marginTop: 7, fontSize: 12.5, color: '#1e293b', background: '#f8fafc', padding: '6px 9px', borderRadius: 8, lineHeight: 1.5 }}>
+                                <strong style={{ color: '#4c1d95' }}>中文大意：</strong>{p.summary}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    {wb.note && <div style={{ marginTop: 2 }}>重点问题：{wb.note}</div>}
+
+                    {hasWorkbooks && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: '#6d28d9', paddingLeft: 2 }}>
+                          练习册扫雷（{activeWorkbooks.length} 本）
+                        </div>
+                        {activeWorkbooks.map((wb, i) => (
+                          <div key={wb.id || i} style={{ fontSize: 12.5, color: '#1e293b', background: '#fff', padding: '10px 12px', borderRadius: 12, border: '1px solid #ddd6fe', boxShadow: '0 1px 3px rgba(109, 40, 217, 0.05)' }}>
+                            <div style={{ fontWeight: 800, color: '#6d28d9', fontSize: 13 }}>
+                              练习册扫雷 {activeWorkbooks.length > 1 ? i + 1 : ''}：{wb.bookName} · P.{wb.fromPage}{wb.toPage > wb.fromPage ? `-${wb.toPage}` : ''}
+                            </div>
+                            {wb.actions?.length > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
+                                {wb.actions.map((act) => (
+                                  <span
+                                    key={act}
+                                    style={{
+                                      fontSize: 11.5,
+                                      fontWeight: 600,
+                                      padding: '2px 8px',
+                                      borderRadius: 999,
+                                      background: '#f5f3ff',
+                                      border: '1px solid #ddd6fe',
+                                      color: '#5b21b6',
+                                    }}
+                                  >
+                                    {act}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {wb.note && (
+                              <div style={{ marginTop: 7, fontSize: 12.5, color: '#1e293b', background: '#f8fafc', padding: '6px 9px', borderRadius: 8, lineHeight: 1.5 }}>
+                                <strong style={{ color: '#6d28d9' }}>重点问题：</strong>{wb.note}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
+                );
+              })()}
             </div>
           )}
         </div>
