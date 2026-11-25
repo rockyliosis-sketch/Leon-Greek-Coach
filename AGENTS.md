@@ -6,6 +6,9 @@ This document establishes the universal development, maintenance, and synchroniz
 
 ## 0. Session Start & End Protocol (MANDATORY for every agent)
 
+- **GitHub 与本地双向强同步红线（MANDATORY）**：
+  - **开工前必拉取**：每次在本地操作代码或文档前，必须先执行 `git fetch origin && git pull --rebase origin main`，确保家长在 GitHub 网页端或其它设备上的任何修改都已同步到本地。
+  - **收工必推送**：每次本地改动验证通过后，必须及时 commit 并 `git push origin main`，确保 GitHub 远端永远保持最新。
 - **开工先读 `工作进程.md`**（项目根目录）：当前状态、遗留事项、上一次停在哪。
 - **涉及 Firebase Storage / 云端资源必读 `00_重要_Firebase_Blaze方案与费用监控红线.md`**（永久保留，严禁删除）：每次上传或改动云端音频前必须先实测已用容量、汇报当前 Blaze 方案与已用占比（5 GB 存储 / 100 GB 月流量 / 5,000 次月上传），并更新该文件底部用量记录表。
 - **收工更新 `工作进程.md`**：在「三、工作记录」最上面加一节（家长问了什么 / 做了什么 / 停在哪 / 遗留），并同步「一、当前状态」「二、遗留事项」。
