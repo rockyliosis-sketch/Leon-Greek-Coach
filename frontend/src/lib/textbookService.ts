@@ -342,7 +342,16 @@ export function computeG3ChallengeSummary(
 // ---------------------------------------------------------------------------
 
 const PAGE_ASSIST_CACHE_KEY = 'leon_tb_page_assist_cache_v2';
-const WORD_ASSIST_CACHE_KEY = 'leon_tb_word_assist_cache_v2';
+const WORD_ASSIST_CACHE_KEY = 'leon_tb_word_assist_cache_v3';
+
+// 一次性自动清理旧版 v1/v2 查词本地缓存（彻底清除此前 flash-lite 复读失控残留的词条）
+try {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    if (localStorage.getItem('leon_tb_word_assist_cache_v2')) {
+      localStorage.removeItem('leon_tb_word_assist_cache_v2');
+    }
+  }
+} catch {}
 
 function readStorageMap(storageKey: string): Record<string, any> {
   try {
@@ -399,10 +408,10 @@ export function peekTextbookAssistCache<T = any>(
       return localMap[cacheKey] as T;
     }
   }
-  // Backward-compat fallback to v1 cache
-  const legacy = readStorageMap('leon_tb_assist_cache_v1');
-  if (legacy[cacheKey]) {
-    if (!isWord || !isCorruptedWordCache(legacy[cacheKey])) {
+  // 仅整页预习/讲题缓存向后兼容 v1；查词缓存不再回退旧 v1/v2，彻底杜绝旧坏缓存复活
+  if (!isWord) {
+    const legacy = readStorageMap('leon_tb_assist_cache_v1');
+    if (legacy[cacheKey]) {
       return legacy[cacheKey] as T;
     }
   }
