@@ -28,17 +28,20 @@ export interface OldNotesTimerState {
 export interface PreviewSubjectLog {
   id: string;
   subject: string;
+  bookId?: string;
   fromPage?: number;
   toPage?: number;
   pages: string;
   actions: string[];
   newWordsCount: number;
   summary: string;
+  aiKeyPoints?: string[];
 }
 
 export interface WorkbookCheckLog {
   id: string;
   bookName: string;
+  bookId?: string;
   fromPage: number;
   toPage: number;
   actions: string[];
@@ -47,11 +50,25 @@ export interface WorkbookCheckLog {
 
 export interface SchoolSubjectTaskLog {
   subject: string;
+  bookId?: string;
   fromPage: number;
   toPage: number;
   hwActions?: string[];
   questionMarks?: number;
   note?: string;
+}
+
+export interface G3ChallengeDailyLog {
+  unitId: string;
+  unitTitle: string;
+  lessonId: string;
+  lessonTitle: string;
+  tbBookId: string;
+  tbPages: string;
+  wbBookId: string;
+  wbPages: string;
+  quizPassed: boolean;
+  wordsAdded: number;
 }
 
 export interface DailyBlockLogs {
@@ -80,11 +97,13 @@ export interface DailyBlockLogs {
   };
   oldNotesReview?: {
     subject: string;
+    bookId?: string;
     fromPage: number;
     toPage: number;
     actions?: string[];
     note?: string;
   };
+  g3Challenge?: G3ChallengeDailyLog;
   previews?: PreviewSubjectLog[];
   workbookChecks?: WorkbookCheckLog[];
   workbookCheck?: {
@@ -131,6 +150,32 @@ export interface VocabSrsEntry {
   level: number;
   nextDue: string;
   lastReviewed: string;
+}
+
+export interface CircledBookWord {
+  raw: string;
+  lemma: string;
+  chinese: string;
+  formNote?: string;
+  sentence?: string;
+  date: string;
+}
+
+export interface G3GlossaProgressState {
+  completedLessonIds: string[];
+  completedUnitIds: string[];
+  /** 按日期记录当天已通关的三年级小课 ID，例如 { "2026-11-26": "g3_u7_l1" } */
+  dailyCompletedLesson?: Record<string, string>;
+  lastCompletedDate?: string;
+}
+
+export interface TextbookPreferencesState {
+  /** 记住每个科目上次选中的具体册别 ID，如 { "希腊语 (Γλώσσα)": "g4-glossa-a" } */
+  selectedBookBySubject?: Record<string, string>;
+  /** 记住每个练习册科目上次选中的具体册别 ID */
+  selectedWorkbookBySubject?: Record<string, string>;
+  /** 孩子在各课本具体页码圈出/点选过的不会生词与笔记，按 `${bookId}:${page}` 索引 */
+  circledWordsByBookPage?: Record<string, CircledBookWord[]>;
 }
 
 export interface SharedState {
@@ -187,6 +232,10 @@ export interface SharedState {
   daily_missions?: Record<string, DailyMissionRecord>;
   /** 轻量 SRS 闪卡背词进度（按归一化希腊语词索引） */
   vocab_srs?: Record<string, VocabSrsEntry>;
+  /** 三年级《语言》课本+练习册跳单元强制闯关进度 */
+  g3_glossa_progress?: G3GlossaProgressState;
+  /** 课本册别记忆与页内圈词笔记 */
+  textbook_preferences?: TextbookPreferencesState;
 }
 
 export const getInitialLocalState = (): SharedState => {
@@ -203,6 +252,19 @@ export const getInitialLocalState = (): SharedState => {
   let answer_log: SharedState['answer_log'] = [];
   let daily_missions: Record<string, DailyMissionRecord> = {};
   let vocab_srs: Record<string, VocabSrsEntry> = {};
+  let g3_glossa_progress: G3GlossaProgressState = { completedLessonIds: [], completedUnitIds: {}, dailyCompletedLesson: {} } as any;
+  g3_glossa_progress = { completedLessonIds: [], completedUnitIds: [], dailyCompletedLesson: {} };
+  let textbook_preferences: TextbookPreferencesState = {};
+
+  try {
+    const g3p = localStorage.getItem("leon_g3_glossa_progress");
+    if (g3p) g3_glossa_progress = JSON.parse(g3p);
+  } catch (e) {}
+
+  try {
+    const tbp = localStorage.getItem("leon_textbook_preferences");
+    if (tbp) textbook_preferences = JSON.parse(tbp);
+  } catch (e) {}
 
   try {
     const dm = localStorage.getItem("leon_daily_missions");
@@ -283,6 +345,8 @@ export const getInitialLocalState = (): SharedState => {
     user_feedback,
     daily_missions,
     vocab_srs,
+    g3_glossa_progress,
+    textbook_preferences,
   };
 };
 
@@ -340,6 +404,12 @@ export const subscribeToSharedState = (
           localStorage.setItem("leon_user_feedback", JSON.stringify(data.user_feedback || []));
           localStorage.setItem("leon_daily_missions", JSON.stringify(data.daily_missions || {}));
           localStorage.setItem("leon_vocab_srs", JSON.stringify(data.vocab_srs || {}));
+          if (data.g3_glossa_progress) {
+            localStorage.setItem("leon_g3_glossa_progress", JSON.stringify(data.g3_glossa_progress));
+          }
+          if (data.textbook_preferences) {
+            localStorage.setItem("leon_textbook_preferences", JSON.stringify(data.textbook_preferences));
+          }
         } catch (e) {}
         
         const next: SharedState = {
@@ -356,6 +426,8 @@ export const subscribeToSharedState = (
           user_feedback: data.user_feedback || [],
           daily_missions: data.daily_missions || {},
           vocab_srs: data.vocab_srs || {},
+          g3_glossa_progress: data.g3_glossa_progress || { completedLessonIds: [], completedUnitIds: [], dailyCompletedLesson: {} },
+          textbook_preferences: data.textbook_preferences || {},
         };
 
         // 内容一模一样就不往上推(见上面 lastSignature 的说明)
@@ -434,6 +506,12 @@ const persistUpdatesToLocalStorage = (updates: Partial<SharedState>) => {
     }
     if (updates.vocab_srs) {
       localStorage.setItem("leon_vocab_srs", JSON.stringify(updates.vocab_srs));
+    }
+    if (updates.g3_glossa_progress) {
+      localStorage.setItem("leon_g3_glossa_progress", JSON.stringify(updates.g3_glossa_progress));
+    }
+    if (updates.textbook_preferences) {
+      localStorage.setItem("leon_textbook_preferences", JSON.stringify(updates.textbook_preferences));
     }
   } catch (e) {}
 };

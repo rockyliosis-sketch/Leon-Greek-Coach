@@ -34,9 +34,10 @@ import {
 } from '../../lib/pageProgress';
 import localAlternatives from '../../data/alternative_translations.json';
 import unitKnowledgeData from '../../data/unit_knowledge_drills.json';
-import { subscribeToSharedState, saveSharedState, type DbConnectionStatus, type DailyMissionRecord } from '../../dbService';
+import { subscribeToSharedState, saveSharedState, type DbConnectionStatus, type DailyMissionRecord, type G3GlossaProgressState } from '../../dbService';
 import { createDefaultMissionRecord, getTodayStr } from '../../lib/dailyMissionHelpers';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
+import { computeG3ChallengeSummary, getBookById } from '../../lib/textbookService';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -619,6 +620,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [dailyMissions, setDailyMissions] = useState<Record<string, DailyMissionRecord>>({});
   const [cloudCustomVocab, setCloudCustomVocab] = useState<any[]>([]);
   const [completedDateModules, setCompletedDateModules] = useState<Record<string, string[]>>({});
+  const [g3GlossaProgress, setG3GlossaProgress] = useState<G3GlossaProgressState | undefined>(undefined);
 
   // Load vocabulary & activation dates from Firestore
   useEffect(() => {
@@ -670,6 +672,7 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
         setDailyMissions(state.daily_missions || {});
         setCloudCustomVocab(customVocab);
         setCompletedDateModules(state.completed_date_modules || {});
+        setG3GlossaProgress(state.g3_glossa_progress);
       },
       (status, error) => {
         setDbStatus(status);
@@ -2565,8 +2568,90 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             setCloudCustomVocab(nextCustom);
             saveSharedState({ custom_vocab: nextCustom });
           };
+          const g3Summary = computeG3ChallengeSummary(g3GlossaProgress, todayKey);
+          const g3TbBook = getBookById(g3Summary.currentUnit.tbId);
+          const g3PassedToday = Boolean(g3GlossaProgress?.dailyCompletedLesson?.[todayKey]);
+          const g3Pct = Math.round((g3Summary.completedLessonsCount / Math.max(1, g3Summary.totalLessons)) * 100);
+
           return (
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* 家长只读视图：三年级《语言 + 练习册》跳单元强制闯关进度看板 */}
+              <div
+                style={{
+                  background: '#ffffff',
+                  borderRadius: 18,
+                  padding: '16px 20px',
+                  border: '1.5px solid #ddd6fe',
+                  boxShadow: '0 4px 14px rgba(109, 40, 217, 0.06)',
+                }}
+              >
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    {g3TbBook?.coverUrl && (
+                      <img
+                        src={g3TbBook.coverUrl}
+                        alt=""
+                        style={{ width: 40, height: 54, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                      />
+                    )}
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: '#0f172a' }}>
+                        🏛️ 三年级《语言 + 练习册》跳单元补强进度（家长只读看板）
+                        <span
+                          style={{
+                            marginLeft: 8,
+                            padding: '2px 9px',
+                            borderRadius: 999,
+                            fontSize: 12,
+                            fontWeight: 800,
+                            background: g3PassedToday ? '#dcfce7' : '#fef3c7',
+                            color: g3PassedToday ? '#047857' : '#b45309',
+                          }}
+                        >
+                          {g3PassedToday ? '✓ 今日已通关' : '今日待闯关'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 13, color: '#475569', marginTop: 3 }}>
+                        当前攻克：<strong>{g3TbBook?.shortTitle} · Ενότητα {g3Summary.currentUnit.unitNo}《{g3Summary.currentUnit.titleZh}》</strong> — {g3Summary.currentLesson.title}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: '#6d28d9' }}>
+                      {g3Summary.completedUnitsCount} / {g3Summary.totalUnits} 单元（{g3Summary.completedLessonsCount} / {g3Summary.totalLessons} 课 · {g3Pct}%）
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ height: 8, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden', marginBottom: 10 }}>
+                  <div style={{ width: `${g3Pct}%`, height: '100%', background: 'linear-gradient(90deg, #7c3aed, #10b981)', transition: 'width 0.3s' }} />
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {g3Summary.orderedUnits.map((u, idx) => {
+                    const isDone = u.lessons.every((l) => (g3GlossaProgress?.completedLessonIds || []).includes(l.id));
+                    const isCurrent = u.unitId === g3Summary.currentUnit.unitId;
+                    return (
+                      <span
+                        key={u.unitId}
+                        style={{
+                          padding: '3px 9px',
+                          borderRadius: 999,
+                          fontSize: 11.5,
+                          fontWeight: 700,
+                          background: isDone ? '#dcfce7' : isCurrent ? '#ede9fe' : '#f8fafc',
+                          color: isDone ? '#047857' : isCurrent ? '#5b21b6' : '#64748b',
+                          border: isCurrent ? '1.5px solid #7c3aed' : '1px solid #e2e8f0',
+                        }}
+                      >
+                        {isDone ? '✓ ' : isCurrent ? '🔥 ' : `${idx + 1}. `}
+                        Εν.{u.unitNo} {u.titleZh.split('（')[0]}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
               <DailyStudyReport
                 todayStr={todayKey}
                 mission={rec}

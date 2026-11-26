@@ -29,9 +29,12 @@ import {
   type DailyMissionBlockState,
   type DailyMissionRecord,
   type DbConnectionStatus,
+  type G3ChallengeDailyLog,
+  type G3GlossaProgressState,
   type PreviewSubjectLog,
   type SchoolSubjectTaskLog,
   type SharedState,
+  type TextbookPreferencesState,
   type VocabSrsEntry,
   type WorkbookCheckLog,
 } from '../../dbService';
@@ -60,6 +63,9 @@ import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
 import { LevelRulesModal } from '../../components/LevelRulesModal';
+import { InteractiveTextbookViewer } from '../../components/InteractiveTextbookViewer';
+import { G3GlossaChallengePanel } from '../../components/G3GlossaChallengePanel';
+import { computeG3ChallengeSummary, getTutorBookId } from '../../lib/textbookService';
 
 interface WizardStepDef {
   title: string;
@@ -420,16 +426,15 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     bg: '#f5f3ff',
     steps: [
       {
-        title: 'Step 1：拿出 1/3 时间，有规律复习之前的旧笔记',
-        shortLabel: '用 1/3 时间按页码规律复习旧笔记（或闪卡快扫）',
-        whyShort: '只记不看 = 白查！每次拿出本区块 1/3 时间规律回头看，旧词才能真正变成你的。',
+        title: 'Step 1：三年级《语言 + 练习册》跳单元强制闯关（必过解锁下一步！）',
+        shortLabel: '跨册跳单元攻克三年级语言课文+练习册（答对3题通关）',
+        whyShort: '把三年级漏掉的 20% 实词和基础语法地基彻底补牢，四年级听课写作业才能轻松起飞！',
         checklist: [
-          '在下方选好今天复习的【科目和旧页码】，保持规律推进',
-          '拿出本区块【1/3 时间】遮住中文逐词自测，【认真看旧笔记】',
-          '记住的打 ✓，忘了的画 ○ 重点重读',
-          '在下方点选【今天复习了哪些内容】，顽固词明天区块一入库',
+          '通读下方自动摊开的【三年级课文】：遇到不熟的词【直接用手指点选】看讲解并入库',
+          '点开【本课自动关联的三年级练习册】：看懂题干要求与语法规律',
+          '完成最下方的【3 道必过闯关题】（全部答对自动亮绿灯，解锁下一步预习！）',
         ],
-        buttonText: '旧笔记复习完了，去预习明天新课',
+        buttonText: '三年级今日闯关通过，去预习明天新课 →',
         kind: 'five_min_scan',
       },
       {
@@ -491,6 +496,7 @@ const DailyMissionHall: React.FC = () => {
     }
   });
   const [earlyFinishMsg, setEarlyFinishMsg] = useState<string | null>(null);
+  const [g3GateWarn, setG3GateWarn] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
   const setActiveWizardBlock = (blockId: string | null) => {
@@ -1170,6 +1176,19 @@ const DailyMissionHall: React.FC = () => {
     };
     const liveElapsed = getLiveElapsedSec(curState.elapsedSec, curState.runningSinceMs, now);
     const curExtraMin = curState.extraMinutes || 0;
+    const curStepDef = activeBlock.steps[Math.min(curState.currentStep || 0, activeBlock.steps.length - 1)];
+
+    // Mandatory Gate for Block 3 Step 1: Grade 3 Glossa Unit-Jump Challenge!
+    if (curStepDef?.kind === 'five_min_scan') {
+      const g3Summary = computeG3ChallengeSummary(sharedState.g3_glossa_progress, todayStr);
+      const passedToday = Boolean(sharedState.g3_glossa_progress?.dailyCompletedLesson?.[todayStr]);
+      if (!passedToday && !g3Summary.allFinished) {
+        setG3GateWarn('⚠️ 请先完成下方「三年级语言必过闯关测验」（3 道题全部答对亮起绿灯），才能进入下一步预习新课哦！');
+        return;
+      }
+    }
+    setG3GateWarn(null);
+
     const nextStep = curState.currentStep + 1;
 
     if (nextStep >= activeBlock.steps.length) {
@@ -1255,6 +1274,24 @@ const DailyMissionHall: React.FC = () => {
   const handleUpdateSrs = (nextSrs: Record<string, VocabSrsEntry>) => {
     setSharedState((prev) => ({ ...prev, vocab_srs: nextSrs }));
     saveSharedState({ vocab_srs: nextSrs });
+  };
+
+  const handleUpdateTextbookPrefs = (nextPrefs: TextbookPreferencesState) => {
+    setSharedState((prev) => ({ ...prev, textbook_preferences: nextPrefs }));
+    saveSharedState({ textbook_preferences: nextPrefs });
+  };
+
+  const handlePassG3Lesson = (
+    nextG3Progress: G3GlossaProgressState,
+    dailyLog: G3ChallengeDailyLog
+  ) => {
+    setG3GateWarn(null);
+    setSharedState((prev) => ({ ...prev, g3_glossa_progress: nextG3Progress }));
+    saveSharedState({ g3_glossa_progress: nextG3Progress });
+    updateBlockLogs((prev) => ({
+      ...prev,
+      g3Challenge: dailyLog,
+    }));
   };
 
   const handleCompleteFlashcardSlot = (slot: VocabSlot, reviewedCount: number) => {
@@ -1759,54 +1796,79 @@ const DailyMissionHall: React.FC = () => {
                   </div>
 
                   {schoolItems.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                       {schoolItems.map((it) => (
                         <div
                           key={it.subject}
                           style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 10,
-                            padding: '10px 14px',
-                            borderRadius: 12,
+                            padding: '12px 14px',
+                            borderRadius: 14,
                             background: '#ffffff',
                             border: '1px solid #99f6e4',
                           }}
                         >
-                          <strong style={{ fontSize: 14, color: '#0f766e' }}>{it.subject}</strong>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-                            <NumberStepper
-                              prefix="第"
-                              suffix="页"
-                              min={1}
-                              max={300}
-                              value={it.fromPage}
-                              onChange={(v) => {
-                                const next = schoolItems.map((x) =>
-                                  x.subject === it.subject
-                                    ? { ...x, fromPage: v, toPage: Math.max(v, x.toPage) }
-                                    : x
-                                );
-                                syncSchoolItems(next);
-                              }}
-                            />
-                            <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
-                            <NumberStepper
-                              prefix="第"
-                              suffix="页"
-                              min={it.fromPage}
-                              max={300}
-                              value={it.toPage}
-                              onChange={(v) => {
-                                const next = schoolItems.map((x) =>
-                                  x.subject === it.subject ? { ...x, toPage: Math.max(x.fromPage, v) } : x
-                                );
-                                syncSchoolItems(next);
-                              }}
-                            />
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexWrap: 'wrap',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 10,
+                            }}
+                          >
+                            <strong style={{ fontSize: 15, color: '#0f766e' }}>{it.subject}</strong>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                              <NumberStepper
+                                prefix="第"
+                                suffix="页"
+                                min={1}
+                                max={300}
+                                value={it.fromPage}
+                                onChange={(v) => {
+                                  const next = schoolItems.map((x) =>
+                                    x.subject === it.subject
+                                      ? { ...x, fromPage: v, toPage: Math.max(v, x.toPage) }
+                                      : x
+                                  );
+                                  syncSchoolItems(next);
+                                }}
+                              />
+                              <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
+                              <NumberStepper
+                                prefix="第"
+                                suffix="页"
+                                min={it.fromPage}
+                                max={300}
+                                value={it.toPage}
+                                onChange={(v) => {
+                                  const next = schoolItems.map((x) =>
+                                    x.subject === it.subject ? { ...x, toPage: Math.max(x.fromPage, v) } : x
+                                  );
+                                  syncSchoolItems(next);
+                                }}
+                              />
+                            </div>
                           </div>
+
+                          <InteractiveTextbookViewer
+                            mode="review"
+                            subject={it.subject}
+                            explicitBookId={it.bookId || undefined}
+                            fromPage={it.fromPage}
+                            toPage={it.toPage}
+                            todayStr={todayStr}
+                            customVocab={sharedState.custom_vocab || []}
+                            unitStudyDates={sharedState.unit_study_dates || {}}
+                            textbookPrefs={sharedState.textbook_preferences}
+                            onSelectBookId={(bkId) => {
+                              const next = schoolItems.map((x) =>
+                                x.subject === it.subject ? { ...x, bookId: bkId } : x
+                              );
+                              syncSchoolItems(next);
+                            }}
+                            onSaveVocab={handleSaveVocab}
+                            onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
+                          />
                         </div>
                       ))}
                     </div>
@@ -2173,6 +2235,22 @@ const DailyMissionHall: React.FC = () => {
                       }
                       style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
                     />
+
+                    {getTutorBookId(tutorLog.book || 'B 本 (Ελληνικά Β΄)') && (
+                      <InteractiveTextbookViewer
+                        mode="review"
+                        subject="私教希腊语"
+                        explicitBookId={getTutorBookId(tutorLog.book || 'B 本 (Ελληνικά Β΄)')}
+                        fromPage={tutorLog.fromPage ?? Math.max(1, b1Frontier - 2)}
+                        toPage={tutorLog.toPage ?? b1Frontier}
+                        todayStr={todayStr}
+                        customVocab={sharedState.custom_vocab || []}
+                        unitStudyDates={sharedState.unit_study_dates || {}}
+                        textbookPrefs={sharedState.textbook_preferences}
+                        onSaveVocab={handleSaveVocab}
+                        onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
+                      />
+                    )}
                   </div>
 
                   {/* Highlighted Preview Checklist + Separate Preview Recorder (Shown when '预习 + 复习' is selected) */}
@@ -2327,175 +2405,56 @@ const DailyMissionHall: React.FC = () => {
                         }
                         style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
                       />
+
+                      {getTutorBookId(tutorLog.previewBook || tutorLog.book || 'B 本 (Ελληνικά Β΄)') && (
+                        <InteractiveTextbookViewer
+                          mode="preview"
+                          subject="私教希腊语"
+                          explicitBookId={getTutorBookId(tutorLog.previewBook || tutorLog.book || 'B 本 (Ελληνικά Β΄)')}
+                          fromPage={tutorLog.previewFromPage ?? b1Frontier + 1}
+                          toPage={tutorLog.previewToPage ?? b1Frontier + 2}
+                          todayStr={todayStr}
+                          customVocab={sharedState.custom_vocab || []}
+                          unitStudyDates={sharedState.unit_study_dates || {}}
+                          textbookPrefs={sharedState.textbook_preferences}
+                          studentSummary={tutorLog.previewSummary || ''}
+                          onSaveVocab={handleSaveVocab}
+                          onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
               )}
 
               {stepDef.kind === 'five_min_scan' && (
-                <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {/* 1/3 Time Old-Notes Review Timer (Auto-calculated as 1/3 of current block duration) */}
-                  <div
-                    style={{
-                      padding: 16,
-                      borderRadius: 16,
-                      background: '#fffbeb',
-                      border: '1.5px solid #fcd34d',
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: 12,
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: 13.5, fontWeight: 800, color: '#b45309' }}>
-                        旧笔记规律复习专属计时（自动按本区块 {effectiveBlockMin} 分钟的 1/3 计算：{proportionalScanMin} 分钟{oldNotesElapsed > 0 ? ` · 已复习 ${formatElapsedHuman(oldNotesElapsed)}` : ''}）
-                      </div>
-                      <div style={{ fontSize: 30, fontWeight: 800, color: '#92400e', fontVariantNumeric: 'tabular-nums' }}>
-                        {formatDurationMinSec(oldNotesRemSec)}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        type="button"
-                        onClick={handleToggleOldNotesTimer}
-                        style={{
-                          padding: '10px 18px',
-                          borderRadius: 12,
-                          border: 'none',
-                          background: oldNotesRunning ? '#d97706' : '#f59e0b',
-                          color: '#fff',
-                          fontWeight: 800,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {oldNotesRunning ? `暂停 ${proportionalScanMin} 分钟` : oldNotesElapsed > 0 ? '继续复习计时' : `开始 ${proportionalScanMin} 分钟复习`}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleResetOldNotesTimer}
-                        style={{
-                          padding: '10px 12px',
-                          borderRadius: 12,
-                          border: '1px solid #fcd34d',
-                          background: '#fff',
-                          color: '#92400e',
-                          cursor: 'pointer',
-                        }}
-                        title="按当前 1/3 时长重置计时"
-                      >
-                        <RotateCcw size={16} />
-                      </button>
-                    </div>
-                  </div>
+                <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <G3GlossaChallengePanel
+                    todayStr={todayStr}
+                    g3Progress={sharedState.g3_glossa_progress}
+                    customVocab={sharedState.custom_vocab || []}
+                    unitStudyDates={sharedState.unit_study_dates || {}}
+                    textbookPrefs={sharedState.textbook_preferences}
+                    onSaveVocab={handleSaveVocab}
+                    onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
+                    onPassLesson={handlePassG3Lesson}
+                  />
 
-                  {/* Old Notes Review Content Recorder (Subject + Page Range + Actions + Note) */}
-                  <div
-                    style={{
-                      padding: 16,
-                      borderRadius: 16,
-                      background: '#f5f3ff',
-                      border: '1.5px solid #ddd6fe',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12,
-                    }}
-                  >
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#5b21b6' }}>
-                      记录今天复习了哪些旧笔记内容（自动写入今日学习报告）：
+                  {g3GateWarn && (
+                    <div
+                      style={{
+                        padding: '12px 16px',
+                        borderRadius: 12,
+                        background: '#fef2f2',
+                        border: '2px solid #ef4444',
+                        color: '#b91c1c',
+                        fontSize: 14,
+                        fontWeight: 800,
+                      }}
+                    >
+                      {g3GateWarn}
                     </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
-                      <select
-                        value={oldNotesReview.subject}
-                        onChange={(e) =>
-                          updateBlockLogs((prev) => ({
-                            ...prev,
-                            oldNotesReview: { ...oldNotesReview, subject: e.target.value },
-                          }))
-                        }
-                        style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#fff' }}
-                      >
-                        {SCHOOL_SUBJECTS.map((s) => (
-                          <option key={s} value={s}>{s}</option>
-                        ))}
-                      </select>
-                      <NumberStepper
-                        prefix="第"
-                        suffix="页"
-                        min={1}
-                        max={300}
-                        value={oldNotesReview.fromPage}
-                        onChange={(v) =>
-                          updateBlockLogs((prev) => ({
-                            ...prev,
-                            oldNotesReview: { ...oldNotesReview, fromPage: v, toPage: Math.max(v, oldNotesReview.toPage) },
-                          }))
-                        }
-                      />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#64748b' }}>至</span>
-                      <NumberStepper
-                        prefix="第"
-                        suffix="页"
-                        min={oldNotesReview.fromPage}
-                        max={300}
-                        value={oldNotesReview.toPage}
-                        onChange={(v) =>
-                          updateBlockLogs((prev) => ({
-                            ...prev,
-                            oldNotesReview: { ...oldNotesReview, toPage: Math.max(oldNotesReview.fromPage, v) },
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                      {OLD_NOTES_REVIEW_ACTIONS.map((act) => {
-                        const checked = (oldNotesReview.actions || []).includes(act);
-                        return (
-                          <button
-                            key={act}
-                            type="button"
-                            onClick={() => {
-                              const nextActs = checked
-                                ? (oldNotesReview.actions || []).filter((a) => a !== act)
-                                : [...(oldNotesReview.actions || []), act];
-                              updateBlockLogs((prev) => ({
-                                ...prev,
-                                oldNotesReview: { ...oldNotesReview, actions: nextActs },
-                              }));
-                            }}
-                            style={{
-                              padding: '7px 12px',
-                              borderRadius: 999,
-                              border: checked ? '1.5px solid #7c3aed' : '1px solid #cbd5e1',
-                              background: checked ? '#ede9fe' : '#fff',
-                              color: checked ? '#5b21b6' : '#475569',
-                              fontSize: 13,
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {checked ? '✓ ' : '+ '}
-                            {act}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <input
-                      type="text"
-                      placeholder="选填一句：今天复习旧笔记时发现了哪些还没记住的词或知识点？"
-                      value={oldNotesReview.note || ''}
-                      onChange={(e) =>
-                        updateBlockLogs((prev) => ({
-                          ...prev,
-                          oldNotesReview: { ...oldNotesReview, note: e.target.value },
-                        }))
-                      }
-                      style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
-                    />
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -2620,6 +2579,26 @@ const DailyMissionHall: React.FC = () => {
                           )
                         }
                         style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: 14, background: '#fff' }}
+                      />
+
+                      <InteractiveTextbookViewer
+                        mode="workbook"
+                        subject={wb.bookName}
+                        isWorkbook={true}
+                        explicitBookId={wb.bookId || undefined}
+                        fromPage={wb.fromPage}
+                        toPage={wb.toPage}
+                        todayStr={todayStr}
+                        customVocab={sharedState.custom_vocab || []}
+                        unitStudyDates={sharedState.unit_study_dates || {}}
+                        textbookPrefs={sharedState.textbook_preferences}
+                        onSelectBookId={(bkId) =>
+                          syncWorkbookChecks(
+                            workbookChecks.map((x) => (x.id === wb.id ? { ...x, bookId: bkId } : x))
+                          )
+                        }
+                        onSaveVocab={handleSaveVocab}
+                        onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
                       />
                     </div>
                   ))}
@@ -2762,9 +2741,30 @@ const DailyMissionHall: React.FC = () => {
                         })}
                       </div>
 
+                      {pv.subject && (
+                        <div style={{ marginBottom: 12 }}>
+                          <InteractiveTextbookViewer
+                            mode="preview"
+                            subject={pv.subject}
+                            explicitBookId={pv.bookId || undefined}
+                            fromPage={pv.fromPage ?? 1}
+                            toPage={pv.toPage ?? 2}
+                            todayStr={todayStr}
+                            customVocab={sharedState.custom_vocab || []}
+                            unitStudyDates={sharedState.unit_study_dates || {}}
+                            textbookPrefs={sharedState.textbook_preferences}
+                            studentSummary={pv.summary || ''}
+                            onSelectBookId={(bkId) => updatePreviewRow(pv.id, { bookId: bkId })}
+                            onSaveVocab={handleSaveVocab}
+                            onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
+                            onPreviewKeyPointsReady={(pts) => updatePreviewRow(pv.id, { aiKeyPoints: pts })}
+                          />
+                        </div>
+                      )}
+
                       <div>
                         <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#5b21b6', marginBottom: 4 }}>
-                          用语音/文字写一句中文大意（这篇课文大概讲了个什么事？）：
+                          用语音/文字写一句中文大意（这篇课文大概讲了个什么事？写完即可对照课本真实要点）：
                         </label>
                         <textarea
                           rows={2}

@@ -71,6 +71,7 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
   const schoolItems = schoolLog?.items || [];
   const tutorLog = mission.blockLogs?.tutor;
   const oldNotesReview = mission.blockLogs?.oldNotesReview;
+  const g3Challenge = mission.blockLogs?.g3Challenge;
   const workbookChecks =
     mission.blockLogs?.workbookChecks && mission.blockLogs.workbookChecks.length > 0
       ? mission.blockLogs.workbookChecks
@@ -101,6 +102,11 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
           ? `；私教课【${TUTOR_MODE_LABEL[tutorLog.mode] || '备课'}】页码 ${tutorLog.pages || '未填'}，标了 ${tutorLog.questionMarks || 0} 个问号，记录：${tutorLog.summary || '无'}`
           : '')
     );
+    if (g3Challenge?.quizPassed) {
+      lines.push(
+        `• 三年级语言强制闯关：已通关 ${g3Challenge.unitTitle} · ${g3Challenge.lessonTitle}（课本 ${g3Challenge.tbPages} + 练习册 ${g3Challenge.wbPages}）`
+      );
+    }
     if (previews.length > 0) {
       lines.push(`• 区块三（下节课预习 · 共 ${previews.length} 科）：`);
       previews.forEach((p, i) => {
@@ -474,10 +480,27 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
             </span>
           </div>
 
-          {previews.length === 0 && workbookChecks.length === 0 && !oldNotesReview ? (
-            <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 填写今日旧笔记复习与预习的科目、页码与中文大意</div>
+          {previews.length === 0 && workbookChecks.length === 0 && !oldNotesReview && !g3Challenge ? (
+            <div style={{ fontSize: 13, color: '#64748b' }}>待 Leon 完成今日三年级语言闯关与下节课预习</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {/* Mandatory Grade 3 Glossa Unit-Jump Challenge Banner */}
+              {g3Challenge && (
+                <div style={{ fontSize: 12.5, color: '#1e293b', background: '#ecfdf5', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #6ee7b7', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ fontWeight: 800, color: '#065f46', fontSize: 13 }}>
+                    🏆 三年级《语言+练习册》跳单元闯关：{g3Challenge.unitTitle} · {g3Challenge.lessonTitle}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#fff', border: '1px solid #6ee7b7', color: '#047857' }}>
+                      课本 {g3Challenge.tbPages} + 练习册 {g3Challenge.wbPages}
+                    </span>
+                    <span style={{ fontSize: 11.5, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: '#10b981', color: '#fff' }}>
+                      ✓ 3题全对通关
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {/* Full-width Old Notes Review Banner */}
               {oldNotesReview && (
                 <div style={{ fontSize: 12.5, color: '#1e293b', background: '#fffbeb', padding: '10px 14px', borderRadius: 12, border: '1px solid #fde68a', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -564,7 +587,13 @@ export const DailyStudyReport: React.FC<DailyStudyReportProps> = ({
                             )}
                             {p.summary && (
                               <div style={{ marginTop: 7, fontSize: 12.5, color: '#1e293b', background: '#f8fafc', padding: '6px 9px', borderRadius: 8, lineHeight: 1.5 }}>
-                                <strong style={{ color: '#4c1d95' }}>中文大意：</strong>{p.summary}
+                                <strong style={{ color: '#4c1d95' }}>Leon 写的中文大意：</strong>{p.summary}
+                              </div>
+                            )}
+                            {p.aiKeyPoints && p.aiKeyPoints.length > 0 && (
+                              <div style={{ marginTop: 6, fontSize: 12, color: '#065f46', background: '#ecfdf5', padding: '6px 9px', borderRadius: 8, border: '1px solid #a7f3d0', lineHeight: 1.5 }}>
+                                <strong>📖 课本该页真实内容对照：</strong>
+                                {p.aiKeyPoints.join('；')}
                               </div>
                             )}
                           </div>
