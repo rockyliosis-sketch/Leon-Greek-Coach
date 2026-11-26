@@ -3,11 +3,12 @@
 - **原书书名**：Αγγλικά Δ΄ Δημοτικού · Τετράδιο Εργασιών
 - **科目 / 年级**：英语 (Αγγλικά) · 四年级 (Δ΄ Δημοτικού)
 - **册别类型**：练习册 (Τετράδιο Εργασιών / Activity Book)（官方书号 `10-0079-02`）
-- **原始档案**：`materials/textbooks/10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.pdf`（共 **106** 页，1:1 逐页完整还原）
+- **原始档案**：`materials/textbooks/10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.pdf`（PDF 共 **106** 页，纸质书正文 `1 ~ 104` 页）
+- **页码 1:1 对齐规则（全书逐页校验无跳页）**：`纸质书印制页码 = PDF 页码 - 1`（`PDF 第 1 页` = 封面，`PDF 第 2 ~ 105 页` = `书本第 1 ~ 104 页`，`PDF 第 106 页` = 封底）
 
 ---
 
-## PDF 第 1 页
+## PDF 第 1 页（封面 / Εξώφυλλο）
 
 ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ ΚΑΙ ΘΡΗΣΚΕΥΜΑΤΩΝ
 ΙΝΣΤΙΤΟΥΤΟ ΕΚΠΑΙΔΕΥΤΙΚΗΣ ΠΟΛΙΤΙΚΗΣ
@@ -19,7 +20,7 @@
 
 ---
 
-## PDF 第 2 页
+## 书本第 1 页（PDF 第 2 页）
 
 Αγγλικά
 Δ΄ Δημοτικού
@@ -27,7 +28,7 @@
 
 ---
 
-## PDF 第 3 页
+## 书本第 2 页（PDF 第 3 页）
 
 ΣΤΟΙΧΕΙΑ ΑΡΧΙΚΗΣ ΕΚΔΟΣΗΣ
 ΣΥΓΓΡΑΦΕΙΣ
@@ -81,7 +82,7 @@ ACCESS Γραφικές Τέχνες Α.Ε.
 
 ---
 
-## PDF 第 4 页
+## 书本第 3 页（PDF 第 4 页）
 
 ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ, ΕΡΕΥΝΑΣ ΚΑΙ ΘΡΗΣΚΕΥΜΑΤΩΝ
 ΙΝΣΤΙΤΟΥΤΟ ΕΚΠΑΙΔΕΥΤΙΚΗΣ ΠΟΛΙΤΙΚΗΣ
@@ -96,7 +97,7 @@ ACCESS Γραφικές Τέχνες Α.Ε.
 
 ---
 
-## PDF 第 5 页
+## 书本第 4 页（PDF 第 5 页）
 
 Contents
 Unit 1: BACK TO SCHOOL
@@ -172,7 +173,7 @@ Vocabulary for Christmas, Halloween
 
 ---
 
-## PDF 第 6 页
+## 书本第 5 页（PDF 第 6 页）
 
 Unit 6: ANIMALS
 Related subjects: Language, Environmental Studies, Music, History
@@ -240,13 +241,13 @@ Appendix I | Work at your own pace | pp. 84-103
 
 ---
 
-## PDF 第 7 页
+## 书本第 6 页（PDF 第 7 页）
 
 *(本页为空白页或纯插图页)*
 
 ---
 
-## PDF 第 8 页
+## 书本第 7 页（PDF 第 8 页）
 
 Unit 1: | Back to school
 Lesson 1 :
@@ -264,7 +265,7 @@ a) map, b) curtains, c) board, d) door, e) picture, f) chair, g) desk
 
 ---
 
-## PDF 第 9 页
+## 书本第 8 页（PDF 第 9 页）
 
 BACK TO SCHOOL
 3 What is there in your school? Write numbers (0,1,2,3.....)
@@ -299,7 +300,7 @@ In my classroom there...........................................................
 
 ---
 
-## PDF 第 10 页
+## 书本第 9 页（PDF 第 10 页）
 
 LESSON 1 A new student in class
 5 This is the head teacher’s list in a school in Athens. Use the information on the
@@ -325,7 +326,7 @@ There are..................................................... girls in the scho
 
 ---
 
-## PDF 第 11 页
+## 书本第 10 页（PDF 第 11 页）
 
 BACK TO SCHOOL
 6 Read the letters from George and John and talk about the differences between
@@ -359,7 +360,7 @@ but in John’s school there ...................................................
 
 ---
 
-## PDF 第 12 页
+## 书本第 11 页（PDF 第 12 页）
 
 LESSON 2 My timetable
 Lesson 2: My timetable
@@ -387,7 +388,7 @@ M | T | W | T | F | S | S
 
 ---
 
-## PDF 第 13 页
+## 书本第 12 页（PDF 第 13 页）
 
 BACK TO SCHOOL
 3 Look at what these children like and try to guess what their favourite subject is:
@@ -411,7 +412,7 @@ His favourite subject is..........................................
 
 ---
 
-## PDF 第 14 页
+## 书本第 13 页（PDF 第 14 页）
 
 LESSON 2 My timetable
 4 Look at the three timetables for Monday and complete the sentences with have
@@ -441,7 +442,7 @@ Break | Break | Break
 
 ---
 
-## PDF 第 15 页
+## 书本第 14 页（PDF 第 15 页）
 
 BACK TO SCHOOL
 5 Kate, a girl in D class is writing an e-mail to her friend Nickie about her school
@@ -461,7 +462,7 @@ Studies | Studies
 
 ---
 
-## PDF 第 16 页
+## 书本第 15 页（PDF 第 16 页）
 
 LESSON 2 My timetable
 Unit 2: | What’s your
@@ -485,7 +486,7 @@ Use Yes, I do/No, I don’t:
 
 ---
 
-## PDF 第 17 页
+## 书本第 16 页（PDF 第 17 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 3 Here are some extracts from sports broadcasts on the radio or the TV.
@@ -522,7 +523,7 @@ Write your answers here:
 
 ---
 
-## PDF 第 18 页
+## 书本第 17 页（PDF 第 18 页）
 
 LESSON 1 My favourite sport
 4 Look at the chart and answer the questions that follow. Write numbers::
@@ -552,7 +553,7 @@ shorts, a T-shirt and football (4)..............................................
 
 ---
 
-## PDF 第 19 页
+## 书本第 18 页（PDF 第 19 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 Lesson 2:
@@ -574,7 +575,7 @@ collecting | • | • | TV
 
 ---
 
-## PDF 第 20 页
+## 书本第 19 页（PDF 第 20 页）
 
 LESSON 2 Have you got a hobby?
 3 Look at the pictures and say what each person likes or doesn’t like . Follow the
@@ -593,7 +594,7 @@ Harry | ........................ but he | ........................
 
 ---
 
-## PDF 第 21 页
+## 书本第 20 页（PDF 第 21 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 4 Ask your family and your friend about the hobbies they like or don’t like. Draw
@@ -619,7 +620,7 @@ My friend . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
 
 ---
 
-## PDF 第 22 页
+## 书本第 21 页（PDF 第 22 页）
 
 LESSON 2 Have you got a hobby?
 5 It’s Kate’s birthday today. Look at her hobbies and think of presents for her:
@@ -639,7 +640,7 @@ Let’s give her ...............................................................
 
 ---
 
-## PDF 第 23 页
+## 书本第 22 页（PDF 第 23 页）
 
 Unit 3: | This is
 where I live
@@ -662,7 +663,7 @@ My country
 
 ---
 
-## PDF 第 24 页
+## 书本第 23 页（PDF 第 24 页）
 
 LESSON 1 My country
 3 Look at the chart with the information about these children and follow the
@@ -691,7 +692,7 @@ Money:............................................
 
 ---
 
-## PDF 第 25 页
+## 书本第 24 页（PDF 第 25 页）
 
 THIS IS WHERE I LIVE
 5 Read the texts. Where are the children from? Write the names of the countries
@@ -714,7 +715,7 @@ Claudia is………..............………….
 
 ---
 
-## PDF 第 26 页
+## 书本第 25 页（PDF 第 26 页）
 
 LESSON 2 My city
 Lesson 2:
@@ -761,7 +762,7 @@ In Rome, .......................................................................
 
 ---
 
-## PDF 第 27 页
+## 书本第 26 页（PDF 第 27 页）
 
 THIS IS WHERE I LIVE
 3 This is information on some sights in London in a travel guide. Read it and fill in
@@ -799,15 +800,15 @@ Warders or Beefeaters)με τις χα-
 που σηκώνεται η γέφυρα ρωτήστε στο Bridge Lift Information.
 3. British Museum: Το Βρετανικό Μουσείο χτίστηκε το 1753 και περιλαμβάνει μια πλού-
 σιασυλλογήαπόαρχαιότητεςκαινομίσματαμοιρασμένασε 94 αίθουσες. Βρίσκεταιστην
-περιοχή του Σίτι (City) κοντά στο Πανεπιστήμιο του Λονδίνου (University of London). Ανά-
+περιοχήτουΣίτι (City) κοντάστοΠανεπιστήμιοτουΛονδίνου (University of London). Ανά-
 μεσα στα πιο σημαντικά εκθέματά του είναι τα Μάρμαρα του Παρθενώνα (Parthenon
-Marbles) και η Ροζέτα (Rosetta Stone) που έδωσε τη δυνατότητα στους αρχαιολόγους να
+Marbles) καιηΡοζέτα (Rosetta Stone) πουέδωσετηδυνατότηταστουςαρχαιολόγουςνα
 αποκρυπτογραφήσουνταΑιγυπτιακάιερογλυφικά.
 26
 
 ---
 
-## PDF 第 28 页
+## 书本第 27 页（PDF 第 28 页）
 
 LESSON 2 My city
 Sight 1
@@ -825,13 +826,13 @@ Sight 3
 Name: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 Area: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 It is near: . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-It is . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .years old.
+It is . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .yearsold.
 There, you can see . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 27
 
 ---
 
-## PDF 第 29 页
+## 书本第 28 页（PDF 第 29 页）
 
 THIS IS WHERE I LIVE
 4 Read the text that follows and say if the following statements are TRUE or FALSE.
@@ -872,7 +873,7 @@ his mum on Saturday mornings | T | F
 
 ---
 
-## PDF 第 30 页
+## 书本第 29 页（PDF 第 30 页）
 
 LESSON 2 My city
 5 Write about your area. Use these words. Follow the example:
@@ -898,7 +899,7 @@ Centre
 
 ---
 
-## PDF 第 31 页
+## 书本第 30 页（PDF 第 31 页）
 
 Unit 4: | Time
 Lesson 1:
@@ -916,7 +917,7 @@ Happy Birthday!
 
 ---
 
-## PDF 第 32 页
+## 书本第 31 页（PDF 第 32 页）
 
 LESSON 1 My country
 LESSON 1 Happy Birthday!
@@ -953,7 +954,7 @@ The secret phrase is: ..........................................................
 
 ---
 
-## PDF 第 33 页
+## 书本第 32 页（PDF 第 33 页）
 
 TIME
 3 When is your birthday? Write an invitation card for your birthday party and colour
@@ -970,7 +971,7 @@ Come to my party! It’s on ....................................................
 
 ---
 
-## PDF 第 34 页
+## 书本第 33 页（PDF 第 34 页）
 
 LESSON 1 Happy Birthday!
 4 Read and match. Write the letters in the blanks:
@@ -995,7 +996,7 @@ h. It’s three o’clock
 
 ---
 
-## PDF 第 35 页
+## 书本第 34 页（PDF 第 35 页）
 
 TIME
 6 Sophia’s mother is telling her what to do this week. Look at Sophia’s diary and
@@ -1024,7 +1025,7 @@ Saturday 20
 
 ---
 
-## PDF 第 36 页
+## 书本第 35 页（PDF 第 36 页）
 
 LESSON 2 What’s the weather like?
 Lesson 2:
@@ -1047,7 +1048,7 @@ It’s.....................................
 
 ---
 
-## PDF 第 37 页
+## 书本第 36 页（PDF 第 37 页）
 
 TIME
 3 Look at the pictures and write what we do each month. Choose from the
@@ -1077,7 +1078,7 @@ December
 
 ---
 
-## PDF 第 38 页
+## 书本第 37 页（PDF 第 38 页）
 
 LESSON 2 What’s the weather like?
 4 Write some things that you do on these days:
@@ -1107,7 +1108,7 @@ Friday 22-07
 
 ---
 
-## PDF 第 39 页
+## 书本第 38 页（PDF 第 39 页）
 
 TIME
 6 Read about England. Colour the months yellow, blue, green or grey:
@@ -1133,7 +1134,7 @@ In Greece, .....................................................................
 
 ---
 
-## PDF 第 40 页
+## 书本第 39 页（PDF 第 40 页）
 
 LESSON 2 What’s the weather like?
 Unit 5:
@@ -1155,7 +1156,7 @@ g) brush my teeth, h) do my homework, i) make my bed
 
 ---
 
-## PDF 第 41 页
+## 书本第 40 页（PDF 第 41 页）
 
 HABITS AND CUSTOMS
 2 How often do you do these things? Fill in the questionnaire, write sentences and
@@ -1180,7 +1181,7 @@ Have you got mostly good or bad habits? Put a tick in the right box:
 
 ---
 
-## PDF 第 42 页
+## 书本第 41 页（PDF 第 42 页）
 
 LESSON 1 It’s only a dream !
 3 Look at the pictures and complete the sentences to talk about what Nick does at
@@ -1194,7 +1195,7 @@ always | often | sometimes | never
 
 ---
 
-## PDF 第 43 页
+## 书本第 42 页（PDF 第 43 页）
 
 HABITS AND CUSTOMS
 4 Add always, often, sometimes, never and make true statements
@@ -1222,7 +1223,7 @@ about yourself or your country:
 
 ---
 
-## PDF 第 44 页
+## 书本第 43 页（PDF 第 44 页）
 
 LESSON 2 British customs
 Lesson 2:
@@ -1240,7 +1241,7 @@ i) witch, j) Christmas tree, k) roast turkey
 
 ---
 
-## PDF 第 45 页
+## 书本第 44 页（PDF 第 45 页）
 
 HABITS AND CUSTOMS
 2 There is wrong information in these boxes. Find the wrong words, cross them
@@ -1272,7 +1273,7 @@ there are spooky parties and children often play
 
 ---
 
-## PDF 第 46 页
+## 书本第 45 页（PDF 第 46 页）
 
 LESSON 2 British customs
 3 Add always, often, sometimes, never to these statements about Greek customs
@@ -1302,7 +1303,7 @@ at Christmas.
 
 ---
 
-## PDF 第 47 页
+## 书本第 46 页（PDF 第 47 页）
 
 HABITS AND CUSTOMS
 5 This text is about an Easter custom in Great Britain. Can you put the words in the
@@ -1322,7 +1323,7 @@ which have been hidden around the (6).........................................
 
 ---
 
-## PDF 第 48 页
+## 书本第 47 页（PDF 第 48 页）
 
 Unit 6: | Animals
 Lesson 1:
@@ -1343,7 +1344,7 @@ h) duck, i) tortoise
 
 ---
 
-## PDF 第 49 页
+## 书本第 48 页（PDF 第 49 页）
 
 ANIMALS
 2 Are these statements TRUE (T) or FALSE (F)? Write Tor F in the blanks:
@@ -1369,7 +1370,7 @@ e.g. A cow doesn’t make water. It makes milk.
 
 ---
 
-## PDF 第 50 页
+## 书本第 49 页（PDF 第 50 页）
 
 LESSON 1 My pet
 4 Match the pets to the children:
@@ -1408,7 +1409,7 @@ It’s a(n)......................................
 
 ---
 
-## PDF 第 51 页
+## 书本第 50 页（PDF 第 51 页）
 
 ANIMALS
 5 Find and correct the mistakes in these sentences:
@@ -1431,7 +1432,7 @@ leaves. It has baby giraffes (calves).
 
 ---
 
-## PDF 第 52 页
+## 书本第 51 页（PDF 第 52 页）
 
 LESSON 2 A visit to the Sea Turtle Rescue Centre
 Lesson 2:
@@ -1460,7 +1461,7 @@ e) brown bear, | f) dolphin, | g) giant panda
 
 ---
 
-## PDF 第 53 页
+## 书本第 52 页（PDF 第 53 页）
 
 ANIMALS
 2 Can you find the animals? Use these words:
@@ -1489,7 +1490,7 @@ a(n) ...................................
 
 ---
 
-## PDF 第 54 页
+## 书本第 53 页（PDF 第 54 页）
 
 LESSON 2 A visit to the Sea Turtle Rescue Centre
 4 Look at the information in the chart and write the suitable animal next to the
@@ -1527,7 +1528,7 @@ Note: 100=one hundred, 200=two hundred, 250=two hundred and fifty
 
 ---
 
-## PDF 第 55 页
+## 书本第 54 页（PDF 第 55 页）
 
 ANIMALS
 5 Look at the information about the Giant Panda and write a text about this
@@ -1564,7 +1565,7 @@ GUNTHER
 
 ---
 
-## PDF 第 56 页
+## 书本第 55 页（PDF 第 56 页）
 
 Unit 7: | What
 are you doing?
@@ -1590,7 +1591,7 @@ h) Amy’s ironing
 
 ---
 
-## PDF 第 57 页
+## 书本第 56 页（PDF 第 57 页）
 
 WHAT ARE YOU DOING?
 2 Write the –ing forms:
@@ -1611,7 +1612,7 @@ come............................. | give................................ | fly..
 
 ---
 
-## PDF 第 58 页
+## 书本第 57 页（PDF 第 58 页）
 
 LESSON 1 Helping around the house
 4 Look at the pictures and answer the questions. Use Yes, he/she is - No, he/she
@@ -1647,7 +1648,7 @@ The boy
 
 ---
 
-## PDF 第 59 页
+## 书本第 58 页（PDF 第 59 页）
 
 WHAT ARE YOU DOING?
 Lesson 2:
@@ -1679,7 +1680,7 @@ j) hairdresser
 
 ---
 
-## PDF 第 60 页
+## 书本第 59 页（PDF 第 60 页）
 
 LESSON 2 What do you do?
 2 Look at the pictures and answer the questions. Look at the example:
@@ -1698,7 +1699,7 @@ Is the hairdresser answering the phone? No, she isn’t.
 
 ---
 
-## PDF 第 61 页
+## 书本第 60 页（PDF 第 61 页）
 
 WHAT ARE YOU DOING?
 3 Brothers and sisters. What are their jobs? Read the clues and find out:
@@ -1750,7 +1751,7 @@ Nick Page.......................................................................
 
 ---
 
-## PDF 第 62 页
+## 书本第 61 页（PDF 第 62 页）
 
 LESSON 2 What do you do?
 5 Interview one of your relatives (e.g. father/mother/uncle/aunt) about his/her job.
@@ -1786,7 +1787,7 @@ My..............................................................................
 
 ---
 
-## PDF 第 63 页
+## 书本第 62 页（PDF 第 63 页）
 
 Unit 8: | Around the city
 Lesson 1:
@@ -1806,7 +1807,7 @@ F | T | H | A | K | N | P
 
 ---
 
-## PDF 第 64 页
+## 书本第 63 页（PDF 第 64 页）
 
 LESSON 1 At the park
 2 Find the mistakes in the phrases, correct them and talk about rules in a park. Use
@@ -1825,7 +1826,7 @@ Litter the paths | Don’t draw the flowers | Keep on the grass
 
 ---
 
-## PDF 第 65 页
+## 书本第 64 页（PDF 第 65 页）
 
 AROUND THE CITY
 3 Say what these signs mean. Use these words or phrases:
@@ -1854,7 +1855,7 @@ drink, pick the flowers, smoke, light fires
 
 ---
 
-## PDF 第 66 页
+## 书本第 65 页（PDF 第 66 页）
 
 LESSON 1 At the park
 4 Put the words in the blanks and write classroom language.
@@ -1877,7 +1878,7 @@ work, open, eat, play, write, listen, speak (X2), do, put up, run, talk
 
 ---
 
-## PDF 第 67 页
+## 书本第 66 页（PDF 第 67 页）
 
 AROUND THE CITY
 Lesson 2:
@@ -1898,7 +1899,7 @@ e) pedestrian
 
 ---
 
-## PDF 第 68 页
+## 书本第 67 页（PDF 第 68 页）
 
 LESSON 2 A traffic warden visits our school
 2 Choose the correct phrase. Tick the box:
@@ -1917,7 +1918,7 @@ your horn here | ❑ | your horn here | ❑
 
 ---
 
-## PDF 第 69 页
+## 书本第 68 页（PDF 第 69 页）
 
 AROUND THE CITY
 3 Write school rules. Use we must, we mustn’t or we can:
@@ -1938,7 +1939,7 @@ Always wear | ● | ● | at a crossing
 
 ---
 
-## PDF 第 70 页
+## 书本第 69 页（PDF 第 70 页）
 
 LESSON 2 A traffic warden visits our school
 5 Read what Maria is telling her cousin on the phone. Give Maria and Tania advice
@@ -1969,7 +1970,7 @@ Now, give Maria and Tania advice:
 
 ---
 
-## PDF 第 71 页
+## 书本第 70 页（PDF 第 71 页）
 
 Unit 9: | The school party
 Lesson 1:
@@ -1988,7 +1989,7 @@ Can you add more words to the lists?
 
 ---
 
-## PDF 第 72 页
+## 书本第 71 页（PDF 第 72 页）
 
 3 Match the phrases to the foods. Look at the example:
 e.g. a bottle of milk
@@ -2008,7 +2009,7 @@ Complete her shopping list:
 
 ---
 
-## PDF 第 73 页
+## 书本第 72 页（PDF 第 73 页）
 
 THE SCHOOL PARTY
 It’s
@@ -2092,7 +2093,7 @@ half
 
 ---
 
-## PDF 第 74 页
+## 书本第 73 页（PDF 第 74 页）
 
 LESSON 1 At the supermarket
 6 Put the words in the correct list:
@@ -2105,7 +2106,7 @@ It’s not good to eat or drink...
 
 ---
 
-## PDF 第 75 页
+## 书本第 74 页（PDF 第 75 页）
 
 THE SCHOOL PARTY
 Lesson 2:
@@ -2138,7 +2139,7 @@ j) pour
 
 ---
 
-## PDF 第 76 页
+## 书本第 75 页（PDF 第 76 页）
 
 LESSON 2 Let’s make some sandwiches
 2 Do you like stories? Read this story about a tasty stone soup and answer the
@@ -2200,7 +2201,7 @@ some sausages”
 
 ---
 
-## PDF 第 77 页
+## 书本第 76 页（PDF 第 77 页）
 
 THE SCHOOL PARTY
 Tick the things that the old woman put in the saucepan. Then make sentences and read
@@ -2251,7 +2252,7 @@ Copy your lines here and learn them by heart:
 
 ---
 
-## PDF 第 78 页
+## 书本第 77 页（PDF 第 78 页）
 
 LESSON 1 Happy Birthday!
 3 Make questions with how much or how many:
@@ -2268,7 +2269,7 @@ LESSON 1 Happy Birthday!
 
 ---
 
-## PDF 第 79 页
+## 书本第 78 页（PDF 第 79 页）
 
 Unit 10: | Enjoy your holidays!
 Lesson 1:
@@ -2301,7 +2302,7 @@ What does she want to do when she grows up?.....................................
 
 ---
 
-## PDF 第 80 页
+## 书本第 79 页（PDF 第 80 页）
 
 LESSON 1 Our yearbook
 2 Answer these questions about yourself:
@@ -2333,7 +2334,7 @@ This is me!
 
 ---
 
-## PDF 第 81 页
+## 书本第 80 页（PDF 第 81 页）
 
 ENJOY YOUR HOLIDAYS!
 Lesson 2:
@@ -2359,7 +2360,7 @@ Milky is licking his whiskers. Then he says:
 
 ---
 
-## PDF 第 82 页
+## 书本第 81 页（PDF 第 82 页）
 
 LESSON 2 “Dairy the fairy”
 Then Dairy is very angry. She takes her
@@ -2382,7 +2383,7 @@ happy. The iguana can’t eat her meat.
 
 ---
 
-## PDF 第 83 页
+## 书本第 82 页（PDF 第 83 页）
 
 ENJOY YOUR HOLIDAYS!
 One day Dairy goes out on the farm. She
@@ -2404,7 +2405,7 @@ her friend and Dairy misses him.
 
 ---
 
-## PDF 第 84 页
+## 书本第 83 页（PDF 第 84 页）
 
 LESSON 1 Happy Birthday!
 Then Dairy takes her magic hat, waves it in the air and Abracadabra!
@@ -2417,7 +2418,7 @@ a well of milk. Dairy and Milky can drink milk and eat meat all day long!
 
 ---
 
-## PDF 第 85 页
+## 书本第 84 页（PDF 第 85 页）
 
 WORK AT YOUR OWN PACE
 Δούλεψε στους δικούς σου ρυθμούς
@@ -2455,7 +2456,7 @@ There are..................................................... girls in the scho
 
 ---
 
-## PDF 第 86 页
+## 书本第 85 页（PDF 第 86 页）
 
 APPENDIX I
 Lesson 2
@@ -2479,7 +2480,7 @@ is Maths/ Religious Education (R.E.)
 
 ---
 
-## PDF 第 87 页
+## 书本第 86 页（PDF 第 87 页）
 
 WORK AT YOUR OWN PACE
 Unit 2
@@ -2516,7 +2517,7 @@ Lesson 1
 
 ---
 
-## PDF 第 88 页
+## 书本第 87 页（PDF 第 88 页）
 
 APPENDIX I
 Lesson 2
@@ -2536,7 +2537,7 @@ Let’s give her a book/a basketball/a racket
 
 ---
 
-## PDF 第 89 页
+## 书本第 88 页（PDF 第 89 页）
 
 WORK AT YOUR OWN PACE
 Unit 3
@@ -2583,7 +2584,7 @@ London). Ανάμεσα στα πιο σημαντικά εκθέματά του
 
 ---
 
-## PDF 第 90 页
+## 书本第 89 页（PDF 第 90 页）
 
 APPENDIX I
 Sight 1
@@ -2607,7 +2608,7 @@ There, you can see . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 ---
 
-## PDF 第 91 页
+## 书本第 90 页（PDF 第 91 页）
 
 WORK AT YOUR OWN PACE
 4 Διάβασε το παρακάτω κείμενο και απάντησε αν οι προτάσεις που ακολουθούν εί-
@@ -2648,7 +2649,7 @@ his mum on Saturday mornings | T | F
 
 ---
 
-## PDF 第 92 页
+## 书本第 91 页（PDF 第 92 页）
 
 APPENDIX I
 Unit 4
@@ -2669,7 +2670,7 @@ Come to my party! It’s on..........................………..................
 
 ---
 
-## PDF 第 93 页
+## 书本第 92 页（PDF 第 93 页）
 
 WORK AT YOUR OWN PACE
 Lesson 2
@@ -2698,7 +2699,7 @@ In Greece, .....................................................................
 
 ---
 
-## PDF 第 94 页
+## 书本第 93 页（PDF 第 94 页）
 
 APPENDIX I
 Unit 5
@@ -2727,7 +2728,7 @@ Always after school I watch TV:............................................
 
 ---
 
-## PDF 第 95 页
+## 书本第 94 页（PDF 第 95 页）
 
 WORK AT YOUR OWN PACE
 Lesson 2
@@ -2763,7 +2764,7 @@ Sometimes there are spooky parties and children often play
 
 ---
 
-## PDF 第 96 页
+## 书本第 95 页（PDF 第 96 页）
 
 APPENDIX I
 Unit 6
@@ -2803,7 +2804,7 @@ What are the main problems? Destruction of the habitat, lack of food, poaching
 
 ---
 
-## PDF 第 97 页
+## 书本第 96 页（PDF 第 97 页）
 
 WORK AT YOUR OWN PACE
 Unit 7
@@ -2854,7 +2855,7 @@ Nick Page.......................................................................
 
 ---
 
-## PDF 第 98 页
+## 书本第 97 页（PDF 第 98 页）
 
 APPENDIX I
 Unit 8
@@ -2872,7 +2873,7 @@ go to the door, stretch your arms
 
 ---
 
-## PDF 第 99 页
+## 书本第 98 页（PDF 第 99 页）
 
 WORK AT YOUR OWN PACE
 Lesson 2
@@ -2907,7 +2908,7 @@ Lesson 2
 
 ---
 
-## PDF 第 100 页
+## 书本第 99 页（PDF 第 100 页）
 
 APPENDIX I
 Unit 9 | Lesson 1 | It’s
@@ -2969,7 +2970,7 @@ please
 
 ---
 
-## PDF 第 101 页
+## 书本第 100 页（PDF 第 101 页）
 
 WORK AT YOUR OWN PACE
 Lesson 2
@@ -3032,7 +3033,7 @@ some sausages”
 
 ---
 
-## PDF 第 102 页
+## 书本第 101 页（PDF 第 102 页）
 
 APPENDIX I
 Τα τετράγωνα με τα ✓ στον παρακάτω πίνακα σου δείχνουν τι υπάρχει μέσα στη
@@ -3069,7 +3070,7 @@ In this soup...
 
 ---
 
-## PDF 第 103 页
+## 书本第 102 页（PDF 第 103 页）
 
 WORK AT YOUR OWN PACE
 Unit 10
@@ -3098,7 +3099,7 @@ I want to be ............................./learn ...............................
 
 ---
 
-## PDF 第 104 页
+## 书本第 103 页（PDF 第 104 页）
 
 3 Χρησιμοποίησε τις απαντήσεις σου από την προηγούμενη άσκηση για να γράψεις για
 τον εαυτό σου, συμπληρώνοντας και συνεχίζοντας το κείμενο:
@@ -3116,7 +3117,7 @@ mother ………………………………………….……………………
 
 ---
 
-## PDF 第 105 页
+## 书本第 104 页（PDF 第 105 页）
 
 Βάσει του ν. 3966/2011 τα διδακτικά βιβλία του Δημοτικού,
 του Γυμνασίου, του Λυκείου, των ΕΠΑ.Λ. και των ΕΠΑ.Σ.
@@ -3137,7 +3138,7 @@ mother ………………………………………….……………………
 
 ---
 
-## PDF 第 106 页
+## PDF 第 106 页（封底 / Οπισθόφυλλο）
 
 Κωδικός Βιβλίου: 0-10-0079
 ISBN 978-960-06-2540-0

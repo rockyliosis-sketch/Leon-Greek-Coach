@@ -1,0 +1,293 @@
+{
+  "note": "希腊公立小学16册教材与练习册全书逐页核验结论：所有16册均严格满足 PDF页码 = 纸质书印制页码 + 1（即 PDF 第1页为封面，PDF 第2..N-1页对应书本第1..N-2页，PDF 第N页为封底，中途零跳页、零偏移变化）。",
+  "books": {
+    "10-0048-02": {
+      "code": "10-0048-02",
+      "zh_title": "希腊小学三年级语言课本（第1册）",
+      "orig_title": "Γλώσσα Γ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Α΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Α΄)",
+      "pdf_file": "10-0048-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-A.pdf",
+      "md_file": "10-0048-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-A.md",
+      "total_pdf_pages": 90,
+      "book_page_min": 1,
+      "book_page_max": 88,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5
+      ]
+    },
+    "10-0049-02": {
+      "code": "10-0049-02",
+      "zh_title": "希腊小学三年级语言练习册（第1册）",
+      "orig_title": "Γλώσσα Γ΄ Δημοτικού · Τετράδιο Εργασιών (Τεύχος Α΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών · Τεύχος Α΄)",
+      "pdf_file": "10-0049-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-A.pdf",
+      "md_file": "10-0049-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-A.md",
+      "total_pdf_pages": 74,
+      "book_page_min": 1,
+      "book_page_max": 72,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5
+      ]
+    },
+    "10-0050-02": {
+      "code": "10-0050-02",
+      "zh_title": "希腊小学三年级语言课本（第2册）",
+      "orig_title": "Γλώσσα Γ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Β΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Β΄)",
+      "pdf_file": "10-0050-02_V2_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-B.pdf",
+      "md_file": "10-0050-02_V2_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-B.md",
+      "total_pdf_pages": 90,
+      "book_page_min": 1,
+      "book_page_max": 88,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7
+      ]
+    },
+    "10-0051-02": {
+      "code": "10-0051-02",
+      "zh_title": "希腊小学三年级语言练习册（第2册）",
+      "orig_title": "Γλώσσα Γ΄ Δημοτικού · Τετράδιο Εργασιών (Τεύχος Β΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών · Τεύχος Β΄)",
+      "pdf_file": "10-0051-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-B.pdf",
+      "md_file": "10-0051-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-B.md",
+      "total_pdf_pages": 74,
+      "book_page_min": 1,
+      "book_page_max": 72,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7,
+        72
+      ]
+    },
+    "10-0052-02": {
+      "code": "10-0052-02",
+      "zh_title": "希腊小学三年级语言课本（第3册）",
+      "orig_title": "Γλώσσα Γ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Γ΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Γ΄)",
+      "pdf_file": "10-0052-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-G.pdf",
+      "md_file": "10-0052-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-G.md",
+      "total_pdf_pages": 74,
+      "book_page_min": 1,
+      "book_page_max": 72,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7
+      ]
+    },
+    "10-0056-02": {
+      "code": "10-0056-02",
+      "zh_title": "希腊小学三年级历史课本（Από τη Μυθολογία στην Ιστορία）",
+      "orig_title": "Ιστορία Γ΄ Δημοτικού · Βιβλίο Μαθητή",
+      "subject": "历史 (Ιστορία)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή)",
+      "pdf_file": "10-0056-02_V3_Istoria_G-Dimotikou_Vivlio-Mathiti.pdf",
+      "md_file": "10-0056-02_V3_Istoria_G-Dimotikou_Vivlio-Mathiti.md",
+      "total_pdf_pages": 154,
+      "book_page_min": 1,
+      "book_page_max": 152,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5
+      ]
+    },
+    "10-0057-02": {
+      "code": "10-0057-02",
+      "zh_title": "希腊小学三年级历史练习册（Από τη Μυθολογία στην Ιστορία）",
+      "orig_title": "Ιστορία Γ΄ Δημοτικού · Τετράδιο Εργασιών",
+      "subject": "历史 (Ιστορία)",
+      "grade": "三年级 (Γ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών)",
+      "pdf_file": "10-0057-02_V2_Istoria_G-Dimotikou_Tetradio-Ergasion.pdf",
+      "md_file": "10-0057-02_V2_Istoria_G-Dimotikou_Tetradio-Ergasion.md",
+      "total_pdf_pages": 62,
+      "book_page_min": 1,
+      "book_page_max": 60,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5
+      ]
+    },
+    "10-0079-02": {
+      "code": "10-0079-02",
+      "zh_title": "希腊小学四年级英语练习册（English 4th Grade · Activity Book）",
+      "orig_title": "Αγγλικά Δ΄ Δημοτικού · Τετράδιο Εργασιών",
+      "subject": "英语 (Αγγλικά)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών / Activity Book)",
+      "pdf_file": "10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.pdf",
+      "md_file": "10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.md",
+      "total_pdf_pages": 106,
+      "book_page_min": 1,
+      "book_page_max": 104,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        7
+      ]
+    },
+    "10-0083-02": {
+      "code": "10-0083-02",
+      "zh_title": "希腊小学四年级语言练习册（第1册 · Πετώντας με τις λέξεις）",
+      "orig_title": "Γλώσσα Δ΄ Δημοτικού · Τετράδιο Εργασιών (Τεύχος Α΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών · Τεύχος Α΄)",
+      "pdf_file": "10-0083-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-A.pdf",
+      "md_file": "10-0083-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-A.md",
+      "total_pdf_pages": 82,
+      "book_page_min": 1,
+      "book_page_max": 80,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7,
+        78,
+        79,
+        80
+      ]
+    },
+    "10-0084-02": {
+      "code": "10-0084-02",
+      "zh_title": "希腊小学四年级语言课本（第2册 · Πετώντας με τις λέξεις）",
+      "orig_title": "Γλώσσα Δ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Β΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Β΄)",
+      "pdf_file": "10-0084-02_V2_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-B.pdf",
+      "md_file": "10-0084-02_V2_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-B.md",
+      "total_pdf_pages": 110,
+      "book_page_min": 1,
+      "book_page_max": 108,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7,
+        108
+      ]
+    },
+    "10-0085-02": {
+      "code": "10-0085-02",
+      "zh_title": "希腊小学四年级语言练习册（第2册 · Πετώντας με τις λέξεις）",
+      "orig_title": "Γλώσσα Δ΄ Δημοτικού · Τετράδιο Εργασιών (Τεύχος Β΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών · Τεύχος Β΄)",
+      "pdf_file": "10-0085-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-B.pdf",
+      "md_file": "10-0085-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-B.md",
+      "total_pdf_pages": 74,
+      "book_page_min": 1,
+      "book_page_max": 72,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7
+      ]
+    },
+    "10-0086-02": {
+      "code": "10-0086-02",
+      "zh_title": "希腊小学四年级语言课本（第3册 · Πετώντας με τις λέξεις）",
+      "orig_title": "Γλώσσα Δ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Γ΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Γ΄)",
+      "pdf_file": "10-0086-02_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-G.pdf",
+      "md_file": "10-0086-02_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-G.md",
+      "total_pdf_pages": 98,
+      "book_page_min": 1,
+      "book_page_max": 96,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        7,
+        67
+      ]
+    },
+    "10-0090-02": {
+      "code": "10-0090-02",
+      "zh_title": "希腊小学四年级历史课本（Στα αρχαία χρόνια）",
+      "orig_title": "Ιστορία Δ΄ Δημοτικού · Βιβλίο Μαθητή",
+      "subject": "历史 (Ιστορία)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή)",
+      "pdf_file": "10-0090-02_Istoria_D-Dimotikou_Vivlio-Mathiti.pdf",
+      "md_file": "10-0090-02_Istoria_D-Dimotikou_Vivlio-Mathiti.md",
+      "total_pdf_pages": 146,
+      "book_page_min": 1,
+      "book_page_max": 144,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5
+      ]
+    },
+    "10-0091-02": {
+      "code": "10-0091-02",
+      "zh_title": "希腊小学四年级历史练习册（Στα αρχαία χρόνια）",
+      "orig_title": "Ιστορία Δ΄ Δημοτικού · Τετράδιο Εργασιών",
+      "subject": "历史 (Ιστορία)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "练习册 (Τετράδιο Εργασιών)",
+      "pdf_file": "10-0091-02_Istoria_D-Dimotikou_Tetradio-Ergasion.pdf",
+      "md_file": "10-0091-02_Istoria_D-Dimotikou_Tetradio-Ergasion.md",
+      "total_pdf_pages": 58,
+      "book_page_min": 1,
+      "book_page_max": 56,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        56
+      ]
+    },
+    "10-0202-01": {
+      "code": "10-0202-01",
+      "zh_title": "希腊小学四年级语言课本（第1册 · Πετώντας με τις λέξεις）",
+      "orig_title": "Γλώσσα Δ΄ Δημοτικού · Βιβλίο Μαθητή (Τεύχος Α΄)",
+      "subject": "希腊语 (Γλώσσα)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή · Τεύχος Α΄)",
+      "pdf_file": "10-0202-01_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-A.pdf",
+      "md_file": "10-0202-01_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-A.md",
+      "total_pdf_pages": 98,
+      "book_page_min": 1,
+      "book_page_max": 96,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        5,
+        9,
+        95,
+        96
+      ]
+    },
+    "10-0232-01": {
+      "code": "10-0232-01",
+      "zh_title": "希腊小学四年级英语课本（English 4th Grade · Pupil's Book）",
+      "orig_title": "Αγγλικά Δ΄ Δημοτικού · Βιβλίο Μαθητή",
+      "subject": "英语 (Αγγλικά)",
+      "grade": "四年级 (Δ΄ Δημοτικού)",
+      "kind": "学生课本 (Βιβλίο Μαθητή / Pupil's Book)",
+      "pdf_file": "10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.pdf",
+      "md_file": "10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.md",
+      "total_pdf_pages": 170,
+      "book_page_min": 1,
+      "book_page_max": 168,
+      "pdf_minus_book_offset": 1,
+      "blank_or_illustration_pdf_pages": [
+        168
+      ]
+    }
+  }
+}

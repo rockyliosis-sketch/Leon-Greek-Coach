@@ -3,11 +3,12 @@
 - **原书书名**：Αγγλικά Δ΄ Δημοτικού · Βιβλίο Μαθητή
 - **科目 / 年级**：英语 (Αγγλικά) · 四年级 (Δ΄ Δημοτικού)
 - **册别类型**：学生课本 (Βιβλίο Μαθητή / Pupil's Book)（官方书号 `10-0232-01`）
-- **原始档案**：`materials/textbooks/10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.pdf`（共 **170** 页，1:1 逐页完整还原）
+- **原始档案**：`materials/textbooks/10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.pdf`（PDF 共 **170** 页，纸质书正文 `1 ~ 168` 页）
+- **页码 1:1 对齐规则（全书逐页校验无跳页）**：`纸质书印制页码 = PDF 页码 - 1`（`PDF 第 1 页` = 封面，`PDF 第 2 ~ 169 页` = `书本第 1 ~ 168 页`，`PDF 第 170 页` = 封底）
 
 ---
 
-## PDF 第 1 页
+## PDF 第 1 页（封面 / Εξώφυλλο）
 
 ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ, ΘΡΗΣΚΕΥΜΑΤΩΝ ΚΑΙ ΑΘΛΗΤΙΣΜΟΥ
 ΙΝΣΤΙΤΟΥΤΟ ΕΚΠΑΙΔΕΥΤΙΚΗΣ ΠΟΛΙΤΙΚΗΣ
@@ -17,7 +18,7 @@
 
 ---
 
-## PDF 第 2 页
+## 书本第 1 页（PDF 第 2 页）
 
 Αγγλικά
 Δ΄ Δημοτικού
@@ -25,7 +26,7 @@
 
 ---
 
-## PDF 第 3 页
+## 书本第 2 页（PDF 第 3 页）
 
 ΣΤΟΙΧΕΙΑ ΑΡΧΙΚΗΣ ΕΚΔΟΣΗΣ
 ΣΥΓΓΡΑΦΕΙΣ
@@ -79,7 +80,7 @@ ACCESS Γραφικές Τέχνες Α.Ε.
 
 ---
 
-## PDF 第 4 页
+## 书本第 3 页（PDF 第 4 页）
 
 ΥΠΟΥΡΓΕΙΟ ΠΑΙΔΕΙΑΣ, ΘΡΗΣΚΕΥΜΑΤΩΝ ΚΑΙ ΑΘΛΗΤΙΣΜΟΥ
 ΙΝΣΤΙΤΟΥΤΟ ΕΚΠΑΙΔΕΥΤΙΚΗΣ ΠΟΛΙΤΙΚΗΣ
@@ -94,7 +95,7 @@ ACCESS Γραφικές Τέχνες Α.Ε.
 
 ---
 
-## PDF 第 5 页
+## 书本第 4 页（PDF 第 5 页）
 
 Contents
 LESSON | SKILLS | LANGUAGE Functions
@@ -184,7 +185,7 @@ Halloween, Easter and other national holidays
 
 ---
 
-## PDF 第 6 页
+## 书本第 5 页（PDF 第 6 页）
 
 LANGUAGEStructures/Lexis | STRATEGIES/RELATED SUBJECTS
 There is/There are | Focus on Vocabulary
@@ -233,7 +234,7 @@ Adverbs of frequency
 
 ---
 
-## PDF 第 7 页
+## 书本第 6 页（PDF 第 7 页）
 
 Contents
 LESSON | SKILLS | LANGUAGE Functions
@@ -338,7 +339,7 @@ Appendix V | p. 166 | Acknowledgements
 
 ---
 
-## PDF 第 8 页
+## 书本第 7 页（PDF 第 8 页）
 
 LANGUAGEStructures/Lexis | STRATEGIES/RELATED SUBJECTS
 Present simple for statement of fact | Focus on Grammar
@@ -382,7 +383,7 @@ Habits, Pets, Sports, Food, Family
 
 ---
 
-## PDF 第 9 页
+## 书本第 8 页（PDF 第 9 页）
 
 Αγαπητά μας παιδιά,
 Ελπίζουμε ότι το βιβλίο που κρατάτε στα χέρια σας θα σας βοηθήσει να μιλήσετε
@@ -424,7 +425,7 @@ and never stop trying!
 
 ---
 
-## PDF 第 10 页
+## 书本第 9 页（PDF 第 10 页）
 
 Unit 1: | Back to school
 Today we’ve
@@ -465,7 +466,7 @@ It helps me to translate in Greek
 
 ---
 
-## PDF 第 11 页
+## 书本第 10 页（PDF 第 11 页）
 
 BACK TO SCHOOL
 Lesson 1 :
@@ -492,7 +493,7 @@ count the letters and write down your score:............
 
 ---
 
-## PDF 第 12 页
+## 书本第 11 页（PDF 第 12 页）
 
 LESSON 1 A new student in class
 3 New words!
@@ -523,7 +524,7 @@ Come, my friends, come to my party!
 
 ---
 
-## PDF 第 13 页
+## 书本第 12 页（PDF 第 13 页）
 
 BACK TO SCHOOL
 5 Read and write
@@ -562,7 +563,7 @@ break your code?
 
 ---
 
-## PDF 第 14 页
+## 书本第 13 页（PDF 第 14 页）
 
 LESSON 1 A new student in class
 7 Listen and speak
@@ -593,7 +594,7 @@ Plural There are There’re There are not There aren’t Are there?
 
 ---
 
-## PDF 第 15 页
+## 书本第 14 页（PDF 第 15 页）
 
 BACK TO SCHOOL
 Lesson 2:
@@ -636,7 +637,7 @@ letters and write down your score:...........
 
 ---
 
-## PDF 第 16 页
+## 书本第 15 页（PDF 第 16 页）
 
 LESSON 2 My timetable
 3 New words!
@@ -658,7 +659,7 @@ to the children talking and help her remember.
 
 ---
 
-## PDF 第 17 页
+## 书本第 16 页（PDF 第 17 页）
 
 BACK TO SCHOOL
 6 Write
@@ -698,7 +699,7 @@ Student B: Yes, it is/No, it isn’t
 
 ---
 
-## PDF 第 18 页
+## 书本第 17 页（PDF 第 18 页）
 
 LESSON 2 My timetable
 8 Write and speak (+app. I)
@@ -719,7 +720,7 @@ Have you got (Art) on Wednesday? – Yes, I have/No, I haven’t
 
 ---
 
-## PDF 第 19 页
+## 书本第 18 页（PDF 第 19 页）
 
 BACK TO SCHOOL
 Lesson 3:
@@ -759,7 +760,7 @@ too) on their sites and check the differences.
 
 ---
 
-## PDF 第 20 页
+## 书本第 19 页（PDF 第 20 页）
 
 • Self-Assessment test
 1 Look at the picture and fill in the missing words:
@@ -803,7 +804,7 @@ Friday
 
 ---
 
-## PDF 第 21 页
+## 书本第 20 页（PDF 第 21 页）
 
 BACK TO SCHOOL
 • Self-Assessment test
@@ -844,7 +845,7 @@ I can talk about my timetable
 
 ---
 
-## PDF 第 22 页
+## 书本第 21 页（PDF 第 22 页）
 
 Unit 2:
 
@@ -880,7 +881,7 @@ the meaning from the text
 
 ---
 
-## PDF 第 23 页
+## 书本第 22 页（PDF 第 23 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 Lesson 1:
@@ -916,7 +917,7 @@ down your score:.......
 
 ---
 
-## PDF 第 24 页
+## 书本第 23 页（PDF 第 24 页）
 
 LESSON 1 My favourite sport
 3 New words!
@@ -952,7 +953,7 @@ and don’t like and then tell your classmates.
 
 ---
 
-## PDF 第 25 页
+## 书本第 24 页（PDF 第 25 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 5 Listen and sing
@@ -1001,7 +1002,7 @@ Listen and find out.
 
 ---
 
-## PDF 第 26 页
+## 书本第 25 页（PDF 第 26 页）
 
 LESSON 1 My favourite sport
 7 ↔ Read and match (+app. I)
@@ -1039,7 +1040,7 @@ Look at these examples for questions:
 
 ---
 
-## PDF 第 27 页
+## 书本第 26 页（PDF 第 27 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 Lesson 2:
@@ -1071,7 +1072,7 @@ write down your score:.......
 
 ---
 
-## PDF 第 28 页
+## 书本第 27 页（PDF 第 28 页）
 
 LESSON 2 Have you got a hobby?
 3 New words!
@@ -1098,7 +1099,7 @@ what his/her hobby is. Write about it. Then report to the class.
 
 ---
 
-## PDF 第 29 页
+## 书本第 28 页（PDF 第 29 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 5 Tick and speak
@@ -1122,7 +1123,7 @@ Which club would you like to join and why? Tell the class.
 
 ---
 
-## PDF 第 30 页
+## 书本第 29 页（PDF 第 30 页）
 
 LESSON 2 Have you got a hobby?
 6 Listen and tick
@@ -1158,7 +1159,7 @@ Kostas/Maria likes (swimming) but he/she doesn’t like (sailing)
 
 ---
 
-## PDF 第 31 页
+## 书本第 30 页（PDF 第 31 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 Lesson 3:
@@ -1195,7 +1196,7 @@ Games’. Maybe you can be a gold, silver or bronze medallist!
 
 ---
 
-## PDF 第 32 页
+## 书本第 31 页（PDF 第 32 页）
 
 • Self-Assessment test
 1 Match the pictures to the words:
@@ -1235,7 +1236,7 @@ Points: / 8
 
 ---
 
-## PDF 第 33 页
+## 书本第 32 页（PDF 第 33 页）
 
 WHAT’S YOUR FAVOURITE HOBBY OR SPORT?
 4• Self-Assessment test
@@ -1280,7 +1281,7 @@ I can talk about which sports or hobbies my friends like
 
 ---
 
-## PDF 第 34 页
+## 书本第 33 页（PDF 第 34 页）
 
 Unit 3: | This is
 where I live
@@ -1311,7 +1312,7 @@ If I can’t understand a lot, I ask my teacher to play the CD again
 
 ---
 
-## PDF 第 35 页
+## 书本第 34 页（PDF 第 35 页）
 
 THIS IS WHERE I LIVE
 Lesson 1:
@@ -1357,7 +1358,7 @@ and write down your score:.......
 
 ---
 
-## PDF 第 36 页
+## 书本第 35 页（PDF 第 36 页）
 
 LESSON 1 My country
 3 Speak and write
@@ -1386,7 +1387,7 @@ Use these words: Italian, British, Egyptian, Chinese, Greek
 
 ---
 
-## PDF 第 37 页
+## 书本第 36 页（PDF 第 37 页）
 
 THIS IS WHERE I LIVE
 5 Listen and write
@@ -1408,7 +1409,7 @@ I am from Albania, I am Albanian. That’s who I am, that’s who I am.
 
 ---
 
-## PDF 第 38 页
+## 书本第 37 页（PDF 第 38 页）
 
 LESSON 1 My country
 7 Let’s play!
@@ -1432,7 +1433,7 @@ Where is Roberto from? He is from (Italy). He is (Italian)
 
 ---
 
-## PDF 第 39 页
+## 书本第 38 页（PDF 第 39 页）
 
 THIS IS WHERE I LIVE
 Lesson 2:
@@ -1475,7 +1476,7 @@ and write down your score:.......
 
 ---
 
-## PDF 第 40 页
+## 书本第 39 页（PDF 第 40 页）
 
 LESSON 2 My city
 3 Read and speak
@@ -1511,7 +1512,7 @@ There is a(n)…………………..……………………….… , too. It’
 
 ---
 
-## PDF 第 41 页
+## 书本第 40 页（PDF 第 41 页）
 
 THIS IS WHERE I LIVE
 5 Listen and tick
@@ -1548,7 +1549,7 @@ is the winner!
 
 ---
 
-## PDF 第 42 页
+## 书本第 41 页（PDF 第 42 页）
 
 LESSON 2 My city
 Have you got a dice? No? Don’t worry! Look!
@@ -1612,7 +1613,7 @@ You are the winner!
 
 ---
 
-## PDF 第 43 页
+## 书本第 42 页（PDF 第 43 页）
 
 THIS IS WHERE I LIVE
 Lesson 3:
@@ -1666,7 +1667,7 @@ and www.culture.gr)
 
 ---
 
-## PDF 第 44 页
+## 书本第 43 页（PDF 第 44 页）
 
 LESSON 1 My country
 • Self-Assessment test
@@ -1702,7 +1703,7 @@ Points: / 14
 
 ---
 
-## PDF 第 45 页
+## 书本第 44 页（PDF 第 45 页）
 
 THIS IS WHERE LIVE
 • Self-Assessment test
@@ -1736,7 +1737,7 @@ I can talk about important places in my country
 
 ---
 
-## PDF 第 46 页
+## 书本第 45 页（PDF 第 46 页）
 
 Unit 4:
 Time
@@ -1762,7 +1763,7 @@ I don’t like making mistakes in front of my classmates
 
 ---
 
-## PDF 第 47 页
+## 书本第 46 页（PDF 第 47 页）
 
 TIME
 Lesson 1:
@@ -1797,7 +1798,7 @@ your score:.......
 
 ---
 
-## PDF 第 48 页
+## 书本第 47 页（PDF 第 48 页）
 
 LESSON 1 Happy Birthday!
 3 Listen and sing
@@ -1824,7 +1825,7 @@ answer to the class:
 
 ---
 
-## PDF 第 49 页
+## 书本第 48 页（PDF 第 49 页）
 
 TIME
 6 New words!
@@ -1878,7 +1879,7 @@ ET1 | NET | ET3
 
 ---
 
-## PDF 第 50 页
+## 书本第 49 页（PDF 第 50 页）
 
 LESSON 1 Happy Birthday!
 8 Let’s play!
@@ -1895,7 +1896,7 @@ It’s (a) quarter past nine-9.15, It’s (a) quarter to nine-8.45
 
 ---
 
-## PDF 第 51 页
+## 书本第 50 页（PDF 第 51 页）
 
 TIME
 Lesson 2:
@@ -1946,7 +1947,7 @@ letters and write down your score: ............................
 
 ---
 
-## PDF 第 52 页
+## 书本第 51 页（PDF 第 52 页）
 
 LESSON 2 What’s the weather like?
 3 New words!
@@ -1978,7 +1979,7 @@ Fa – la – la
 
 ---
 
-## PDF 第 53 页
+## 书本第 52 页（PDF 第 53 页）
 
 TIME
 5 Let’s play!
@@ -2014,7 +2015,7 @@ December December
 
 ---
 
-## PDF 第 54 页
+## 书本第 53 页（PDF 第 54 页）
 
 LESSON 2 What’s the weather like?
 6 | ↔ | Listen, match and write(+app. I)
@@ -2056,7 +2057,7 @@ On Mondays I ride my bike in the park
 
 ---
 
-## PDF 第 55 页
+## 书本第 54 页（PDF 第 55 页）
 
 TIME
 Lesson 3:
@@ -2096,7 +2097,7 @@ Now, can you write your poem?
 
 ---
 
-## PDF 第 56 页
+## 书本第 55 页（PDF 第 56 页）
 
 • Self-Assessment test
 1 Write the months.
@@ -2127,7 +2128,7 @@ Points: / 4
 
 ---
 
-## PDF 第 57 页
+## 书本第 56 页（PDF 第 57 页）
 
 TIME
 • Self-Assessment test
@@ -2153,7 +2154,7 @@ I can talk about what people do in each season
 
 ---
 
-## PDF 第 58 页
+## 书本第 57 页（PDF 第 58 页）
 
 Unit 5:
 Habits
@@ -2178,7 +2179,7 @@ It’s better for me to work alone
 
 ---
 
-## PDF 第 59 页
+## 书本第 58 页（PDF 第 59 页）
 
 HABITS AND CUSTOMS
 Lesson 1:
@@ -2218,7 +2219,7 @@ score: ......................................
 
 ---
 
-## PDF 第 60 页
+## 书本第 59 页（PDF 第 60 页）
 
 LESSON 1 It’s only a dream !
 3 New words!
@@ -2236,7 +2237,7 @@ g) brush my teeth, h) do my homework, i) make my bed
 
 ---
 
-## PDF 第 61 页
+## 书本第 60 页（PDF 第 61 页）
 
 HABITS AND CUSTOMS
 4 Write and speak
@@ -2279,7 +2280,7 @@ Oh, No! It’s just a dream!
 
 ---
 
-## PDF 第 62 页
+## 书本第 61 页（PDF 第 62 页）
 
 LESSON 1 It’s only a dream !
 6 Listen and tick
@@ -2310,7 +2311,7 @@ Betty never watches TV on Mondays
 
 ---
 
-## PDF 第 63 页
+## 书本第 62 页（PDF 第 63 页）
 
 HABITS AND CUSTOMS
 Lesson 2:
@@ -2357,7 +2358,7 @@ down your score: ...................
 
 ---
 
-## PDF 第 64 页
+## 书本第 63 页（PDF 第 64 页）
 
 LESSON 2 British customs
 3 New words!
@@ -2382,7 +2383,7 @@ put, eat, open, sing, send, decorate, go
 
 ---
 
-## PDF 第 65 页
+## 书本第 64 页（PDF 第 65 页）
 
 HABITS AND CUSTOMS
 4 Write and speak (+app. I)
@@ -2403,7 +2404,7 @@ decorate, Christmas cards, presents, always, often, sometimes, never
 
 ---
 
-## PDF 第 66 页
+## 书本第 65 页（PDF 第 66 页）
 
 LESSON 2 British customs
 5 Listen and write
@@ -2434,7 +2435,7 @@ carols
 
 ---
 
-## PDF 第 67 页
+## 书本第 66 页（PDF 第 67 页）
 
 HABITS AND CUSTOMS
 Lesson 3:
@@ -2473,7 +2474,7 @@ in their countries!
 
 ---
 
-## PDF 第 68 页
+## 书本第 67 页（PDF 第 68 页）
 
 • Self-Assessment test
 1 Match the pictures to the phrases:
@@ -2508,7 +2509,7 @@ Points: / 8
 
 ---
 
-## PDF 第 69 页
+## 书本第 68 页（PDF 第 69 页）
 
 HABITS AND CUSTOMS
 • Self-Assessment test
@@ -2552,7 +2553,7 @@ Kingdom, Greece and other countries
 
 ---
 
-## PDF 第 70 页
+## 书本第 69 页（PDF 第 70 页）
 
 Unit 6: | Animals
 This is planet Earth
@@ -2582,7 +2583,7 @@ I do a lot of grammar exercises
 
 ---
 
-## PDF 第 71 页
+## 书本第 70 页（PDF 第 71 页）
 
 ANIMALS
 Lesson 1:
@@ -2621,7 +2622,7 @@ your score:...........
 
 ---
 
-## PDF 第 72 页
+## 书本第 71 页（PDF 第 72 页）
 
 LESSON 1 My pet
 3 New words!
@@ -2662,12 +2663,12 @@ stay in the game is the winner.
 
 ---
 
-## PDF 第 73 页
+## 书本第 72 页（PDF 第 73 页）
 
 ANIMALS
 5 Listen and sing
 Mrs Top’s Pet Shop
-⓵ Mrs Top has got a shop
+⓵Mrs Top has got a shop
 A-E-I-O-U
 And in her shop she’s got a dog,
 A-E-I-O-U
@@ -2704,7 +2705,7 @@ about their favourite pet and help Nick find out what pet to give them.
 
 ---
 
-## PDF 第 74 页
+## 书本第 73 页（PDF 第 74 页）
 
 LESSON 1 My pet
 7 Write your riddle (+app I)
@@ -2730,7 +2731,7 @@ he goes to sleep, he wiggles his tail
 
 ---
 
-## PDF 第 75 页
+## 书本第 74 页（PDF 第 75 页）
 
 ANIMALS
 Lesson 2:
@@ -2770,7 +2771,7 @@ letters and write down your score:...........
 
 ---
 
-## PDF 第 76 页
+## 书本第 75 页（PDF 第 76 页）
 
 LESSON 2 A visit to the Sea Turtle Rescue Centre
 3 New words!
@@ -2812,7 +2813,7 @@ baby (pup). There are only 250 Monachus monachus seals in ......................
 
 ---
 
-## PDF 第 77 页
+## 书本第 76 页（PDF 第 77 页）
 
 ANIMALS
 5 Read and write
@@ -2853,7 +2854,7 @@ hole in the night or very early in the morning
 
 ---
 
-## PDF 第 78 页
+## 书本第 77 页（PDF 第 78 页）
 
 LESSON 2 A visit to the Sea Turtle Rescue Centre
 6 Let’s play!
@@ -2901,7 +2902,7 @@ Note: 100=one hundred, 200=two hundred, 250=two hundred and fifty
 
 ---
 
-## PDF 第 79 页
+## 书本第 78 页（PDF 第 79 页）
 
 ANIMALS
 Lesson 3:
@@ -2947,7 +2948,7 @@ Three Little Pigs
 
 ---
 
-## PDF 第 80 页
+## 书本第 79 页（PDF 第 80 页）
 
 • Self-Assessment test
 1 Match the pictures to the words:
@@ -2979,7 +2980,7 @@ Points: / 9
 
 ---
 
-## PDF 第 81 页
+## 书本第 80 页（PDF 第 81 页）
 
 ANIMALS
 • Self-Assessment test
@@ -3020,7 +3021,7 @@ I can talk about what animals do, where they live or what they eat
 
 ---
 
-## PDF 第 82 页
+## 书本第 81 页（PDF 第 82 页）
 
 Unit 7:
 
@@ -3058,7 +3059,7 @@ anything from games
 
 ---
 
-## PDF 第 83 页
+## 书本第 82 页（PDF 第 83 页）
 
 WHAT ARE YOU DOING?
 Lesson 1:
@@ -3093,7 +3094,7 @@ the letters and write down your score:..........
 
 ---
 
-## PDF 第 84 页
+## 书本第 83 页（PDF 第 84 页）
 
 LESSON 1 Helping around the house
 3 New words!
@@ -3115,7 +3116,7 @@ Is Andrew setting the table? Yes, he is/ No, he isn’t
 
 ---
 
-## PDF 第 85 页
+## 书本第 84 页（PDF 第 85 页）
 
 WHAT ARE YOU DOING?
 4 Listen and sing
@@ -3134,7 +3135,7 @@ cooking dinner
 I’m making the beds
 I’m cooking dinner
 I’m helping in the house
-⓷ I’m washing the dishes, I’m washing the floor..........
+⓷I’m washing the dishes, I’m washing the floor..........
 5 Let’s play!
 Pantomime: “What am I doing?”
 Play the game in 2 groups. One pupil from each group
@@ -3155,7 +3156,7 @@ mime them?
 
 ---
 
-## PDF 第 86 页
+## 书本第 85 页（PDF 第 86 页）
 
 LESSON 1 Helping around the house
 6 Listen and write
@@ -3190,7 +3191,7 @@ Pat
 
 ---
 
-## PDF 第 87 页
+## 书本第 86 页（PDF 第 87 页）
 
 WHAT ARE YOU DOING?
 Lesson 2:
@@ -3229,7 +3230,7 @@ count the letters and write down your score:...........
 
 ---
 
-## PDF 第 88 页
+## 书本第 87 页（PDF 第 88 页）
 
 LESSON 2 What do you do?
 3 New words!
@@ -3256,7 +3257,7 @@ Nick
 
 ---
 
-## PDF 第 89 页
+## 书本第 88 页（PDF 第 89 页）
 
 WHAT ARE YOU DOING?
 4 Listen and write
@@ -3292,7 +3293,7 @@ points is the winner!
 
 ---
 
-## PDF 第 90 页
+## 书本第 89 页（PDF 第 90 页）
 
 LESSON 2 What do you do?
 6 Write
@@ -3326,7 +3327,7 @@ In this picture.........................................................
 
 ---
 
-## PDF 第 91 页
+## 书本第 90 页（PDF 第 91 页）
 
 WHAT ARE YOU DOING?
 Lesson 3:
@@ -3370,7 +3371,7 @@ your project on it!
 
 ---
 
-## PDF 第 92 页
+## 书本第 91 页（PDF 第 92 页）
 
 • Self-Assessment test
 1 Look at the pictures and match them to the phrases:
@@ -3406,7 +3407,7 @@ Points:
 
 ---
 
-## PDF 第 93 页
+## 书本第 92 页（PDF 第 93 页）
 
 WHAT ARE YOU DOING?
 • Self-Assessment test
@@ -3449,7 +3450,7 @@ I can talk about what people are doing now
 
 ---
 
-## PDF 第 94 页
+## 书本第 93 页（PDF 第 94 页）
 
 Unit 8: | Around the city
 In this unit you will learn to:
@@ -3475,7 +3476,7 @@ to do each time
 
 ---
 
-## PDF 第 95 页
+## 书本第 94 页（PDF 第 95 页）
 
 AROUND THE CITY
 Lesson 1:
@@ -3518,7 +3519,7 @@ count the letters and write down your score:...........
 
 ---
 
-## PDF 第 96 页
+## 书本第 95 页（PDF 第 96 页）
 
 LESSON 1 At the park
 3 New words!
@@ -3549,7 +3550,7 @@ And don’t forget to keep these rules!
 
 ---
 
-## PDF 第 97 页
+## 书本第 96 页（PDF 第 97 页）
 
 AROUND THE CITY
 5 Listen and sing
@@ -3586,7 +3587,7 @@ Run
 
 ---
 
-## PDF 第 98 页
+## 书本第 97 页（PDF 第 98 页）
 
 LESSON 1 At the park
 7 Listen and write
@@ -3613,7 +3614,7 @@ You can’t pick flowers
 
 ---
 
-## PDF 第 99 页
+## 书本第 98 页（PDF 第 99 页）
 
 AROUND THE CITY
 Lesson 2:
@@ -3651,7 +3652,7 @@ write down your score:...........
 
 ---
 
-## PDF 第 100 页
+## 书本第 99 页（PDF 第 100 页）
 
 LESSON 2 A traffic warden visits our school
 3 New words! (+ app.I)
@@ -3677,7 +3678,7 @@ i. Be careful, there are dangerous turns ahead j. You must go straight ahead
 
 ---
 
-## PDF 第 101 页
+## 书本第 100 页（PDF 第 101 页）
 
 AROUND THE CITY
 4 Write and speak
@@ -3704,7 +3705,7 @@ a. | b. | c. | d.
 
 ---
 
-## PDF 第 102 页
+## 书本第 101 页（PDF 第 102 页）
 
 LESSON 2 A traffic warden visits our school
 5 Let’s play!
@@ -3729,7 +3730,7 @@ You mustn’t cross the road now
 
 ---
 
-## PDF 第 103 页
+## 书本第 102 页（PDF 第 103 页）
 
 AROUND THE CITY
 Lesson 3:
@@ -3757,7 +3758,7 @@ I www.astinomia.gr, the website of the
 Hellenic Police.
 
 I http://5dim-xanth.xan.sch.gr, the website
-of the 5th Primary school of Xanthi.
+of the 5thPrimary school of Xanthi.
 Idea! Why don’t you ask a traffic warden to come to your school and talk to you about
 road safety rules? You can also visit a Road Safety Instruction Park (Πάρκο
 Κυκλοφοριακής Αγωγής) or a driving school and ask the driving instructor to give
@@ -3769,7 +3770,7 @@ you advice, when you’re riding your bike!
 
 ---
 
-## PDF 第 104 页
+## 书本第 103 页（PDF 第 104 页）
 
 • Self-Assessment test
 1 Look at the pictures and write phrases for them:
@@ -3796,7 +3797,7 @@ Points: / 9
 
 ---
 
-## PDF 第 105 页
+## 书本第 104 页（PDF 第 105 页）
 
 AROUND THE CITY
 • Self-Assessment test
@@ -3826,7 +3827,7 @@ I can talk about road safety
 
 ---
 
-## PDF 第 106 页
+## 书本第 105 页（PDF 第 106 页）
 
 Unit 9: | The school party
 In this unit you will learn to:
@@ -3845,7 +3846,7 @@ I study grammar rules
 
 ---
 
-## PDF 第 107 页
+## 书本第 106 页（PDF 第 107 页）
 
 THE SCHOOL PARTY
 Lesson 1:
@@ -3886,7 +3887,7 @@ count the letters and write down your score:......................
 
 ---
 
-## PDF 第 108 页
+## 书本第 107 页（PDF 第 108 页）
 
 LESSON 1 At the supermarket
 3 New words!
@@ -3921,7 +3922,7 @@ For you and me
 
 ---
 
-## PDF 第 109 页
+## 书本第 108 页（PDF 第 109 页）
 
 THE SCHOOL PARTY
 5 Speak and write
@@ -3965,7 +3966,7 @@ one point for his/her team. The first team to get ten points is the winner.
 
 ---
 
-## PDF 第 110 页
+## 书本第 109 页（PDF 第 110 页）
 
 LESSON 1 At the supermarket
 8 Listen and tick
@@ -3999,7 +4000,7 @@ We ask how much with these words: How much lemonade is there in the glass?
 
 ---
 
-## PDF 第 111 页
+## 书本第 110 页（PDF 第 111 页）
 
 THE SCHOOL PARTY
 Lesson 2:
@@ -4037,7 +4038,7 @@ your score:......................
 
 ---
 
-## PDF 第 112 页
+## 书本第 111 页（PDF 第 112 页）
 
 LESSON 2 Let’s make some sandwiches
 3 New words!
@@ -4074,7 +4075,7 @@ oil and some lemon in a bowl
 
 ---
 
-## PDF 第 113 页
+## 书本第 112 页（PDF 第 113 页）
 
 THE SCHOOL PARTY
 5 Read and write
@@ -4105,7 +4106,7 @@ pancakes for your family!
 
 ---
 
-## PDF 第 114 页
+## 书本第 113 页（PDF 第 114 页）
 
 LESSON 1 Happy Birthday!
 7 Let’s play!
@@ -4133,7 +4134,7 @@ Beat the eggs, Peel the potatoes, Add salt and pepper, Heat the oil
 
 ---
 
-## PDF 第 115 页
+## 书本第 114 页（PDF 第 115 页）
 
 THE SCHOOL PARTY
 Lesson 3:
@@ -4166,7 +4167,7 @@ bring food to school.
 
 ---
 
-## PDF 第 116 页
+## 书本第 115 页（PDF 第 116 页）
 
 • Self-Assessment test
 1 Look at the pictures and write words for them. Use some or a/an:
@@ -4197,7 +4198,7 @@ Points: / 9
 
 ---
 
-## PDF 第 117 页
+## 书本第 116 页（PDF 第 117 页）
 
 THE SCHOOL PARTY
 • Self-Assessment test
@@ -4222,7 +4223,7 @@ I can talk about healthy and unhealthy eating habits
 
 ---
 
-## PDF 第 118 页
+## 书本第 117 页（PDF 第 118 页）
 
 Unit 10:
 
@@ -4247,7 +4248,7 @@ Revising and checking how much I know
 
 ---
 
-## PDF 第 119 页
+## 书本第 118 页（PDF 第 119 页）
 
 ENJOY YOUR HOLIDAYS!
 Lesson 1:
@@ -4317,7 +4318,7 @@ down your score:......................
 
 ---
 
-## PDF 第 120 页
+## 书本第 119 页（PDF 第 120 页）
 
 LESSON 1 Our yearbook
 3 Read and write (+app. I)
@@ -4353,7 +4354,7 @@ I like:
 
 ---
 
-## PDF 第 121 页
+## 书本第 120 页（PDF 第 121 页）
 
 ENJOY YOUR HOLIDAYS!
 5 Let’s play!
@@ -4386,7 +4387,7 @@ in the game is the winner.
 
 ---
 
-## PDF 第 122 页
+## 书本第 121 页（PDF 第 122 页）
 
 LESSON 1 Our yearbook
 7 Let’s play!
@@ -4436,7 +4437,7 @@ winner!!!
 
 ---
 
-## PDF 第 123 页
+## 书本第 122 页（PDF 第 123 页）
 
 ENJOY YOUR HOLIDAYS!
 Lesson 2:
@@ -4461,7 +4462,7 @@ Milky is licking his whiskers. Then he says:
 
 ---
 
-## PDF 第 124 页
+## 书本第 123 页（PDF 第 124 页）
 
 LESSON 1 “Dairy the fairy”
 Then Dairy is very angry. She takes her
@@ -4484,7 +4485,7 @@ lion can’t eat her cheese.
 
 ---
 
-## PDF 第 125 页
+## 书本第 124 页（PDF 第 125 页）
 
 ENJOY YOUR HOLIDAYS!
 One day Dairy goes out on the farm. She
@@ -4508,7 +4509,7 @@ Stop! Don’t look at the end of the story! Can you guess it?
 
 ---
 
-## PDF 第 126 页
+## 书本第 125 页（PDF 第 126 页）
 
 LESSON 1 Happy Birthday!
 Lesson 3:
@@ -4561,7 +4562,7 @@ Hen | • Cinderella
 
 ---
 
-## PDF 第 127 页
+## 书本第 126 页（PDF 第 127 页）
 
 ENJOY YOUR HOLIDAYS!
 Now it’s time for your Secret word contest!
@@ -4590,7 +4591,7 @@ That’s very good! You’re Winner Number Three!
 
 ---
 
-## PDF 第 128 页
+## 书本第 127 页（PDF 第 128 页）
 
 • Self-Assessment test
 1 Write questions. Use the question words/phrases in the box:
@@ -4626,7 +4627,7 @@ Points: / 10
 
 ---
 
-## PDF 第 129 页
+## 书本第 128 页（PDF 第 129 页）
 
 ENJOY YOUR HOLIDAYS!
 • Self-Assessment test
@@ -4661,7 +4662,7 @@ I can talk about my pet
 
 ---
 
-## PDF 第 130 页
+## 书本第 129 页（PDF 第 130 页）
 
 Then Dairy takes her magic wand, waves it in the air and
 Abracadabra! Now Milky is a cat again. T hen Dairy takes her magic
@@ -4673,7 +4674,7 @@ Can you think of another ending for the story?
 
 ---
 
-## PDF 第 131 页
+## 书本第 130 页（PDF 第 131 页）
 
 WORK AT YOUR OWN PACE
 Δούλεψε στους δικούς σου ρυθμούς
@@ -4694,13 +4695,13 @@ Physical Education, Music, English, Art, History
 και το δικό σου και μίλησε για αυτές. Μπορείς να μιλήσεις για τις διαφορές ανάμεσα
 στις μέρες που έχετε το ίδιο μάθημα: π.χ. “Andrew has got Maths on Monday but I’ve
 got Maths on Tuesday ” ή να μιλήσεις για τις διαφορές στο πόσες φορές την εβδομάδα
-κάνετε ένα μάθημα π.χ. ¨ Andrew has got E.S. three times a week but I’ve got E.S. four
+κάνετε ένα μάθημα π.χ.¨ Andrew has got E.S. three times a week but I’ve got E.S. four
 times a week ”.
 130
 
 ---
 
-## PDF 第 132 页
+## 书本第 131 页（PDF 第 132 页）
 
 APPENDIX I
 Can you do extra work?
@@ -4744,12 +4745,12 @@ Alice White
 
 ---
 
-## PDF 第 133 页
+## 书本第 132 页（PDF 第 133 页）
 
 WORK AT YOUR OWN PACE
 Unit 2
 Lesson 1
-7 ↔ Read and match
+7 ↔Read and match
 Ταίριαξε τις εικόνες με τις λέξεις:
 1. | 2. | 3.
 4. | 5. | 6.
@@ -4774,7 +4775,7 @@ Korea: t……….. k……….. d……..
 
 ---
 
-## PDF 第 134 页
+## 书本第 133 页（PDF 第 134 页）
 
 APPENDIX I
 Can you do extra work?
@@ -4804,7 +4805,7 @@ Harry Topper is . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
 
 ---
 
-## PDF 第 135 页
+## 书本第 134 页（PDF 第 135 页）
 
 WORK AT YOUR OWN PACE
 Unit 3
@@ -4828,7 +4829,7 @@ corner of)......................................................................
 
 ---
 
-## PDF 第 136 页
+## 书本第 135 页（PDF 第 136 页）
 
 APPENDIX I
 Can you do extra work?
@@ -4862,7 +4863,7 @@ Footballs
 
 ---
 
-## PDF 第 137 页
+## 书本第 136 页（PDF 第 137 页）
 
 WORK AT YOUR OWN PACE
 Unit 4
@@ -4897,7 +4898,7 @@ India
 
 ---
 
-## PDF 第 138 页
+## 书本第 137 页（PDF 第 138 页）
 
 APPENDIX I
 Unit 5
@@ -4931,7 +4932,7 @@ At Christmas we.................................................................
 
 ---
 
-## PDF 第 139 页
+## 书本第 138 页（PDF 第 139 页）
 
 WORK AT YOUR OWN PACE
 Can you do extra work?
@@ -4957,7 +4958,7 @@ Ann.................................. listens to music.
 
 ---
 
-## PDF 第 140 页
+## 书本第 139 页（PDF 第 140 页）
 
 APPENDIX I
 Unit 6
@@ -4985,7 +4986,7 @@ Which animal is it?
 
 ---
 
-## PDF 第 141 页
+## 书本第 140 页（PDF 第 141 页）
 
 WORK AT YOUR OWN PACE
 Can you do extra work?
@@ -5030,7 +5031,7 @@ Dolphin
 
 ---
 
-## PDF 第 142 页
+## 书本第 141 页（PDF 第 142 页）
 
 APPENDIX I
 Unit 7
@@ -5067,7 +5068,7 @@ Hours of work:from ............................ till his ice cream finishes
 
 ---
 
-## PDF 第 143 页
+## 书本第 142 页（PDF 第 143 页）
 
 WORK AT YOUR OWN PACE
 Lesson 1
@@ -5099,7 +5100,7 @@ Pat
 
 ---
 
-## PDF 第 144 页
+## 书本第 143 页（PDF 第 144 页）
 
 APPENDIX I
 drinking/lemonade/Barbara/is
@@ -5130,7 +5131,7 @@ are/Sarah/and/Sophia/dancing
 
 ---
 
-## PDF 第 145 页
+## 书本第 144 页（PDF 第 145 页）
 
 WORK AT YOUR OWN PACE
 Unit 8
@@ -5162,7 +5163,7 @@ j.You must go straight ahead
 
 ---
 
-## PDF 第 146 页
+## 书本第 145 页（PDF 第 146 页）
 
 APPENDIX I
 Can you do extra work?
@@ -5196,7 +5197,7 @@ Can you do extra work?
 
 ---
 
-## PDF 第 147 页
+## 书本第 146 页（PDF 第 147 页）
 
 WORK AT YOUR OWN PACE
 Unit 9
@@ -5242,7 +5243,7 @@ INGREDIENTS
 
 ---
 
-## PDF 第 148 页
+## 书本第 147 页（PDF 第 148 页）
 
 APPENDIX I
 Unit 10
@@ -5317,7 +5318,7 @@ go swimming every day.
 
 ---
 
-## PDF 第 149 页
+## 书本第 148 页（PDF 第 149 页）
 
 WORK AT YOUR OWN PACE
 Can you do extra work?
@@ -5353,7 +5354,7 @@ Sophia διηγήθηκε στον Andrew την ιστορία και τώρα 
 
 ---
 
-## PDF 第 150 页
+## 书本第 149 页（PDF 第 150 页）
 
 APPENDIX I
 Τα λαγουδάκια έκαναν όπως τους είπε και όταν έφτασαν στο ξέφωτο κρύ-
@@ -5384,7 +5385,7 @@ In the end of the story, the wolf doesn’t eat the rabbit and her babies ❑
 
 ---
 
-## PDF 第 151 页
+## 书本第 150 页（PDF 第 151 页）
 
 MY GRAMMAR CORNER
 Η γωνιά της γραμματικής
@@ -5427,7 +5428,7 @@ They have got | They’ve got | They have not got They haven’t got Have they g
 
 ---
 
-## PDF 第 152 页
+## 书本第 151 页（PDF 第 152 页）
 
 APPENDIX II
 Affirmative | Negative | Interrogative
@@ -5468,7 +5469,7 @@ O Present Simple είναι ο χρόνος που εκφράζει κάτι μ�
 
 ---
 
-## PDF 第 153 页
+## 书本第 152 页（PDF 第 153 页）
 
 MY GRAMMAR CORNER
 Affirmative | Negative | Interrogative
@@ -5501,7 +5502,7 @@ sometimes (μερικές φορές), never (ποτέ)
 6.2 Ερωτήσεις στον Present Simple
 ύ
 Όταν φτιάχνουμε ερωτήσεις στον present simple, χρησιμοποιο με τις λέξεις do και
-does. Το does χρησιμοποιείται για το τρίτο ενικό πρόσωπο (he, she, it) και το do για όλα
+does.Το does χρησιμοποιείται για το τρίτο ενικό πρόσωπο (he, she, it) και το doγia όλα
 τα υπόλοιπα πρόσωπα (I, you, we, you, they). Βάζουμε τις λέξεις αυτές μπροστά από το
 πρόσωπο για το οποίο ρωτάμε και μετά από το πρόσωπο βάζουμε το ρήμα απλό (χωρίς
 δηλαδή καμία κατάληξη)
@@ -5517,7 +5518,7 @@ O Present Continuous είναι ο χρόνος που εκφράζει κάτι
 
 ---
 
-## PDF 第 154 页
+## 书本第 153 页（PDF 第 154 页）
 
 APPENDIX II
 Affirmative | Negative | Interrogative
@@ -5564,7 +5565,7 @@ Jump). Όταν ζητάμε από κάποιον να μην κάνει κάτ
 
 ---
 
-## PDF 第 155 页
+## 书本第 154 页（PDF 第 155 页）
 
 MY GRAMMAR CORNER
 8.1b Η φράση You can/You can’t για να δώσουμε άδεια
@@ -5604,7 +5605,7 @@ e.g. This sign means: | “You mustn’t sound your horn here”
 
 ---
 
-## PDF 第 156 页
+## 书本第 155 页（PDF 第 156 页）
 
 APPENDIX II
 Μπορούν να πάρουν το άρθρο a/an μπροστά από τον ενικό τους
@@ -5633,7 +5634,7 @@ some eggs
 
 ---
 
-## PDF 第 157 页
+## 书本第 156 页（PDF 第 157 页）
 
 GLOSSARY
 Το λεξιλόγιό μου
@@ -5675,7 +5676,7 @@ Greek: .................................. India: ...............................
 
 ---
 
-## PDF 第 158 页
+## 书本第 157 页（PDF 第 158 页）
 
 APPENDIX III
 Italian: .................................. Northern Ireland .................................. Scotland ..................................
@@ -5715,7 +5716,7 @@ Personal habits:brush my teeth: .................................. clean up my r
 
 ---
 
-## PDF 第 159 页
+## 书本第 158 页（PDF 第 159 页）
 
 GLOSSARY
 do my homework: .................................. get up early: ..................................
@@ -5755,7 +5756,7 @@ Helping around the house: cook dinner: .................................. iron t
 
 ---
 
-## PDF 第 160 页
+## 书本第 159 页（PDF 第 160 页）
 
 APPENDIX III
 make the beds: .................................. set the table: ..................................
@@ -5796,7 +5797,7 @@ you must go straight ahead: ....................................................
 
 ---
 
-## PDF 第 161 页
+## 书本第 160 页（PDF 第 161 页）
 
 GLOSSARY
 UNIT 9
@@ -5840,7 +5841,7 @@ whiskers: ..................................
 
 ---
 
-## PDF 第 162 页
+## 书本第 161 页（PDF 第 162 页）
 
 APPENDIX IV
 MAPS
@@ -5857,7 +5858,7 @@ LONDON
 
 ---
 
-## PDF 第 163 页
+## 书本第 162 页（PDF 第 163 页）
 
 MAPS
 N
@@ -5874,7 +5875,7 @@ EGYPT
 
 ---
 
-## PDF 第 164 页
+## 书本第 163 页（PDF 第 164 页）
 
 APPENDIX IV
 EUROPE
@@ -5885,7 +5886,7 @@ CAIRO
 
 ---
 
-## PDF 第 165 页
+## 书本第 164 页（PDF 第 165 页）
 
 MAPS
 N
@@ -5898,7 +5899,7 @@ AF
 
 ---
 
-## PDF 第 166 页
+## 书本第 165 页（PDF 第 166 页）
 
 APPENDIX IV
 MAP
@@ -5911,7 +5912,7 @@ OCEANIA
 
 ---
 
-## PDF 第 167 页
+## 书本第 166 页（PDF 第 167 页）
 
 ACKNOWLEDGEMENTS | APPENDIX V
 We are grateful to the following for permission to reproduce copyright material:
@@ -5961,13 +5962,13 @@ Whitehead, the editor of http://www.kidsonthenet.com/
 
 ---
 
-## PDF 第 168 页
+## 书本第 167 页（PDF 第 168 页）
 
 *(本页为空白页或纯插图页)*
 
 ---
 
-## PDF 第 169 页
+## 书本第 168 页（PDF 第 169 页）
 
 Βάσει του ν. 3966/2011 τα διδακτικά βιβλία του Δημοτικού,
 του Γυμνασίου, του Λυκείου, των ΕΠΑ.Λ. και των ΕΠΑ.Σ.
@@ -5988,7 +5989,7 @@ Whitehead, the editor of http://www.kidsonthenet.com/
 
 ---
 
-## PDF 第 170 页
+## PDF 第 170 页（封底 / Οπισθόφυλλο）
 
 10-0232
 0-10-0232

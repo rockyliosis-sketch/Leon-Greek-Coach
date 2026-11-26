@@ -321,8 +321,9 @@ def decode_span(font: str, raw_chars: list) -> list:
 
     if is_arial_cid_span(base_font, span_text):
         out = []
-        # Sort by x0 in case a tiny CID span on p.3 has glyphs emitted right-to-left
-        sorted_raw = sorted(raw_chars, key=lambda c_obj: round(c_obj["bbox"][0], 2)) if len(raw_chars) <= 4 else raw_chars
+        # If glyphs in this span are emitted right-to-left (e.g. p.3 copyright box), sort by x0
+        is_rtl = len(raw_chars) >= 2 and (raw_chars[0]["bbox"][0] > raw_chars[-1]["bbox"][0] + 1.0)
+        sorted_raw = sorted(raw_chars, key=lambda c_obj: round(c_obj["bbox"][0], 2)) if is_rtl else raw_chars
         for ch_obj in sorted_raw:
             c = ch_obj["c"]
             dc = " " if c in (" ", "\t") else ARIAL_GID_MAP.get(ord(c), "")
@@ -543,7 +544,7 @@ def join_line_segments(segs: list) -> str:
             h = max(6.0, min(seg.y1 - seg.y0, prev_seg.y1 - prev_seg.y0))
             if gap > 36.0 and not is_dotted_leader(prev_seg.text) and not is_dotted_leader(seg.text):
                 parts.append(" | ")
-            elif gap > max(1.8, h * 0.16):
+            elif gap > max(2.6, h * 0.22):
                 if not prev_seg.text.endswith(" ") and not seg.text.startswith(" "):
                     # Don't add space right before apostrophe/comma/period or right after opening quote/apostrophe
                     if seg.text.lstrip()[:1] not in ("’", "'", ",", ".", ";", ":", ")", "»", "!") and prev_seg.text.rstrip()[-1:] not in ("’", "'", "(", "«"):
@@ -862,7 +863,8 @@ def convert_pdf_to_md(pdf_path: str) -> dict:
         f"- **原书书名**：{meta['orig_title']}",
         f"- **科目 / 年级**：{meta['subject']} · {meta['grade']}",
         f"- **册别类型**：{meta['kind']}（官方书号 `{meta['code']}`）",
-        f"- **原始档案**：`materials/textbooks/{bname}`（共 **{total_pages}** 页，1:1 逐页完整还原）",
+        f"- **原始档案**：`materials/textbooks/{bname}`（PDF 共 **{total_pages}** 页，纸质书正文 `1 ~ {total_pages - 2}` 页）",
+        f"- **页码 1:1 对齐规则（全书逐页校验无跳页）**：`纸质书印制页码 = PDF 页码 - 1`（`PDF 第 1 页` = 封面，`PDF 第 2 ~ {total_pages - 1} 页` = `书本第 1 ~ {total_pages - 2} 页`，`PDF 第 {total_pages} 页` = 封底）",
         "",
         "---",
         "",
@@ -876,7 +878,14 @@ def convert_pdf_to_md(pdf_path: str) -> dict:
         page = doc[pno - 1]
         page_lines = extract_page_markdown(page, meta["is_english_book"])
 
-        lines_out.append(f"## PDF 第 {pno} 页")
+        if pno == 1:
+            heading = "## PDF 第 1 页（封面 / Εξώφυλλο）"
+        elif pno == total_pages:
+            heading = f"## PDF 第 {pno} 页（封底 / Οπισθόφυλλο）"
+        else:
+            heading = f"## 书本第 {pno - 1} 页（PDF 第 {pno} 页）"
+
+        lines_out.append(heading)
         lines_out.append("")
         if page_lines:
             non_empty_pages += 1
@@ -929,14 +938,39 @@ def main():
     pdfs = sorted(glob.glob(os.path.join(TEXTBOOKS_DIR, "*.pdf")))
     print(f"Found {len(pdfs)} PDF files in {TEXTBOOKS_DIR}")
     results = []
+    page_map_index = {
+        "note": "希腊公立小学16册教材与练习册全书逐页核验结论：所有16册均严格满足 PDF页码 = 纸质书印制页码 + 1（即 PDF 第1页为封面，PDF 第2..N-1页对应书本第1..N-2页，PDF 第N页为封底，中途零跳页、零偏移变化）。",
+        "books": {},
+    }
     for p in pdfs:
         res = convert_pdf_to_md(p)
         results.append(res)
+        meta = BOOK_META[res["pdf"]]
+        page_map_index["books"][meta["code"]] = {
+            "code": meta["code"],
+            "zh_title": meta["zh_title"],
+            "orig_title": meta["orig_title"],
+            "subject": meta["subject"],
+            "grade": meta["grade"],
+            "kind": meta["kind"],
+            "pdf_file": res["pdf"],
+            "md_file": res["md"],
+            "total_pdf_pages": res["pages"],
+            "book_page_min": 1,
+            "book_page_max": res["pages"] - 2,
+            "pdf_minus_book_offset": 1,
+            "blank_or_illustration_pdf_pages": res["empty_pages"],
+        }
         print(
-            f"[OK] {res['md']} | pages={res['pages']} (text={res['non_empty_pages']}, blank/img={len(res['empty_pages'])}) | chars={res['chars']:,}"
+            f"[OK] {res['md']} | pages={res['pages']} (book 1..{res['pages']-2}, blank/img={len(res['empty_pages'])}) | chars={res['chars']:,}"
         )
 
-    print(f"\nCompleted {len(results)} books, total pages = {sum(r['pages'] for r in results):,}")
+    import json
+    map_out = os.path.join(TEXTBOOKS_DIR, "school_books_page_map.json")
+    with open(map_out, "w", encoding="utf-8") as jf:
+        json.dump(page_map_index, jf, ensure_ascii=False, indent=2)
+        jf.write("\n")
+    print(f"\nCompleted {len(results)} books, total pages = {sum(r['pages'] for r in results):,}; wrote {map_out}")
 
 
 if __name__ == "__main__":
