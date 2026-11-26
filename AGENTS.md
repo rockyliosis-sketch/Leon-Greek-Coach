@@ -12,7 +12,7 @@ This document establishes the universal development, maintenance, and synchroniz
 - **开工先读 `工作进程.md`**（项目根目录）：当前状态、遗留事项、上一次停在哪。
 - **涉及 Firebase Storage / 云端资源必读 `00_重要_Firebase_Blaze方案与费用监控红线.md`**（永久保留，严禁删除）：每次上传或改动云端音频前必须先实测已用容量、汇报当前 Blaze 方案与已用占比（5 GB 存储 / 100 GB 月流量 / 5,000 次月上传），并更新该文件底部用量记录表。
 - **收工更新 `工作进程.md`**：在「三、工作记录」最上面加一节（家长问了什么 / 做了什么 / 停在哪 / 遗留），并同步「一、当前状态」「二、遗留事项」。
-- **每次发版后**运行 `bash scripts/backup_github_releases.sh`，把 GitHub Release 说明备份到 `docs/GitHub发布记录备份.md`。
+- **功能更新必问发版（MANDATORY）**：以后只要完成任何功能更新（推送至 `main` 上线后），必须主动询问家长**是否需要更新 GitHub Release**（以及同步归档详细版本说明 `.md` 到 GitHub 和本地）；家长确认后再打 Tag、发布 Release，并运行 `bash scripts/backup_github_releases.sh` 将 GitHub Release 说明备份到 `docs/GitHub发布记录备份.md`。
 - 课堂笔记 `materials/notes/YYYY-MM-DD.md` 只放「`# YYYY-MM-DD` + `| 希腊语 | 中文 |` 表」，家长会整篇粘进后台导入，不许夹校验报告、图源、对号、备注列。
 
 ---
