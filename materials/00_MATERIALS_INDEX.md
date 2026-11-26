@@ -19,11 +19,36 @@
 
 ## 📚 1. 课本教材区 (`textbooks/`)
 
-- [（已压缩）LEON_S GREEK TEXTBOOK A1-A.md](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A1-A.md)：**A1 上册课本** (原书 Units 1~15 / 全局 Units 01~15)
-- [（已压缩）LEON_S GREEK TEXTBOOK A1-B.md](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A1-B.md)：**A1 下册课本** (原书 Units 16~30 / 全局 Units 16~30)
-- [（已压缩）LEON_S GREEK TEXTBOOK A2.md](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A2.md)：**A2 全册课本** (原书 Units 1~9 / 全局 Units 31~39)
-- [（已压缩）LEON_S GREEK TEXTBOOK B.md](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20B.md)：**B 级 1:1 原版 394 页全本档案** (原书 Units 1~20 / 全局 Units 40~59，共 24,155 行)
-- [（精炼版）LEON_S GREEK TEXTBOOK B 核心教案与知识档案.md](file:///Users/johnsmacbook/Documents/antigravity%20IDE/Projects/Leon-Greek-Coach/materials/textbooks/（精炼版）LEON_S%20GREEK%20TEXTBOOK%20B%20核心教案与知识档案.md)：**B 级核心教案精炼讲义**
+### 1.1 希腊语分级私教核心课本（A1 ~ B）
+- [（已压缩）LEON_S GREEK TEXTBOOK A1-A.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A1-A.md)：**A1 上册课本** (原书 Units 1~15 / 全局 Units 01~15)
+- [（已压缩）LEON_S GREEK TEXTBOOK A1-B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A1-B.md)：**A1 下册课本** (原书 Units 16~30 / 全局 Units 16~30)
+- [（已压缩）LEON_S GREEK TEXTBOOK A2.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20A2.md)：**A2 全册课本** (原书 Units 1~9 / 全局 Units 31~39)
+- [（已压缩）LEON_S GREEK TEXTBOOK B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/（已压缩）LEON_S%20GREEK%20TEXTBOOK%20B.md)：**B 级 1:1 原版 394 页全本档案** (原书 Units 1~20 / 全局 Units 40~59，共 24,155 行)
+- [（精炼版）LEON_S GREEK TEXTBOOK B 核心教案与知识档案.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/（精炼版）LEON_S%20GREEK%20TEXTBOOK%20B%20核心教案与知识档案.md)：**B 级核心教案精炼讲义**
+
+### 1.2 希腊公立小学原版教材与练习册 1:1 全本档案（语言 / 历史 / 英语，共 16 册 1,560 页）
+
+#### （1）希腊语 · 语言课 (`Γλώσσα` · 三/四年级共 10 册)
+- [10-0048-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-A.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0048-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-A.md)：**三年级语言课本（第 1 册 · Τεύχος Α΄）**（90 页）
+- [10-0050-02_V2_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0050-02_V2_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-B.md)：**三年级语言课本（第 2 册 · Τεύχος Β΄）**（90 页）
+- [10-0052-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-G.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0052-02_Glossa_G-Dimotikou_Vivlio-Mathiti_Teuchos-G.md)：**三年级语言课本（第 3 册 · Τεύχος Γ΄）**（74 页）
+- [10-0049-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-A.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0049-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-A.md)：**三年级语言练习册（第 1 册 · Τεύχος Α΄）**（74 页）
+- [10-0051-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0051-02_Glossa_G-Dimotikou_Tetradio-Ergasion_Teuchos-B.md)：**三年级语言练习册（第 2 册 · Τεύχος Β΄）**（74 页）
+- [10-0202-01_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-A.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0202-01_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-A.md)：**四年级语言课本（第 1 册 · Τεύχος Α΄ · Πετώντας με τις λέξεις）**（98 页）
+- [10-0084-02_V2_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0084-02_V2_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-B.md)：**四年级语言课本（第 2 册 · Τεύχος Β΄ · Πετώντας με τις λέξεις）**（110 页）
+- [10-0086-02_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-G.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0086-02_V3_Glossa_D-Dimotikou_Vivlio-Mathiti_Teuchos-G.md)：**四年级语言课本（第 3 册 · Τεύχος Γ΄ · Πετώντας με τις λέξεις）**（98 页）
+- [10-0083-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-A.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0083-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-A.md)：**四年级语言练习册（第 1 册 · Τεύχος Α΄ · Πετώντας με τις λέξεις）**（82 页）
+- [10-0085-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-B.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0085-02_V2_Glossa_D-Dimotikou_Tetradio-Ergasion_Teuchos-B.md)：**四年级语言练习册（第 2 册 · Τεύχος Β΄ · Πετώντας με τις λέξεις）**（74 页）
+
+#### （2）历史课 (`Ιστορία` · 三/四年级共 4 册)
+- [10-0056-02_V3_Istoria_G-Dimotikou_Vivlio-Mathiti.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0056-02_V3_Istoria_G-Dimotikou_Vivlio-Mathiti.md)：**三年级历史课本（Από τη Μυθολογία στην Ιστορία）**（154 页）
+- [10-0057-02_V2_Istoria_G-Dimotikou_Tetradio-Ergasion.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0057-02_V2_Istoria_G-Dimotikou_Tetradio-Ergasion.md)：**三年级历史练习册（Από τη Μυθολογία στην Ιστορία）**（62 页）
+- [10-0090-02_Istoria_D-Dimotikou_Vivlio-Mathiti.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0090-02_Istoria_D-Dimotikou_Vivlio-Mathiti.md)：**四年级历史课本（Στα αρχαία χρόνια）**（146 页）
+- [10-0091-02_Istoria_D-Dimotikou_Tetradio-Ergasion.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0091-02_Istoria_D-Dimotikou_Tetradio-Ergasion.md)：**四年级历史练习册（Στα αρχαία χρόνια）**（58 页）
+
+#### （3）英语课 (`Αγγλικά` · 四年级共 2 册)
+- [10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0232-01_V2_Agglika_D-Dimotikou_Vivlio-Mathiti.md)：**四年级英语课本（English 4th Grade · Pupil's Book）**（170 页）
+- [10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.md](file:///Users/johnsmacbook/Documents/Codex/Leon-Greek-Coach/materials/textbooks/10-0079-02_Agglika_D-Dimotikou_Tetradio-Ergasion.md)：**四年级英语练习册（English 4th Grade · Activity Book）**（106 页）
 
 ---
 
