@@ -1,4 +1,10 @@
 {
+  "headers": [
+    {
+      "source": "/version.json",
+      "headers": [{ "key": "X-Vercel-Config", "value": "root" }]
+    }
+  ],
   "experimentalServices": {
     "frontend": {
       "root": "frontend",
