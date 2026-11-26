@@ -100,7 +100,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: '仅支持 POST 请求' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.Gemini_Api_Key ||
+    Object.entries(process.env).find(([k]) => k.toLowerCase() === 'gemini_api_key')?.[1];
   if (!apiKey) {
     return res.status(503).json({
       error: '尚未在 Vercel 后台配置 GEMINI_API_KEY 环境变量，请配置并重新部署后再试。',
