@@ -47,6 +47,16 @@ export function getMondayDateStr(dateStr: string): string {
   return `${yy}-${mm}-${dd}`;
 }
 
+/** 按自然周生成独立单元号（< 1000，避免与按页合成单元号撞车），确保不同周的新词批次独立进入遗忘曲线 */
+export function getWeeklyNoteUnit(dateStr: string, baseOffset = 200): number {
+  const monday = getMondayDateStr(dateStr);
+  const [y, m, d] = monday.split('-').map(Number);
+  const dt = new Date(y, (m || 1) - 1, d || 1);
+  const epoch = new Date(2025, 8, 1); // 2025-09-01
+  const weeks = Math.max(0, Math.floor((dt.getTime() - epoch.getTime()) / (7 * 86400000)));
+  return baseOffset + (weeks % 280);
+}
+
 export function normalizeGreekKey(text: string): string {
   return String(text || '')
     .trim()

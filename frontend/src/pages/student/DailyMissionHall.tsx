@@ -46,6 +46,7 @@ import {
   getMondayDateStr,
   getTodayStr,
   getWeekdayLabel,
+  getWeeklyNoteUnit,
   normalizeGreekKey,
   stripLeadingArticleParens,
   type DayMode,
@@ -3721,6 +3722,7 @@ const DailyMissionHall: React.FC = () => {
                   return Number.isFinite(n) && n > acc ? n : acc;
                 }, 90000);
                 const toAdd: any[] = [];
+                const histUnitNum = getWeeklyNoteUnit(todayStr, 500);
                 for (const ew of epWords) {
                   const cleanEl = stripLeadingArticleParens(ew.el);
                   const cleanZh = String(ew.zh || '').replace(/[\u0370-\u03FF\u1F00-\u1FFF]/g, '').trim();
@@ -3732,7 +3734,7 @@ const DailyMissionHall: React.FC = () => {
                   toAdd.push({
                     id: maxId,
                     book_id: '历史故事词汇',
-                    unit: 103,
+                    unit: histUnitNum,
                     word_greek: cleanEl,
                     word_chinese: cleanZh,
                     pronunciation: 'new',
@@ -3748,10 +3750,10 @@ const DailyMissionHall: React.FC = () => {
                     custom_vocab: [...existingCustom, ...toAdd],
                     unit_study_dates: {
                       ...(sharedState.unit_study_dates || {}),
-                      ['历史故事词汇_103']: getMondayDateStr(todayStr),
+                      [`历史故事词汇_${histUnitNum}`]: getMondayDateStr(todayStr),
                     },
                   };
-                  setHistorySyncMsg(`已自动将该课 ${toAdd.length} 个希腊语历史核心词同步至每日刷题词库与 7 天必练！`);
+                  setHistorySyncMsg(`已自动将该课 ${toAdd.length} 个希腊语历史核心词排入艾宾浩斯遗忘曲线与每日刷题词库！`);
                   setTimeout(() => setHistorySyncMsg(null), 5000);
                 }
               }

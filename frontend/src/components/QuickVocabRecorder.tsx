@@ -3,6 +3,7 @@ import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X } from 
 import {
   findVocabSuggestions,
   getMondayDateStr,
+  getWeeklyNoteUnit,
   normalizeGreekKey,
   speakGreekWord,
   validateNewVocabEntry,
@@ -121,7 +122,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
     }, 90000);
 
     const bookId = '今日生词笔记';
-    const unitNum = 101;
+    const unitNum = getWeeklyNoteUnit(todayStr, 200);
     const newWords = validPairs.map((pair) => {
       maxId += 1;
       return {
@@ -158,7 +159,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
 
     setFeedback({
       type: 'ok',
-      msg: `成功批量入库 ${newWords.length} 个词！已自动加入单词表、7 天每日必练与今日学习报告。${extraNotes.length ? `（${extraNotes.join('，')}）` : ''}`,
+      msg: `成功批量入库 ${newWords.length} 个词！已自动排入艾宾浩斯遗忘曲线（0/1/2/4/7/15/30/60/90 天）与今日学习报告。${extraNotes.length ? `（${extraNotes.join('，')}）` : ''}`,
     });
   };
 

@@ -35,7 +35,7 @@ import {
 } from '../../lib/pageProgress';
 import {
   type ReviewUnit, type UnitBand,
-  buildReviewUnits, pickDailyReviewUnits, isUnitDue, daysBetween,
+  buildReviewUnits, pickDailyReviewUnits, isUnitDue, daysBetween, EBBINGHAUS_DAYS,
 } from '../../lib/reviewUnits';
 import { builtinPageDate, hasBuiltinCalendar, BOOK_WINDOW } from '../../lib/studyCalendar';
 import examQuestionsData from '../../data/exam_questions.json';
@@ -163,6 +163,33 @@ const describeReviewUnit = (u: ReviewUnit): { tag: string; title: string; sub: s
       title: `课本第 ${u.pages[0]}–${u.pages[1]} 页`,
       sub: `${name} · 词汇复习`,
       grammar: '这一段是按课本页码复习词汇。儿童版 A1 没有按单元编排的语法专题，重点是把这些页上的词认熟、拼对。',
+    };
+  }
+
+  // 自定义生词 / 私教课堂笔记 / 历史故事词汇（按周归拢批次）
+  if (u.key.includes('#w#') || ['今日生词笔记', '笔记', '历史故事词汇', '学习笔记'].includes(BOOK)) {
+    const shortDate = u.studyDate ? u.studyDate.slice(5) : '';
+    if (BOOK === '今日生词笔记') {
+      return {
+        tag: `自录生词 ${shortDate}`,
+        title: `日常自录生词（${u.studyDate} 批次）`,
+        sub: `共 ${u.wordIds.length} 个词 · 按艾宾浩斯遗忘曲线滚动回访`,
+        grammar: '这一批是你日常在课业与阅读中主动查录的生词，按 0/1/2/4/7/15/30/60/90 天节奏反复巩固。',
+      };
+    }
+    if (BOOK === '历史故事词汇') {
+      return {
+        tag: `历史词 ${shortDate}`,
+        title: `希腊历史故事核心词（${u.studyDate} 批次）`,
+        sub: `共 ${u.wordIds.length} 个词 · 听说读写联动巩固`,
+        grammar: '出自已收听的希腊历史故事馆课程核心词与习语，按遗忘曲线定期唤醒记忆。',
+      };
+    }
+    return {
+      tag: `课堂笔记 ${shortDate}`,
+      title: `私教课堂笔记（${u.studyDate} 批次）`,
+      sub: `共 ${u.wordIds.length} 个词 · 按艾宾浩斯遗忘曲线滚动回访`,
+      grammar: '出自私教课手写课堂笔记生词，按遗忘曲线节奏定期穿插进各题型复习。',
     };
   }
 
@@ -402,9 +429,11 @@ const LOOKBACK_DAYS = 3;
 const MODULE_SPECS_CONST: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = [
   { key: 'matching', want: 40, ok: w => String(w.word_greek || '').length <= 25 },
   { key: 'spelling', want: 40, ok: w => !String(w.word_greek || '').includes(' ') && String(w.word_greek || '').length <= 15 },
-  { key: 'quiz',     want: 30 },
+  // quiz 总量 30 道中含 15 道课本原句填空 + 8 道语法选择题，真实单词槽位约 7 道（由 wantOverrides 动态精确对齐，不再分配 30 道再被截断丢弃）
+  { key: 'quiz',     want: 7  },
   { key: 'grzh',     want: 20 },
-  { key: 'zhgr',     want: 20 },
+  // zhgr 总量 20 道中含 6 道语法填空/翻译题，真实单词槽位约 14 道
+  { key: 'zhgr',     want: 14 },
   { key: 'tf',       want: 40 },
 ];
 
@@ -430,19 +459,55 @@ const dailyHash = (id: number, seed: number): number => {
 };
 
 /**
+ * 判断一个带 note_date 的自定义词在 dateStr 当天是否处于「艾宾浩斯到期或顺延补考」窗口：
+ *   - 精确命中 EBBINGHAUS_DAYS = [0, 1, 2, 4, 7, 15, 30, 60, 90]；
+ *   - 或前 1–2 天刚命中节点但因当日 50% 新词上限未排上（!avoid.has(w.id)），自动顺延补考，一词不漏。
+ */
+const getNoteWordEbbinghausRank = (
+  w: any, dateStr: string, avoid: Set<number>, boostIds?: Set<number>
+): number | null => {
+  if (boostIds?.has(w.id)) return 0; // 前几日错题或闪卡「忘了」到期加练最优先
+  if (!w?.note_date) return null;
+  const d = daysBetween(w.note_date, dateStr);
+  if (d < 0) return null;
+  if (d === 0) return 1; // 今日新录词
+  if (EBBINGHAUS_DAYS.includes(d)) {
+    // 第 4 天及以后的节点若近 3 天刚考过（例如顺延考过），不再重复出；第 1、2 天为标准记忆巩固节点
+    if (d >= 4 && avoid.has(w.id)) return null;
+    return avoid.has(w.id) ? 3 : 2;
+  }
+  // 顺延补考：前 1–2 天本该到期但当日被 50% 配额截断未考到的词（!avoid.has）
+  if (!avoid.has(w.id) && (EBBINGHAUS_DAYS.includes(d - 1) || EBBINGHAUS_DAYS.includes(d - 2))) {
+    return 2;
+  }
+  return null;
+};
+
+/**
  * 把当天的词**分配**给各题型, 互不重叠。
  *
- * 旧做法是每个题型都从同一副牌里各抽一遍(只换随机种子), 于是同一个词必然在
- * 拼写/选择/连连看/两种翻译里反复出现 —— 这是「老做重复题」的第一个根因。
- *
- * `avoid` 是前几天已经出过的词: 优先绕开, 但**只在还够用的时候绕**——
- * 宁可重复一道题, 也不能让题目变少(家长明确要求题量不许减)。
+ * 2026-11-26 升级：
+ *  1. 各模块按真实可用单词槽位（wantOverrides）精确发牌，杜绝下游 quiz/zhgr 截断吞词；
+ *  2. 新词/笔记词与错题加练按艾宾浩斯 [0,1,2,4,7,15,30,60,90] 精准触发，且总量封顶为每日总词位的 50%（约 80 题），
+ *     超出部分次日自动顺延（!avoid 优先），保证另外 50% 雷打不动留给课本与远期遗忘曲线复习；
+ *  3. 常规复习词严格避开近 3 天已做词（`avoid`）。
  */
 const partitionModules = (
-  deck: any[], fallbackPool: any[], dateStr: string, avoid: Set<number>
+  deck: any[],
+  fallbackPool: any[],
+  dateStr: string,
+  avoid: Set<number>,
+  opts?: {
+    wantOverrides?: Partial<Record<string, number>>;
+    priorityBoostIds?: Set<number>;
+  }
 ): Record<string, any[]> => {
+  const specs = MODULE_SPECS_CONST.map(m => ({
+    ...m,
+    want: Math.max(0, opts?.wantOverrides?.[m.key] ?? m.want),
+  }));
   const res: Record<string, any[]> = {};
-  MODULE_SPECS_CONST.forEach(m => { res[m.key] = []; });
+  specs.forEach(m => { res[m.key] = []; });
 
   const parts = dateStr.split('-');
   const y = parseInt(parts[0], 10) || 2026;
@@ -451,49 +516,92 @@ const partitionModules = (
   const daySeed = (y * 372 + mo * 31 + da) * 101;
   const dayCount = Math.floor(new Date(y, mo - 1, da).getTime() / 86400000);
 
-  // 录入 0–7 天内的课堂笔记词: 每天必须分到题位。
-  // 从前它们和 400 多个复习词一起按 id 哈希洗牌, 每天 190 个题位轮不轮得到全看运气 ——
-  // 2026-09-19 录入的 26 个词, 6 天里在有记录的三个题型中一共只出现了 8 次。
-  const isFreshNote = (w: any) => {
-    if (!w.note_date) return false;
-    const d = daysBetween(w.note_date, dateStr);
-    return d >= 0 && d <= 7;
-  };
-  // 前几天出过的排到最后 —— 够用就轮不到它们, 不够用时它们仍然顶得上
-  const order3 = (a: any, b: any) => {
-    const fa = isFreshNote(a) ? 0 : 1, fb = isFreshNote(b) ? 0 : 1;
-    if (fa !== fb) return fa - fb;
+  const totalWant = specs.reduce((s, m) => s + m.want, 0);
+  const maxPrioritySlots = Math.floor(totalWant * 0.5);
+
+  // 1. 拆分「优先队列（错题/SRS加练 + 艾宾浩斯到期自定义词 + 顺延未考词）」与「常规课本/单元复习队列」
+  const rawPriority: Array<{ w: any; rank: number; diff: number }> = [];
+  const rawRegular: any[] = [];
+  deck.forEach(w => {
+    const r = getNoteWordEbbinghausRank(w, dateStr, avoid, opts?.priorityBoostIds);
+    if (r !== null) {
+      const diff = w.note_date ? Math.max(0, daysBetween(w.note_date, dateStr)) : 0;
+      rawPriority.push({ w, rank: r, diff });
+    } else {
+      rawRegular.push(w);
+    }
+  });
+
+  const isPassiveHistory = (w: any) => w?.source === 'history_story' || w?.book_id === '历史故事词汇';
+  rawPriority.sort((a, b) => {
+    const ha = isPassiveHistory(a.w) ? 1 : 0;
+    const hb = isPassiveHistory(b.w) ? 1 : 0;
+    if (a.rank !== b.rank) {
+      // 孩子亲手录的生词 / 私教笔记词哪怕是 Day 1/2 复习，也优先于自动同步的附属历史词，绝不喧宾夺主
+      if (ha !== hb && a.rank <= 3 && b.rank <= 3) return ha - hb;
+      return a.rank - b.rank;
+    }
+    if (ha !== hb) return ha - hb;
+    if (a.diff !== b.diff) return a.diff - b.diff;
+    return dailyHash(a.w.id, daySeed) - dailyHash(b.w.id, daySeed);
+  });
+
+  const dedupPriorityAll = filterDuplicateTranslations(rawPriority.map(x => x.w));
+  const cappedPriority = dedupPriorityAll.slice(0, maxPrioritySlots);
+  const overflowPriority = dedupPriorityAll.slice(maxPrioritySlots);
+
+  const priorityIdSet = new Set<number>(cappedPriority.map(w => w.id));
+  const seenZhFromPriority = new Set<string>(cappedPriority.map(w => cleanChinese(w.word_chinese)));
+  const seenGrFromPriority = new Set<string>(cappedPriority.map(w => removeGreekAccents(w.word_greek)));
+
+  const regularFiltered = filterDuplicateTranslations(
+    rawRegular.filter(w =>
+      !priorityIdSet.has(w.id) &&
+      !seenZhFromPriority.has(cleanChinese(w.word_chinese)) &&
+      !seenGrFromPriority.has(removeGreekAccents(w.word_greek))
+    )
+  ).sort((a, b) => {
     const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
     if (ra !== rb) return ra - rb;
     return dailyHash(a.id, daySeed) - dailyHash(b.id, daySeed);
-  };
-  // 去重是先到先得, 笔记词又排在卡组最末: 不先把它们挪到前面, 一撞中文就被丢掉
-  // (如笔记的 επισκευάζω「修」撞上课本的 φτιάχνω「修」)。
-  const notesFirst = [...deck].sort((a, b) => (isFreshNote(a) ? 0 : 1) - (isFreshNote(b) ? 0 : 1));
-  const shuffled = filterDuplicateTranslations(notesFirst).sort(order3);
-
-  // 每天轮换「谁先挑」, 避免同一个题型总是吃到最新学的词
-  const rot = dayCount % MODULE_SPECS_CONST.length;
-  const order = [...MODULE_SPECS_CONST.slice(rot), ...MODULE_SPECS_CONST.slice(0, rot)];
-
-  // 贪心均衡分配: 每个词只进一个题型, 优先给填充率最低的
-  shuffled.forEach(w => {
-    const cands = order.filter(m => res[m.key].length < m.want && (!m.ok || m.ok(w)));
-    if (cands.length === 0) return;
-    cands.sort((a, b) => (res[a.key].length / a.want) - (res[b.key].length / b.want));
-    res[cands[0].key].push(w);
   });
 
-  // 还没填满的, 从「已解锁但今天不在复习计划里」的词补齐, 仍然不重复
+  // 每天轮换「谁先挑」, 避免同一个题型总是吃到最新学的词
+  const rot = dayCount % specs.length;
+  const order = [...specs.slice(rot), ...specs.slice(0, rot)];
+
+  const assignWord = (w: any) => {
+    const cands = order.filter(m => res[m.key].length < m.want && (!m.ok || m.ok(w)));
+    if (cands.length === 0) return false;
+    cands.sort((a, b) => (res[a.key].length / (a.want || 1)) - (res[b.key].length / (b.want || 1)));
+    res[cands[0].key].push(w);
+    return true;
+  };
+
+  // 先放封顶 50% 的优先词，再放 50%+ 的课本与单元复习词
+  cappedPriority.forEach(assignWord);
+  regularFiltered.forEach(assignWord);
+
+  // 还没填满的, 先从全量已解锁课本词库（避开近 3 天已做词）补齐；实在还不够再用溢出新词兜底
   const used = new Set<number>();
-  Object.values(res).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
-  const extra = filterDuplicateTranslations(fallbackPool.filter(w => !used.has(w.id)))
-    .sort((a, b) => {
-      const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
-      if (ra !== rb) return ra - rb;
-      return dailyHash(a.id, daySeed + 7919) - dailyHash(b.id, daySeed + 7919);
-    });
-  MODULE_SPECS_CONST.forEach(m => {
+  const usedZh = new Set<string>();
+  const usedGr = new Set<string>();
+  Object.values(res).forEach(arr => arr.forEach((w: any) => {
+    used.add(w.id);
+    usedZh.add(cleanChinese(w.word_chinese));
+    usedGr.add(removeGreekAccents(w.word_greek));
+  }));
+
+  const extra = filterDuplicateTranslations(
+    [...fallbackPool.filter(w => !used.has(w.id)), ...overflowPriority.filter(w => !used.has(w.id))]
+      .filter(w => !usedZh.has(cleanChinese(w.word_chinese)) && !usedGr.has(removeGreekAccents(w.word_greek)))
+  ).sort((a, b) => {
+    const ra = avoid.has(a.id) ? 1 : 0, rb = avoid.has(b.id) ? 1 : 0;
+    if (ra !== rb) return ra - rb;
+    return dailyHash(a.id, daySeed + 7919) - dailyHash(b.id, daySeed + 7919);
+  });
+
+  specs.forEach(m => {
     for (const w of extra) {
       if (res[m.key].length >= m.want) break;
       if (used.has(w.id)) continue;
@@ -740,7 +848,7 @@ interface Word {
   note_date?: string;
 }
 
-const EBBINGHAUS_INTERVALS = [0, 1, 2, 3, 4, 5, 7, 10, 15, 30, 60, 90];
+const EBBINGHAUS_INTERVALS = EBBINGHAUS_DAYS;
 
 const START_DATE = "2025-09-06"; // Leon started classes on September 6, 2025
 
@@ -1010,28 +1118,8 @@ const getResolvedActivationDates = (
 const isWordDueToday = (wordId: number, targetDateStr: string, activatedDatesMap: Record<number, string>) => {
   const actDateStr = activatedDatesMap[wordId];
   if (!actDateStr || actDateStr === 'LOCKED') return false;
-  
-  const partsAct = actDateStr.split('-');
-  const partsTgt = targetDateStr.split('-');
-  if (partsAct.length !== 3 || partsTgt.length !== 3) return false;
-  
-  const actD = new Date(parseInt(partsAct[0], 10), parseInt(partsAct[1], 10) - 1, parseInt(partsAct[2], 10), 0, 0, 0, 0);
-  const tgtD = new Date(parseInt(partsTgt[0], 10), parseInt(partsTgt[1], 10) - 1, parseInt(partsTgt[2], 10), 0, 0, 0, 0);
-  
-  if (isNaN(actD.getTime()) || isNaN(tgtD.getTime())) return false;
-  
-  const diffTime = tgtD.getTime() - actD.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-  
-  // If it's a note-derived word, it is due EVERY DAY in its first week (0 to 7 days)
-  const word = staticVocabData.textbook_vocabulary?.find((w: any) => w.id === wordId);
-  if (word && word.note_date) {
-    if (diffDays >= 0 && diffDays <= 7) {
-      return true;
-    }
-  }
-  
-  return diffDays === 0 || EBBINGHAUS_INTERVALS.includes(diffDays);
+  const diffDays = daysBetween(actDateStr, targetDateStr);
+  return diffDays >= 0 && EBBINGHAUS_INTERVALS.includes(diffDays);
 };
 
 // Helper to remove accents and case for safe verification
@@ -2360,6 +2448,20 @@ export default function StudentApp() {
   const [disabledWords, setDisabledWords] = useState<string[]>([]);
   const [pageMarksState, setPageMarksState] = useState<PageMark[]>([]);
   const answerLogRef = React.useRef<any[]>([]);
+  // 仅保存「今天之前（d < 今日）」的历史作答记录，供 3 天真实防重与错题次日加练使用；
+  // 刻意排除今日实时写入的记录，防止孩子做题中途 4 秒落盘回声触发题池重洗牌！
+  const [pastAnswerLog, setPastAnswerLog] = useState<any[]>(() => {
+    try {
+      const today = getGreeceDateString();
+      const raw = JSON.parse(localStorage.getItem('leon_answer_log') || '[]');
+      return Array.isArray(raw) ? raw.filter((e: any) => e?.d && e.d < today) : [];
+    } catch { return []; }
+  });
+  const pastAnswerLogSigRef = React.useRef<string>('');
+  const [vocabSrsState, setVocabSrsState] = useState<Record<string, any>>(() => {
+    try { return JSON.parse(localStorage.getItem('leon_vocab_srs') || '{}'); } catch { return {}; }
+  });
+  const vocabSrsSigRef = React.useRef<string>('');
   const questionStartRef = React.useRef<number>(Date.now());
   const saveTimerRef = React.useRef<any>(null);
   // 报错弹窗：先问原因，再决定怎么处理
@@ -2776,6 +2878,21 @@ export default function StudentApp() {
           const seen = new Set(state.answer_log.map(sig));
           const pendingLocal = (answerLogRef.current || []).filter((e: any) => !seen.has(sig(e)));
           answerLogRef.current = [...state.answer_log, ...pendingLocal].slice(-4000);
+          const todayNow = getGreeceDateString();
+          const pastOnly = answerLogRef.current.filter((e: any) => e?.d && e.d < todayNow);
+          const nextPastSig = `${pastOnly.length}:${pastOnly[pastOnly.length - 1]?.d || ''}:${pastOnly[pastOnly.length - 1]?.q || ''}`;
+          if (nextPastSig !== pastAnswerLogSigRef.current) {
+            pastAnswerLogSigRef.current = nextPastSig;
+            setPastAnswerLog(pastOnly);
+          }
+        }
+        if (state.vocab_srs) {
+          let nextSrsSig = '';
+          try { nextSrsSig = JSON.stringify(state.vocab_srs); } catch { nextSrsSig = ''; }
+          if (nextSrsSig !== vocabSrsSigRef.current) {
+            vocabSrsSigRef.current = nextSrsSig;
+            setVocabSrsState(state.vocab_srs);
+          }
         }
 
         const finalActivated = getResolvedActivationDates(mergedVocab, state.unit_study_dates || {});
@@ -2879,34 +2996,131 @@ export default function StudentApp() {
     [allReviewUnits, selectedDateStr]);
 
 
-  // 今天的卡组 = 今天这几个复习单元里的词
+  /**
+   * 从「今天之前最近 3 天」的真实做题记录（pastAnswerLog）与闪卡记忆库（vocab_srs）提取：
+   *  1. 近 3 天真实答对过的单词 / 单词表词 / 填空原句 / 语法题 —— 用于 100% 精准避重，不受今日新录词影响；
+   *  2. 近 3 天最后一次作答仍为错（ok=false）的词 + 闪卡标了「忘了」（level=0 且已到期）的词 —— 今日优先加练！
+   */
+  const pastAnswerInsights = useMemo(() => {
+    const minDate = shiftDateStr(selectedDateStr, -LOOKBACK_DAYS);
+    const recentSolvedWordKeys = new Set<string>();
+    const lastWordOutcome = new Map<string, boolean>();
+    const recentGlossarySolvedKeys = new Set<string>();
+    const lastGlossaryOutcome = new Map<string, boolean>();
+    const recentClozePrefixes = new Set<string>();
+    const recentGrammarNormPrefixes = new Set<string>();
+
+    (pastAnswerLog || []).forEach((e: any) => {
+      const d = String(e?.d || '');
+      if (!d || d < minDate || d >= selectedDateStr) return;
+      const mod = String(e?.m || '');
+      const rawQ = String(e?.q || '');
+      if (!rawQ) return;
+
+      if (mod === 'cloze') {
+        recentClozePrefixes.add(rawQ.split('\n')[0].trim().slice(0, 32));
+        return;
+      }
+      if (mod === 'grammar_drill') {
+        const gk = grammarNormKey(rawQ.split('\n')[0]).slice(0, 28);
+        if (gk) recentGrammarNormPrefixes.add(gk);
+        return;
+      }
+      if (mod === 'glossary') {
+        const k = cleanGreekForComparison(rawQ);
+        if (!k) return;
+        lastGlossaryOutcome.set(k, !!e.ok);
+        if (e.ok) recentGlossarySolvedKeys.add(k);
+        return;
+      }
+      // 单词模块（spelling / grzh / zhgr / quiz / tf）
+      const k = cleanGreekForComparison(rawQ);
+      if (!k) return;
+      lastWordOutcome.set(k, !!e.ok);
+      if (e.ok) recentSolvedWordKeys.add(k);
+    });
+
+    const unresolvedWrongWordKeys = new Set<string>();
+    lastWordOutcome.forEach((ok, k) => { if (!ok) unresolvedWrongWordKeys.add(k); });
+
+    const unresolvedGlossaryWrongKeys = new Set<string>();
+    lastGlossaryOutcome.forEach((ok, k) => { if (!ok) unresolvedGlossaryWrongKeys.add(k); });
+
+    const srsForgotKeys = new Set<string>();
+    Object.entries(vocabSrsState || {}).forEach(([k, entry]: [string, any]) => {
+      if (entry && entry.level === 0 && String(entry.nextDue || '') <= selectedDateStr) {
+        const ck = cleanGreekForComparison(k);
+        if (ck) srsForgotKeys.add(ck);
+      }
+    });
+
+    return {
+      recentSolvedWordKeys,
+      unresolvedWrongWordKeys,
+      recentGlossarySolvedKeys,
+      unresolvedGlossaryWrongKeys,
+      srsForgotKeys,
+      recentClozePrefixes,
+      recentGrammarNormPrefixes,
+    };
+  }, [pastAnswerLog, vocabSrsState, selectedDateStr]);
+
+  const priorityBoostIds = useMemo(() => {
+    const boost = new Set<number>();
+    const { unresolvedWrongWordKeys, srsForgotKeys } = pastAnswerInsights;
+    if (unresolvedWrongWordKeys.size === 0 && srsForgotKeys.size === 0) return boost;
+    unlockedVocab.forEach(w => {
+      const ck = cleanGreekForComparison(w.word_greek);
+      if (ck && (unresolvedWrongWordKeys.has(ck) || srsForgotKeys.has(ck))) {
+        boost.add(w.id);
+      }
+    });
+    return boost;
+  }, [unlockedVocab, pastAnswerInsights]);
+
+  // 今天的卡组 = 今天这几个复习单元里的词 + 所有命中艾宾浩斯节点(0/1/2/4/7/15/30/60/90天及1-2天顺延)的自定义词 + 错题/闪卡加练词
   const dailyDeck = useMemo(() => {
-    if (todayReviewUnits.length === 0) return [];
+    if (todayReviewUnits.length === 0 && unlockedVocab.length === 0) return [];
     const byId = new Map<number, Word>();
     unlockedVocab.forEach(w => byId.set(w.id, w));
 
     const deck: Word[] = [];
+    const inDeck = new Set<number>();
+    const addWord = (w?: Word) => {
+      if (w && !inDeck.has(w.id)) {
+        inDeck.add(w.id);
+        deck.push(w);
+      }
+    };
+
     todayReviewUnits.forEach(u => {
-      u.wordIds.forEach(id => {
-        const w = byId.get(id);
-        if (w && !deck.some(d => d.id === w.id)) deck.push(w);
-      });
+      u.wordIds.forEach(id => addWord(byId.get(id)));
     });
 
-    // 最近一周记的笔记词, 无条件加入, 保证一定复习到
-    const recentNoteWords = unlockedVocab.filter(w => {
-      if (!w.note_date) return false;
+    // 所有带 note_date 的自定义词（自录生词 / 私教笔记 / 历史故事词）：
+    // 按其自身精确 note_date 检查是否命中 [0, 1, 2, 4, 7, 15, 30, 60, 90] 遗忘曲线节点或前 1-2 天未考顺延窗口；
+    // 同时纳入前几日错题与闪卡「忘了」加练词，彻底打通 7 天后的长期记忆曲线！
+    unlockedVocab.forEach(w => {
+      if (priorityBoostIds.has(w.id)) {
+        addWord(w);
+        return;
+      }
+      if (!w.note_date) return;
       const diffDays = daysBetween(w.note_date, selectedDateStr);
-      return diffDays >= 0 && diffDays <= 7;
-    });
-    recentNoteWords.forEach(w => {
-      if (!deck.some(d => d.id === w.id)) deck.push(w);
+      if (
+        diffDays >= 0 &&
+        (EBBINGHAUS_INTERVALS.includes(diffDays) ||
+          EBBINGHAUS_INTERVALS.includes(diffDays - 1) ||
+          EBBINGHAUS_INTERVALS.includes(diffDays - 2))
+      ) {
+        addWord(w);
+      }
     });
 
     // 排序: 今天到期的排最前, 其余按 A1-A -> A1-B -> A2 -> B 的学习顺序
     const sortBooks = (a: Word, b: Word) => {
-      const dueA = isWordDueToday(a.id, selectedDateStr, activatedDates);
-      const dueB = isWordDueToday(b.id, selectedDateStr, activatedDates);
+      const dueA = priorityBoostIds.has(a.id) || isWordDueToday(a.id, selectedDateStr, activatedDates);
+      const dueB = priorityBoostIds.has(b.id) || isWordDueToday(b.id, selectedDateStr, activatedDates);
       if (dueA && !dueB) return -1;
       if (!dueA && dueB) return 1;
 
@@ -2928,7 +3142,7 @@ export default function StudentApp() {
     };
 
     return deck.sort(sortBooks);
-  }, [todayReviewUnits, unlockedVocab, activatedDates, selectedDateStr]);
+  }, [todayReviewUnits, unlockedVocab, activatedDates, selectedDateStr, priorityBoostIds]);
 
 
   // Determine if active level is A1 or A2 based on current active vocabulary
@@ -3236,12 +3450,8 @@ export default function StudentApp() {
 
       if (diffDays === 0) {
         newW.push(word);
-      } else if (diffDays > 0) {
-        if (word.note_date && diffDays <= 7) {
-          revW.push(word);
-        } else if (EBBINGHAUS_INTERVALS.includes(diffDays)) {
-          revW.push(word);
-        }
+      } else if (diffDays > 0 && EBBINGHAUS_INTERVALS.includes(diffDays)) {
+        revW.push(word);
       }
     });
 
@@ -3485,37 +3695,171 @@ export default function StudentApp() {
   const MODULE_SPECS: Array<{ key: string; want: number; ok?: (w: any) => boolean }> = MODULE_SPECS_CONST;
 
   /**
-   * 前几天已经出过哪些词。
-   *
-   * 家长要求「至少连续三次不会碰见相同的题」。这里不新建任何存储 ——
-   * 每天出哪些题是「日期 + 已解锁内容」的**纯函数**, 所以把前 LOOKBACK_DAYS 天
-   * 原样重算一遍, 就精确知道那几天出过什么, 今天避开即可。
-   * 好处: 换设备、清缓存、家长改进度, 都不会算错; 也不会往云端多写一个字节。
+   * 今天这一天, 整个语法题库该按什么顺序出。
+   * 同时结合「前 3 天纯函数递推 + 真实 pastAnswerLog 已做题面」双重避重，确保当天录新词也绝不会让语法题重样。
    */
-  const recentlyUsedWordIds = useMemo(() => {
-    const used = new Set<number>();
-    if (allReviewUnits.length === 0) return used;
-    // 从最早的一天往昨天顺着推, 让每一天的模拟都能避开它前几天已经抽过的词
+  const grammarOrderedForDay = useMemo(() => {
+    const bFrontier = getBookFrontier(pageMarksState, 'b1');
+    const unlocked = new Set<string>();
+    (unitKnowledgeData as any[]).forEach(u => {
+      const d = getUnitStudyDate(u.book_id, u.unit, unitStudyDates);
+      if (d !== 'LOCKED' && d <= selectedDateStr) unlocked.add(DRILL_KEY(u.book_id, u.unit));
+    });
+    allReviewUnits.forEach(u => {
+      if (!u.unitNo) return;
+      const b = u.bookId.toLowerCase();
+      unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
+    });
+
+    const avoid = new Set<number>();
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
+      const dstr = shiftDateStr(selectedDateStr, -back);
+      const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
+      const pastOrdered = orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier, disabledDrillSet);
+      const pastDayList = [...pastOrdered.filter(d => !avoid.has(d.id)), ...pastOrdered.filter(d => avoid.has(d.id))];
+      pastDayList.slice(0, DRILLS_PER_DAY + GRAMMAR_IN_QUIZ + GRAMMAR_IN_ZHGR).forEach(d => avoid.add(d.id));
+    }
+    if (pastAnswerInsights.recentGrammarNormPrefixes.size > 0) {
+      ALL_GRAMMAR_DRILLS.forEach(d => {
+        const gk = grammarNormKey(String(d.question || '').split('\n')[0]).slice(0, 28);
+        if (gk && pastAnswerInsights.recentGrammarNormPrefixes.has(gk)) avoid.add(d.id);
+      });
+    }
+
+    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier, disabledDrillSet);
+    const fresh = ordered.filter(d => !avoid.has(d.id));
+    const reused = ordered.filter(d => avoid.has(d.id));
+    return [...fresh, ...reused];
+  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState, disabledDrillSet, pastAnswerInsights]);
+
+  // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
+  const grammarDrillPoolAll = useMemo(
+    () => grammarOrderedForDay.slice(0, DRILLS_PER_DAY),
+    [grammarOrderedForDay]);
+  const grammarDrillPool = useMemo(
+    () => applyMakeup('grammar_drill', grammarDrillPoolAll, (x: any) => String(x.id)),
+    [grammarDrillPoolAll, makeupSnapshot]);
+
+  const grammarSpillover = useMemo(() => {
+    const usedId = new Set<number>(grammarDrillPoolAll.map((d: any) => d.id));
+    const seen = new Set<string>(grammarDrillPoolAll.map((d: any) => grammarNormKey(d.question)));
+    const choice: any[] = [];
+    const cloze: any[] = [];
+    for (const d of grammarOrderedForDay) {
+      if (choice.length >= GRAMMAR_IN_QUIZ && cloze.length >= GRAMMAR_IN_ZHGR) break;
+      if (usedId.has(d.id)) continue;
+      const key = grammarNormKey(d.question);
+      if (seen.has(key)) continue;
+      if (d.drill_type === 'choice' && Array.isArray(d.options) && d.options.length > 1) {
+        if (choice.length >= GRAMMAR_IN_QUIZ) continue;
+        choice.push(d);
+      } else if ((d.drill_type === 'cloze' || d.drill_type === 'translate') && d.answer) {
+        if (cloze.length >= GRAMMAR_IN_ZHGR) continue;
+        cloze.push(d);
+      } else {
+        continue;
+      }
+      seen.add(key);
+    }
+    return { choice, cloze };
+  }, [grammarOrderedForDay, grammarDrillPoolAll]);
+
+  /** 已解锁的课本填空题：同时结合「前 3 天历史单元递推 + 真实 pastAnswerLog 已做原句」双重避重 */
+  const clozePool = useMemo(() => {
+    const avoid = new Set<number>();
     for (let back = LOOKBACK_DAYS; back >= 1; back--) {
       const d = shiftDateStr(selectedDateStr, -back);
       const units = pickDailyReviewUnits(allReviewUnits, d, 6);
-      if (units.length === 0) continue;
+      const pastOrdered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units, disabledDrillSet);
+      const pastDayList = [...pastOrdered.filter((c: any) => !avoid.has(c.id)), ...pastOrdered.filter((c: any) => avoid.has(c.id))];
+      pastDayList.slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
+    }
+    if (pastAnswerInsights.recentClozePrefixes.size > 0) {
+      CLOZE_ALL.forEach((c: any) => {
+        const pref = String(c?.cloze || '').trim().slice(0, 32);
+        if (pref && pastAnswerInsights.recentClozePrefixes.has(pref)) avoid.add(c.id);
+      });
+    }
+    const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, disabledDrillSet);
+    return [...ordered.filter((c: any) => !avoid.has(c.id)), ...ordered.filter((c: any) => avoid.has(c.id))];
+  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, allReviewUnits, disabledDrillSet, pastAnswerInsights]);
+
+  /**
+   * 前 3 天已经出过哪些单词：
+   *  1. 直接采信真实做题日志（pastAnswerLog 中答对过的词），即使当天新录再多生词也绝不会冲掉真实历史；
+   *  2. 按当时真实已解锁词表重算前 3 天（含连连看等未记单题日志的模块），补齐完整防重集合。
+   */
+  const recentlyUsedWordIds = useMemo(() => {
+    const used = new Set<number>();
+    if (pastAnswerInsights.recentSolvedWordKeys.size > 0) {
+      unlockedVocab.forEach(w => {
+        const ck = cleanGreekForComparison(w.word_greek);
+        if (ck && pastAnswerInsights.recentSolvedWordKeys.has(ck)) used.add(w.id);
+      });
+    }
+    if (allReviewUnits.length === 0) return used;
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
+      const d = shiftDateStr(selectedDateStr, -back);
+      const poolOnD = unlockedVocab.filter(w => {
+        const a = w.note_date || activatedDates[w.id];
+        return !!a && a !== 'LOCKED' && a <= d;
+      });
+      if (poolOnD.length === 0) continue;
+      const unitsOnD = buildReviewUnits({
+        words: poolOnD,
+        activatedDates,
+        marks: pageMarksState,
+        syllabusB: B_SYLLABUS,
+        unitBands: A1_UNIT_BANDS,
+        today: d,
+      });
+      const units = pickDailyReviewUnits(unitsOnD, d, 6);
       const ids = new Set<number>();
       units.forEach(u => u.wordIds.forEach(id => ids.add(id)));
-      const deck = unlockedVocab.filter(w => ids.has(w.id));
-      const pool = unlockedVocab.filter(w => {
-        const a = activatedDates[w.id];
-        return a && a !== 'LOCKED' && a <= d;
+      poolOnD.forEach(w => {
+        if (!w.note_date) return;
+        const diff = daysBetween(w.note_date, d);
+        if (
+          diff >= 0 &&
+          (EBBINGHAUS_INTERVALS.includes(diff) ||
+            EBBINGHAUS_INTERVALS.includes(diff - 1) ||
+            EBBINGHAUS_INTERVALS.includes(diff - 2))
+        ) {
+          ids.add(w.id);
+        }
       });
-      const part = partitionModules(deck, pool, d, used);
+      const deckOnD = poolOnD.filter(w => ids.has(w.id));
+      const part = partitionModules(deckOnD, poolOnD, d, used);
       Object.values(part).forEach(arr => arr.forEach((w: any) => used.add(w.id)));
     }
     return used;
-  }, [allReviewUnits, unlockedVocab, activatedDates, selectedDateStr]);
+  }, [allReviewUnits, unlockedVocab, activatedDates, pageMarksState, selectedDateStr, pastAnswerInsights]);
 
-  const modulePartition = useMemo(
-    () => partitionModules(dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds),
-    [dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds]);
+  const modulePartition = useMemo(() => {
+    const level = activeExamLevel;
+    const clozeToday = clozePool.slice(0, CLOZE_PER_DAY);
+    const clozeSrc = new Set(clozeToday.map((c: any) => grammarNormKey(c.text)));
+    const grammarQuizCount = grammarSpillover.choice.filter((d: any) => {
+      const m = /【课本原句】(.+)/.exec(d.detailed_tip || '');
+      const t = m ? grammarNormKey(m[1]) : '';
+      return !t || !clozeSrc.has(t);
+    }).length;
+    const grammarZhgrCount = grammarSpillover.cloze.length;
+
+    const wantOverrides: Partial<Record<string, number>> = {
+      matching: Math.max(20, 40 - getDailyExams(level, 'matching', 1).length),
+      spelling: Math.max(20, 40 - getDailyExams(level, 'spelling', 1).length),
+      quiz: Math.max(5, 30 - clozeToday.length - grammarQuizCount - getDailyExams(level, 'quiz', 2).length),
+      grzh: Math.max(10, 20 - getDailyExams(level, 'translation_gr_zh', 1).length),
+      zhgr: Math.max(8, 20 - grammarZhgrCount - getDailyExams(level, 'translation_zh_gr', 1).length),
+      tf: Math.max(20, 40 - getDailyExams(level, 'truefalse', 1).length),
+    };
+
+    return partitionModules(dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds, {
+      wantOverrides,
+      priorityBoostIds,
+    });
+  }, [dailyDeck, unlockedVocab, selectedDateStr, recentlyUsedWordIds, activeExamLevel, clozePool, grammarSpillover, priorityBoostIds]);
 
   const spellingPool = useMemo(() => {
     const pool = modulePartition.spelling || [];
@@ -3542,17 +3886,6 @@ export default function StudentApp() {
 
   const currentSpellingWord = spellingPool[spellingIndex] || null;
 
-  /**
-   * 换到下一个词时, 重新打乱字母。
-   *
-   * 依赖项从前写的是 `currentSpellingWord`(整个对象)。云端每回声一次快照,
-   * 题池就会重建出一批**内容一样但身份全新**的对象, 这个 effect 于是又跑一遍 ——
-   * 字母重新洗牌, 而且 `setSpellInput([])` 把学生已经敲进去的字母清空。
-   * 现在只认「这是哪个词」这一个字符串, 词没换就绝不重跑;
-   * 打乱顺序也按词定死, 同一个词每次进来摆法一致。
-   * 2026-11-18 (#92): 把 getSpellingAcceptedTargets 算出的所有可接受拼法(斜杠变体、双形式、同义词)
-   * 的全部字母都放进屏幕字母块池 chars, 确保孩子在平板上不用外接键盘也能直接点出他知道的同义词!
-   */
   const spellingWordKey = currentSpellingWord
     ? `${currentSpellingWord.word_greek || ''}|${currentSpellingWord.word_chinese || ''}`
     : '';
@@ -3574,7 +3907,7 @@ export default function StudentApp() {
       if (!chars.includes(randChar)) {
         chars.push(randChar);
       }
-      if (k > 200) break;                      // 兜底: 字母表用完也不能死循环
+      if (k > 200) break;
     }
     setScrambledLetters(seededShuffle(chars, seed));
     setSpellInput([]);
@@ -3594,7 +3927,6 @@ export default function StudentApp() {
     const targets = getSpellingAcceptedTargets(currentSpellingWord);
     if (targets.length === 0) return;
     const prefixNorm = spellInput.map(normSpellChar).join('');
-    // 筛选出与当前已输入前缀匹配的候选目标词
     const activeTargets = targets.filter(t =>
       t.length > spellInput.length &&
       t.slice(0, spellInput.length).split('').map(normSpellChar).join('') === prefixNorm
@@ -3638,83 +3970,6 @@ export default function StudentApp() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeModule, currentSpellingWord, spellInput, spellingCompleted, spellingMistakes, showTip, showAnswer]);
-
-  /**
-   * 今天这一天, 整个语法题库该按什么顺序出。
-   * 从前这段代码长在「单元语法与情景特训」里, 只切前 30 道自己用;
-   * 现在抽出来放到最前面, 好让选择题、汉译希两个模块也能从同一条队列里取题 ——
-   * 同一条队列切分, 天生不会三个模块出同一道题。
-   */
-  const grammarOrderedForDay = useMemo(() => {
-    // B 本上到第几页 —— 语法题必须按页卡住, 不能按整个单元放行
-    const bFrontier = getBookFrontier(pageMarksState, 'b1');
-    // 已经学过的单元(按旧的单元解锁表; B 本另按页码进度判断)
-    const unlocked = new Set<string>();
-    (unitKnowledgeData as any[]).forEach(u => {
-      const d = getUnitStudyDate(u.book_id, u.unit, unitStudyDates);
-      if (d !== 'LOCKED' && d <= selectedDateStr) unlocked.add(DRILL_KEY(u.book_id, u.unit));
-    });
-    allReviewUnits.forEach(u => {
-      if (!u.unitNo) return;
-      const b = u.bookId.toLowerCase();
-      unlocked.add(DRILL_KEY(b === 'b' ? 'b1' : b, (b === 'b1' || b === 'b') ? 39 + u.unitNo : u.unitNo));
-    });
-
-    // 前几天出过的题, 今天避开(从最早的一天顺着往昨天推, 每一天都避开它前几天实际出过的题)
-    const avoid = new Set<number>();
-    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
-      const dstr = shiftDateStr(selectedDateStr, -back);
-      const past = pickDailyReviewUnits(allReviewUnits, dstr, 6);
-      const pastOrdered = orderDrillsForDay(dstr, drillKeysOfUnits(past), unlocked, bFrontier, disabledDrillSet);
-      const pastDayList = [...pastOrdered.filter(d => !avoid.has(d.id)), ...pastOrdered.filter(d => avoid.has(d.id))];
-      pastDayList.slice(0, DRILLS_PER_DAY + GRAMMAR_IN_QUIZ + GRAMMAR_IN_ZHGR).forEach(d => avoid.add(d.id));
-    }
-
-    const ordered = orderDrillsForDay(selectedDateStr, drillKeysOfUnits(todayReviewUnits), unlocked, bFrontier, disabledDrillSet);
-    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
-    const fresh = ordered.filter(d => !avoid.has(d.id));
-    const reused = ordered.filter(d => avoid.has(d.id));
-    return [...fresh, ...reused];
-  }, [selectedDateStr, unitStudyDates, todayReviewUnits, allReviewUnits, pageMarksState, disabledDrillSet]);
-
-  // v2.0 Grammar & Communicative Dialogue Daily Pool (30 Questions Daily Workout)
-  const grammarDrillPoolAll = useMemo(
-    () => grammarOrderedForDay.slice(0, DRILLS_PER_DAY),
-    [grammarOrderedForDay]);
-  /** 学生这一趟真正要做的语法题(补做模式下只剩欠的那几道) */
-  const grammarDrillPool = useMemo(
-    () => applyMakeup('grammar_drill', grammarDrillPoolAll, (x: any) => String(x.id)),
-    [grammarDrillPoolAll, makeupSnapshot]);
-
-  /**
-   * 语法特训模块每天只吃前 30 道, 后面那一大截原来是白排的。
-   * 这里从「没被特训模块用掉」的部分里再分两小撮出去:
-   *   choice -> 智能选择题;  cloze / translate -> 汉译希。
-   * 同一道题的选择版和填空版题面相同(题库里是成对生成的), 按题面去重, 免得同一句出两遍。
-   */
-  const grammarSpillover = useMemo(() => {
-    const usedId = new Set<number>(grammarDrillPoolAll.map((d: any) => d.id));
-    const seen = new Set<string>(grammarDrillPoolAll.map((d: any) => grammarNormKey(d.question)));
-    const choice: any[] = [];
-    const cloze: any[] = [];
-    for (const d of grammarOrderedForDay) {
-      if (choice.length >= GRAMMAR_IN_QUIZ && cloze.length >= GRAMMAR_IN_ZHGR) break;
-      if (usedId.has(d.id)) continue;
-      const key = grammarNormKey(d.question);
-      if (seen.has(key)) continue;
-      if (d.drill_type === 'choice' && Array.isArray(d.options) && d.options.length > 1) {
-        if (choice.length >= GRAMMAR_IN_QUIZ) continue;
-        choice.push(d);
-      } else if ((d.drill_type === 'cloze' || d.drill_type === 'translate') && d.answer) {
-        if (cloze.length >= GRAMMAR_IN_ZHGR) continue;
-        cloze.push(d);
-      } else {
-        continue;
-      }
-      seen.add(key);
-    }
-    return { choice, cloze };
-  }, [grammarOrderedForDay, grammarDrillPoolAll]);
 
   const isSentenceItem = (item: any) => {
     if (!item) return false;
@@ -3827,9 +4082,8 @@ export default function StudentApp() {
     return applyMakeup('translation_zh_gr', filterDuplicateTranslations(combined).slice(0, 20), (x: any) => String(x.id));
   }, [modulePartition, unlockedVocab, activeExamLevel, selectedDateStr, grammarSpillover, makeupSnapshot]);
 
-  // Glossary Review Pool (基于 1236 词词汇表大纲，以 2026-08-24 锁定 #948 Ραπουνζέλ 长发公主，每天严格递增 20 词)
+  // Glossary Review Pool（单词表每日必做复习 40 词：接入 3 天真实防重 + 错题次日加练 + 艾宾浩斯 50% 新批次配额封顶与顺延）
   const glossaryReviewPool = useMemo(() => {
-    // 家长在后台标了「背到第几个」才有内容；没标就回退到旧的固定日程，避免空白
     const gKeys = Object.keys(GLOSSARY_RANGE);
     const marked = gKeys.filter(g => getBookFrontier(pageMarksState, g) > 0);
     if (marked.length === 0) {
@@ -3837,7 +4091,6 @@ export default function StudentApp() {
       return applyMakeup('glossary_review',
         masterList
           .filter((w: any) => w.scheduled_date === selectedDateStr)
-          // 这条线不经过 isValidExerciseWord, 人名要在这里单独挡一次
           .filter((w: any) => !isBlockedProperName(w.word_greek || '') && isDrillableGlossaryEntry(w))
           .slice(0, 40), (x: any) => String(x.id));
     }
@@ -3849,26 +4102,78 @@ export default function StudentApp() {
       list.slice(0, front).forEach((w: any) => {
         const d = getPageDate(pageMarksState, g, w.idx);
         if (!d) return;
-        if (isBlockedProperName(w.word_greek || '')) return;   // 人名不出题
-        if (!isDrillableGlossaryEntry(w)) return;               // 解析残渣不出题
+        if (isBlockedProperName(w.word_greek || '')) return;
+        if (!isDrillableGlossaryEntry(w)) return;
         out.push({ ...w, letter: (w.word_greek || '?')[0], tag: w.pos || '词', activated_on: d });
       });
     });
 
-    // 到期优先（艾宾浩斯），其余按当天种子轮转
-    const parts = selectedDateStr.split('-');
-    const seed = (parseInt(parts[0], 10) || 2026) * 372 + (parseInt(parts[1], 10) || 7) * 31 + (parseInt(parts[2], 10) || 5);
+    const pickGlossaryForDate = (targetDate: string, avoidIds: Set<number>, boostKeys?: Set<string>) => {
+      const p = targetDate.split('-');
+      const daySeed = (parseInt(p[0], 10) || 2026) * 372 + (parseInt(p[1], 10) || 7) * 31 + (parseInt(p[2], 10) || 5);
+      const unlocked = out.filter(w => w.activated_on <= targetDate);
+      const prio: Array<{ w: any; rank: number; diff: number }> = [];
+      const reg: any[] = [];
+
+      unlocked.forEach(w => {
+        const ck = cleanGreekForComparison(w.word_greek || '');
+        if (boostKeys && ck && boostKeys.has(ck)) {
+          prio.push({ w, rank: 0, diff: 0 });
+          return;
+        }
+        const diff = daysBetween(w.activated_on, targetDate);
+        if (diff === 0) {
+          prio.push({ w, rank: 1, diff });
+          return;
+        }
+        if (diff > 0 && EBBINGHAUS_INTERVALS.includes(diff)) {
+          if (diff >= 4 && avoidIds.has(w.id)) {
+            reg.push(w);
+          } else {
+            prio.push({ w, rank: avoidIds.has(w.id) ? 3 : 2, diff });
+          }
+          return;
+        }
+        if (diff > 0 && !avoidIds.has(w.id) && (EBBINGHAUS_INTERVALS.includes(diff - 1) || EBBINGHAUS_INTERVALS.includes(diff - 2))) {
+          prio.push({ w, rank: 2, diff });
+          return;
+        }
+        reg.push(w);
+      });
+
+      prio.sort((a, b) => {
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        if (a.diff !== b.diff) return a.diff - b.diff;
+        return dailyHash(a.w.id, daySeed) - dailyHash(b.w.id, daySeed);
+      });
+      // 单日新背/近期到期词表词最多占 20 题（50%），剩余 20 题留给全词表远期轮转，超出部分次日顺延
+      const topPrio = prio.slice(0, 20).map(x => x.w);
+      const overflowPrio = prio.slice(20).map(x => x.w);
+      const sortedReg = [...reg].sort((a, b) => {
+        const aa = avoidIds.has(a.id) ? 1 : 0, ab = avoidIds.has(b.id) ? 1 : 0;
+        if (aa !== ab) return aa - ab;
+        return dailyHash(a.id, daySeed) - dailyHash(b.id, daySeed);
+      });
+      return [...topPrio, ...sortedReg, ...overflowPrio].slice(0, 40);
+    };
+
+    const avoidIds = new Set<number>();
+    if (pastAnswerInsights.recentGlossarySolvedKeys.size > 0) {
+      out.forEach(w => {
+        const ck = cleanGreekForComparison(w.word_greek || '');
+        if (ck && pastAnswerInsights.recentGlossarySolvedKeys.has(ck)) avoidIds.add(w.id);
+      });
+    }
+    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
+      const d = shiftDateStr(selectedDateStr, -back);
+      pickGlossaryForDate(d, avoidIds).forEach(w => avoidIds.add(w.id));
+    }
+
+    const chosen = pickGlossaryForDate(selectedDateStr, avoidIds, pastAnswerInsights.unresolvedGlossaryWrongKeys);
     const due = (w: any) => isWordDueToday(w.id, selectedDateStr, { [w.id]: w.activated_on });
-    const ranked = out
-      .sort((a, b) => {
-        const da = due(a) ? 0 : 1, db = due(b) ? 0 : 1;
-        if (da !== db) return da - db;
-        return dailyHash(a.id, seed) - dailyHash(b.id, seed);
-      })
-      .slice(0, 40)
-      .map((w: any) => ({ ...w, status: due(w) ? 'upcoming' : 'mastered' }));
+    const ranked = chosen.map((w: any) => ({ ...w, status: due(w) ? 'upcoming' : 'mastered' }));
     return applyMakeup('glossary_review', ranked, (x: any) => String(x.id));
-  }, [pageMarksState, selectedDateStr, makeupSnapshot]);
+  }, [pageMarksState, selectedDateStr, makeupSnapshot, pastAnswerInsights]);
 
   const currentGlossaryWord = glossaryReviewPool[glossaryIndex] || null;
 
@@ -3992,22 +4297,6 @@ export default function StudentApp() {
   const [quizScore, setQuizScore] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [answerChecked, setAnswerChecked] = useState(false);
-
-  /** 已解锁的课本填空题：优先按 B 本页码进度，其次按单元解锁日期 */
-  const clozePool = useMemo(() => {
-    // 前几天已经出过的填空题, 今天避开(从最早的一天顺着往昨天推, 每一天都避开它前几天实际出过的题)
-    const avoid = new Set<number>();
-    for (let back = LOOKBACK_DAYS; back >= 1; back--) {
-      const d = shiftDateStr(selectedDateStr, -back);
-      const units = pickDailyReviewUnits(allReviewUnits, d, 6);
-      const pastOrdered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, d, units, disabledDrillSet);
-      const pastDayList = [...pastOrdered.filter((c: any) => !avoid.has(c.id)), ...pastOrdered.filter((c: any) => avoid.has(c.id))];
-      pastDayList.slice(0, CLOZE_PER_DAY).forEach((c: any) => avoid.add(c.id));
-    }
-    const ordered = orderClozeForDay(CLOZE_ALL, pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, disabledDrillSet);
-    // 够用就把最近出过的排到后面; 不够用时它们仍然顶上, 题量不减
-    return [...ordered.filter((c: any) => !avoid.has(c.id)), ...ordered.filter((c: any) => avoid.has(c.id))];
-  }, [pageMarksState, unitStudyDates, selectedDateStr, todayReviewUnits, allReviewUnits, disabledDrillSet]);
 
   const quizPool = useMemo(() => {
     const pool = modulePartition.quiz || [];
@@ -4582,7 +4871,10 @@ export default function StudentApp() {
          || isFuzzyGreekMatch(userTransZhGrInput, currentTransZhGr.greek)
          || ((isTranslateOrQaDrill || isSentenceItem(currentTransZhGr)) && isGreekSentenceClose(userTransZhGrInput, currentTransZhGr.greek)));
     if (correct) {
-      logSolved('zhgr', String(currentTransZhGr.greek || '').split('\n')[0], transZhGrMistakes === 0,
+      const zhgrLogLabel = isGrammarItem
+        ? String(currentTransZhGr.word_greek || currentTransZhGr.greek || '').split('\n')[0]
+        : String(currentTransZhGr.greek || '').split('\n')[0];
+      logSolved('zhgr', zhgrLogLabel, transZhGrMistakes === 0,
                 showTip || showAnswer, userTransZhGrInput);
       setAttemptNote(null);
       setTransZhGrChecked(true);
@@ -4602,7 +4894,11 @@ export default function StudentApp() {
   };
 
   const handleNextTransZhGr = (opt?: { skipped?: boolean }) => {
-    logUnsolved('zhgr', String(currentTransZhGr?.greek || '').split('\n')[0], showTip || showAnswer, !!opt?.skipped);
+    const isGrammarItem = !!(currentTransZhGr as any)?.isGrammar;
+    const zhgrLogLabel = isGrammarItem
+      ? String(currentTransZhGr?.word_greek || currentTransZhGr?.greek || '').split('\n')[0]
+      : String(currentTransZhGr?.greek || '').split('\n')[0];
+    logUnsolved('zhgr', zhgrLogLabel, showTip || showAnswer, !!opt?.skipped);
     noteQuestionDone('translation_zh_gr', currentTransZhGr?.id, opt?.skipped);
     bumpModuleStep('translation_zh_gr');
     if (transZhGrIndex < translationZhGrPool.length - 1) {
