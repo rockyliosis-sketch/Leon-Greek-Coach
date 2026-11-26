@@ -12,8 +12,10 @@ import {
   Loader2,
   Plus,
   RotateCw,
+  Trash2,
   Volume2,
   X,
+  ZoomIn,
 } from 'lucide-react';
 import type { CircledBookWord, TextbookPreferencesState } from '../dbService';
 import {
@@ -277,14 +279,24 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
 }) => {
   const topWordCardRef = useRef<HTMLDivElement | null>(null);
   const [highlightTopCard, setHighlightTopCard] = useState(false);
+  const [pendingConfirmBook, setPendingConfirmBook] = useState<TextbookMeta | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const candidates = useMemo<TextbookMeta[]>(() => {
+    const subjBooks = getBooksForSubject(subject, isWorkbook);
     if (explicitBookId) {
       const b = getBookById(explicitBookId);
-      return b ? [b] : [];
+      // 仅当调用方未提供 onSelectBookId（如私教固定单本）时锁定单本；否则始终保留本科目全部候选书，确保选错随时可换！
+      if (!onSelectBookId) {
+        return b ? [b] : subjBooks;
+      }
+      if (b && !subjBooks.some((x) => x.id === b.id)) {
+        return [b, ...subjBooks];
+      }
+      return subjBooks;
     }
-    return getBooksForSubject(subject, isWorkbook);
-  }, [explicitBookId, subject, isWorkbook]);
+    return subjBooks;
+  }, [explicitBookId, subject, isWorkbook, onSelectBookId]);
 
   const savedBookMap = isWorkbook
     ? textbookPrefs?.selectedWorkbookBySubject
@@ -550,6 +562,8 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
 
   const handleBookPick = (bookId: string) => {
     if (onSelectBookId) onSelectBookId(bookId);
+    setPendingConfirmBook(null);
+    setPickerOpen(false);
     if (onUpdateTextbookPrefs) {
       const nextPrefs: TextbookPreferencesState = { ...(textbookPrefs || {}) };
       if (isWorkbook) {
@@ -562,6 +576,25 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
           ...(nextPrefs.selectedBookBySubject || {}),
           [cleanSubjKey]: bookId,
         };
+      }
+      onUpdateTextbookPrefs(nextPrefs);
+    }
+  };
+
+  const handleClearBook = () => {
+    if (onSelectBookId) onSelectBookId('');
+    setPendingConfirmBook(null);
+    setPickerOpen(true);
+    if (onUpdateTextbookPrefs) {
+      const nextPrefs: TextbookPreferencesState = { ...(textbookPrefs || {}) };
+      if (isWorkbook && nextPrefs.selectedWorkbookBySubject) {
+        const copy = { ...nextPrefs.selectedWorkbookBySubject };
+        delete copy[cleanSubjKey];
+        nextPrefs.selectedWorkbookBySubject = copy;
+      } else if (!isWorkbook && nextPrefs.selectedBookBySubject) {
+        const copy = { ...nextPrefs.selectedBookBySubject };
+        delete copy[cleanSubjKey];
+        nextPrefs.selectedBookBySubject = copy;
       }
       onUpdateTextbookPrefs(nextPrefs);
     }
@@ -1690,11 +1723,47 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
         gap: 14,
       }}
     >
-      {/* 1. Visual Book Cover Selector */}
-      {candidates.length > 1 && (
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, color: '#475569', marginBottom: 8 }}>
-            📚 点选当前用的是哪一册（看封面确认与手里纸质书一致，系统会自动记住）：
+      {/* 1. Visual Book Cover Selector (always accessible when unconfirmed or user clicks "换一本书") */}
+      {candidates.length > 1 && (!explicitBookId || pickerOpen) && (
+        <div
+          style={{
+            padding: '12px 14px',
+            borderRadius: 14,
+            background: '#f8fafc',
+            border: '1.5px dashed #93c5fd',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: 10,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#1e3a8a' }}>
+              📚 点选封面可<strong>放大书皮核对</strong>（和手里纸质课本比对一致再点确认）：
+            </div>
+            {explicitBookId && pickerOpen && (
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                style={{
+                  border: '1px solid #cbd5e1',
+                  background: '#fff',
+                  color: '#475569',
+                  borderRadius: 999,
+                  padding: '3px 10px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                收起选书栏
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
             {candidates.map((bk) => {
@@ -1703,40 +1772,59 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
                 <button
                   key={bk.id}
                   type="button"
-                  onClick={() => handleBookPick(bk.id)}
+                  onClick={() => setPendingConfirmBook(bk)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 9,
-                    padding: '6px 12px 6px 6px',
+                    gap: 10,
+                    padding: '7px 13px 7px 7px',
                     borderRadius: 12,
-                    border: sel ? '2.5px solid #0071E3' : '1.5px solid #e2e8f0',
-                    background: sel ? '#eff6ff' : '#f8fafc',
+                    border: sel ? '2.5px solid #0071E3' : '1.5px solid #cbd5e1',
+                    background: sel ? '#eff6ff' : '#ffffff',
                     cursor: 'pointer',
                     textAlign: 'left',
-                    boxShadow: sel ? '0 4px 12px rgba(0, 113, 227, 0.16)' : 'none',
+                    boxShadow: sel ? '0 4px 12px rgba(0, 113, 227, 0.16)' : '0 2px 6px rgba(15, 23, 42, 0.04)',
                   }}
                 >
                   {bk.coverUrl && (
-                    <img
-                      src={bk.coverUrl}
-                      alt={bk.shortTitle}
-                      style={{
-                        width: 34,
-                        height: 46,
-                        objectFit: 'cover',
-                        borderRadius: 5,
-                        border: '1px solid #cbd5e1',
-                        flexShrink: 0,
-                      }}
-                    />
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <img
+                        src={bk.coverUrl}
+                        alt={bk.shortTitle}
+                        style={{
+                          width: 48,
+                          height: 66,
+                          objectFit: 'cover',
+                          borderRadius: 6,
+                          border: '1px solid #cbd5e1',
+                          display: 'block',
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          right: 2,
+                          bottom: 2,
+                          background: 'rgba(15, 23, 42, 0.72)',
+                          color: '#fff',
+                          borderRadius: 4,
+                          padding: '1px 3px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <ZoomIn size={10} />
+                      </span>
+                    </div>
                   )}
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: sel ? '#005bb5' : '#0f172a' }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: sel ? '#005bb5' : '#0f172a' }}>
                       {sel ? '✓ ' : ''}
                       {bk.shortTitle}
                     </div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>共 {bk.maxPage} 页</div>
+                    <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>
+                      共 {bk.maxPage} 页 · 点此放大封皮确认
+                    </div>
                   </div>
                 </button>
               );
@@ -1745,7 +1833,7 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
         </div>
       )}
 
-      {/* 2. Prominent Active Book Cover + Gemini AI Action Buttons */}
+      {/* 2. Prominent Active Book Cover + Re-pick / Clear Controls + Gemini AI Action Buttons */}
       <div
         style={{
           display: 'flex',
@@ -1761,38 +1849,116 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {activeBook.coverUrl && (
-            <img
-              src={activeBook.coverUrl}
-              alt={activeBook.zhTitle}
+            <button
+              type="button"
+              onClick={() => setPendingConfirmBook(activeBook)}
+              title="点击放大查看封面"
               style={{
-                width: 68,
-                height: 94,
-                objectFit: 'cover',
-                borderRadius: 8,
-                border: '2px solid #fff',
-                boxShadow: '0 6px 16px rgba(15, 23, 42, 0.18)',
+                position: 'relative',
+                padding: 0,
+                border: 'none',
+                background: 'transparent',
+                cursor: 'zoom-in',
                 flexShrink: 0,
               }}
-            />
+            >
+              <img
+                src={activeBook.coverUrl}
+                alt={activeBook.zhTitle}
+                style={{
+                  width: 68,
+                  height: 94,
+                  objectFit: 'cover',
+                  borderRadius: 8,
+                  border: '2px solid #fff',
+                  boxShadow: '0 6px 16px rgba(15, 23, 42, 0.18)',
+                  display: 'block',
+                }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  right: 3,
+                  bottom: 3,
+                  background: 'rgba(15, 23, 42, 0.78)',
+                  color: '#fff',
+                  borderRadius: 6,
+                  padding: '2px 5px',
+                  fontSize: 10,
+                  fontWeight: 800,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <ZoomIn size={10} /> 放大
+              </span>
+            </button>
           )}
           <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                fontWeight: 800,
-                color: '#0071E3',
-                background: '#dbeafe',
-                padding: '2px 9px',
-                borderRadius: 999,
-                marginBottom: 4,
-              }}
-            >
-              <BookOpen size={13} />
-              书本第 {clampedRange[0]}
-              {clampedRange[1] > clampedRange[0] ? ` – ${clampedRange[1]}` : ''} 页 · 1:1 同步互动课本
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: '#0071E3',
+                  background: '#dbeafe',
+                  padding: '2px 9px',
+                  borderRadius: 999,
+                }}
+              >
+                <BookOpen size={13} />
+                书本第 {clampedRange[0]}
+                {clampedRange[1] > clampedRange[0] ? ` – ${clampedRange[1]}` : ''} 页 · 1:1 同步互动课本
+              </div>
+
+              {onSelectBookId && candidates.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setPickerOpen((prev) => !prev)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '3px 10px',
+                      borderRadius: 999,
+                      border: '1.5px solid #93c5fd',
+                      background: '#ffffff',
+                      color: '#0369a1',
+                      fontSize: 12,
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <RotateCw size={12} /> 换一本书
+                  </button>
+                  {explicitBookId && (
+                    <button
+                      type="button"
+                      onClick={handleClearBook}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '3px 10px',
+                        borderRadius: 999,
+                        border: '1.5px solid #fecaca',
+                        background: '#fff5f5',
+                        color: '#dc2626',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Trash2 size={12} /> 选错了·重选
+                    </button>
+                  )}
+                </>
+              )}
             </div>
             <div style={{ fontSize: 16, fontWeight: 900, color: '#0f172a' }}>
               {activeBook.zhTitle}
@@ -1802,6 +1968,162 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
             </div>
           </div>
         </div>
+
+        {/* Enlarged Book Cover Confirmation Modal (二次确认放大书皮弹窗) */}
+        {pendingConfirmBook && (
+          <div
+            onClick={() => setPendingConfirmBook(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9999,
+              background: 'rgba(15, 23, 42, 0.72)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 18,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                maxWidth: 420,
+                borderRadius: 22,
+                background: '#ffffff',
+                padding: '20px 22px',
+                boxShadow: '0 24px 60px rgba(15, 23, 42, 0.35)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                gap: 12,
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 900, color: '#1e3a8a' }}>
+                  🔍 请核对放大封面是否与手里课本一致
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPendingConfirmBook(null)}
+                  style={{
+                    border: 'none',
+                    background: '#f1f5f9',
+                    color: '#475569',
+                    width: 30,
+                    height: 30,
+                    borderRadius: 999,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {pendingConfirmBook.coverUrl && (
+                <img
+                  src={pendingConfirmBook.coverUrl}
+                  alt={pendingConfirmBook.zhTitle}
+                  style={{
+                    width: 'min(260px, 68vw)',
+                    maxHeight: '48vh',
+                    objectFit: 'contain',
+                    borderRadius: 12,
+                    border: '2px solid #e2e8f0',
+                    boxShadow: '0 12px 30px rgba(15, 23, 42, 0.22)',
+                    background: '#f8fafc',
+                  }}
+                />
+              )}
+
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: '#0f172a' }}>
+                  {pendingConfirmBook.zhTitle}
+                </div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: '#475569', marginTop: 3 }}>
+                  {pendingConfirmBook.origTitle} · 共 {pendingConfirmBook.maxPage} 页
+                </div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    padding: '6px 12px',
+                    borderRadius: 10,
+                    background: '#fefce8',
+                    border: '1px solid #fde047',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#854d0e',
+                  }}
+                >
+                  👀 看清楚封面图案、颜色和册号（Α / Β / Γ）再确认哦！选错随时可点「换一本书」重选。
+                </div>
+              </div>
+
+              <div style={{ width: '100%', display: 'flex', gap: 10, marginTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingConfirmBook(null);
+                    if (onSelectBookId && candidates.length > 1) {
+                      setPickerOpen(true);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '11px 14px',
+                    borderRadius: 12,
+                    border: '1.5px solid #cbd5e1',
+                    background: '#f8fafc',
+                    color: '#334155',
+                    fontSize: 14,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  ↩️ 选错了，换一本
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSelectBookId) {
+                      handleBookPick(pendingConfirmBook.id);
+                    } else {
+                      setPendingConfirmBook(null);
+                    }
+                  }}
+                  style={{
+                    flex: 1.2,
+                    padding: '11px 14px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #0071E3 0%, #005bb5 100%)',
+                    color: '#ffffff',
+                    fontSize: 14.5,
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    boxShadow: '0 6px 16px rgba(0, 113, 227, 0.32)',
+                  }}
+                >
+                  {pendingConfirmBook.id === activeBook.id && explicitBookId
+                    ? '✅ 确认就是这本'
+                    : '✅ 就是这本，确认选书'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Clean Gemini-Branded Toggle / Action Buttons */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

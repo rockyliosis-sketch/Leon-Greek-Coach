@@ -1875,7 +1875,7 @@ const DailyMissionHall: React.FC = () => {
                             textbookPrefs={sharedState.textbook_preferences}
                             onSelectBookId={(bkId) => {
                               const next = schoolItems.map((x) =>
-                                x.subject === it.subject ? { ...x, bookId: bkId } : x
+                                x.subject === it.subject ? { ...x, bookId: bkId || undefined } : x
                               );
                               syncSchoolItems(next);
                             }}
@@ -2507,7 +2507,9 @@ const DailyMissionHall: React.FC = () => {
                           value={wb.bookName}
                           onChange={(e) =>
                             syncWorkbookChecks(
-                              workbookChecks.map((x) => (x.id === wb.id ? { ...x, bookName: e.target.value } : x))
+                              workbookChecks.map((x) =>
+                                x.id === wb.id ? { ...x, bookName: e.target.value, bookId: undefined } : x
+                              )
                             )
                           }
                           style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
@@ -2606,7 +2608,9 @@ const DailyMissionHall: React.FC = () => {
                         textbookPrefs={sharedState.textbook_preferences}
                         onSelectBookId={(bkId) =>
                           syncWorkbookChecks(
-                            workbookChecks.map((x) => (x.id === wb.id ? { ...x, bookId: bkId } : x))
+                            workbookChecks.map((x) =>
+                              x.id === wb.id ? { ...x, bookId: bkId || undefined } : x
+                            )
                           )
                         }
                         onSaveVocab={handleSaveVocab}
@@ -2674,7 +2678,7 @@ const DailyMissionHall: React.FC = () => {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginBottom: 10, padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid #ede9fe' }}>
                         <select
                           value={pv.subject}
-                          onChange={(e) => updatePreviewRow(pv.id, { subject: e.target.value })}
+                          onChange={(e) => updatePreviewRow(pv.id, { subject: e.target.value, bookId: undefined })}
                           style={{ padding: '8px 10px', borderRadius: 10, border: '1.5px solid #cbd5e1', fontSize: 14, fontWeight: 700, background: '#f8fafc' }}
                         >
                           <option value="">选择科目...</option>
@@ -2766,7 +2770,7 @@ const DailyMissionHall: React.FC = () => {
                             unitStudyDates={sharedState.unit_study_dates || {}}
                             textbookPrefs={sharedState.textbook_preferences}
                             studentSummary={pv.summary || ''}
-                            onSelectBookId={(bkId) => updatePreviewRow(pv.id, { bookId: bkId })}
+                            onSelectBookId={(bkId) => updatePreviewRow(pv.id, { bookId: bkId || undefined })}
                             onSaveVocab={handleSaveVocab}
                             onUpdateTextbookPrefs={handleUpdateTextbookPrefs}
                             onPreviewKeyPointsReady={(pts) => updatePreviewRow(pv.id, { aiKeyPoints: pts })}
