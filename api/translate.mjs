@@ -84,10 +84,15 @@ async function callGeminiModel(apiKey, model, words) {
       ],
       generationConfig: {
         temperature: 0.1,
+        maxOutputTokens: Math.min(2048, Math.max(300, words.length * 60)),
         responseMimeType: 'application/json',
         responseSchema: RESPONSE_SCHEMA,
         ...(model.startsWith('gemini-3.')
-          ? { thinkingConfig: { thinkingLevel: 'low' } }
+          ? {
+              thinkingConfig: {
+                thinkingLevel: model.includes('flash-lite') ? 'minimal' : 'low',
+              },
+            }
           : {}),
       },
     }),

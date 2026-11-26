@@ -368,6 +368,18 @@ function writeStorageMap(storageKey: string, key: string, val: any, maxEntries: 
   } catch {}
 }
 
+function isCorruptedWordCache(val: any): boolean {
+  if (!val || typeof val !== 'object') return false;
+  const fields = [val.usageTip, val.formNote];
+  for (const raw of fields) {
+    const s = String(raw || '');
+    if (s.length > 180 || /(.)\1{4,}/.test(s) || /(.{2,8})\1{2,}/.test(s)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * 同步读取本地或云端已生成的 Gemini 辅导缓存（0 毫秒，刷新页面或跨设备立即可见）
  */
@@ -375,18 +387,24 @@ export function peekTextbookAssistCache<T = any>(
   cacheKey: string,
   cloudCache?: Record<string, any>
 ): T | null {
-  if (cloudCache && cloudCache[cacheKey]) {
-    return cloudCache[cacheKey] as T;
-  }
   const isWord = cacheKey.startsWith('word:');
+  if (cloudCache && cloudCache[cacheKey]) {
+    if (!isWord || !isCorruptedWordCache(cloudCache[cacheKey])) {
+      return cloudCache[cacheKey] as T;
+    }
+  }
   const localMap = readStorageMap(isWord ? WORD_ASSIST_CACHE_KEY : PAGE_ASSIST_CACHE_KEY);
   if (localMap[cacheKey]) {
-    return localMap[cacheKey] as T;
+    if (!isWord || !isCorruptedWordCache(localMap[cacheKey])) {
+      return localMap[cacheKey] as T;
+    }
   }
   // Backward-compat fallback to v1 cache
   const legacy = readStorageMap('leon_tb_assist_cache_v1');
   if (legacy[cacheKey]) {
-    return legacy[cacheKey] as T;
+    if (!isWord || !isCorruptedWordCache(legacy[cacheKey])) {
+      return legacy[cacheKey] as T;
+    }
   }
   return null;
 }

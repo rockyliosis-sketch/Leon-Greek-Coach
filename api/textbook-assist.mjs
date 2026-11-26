@@ -128,6 +128,13 @@ async function readJsonBody(req) {
   return raw ? JSON.parse(raw) : {};
 }
 
+function hasDegeneration(raw) {
+  const s = String(raw || '');
+  if (!s) return false;
+  // 同一字符连复 >= 5 次，或任意 2–8 字短语连复 >= 3 次
+  return /(.)\1{4,}/.test(s) || /(.{2,8})\1{2,}/.test(s);
+}
+
 function buildPrompt(mode, payload) {
   const bookTitle = String(payload?.bookTitle || '希腊小学课本').slice(0, 100);
   const pageRange = String(payload?.pageRange || '').slice(0, 40);
@@ -135,13 +142,13 @@ function buildPrompt(mode, payload) {
   if (mode === 'word') {
     const word = String(payload?.word || '').trim().slice(0, 80);
     const sentence = String(payload?.sentence || '').trim().slice(0, 500);
-    const sys = `你是希腊公立小学四年级 11 岁华裔男生 Leon 的专属课本精讲老师。
+    const sys = `你是希腊公立小学四年级 11 岁华裔学生的现代希腊语课本词典老师。
 请结合课本原句解释学生点选的词，直接从希腊语（或英语课本中的英文/希腊文）译为自然准确的简体中文，绝不经英文生硬中转。
-规则：
+规则（务必简洁严谨）：
 1. lemma：给出适合收入背词题库的标准词典原形（希腊语动词给第一人称单数现在时如 τρέχω；希腊语名词给单数主格如 θάλασσα，不带括号；形容词给阳性单数主格；固定副词/连词保持原形；若点选的是英文词则给英文原形）。
 2. chinese：在当前句子里最准确的简体中文词义，简洁 2–6 个汉字，严禁带希腊字母、英文字母或括号（该字段将直接作为刷题标准答案）。
-3. formNote：用一句小学生秒懂的大白话说明课本里这个词是什么变形（如「课本里写的是 έτρεχαν，是动词 τρέχω 的过去持续时“他们当时在跑”」；若本身就是原形则简述词性）。
-4. usageTip：用 1–2 句轻松亲切的话讲讲常见搭配或记忆小窍门，并举 1 个极短双语小例子。`;
+3. formNote：仅用 1 句大白话（45 字以内）说明课本里这个词是什么变形（如「课本里写的是 έτρεχαν，是动词 τρέχω 的过去持续时“他们当时在跑”」；若本身就是原形则简述词性）。
+4. usageTip：仅用 1 句话（60 字以内）讲清最常用的搭配并举 1 个极短双语例句。严禁添加任何加油打气口水话、网络热词或感叹词堆砌（如“加油、冲鸭、棒棒哒、欧耶、奥利给”等），讲完例句立即结束。`;
     const user = `教材：${bookTitle}（${pageRange}）\n学生点选的词：${word}\n所在课本原句：${sentence}`;
     return { sys, user };
   }
@@ -187,6 +194,10 @@ function buildPrompt(mode, payload) {
 async function callGemini(apiKey, model, mode, payload) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const { sys, user } = buildPrompt(mode, payload);
+  // 分级思考：纯点词查义在 Flash-Lite 用 minimal 省 Token 防胡言乱语；整页预习/重点提炼/出题/讲题保持 low 保证深度质量
+  const thinkingLevel =
+    mode === 'word' && model.includes('flash-lite') ? 'minimal' : 'low';
+  const maxOutputTokens = mode === 'word' ? 320 : 2048;
 
   const res = await fetch(endpoint, {
     method: 'POST',
@@ -195,11 +206,12 @@ async function callGemini(apiKey, model, mode, payload) {
       systemInstruction: { parts: [{ text: sys }] },
       contents: [{ role: 'user', parts: [{ text: user }] }],
       generationConfig: {
-        temperature: 0.2,
+        temperature: mode === 'word' ? 0.1 : 0.2,
+        maxOutputTokens,
         responseMimeType: 'application/json',
         responseSchema: SCHEMAS[mode],
         ...(model.startsWith('gemini-3.')
-          ? { thinkingConfig: { thinkingLevel: 'low' } }
+          ? { thinkingConfig: { thinkingLevel } }
           : {}),
       },
     }),
@@ -217,11 +229,21 @@ async function callGemini(apiKey, model, mode, payload) {
   if (!text) {
     throw new Error(`Gemini ${model} returned empty content`);
   }
+  const parsed = JSON.parse(text);
+  if (
+    mode === 'word' &&
+    (hasDegeneration(parsed?.usageTip) ||
+      hasDegeneration(parsed?.formNote) ||
+      String(parsed?.usageTip || '').length > 160 ||
+      String(parsed?.formNote || '').length > 140)
+  ) {
+    throw new Error(`Gemini ${model} output repetition degeneration detected`);
+  }
   const meta = data?.usageMetadata || {};
   const promptTokens = Number(meta.promptTokenCount) || 0;
   const outputTokens = (Number(meta.candidatesTokenCount) || 0) + (Number(meta.thoughtsTokenCount) || 0);
   const totalTokens = Number(meta.totalTokenCount) || promptTokens + outputTokens;
-  return { parsed: JSON.parse(text), usage: { promptTokens, outputTokens, totalTokens } };
+  return { parsed, usage: { promptTokens, outputTokens, totalTokens } };
 }
 
 export default async function handler(req, res) {
