@@ -1,10 +1,4 @@
 {
-  "headers": [
-    {
-      "source": "/version.json",
-      "headers": [{ "key": "X-Vercel-Config", "value": "frontend" }]
-    }
-  ],
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]

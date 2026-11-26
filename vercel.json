@@ -1,19 +1,8 @@
 {
-  "headers": [
-    {
-      "source": "/version.json",
-      "headers": [{ "key": "X-Vercel-Config", "value": "root" }]
-    }
-  ],
-  "experimentalServices": {
-    "frontend": {
-      "root": "frontend",
-      "routePrefix": "/",
-      "framework": "vite"
-    },
-    "api": {
-      "entrypoint": "api/translate.mjs",
-      "routePrefix": "/api/translate"
-    }
-  }
+  "installCommand": "npm --prefix frontend install",
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
