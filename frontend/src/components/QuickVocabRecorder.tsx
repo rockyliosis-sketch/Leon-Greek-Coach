@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X } from 'lucide-react';
+import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X, Loader2 } from 'lucide-react';
 import {
   findVocabSuggestions,
   getMondayDateStr,
   getWeeklyNoteUnit,
   normalizeGreekKey,
   speakGreekWord,
+  stripLeadingArticleParens,
   validateNewVocabEntry,
 } from '../lib/dailyMissionHelpers';
 
@@ -43,6 +44,7 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
 }) => {
   const [rows, setRows] = useState<DraftRow[]>(() => makeEmptyRows(3));
   const [focusedRowUid, setFocusedRowUid] = useState<string | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null);
 
   const todayEntries = useMemo(() => {
@@ -60,6 +62,17 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
     [rows]
   );
 
+  const pendingTranslateCount = useMemo(
+    () =>
+      rows.filter(
+        (r) =>
+          r.greek.trim() &&
+          /[\u0370-\u03FF\u1F00-\u1FFF]/.test(r.greek) &&
+          !r.chinese.trim()
+      ).length,
+    [rows]
+  );
+
   const updateRow = (uid: string, field: 'greek' | 'chinese', value: string) => {
     setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, [field]: value } : r)));
     if (feedback) setFeedback(null);
@@ -74,6 +87,141 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
       if (prev.length <= 1) return makeEmptyRows(1);
       return prev.filter((r) => r.uid !== uid);
     });
+  };
+
+  /**
+   * 一键自动填中文：
+   * 1) 先查本地课本/单词表词库（0 延迟、0 API 消耗）；
+   * 2) 本地未精确命中的词，一次批量调用 /api/translate（Vercel Serverless + Gemini 词典模式），
+   *    自动识别希腊语变位/变格并顺手纠偏 iPad 语音识别漏字。
+   */
+  const handleAutoTranslate = async () => {
+    if (isTranslating) return;
+    const targets = rows.filter(
+      (r) =>
+        r.greek.trim() &&
+        /[\u0370-\u03FF\u1F00-\u1FFF]/.test(r.greek) &&
+        !r.chinese.trim()
+    );
+    if (targets.length === 0) {
+      setFeedback({
+        type: 'err',
+        msg: '请先在左边希腊语框语音输入单词（右边中文框留空），再点「一键自动填中文」哦！',
+      });
+      return;
+    }
+
+    setIsTranslating(true);
+    setFeedback(null);
+
+    const localUpdates = new Map<string, { chinese: string; greek?: string }>();
+    const needApi: Array<{ uid: string; greek: string }> = [];
+
+    for (const row of targets) {
+      const cleaned = stripLeadingArticleParens(row.greek);
+      const norm = normalizeGreekKey(cleaned);
+      const exactHit = findVocabSuggestions(cleaned, 3).find(
+        (s) => normalizeGreekKey(s.greek) === norm
+      );
+      if (exactHit && exactHit.chinese) {
+        const cleanZh = exactHit.chinese.replace(/[\u0370-\u03FF\u1F00-\u1FFF]/g, '').trim();
+        if (cleanZh) {
+          localUpdates.set(row.uid, { chinese: cleanZh });
+          continue;
+        }
+      }
+      needApi.push({ uid: row.uid, greek: cleaned || row.greek.trim() });
+    }
+
+    // 先把本地秒查到的填进界面
+    if (localUpdates.size > 0) {
+      setRows((prev) =>
+        prev.map((r) => {
+          const hit = localUpdates.get(r.uid);
+          return hit ? { ...r, chinese: hit.chinese } : r;
+        })
+      );
+    }
+
+    if (needApi.length === 0) {
+      setIsTranslating(false);
+      setFeedback({
+        type: 'ok',
+        msg: `✨ 已从课本词库秒填 ${localUpdates.size} 个词的中文！确认后点「一键全部入库」即可。`,
+      });
+      return;
+    }
+
+    try {
+      const resp = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ words: needApi.map((item) => item.greek) }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(data?.error || `翻译请求失败（HTTP ${resp.status}）`);
+      }
+
+      const results: Array<{ index: number; chinese: string; correctedGreek?: string }> =
+        Array.isArray(data?.results) ? data.results : [];
+      const apiUpdates = new Map<string, { chinese: string; correctedGreek?: string }>();
+      let correctedCount = 0;
+
+      results.forEach((item) => {
+        const target = needApi[item.index];
+        if (!target || !item.chinese) return;
+        const origNorm = normalizeGreekKey(target.greek);
+        const corrNorm = normalizeGreekKey(item.correctedGreek || '');
+        const hasCorrection =
+          !!item.correctedGreek &&
+          !!corrNorm &&
+          corrNorm !== origNorm;
+        if (hasCorrection) correctedCount += 1;
+        apiUpdates.set(target.uid, {
+          chinese: item.chinese,
+          correctedGreek: hasCorrection ? item.correctedGreek : undefined,
+        });
+      });
+
+      setRows((prev) =>
+        prev.map((r) => {
+          const hit = apiUpdates.get(r.uid);
+          if (!hit) return r;
+          return {
+            ...r,
+            greek: hit.correctedGreek || r.greek,
+            chinese: hit.chinese,
+          };
+        })
+      );
+
+      const totalFilled = localUpdates.size + apiUpdates.size;
+      const parts: string[] = [];
+      if (localUpdates.size > 0) parts.push(`本地词库 ${localUpdates.size} 个`);
+      if (apiUpdates.size > 0) parts.push(`智能词典 ${apiUpdates.size} 个`);
+      if (correctedCount > 0) parts.push(`并自动修正 ${correctedCount} 处语音拼写`);
+
+      if (totalFilled > 0) {
+        setFeedback({
+          type: 'ok',
+          msg: `✨ 已自动填好 ${totalFilled} 个词的中文（${parts.join('，')}）！核对无误后点「一键全部入库」即可。`,
+        });
+      } else {
+        setFeedback({
+          type: 'err',
+          msg: '未能识别到有效译文，请检查输入的希腊语单词是否正确。',
+        });
+      }
+    } catch (err: any) {
+      const localNote = localUpdates.size > 0 ? `（已先从本地词库填好 ${localUpdates.size} 个词）` : '';
+      setFeedback({
+        type: 'err',
+        msg: `${err?.message || '智能翻译连接失败'}${localNote}`,
+      });
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
   const handleBatchSave = (e?: React.FormEvent) => {
@@ -188,12 +336,19 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
 
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#0071E3', fontWeight: 600 }}>
           <Mic size={14} />
-          直接用 iPad 语音输入，填完一键全部入库
+          用 iPad 语音念出希腊语，点「一键自动填中文」免查词典，再点入库
         </span>
       </div>
 
       {/* Multi-row batch form */}
       <style>{`
+        @keyframes qvr-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .qvr-spin {
+          animation: qvr-spin 0.9s linear infinite;
+        }
         .qvr-row-grid {
           display: grid;
           grid-template-columns: 28px minmax(160px, 1fr) minmax(140px, 1fr) auto;
@@ -391,26 +546,73 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
             </button>
           </div>
 
-          <button
-            type="submit"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '11px 22px',
-              borderRadius: 12,
-              border: 'none',
-              background: '#0071E3',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: 15,
-              cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(0, 113, 227, 0.25)',
-            }}
-          >
-            <CheckCircle2 size={17} />
-            一键全部入库{filledRowsCount > 0 ? `（${filledRowsCount} 词）` : ''}
-          </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={handleAutoTranslate}
+              disabled={isTranslating || pendingTranslateCount === 0}
+              title="先查本地课本词库，其余自动调用 Gemini 词典模式批量填好准确中文"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '11px 18px',
+                borderRadius: 12,
+                border: '1.5px solid #c4b5fd',
+                background:
+                  isTranslating || pendingTranslateCount === 0
+                    ? '#f5f3ff'
+                    : 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
+                color:
+                  isTranslating || pendingTranslateCount === 0
+                    ? '#8b5cf6'
+                    : '#ffffff',
+                fontWeight: 800,
+                fontSize: 14,
+                cursor:
+                  isTranslating || pendingTranslateCount === 0
+                    ? 'not-allowed'
+                    : 'pointer',
+                boxShadow:
+                  isTranslating || pendingTranslateCount === 0
+                    ? 'none'
+                    : '0 4px 12px rgba(109, 40, 217, 0.25)',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {isTranslating ? (
+                <Loader2 size={16} className="qvr-spin" />
+              ) : (
+                <Sparkles size={16} />
+              )}
+              {isTranslating
+                ? '正在智能翻译…'
+                : `一键自动填中文${pendingTranslateCount > 0 ? `（${pendingTranslateCount} 词）` : ''}`}
+            </button>
+
+            <button
+              type="submit"
+              disabled={isTranslating}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '11px 22px',
+                borderRadius: 12,
+                border: 'none',
+                background: '#0071E3',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: 15,
+                cursor: isTranslating ? 'not-allowed' : 'pointer',
+                opacity: isTranslating ? 0.7 : 1,
+                boxShadow: '0 4px 12px rgba(0, 113, 227, 0.25)',
+              }}
+            >
+              <CheckCircle2 size={17} />
+              一键全部入库{filledRowsCount > 0 ? `（${filledRowsCount} 词）` : ''}
+            </button>
+          </div>
         </div>
       </form>
 
