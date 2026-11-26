@@ -176,6 +176,8 @@ export interface TextbookPreferencesState {
   selectedWorkbookBySubject?: Record<string, string>;
   /** 孩子在各课本具体页码圈出/点选过的不会生词与笔记，按 `${bookId}:${page}` 索引 */
   circledWordsByBookPage?: Record<string, CircledBookWord[]>;
+  /** 云端持久化的 Gemini 课本伴读/重点小测/讲题缓存，跨刷新、跨设备免重复调用 API */
+  aiAssistCache?: Record<string, any>;
 }
 
 export interface SharedState {

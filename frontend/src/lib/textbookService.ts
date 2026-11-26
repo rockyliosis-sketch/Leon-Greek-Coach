@@ -332,38 +332,75 @@ export function computeG3ChallengeSummary(
 }
 
 // ---------------------------------------------------------------------------
-// Local Cache + /api/textbook-assist Client
+// Persistent Local + Cloud Cache + /api/textbook-assist Client
 // ---------------------------------------------------------------------------
 
-const ASSIST_CACHE_KEY = 'leon_tb_assist_cache_v1';
+const PAGE_ASSIST_CACHE_KEY = 'leon_tb_page_assist_cache_v2';
+const WORD_ASSIST_CACHE_KEY = 'leon_tb_word_assist_cache_v2';
 
-function readAssistCache(): Record<string, any> {
+function readStorageMap(storageKey: string): Record<string, any> {
   try {
-    const raw = localStorage.getItem(ASSIST_CACHE_KEY);
+    const raw = localStorage.getItem(storageKey);
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
 }
 
-function writeAssistCache(key: string, val: any) {
+function writeStorageMap(storageKey: string, key: string, val: any, maxEntries: number) {
   try {
-    const cur = readAssistCache();
+    const cur = readStorageMap(storageKey);
+    // Move updated key to end (LRU order)
+    delete cur[key];
     cur[key] = val;
     const keys = Object.keys(cur);
-    if (keys.length > 220) {
-      delete cur[keys[0]];
+    while (keys.length > maxEntries) {
+      const oldest = keys.shift();
+      if (oldest) delete cur[oldest];
     }
-    localStorage.setItem(ASSIST_CACHE_KEY, JSON.stringify(cur));
+    localStorage.setItem(storageKey, JSON.stringify(cur));
   } catch {}
+}
+
+/**
+ * 同步读取本地或云端已生成的 Gemini 辅导缓存（0 毫秒，刷新页面或跨设备立即可见）
+ */
+export function peekTextbookAssistCache<T = any>(
+  cacheKey: string,
+  cloudCache?: Record<string, any>
+): T | null {
+  if (cloudCache && cloudCache[cacheKey]) {
+    return cloudCache[cacheKey] as T;
+  }
+  const isWord = cacheKey.startsWith('word:');
+  const localMap = readStorageMap(isWord ? WORD_ASSIST_CACHE_KEY : PAGE_ASSIST_CACHE_KEY);
+  if (localMap[cacheKey]) {
+    return localMap[cacheKey] as T;
+  }
+  // Backward-compat fallback to v1 cache
+  const legacy = readStorageMap('leon_tb_assist_cache_v1');
+  if (legacy[cacheKey]) {
+    return legacy[cacheKey] as T;
+  }
+  return null;
+}
+
+export interface CallAssistOptions {
+  forceRefresh?: boolean;
+  cloudCache?: Record<string, any>;
+  onSaveCloudCache?: (nextCloudCache: Record<string, any>) => void;
 }
 
 export async function callTextbookAssist<T = any>(
   cacheKey: string,
-  payload: Record<string, any>
+  payload: Record<string, any>,
+  options?: CallAssistOptions
 ): Promise<T> {
-  const cached = readAssistCache()[cacheKey];
-  if (cached) return cached as T;
+  const isWord = cacheKey.startsWith('word:');
+  if (!options?.forceRefresh) {
+    const hit = peekTextbookAssistCache<T>(cacheKey, options?.cloudCache);
+    if (hit) return hit;
+  }
 
   const resp = await fetch('/api/textbook-assist', {
     method: 'POST',
@@ -374,7 +411,27 @@ export async function callTextbookAssist<T = any>(
   if (!resp.ok || !json?.data) {
     throw new Error(json?.error || `智能助教请求失败 (HTTP ${resp.status})`);
   }
-  writeAssistCache(cacheKey, json.data);
+
+  writeStorageMap(
+    isWord ? WORD_ASSIST_CACHE_KEY : PAGE_ASSIST_CACHE_KEY,
+    cacheKey,
+    json.data,
+    isWord ? 500 : 180
+  );
+
+  // Sync page-level guides/quizzes to Firestore cloud state so refreshing or switching devices never re-calls API!
+  if (!isWord && options?.onSaveCloudCache) {
+    const nextCloud: Record<string, any> = { ...(options.cloudCache || {}) };
+    delete nextCloud[cacheKey];
+    nextCloud[cacheKey] = json.data;
+    const cKeys = Object.keys(nextCloud);
+    while (cKeys.length > 90) {
+      const oldest = cKeys.shift();
+      if (oldest) delete nextCloud[oldest];
+    }
+    options.onSaveCloudCache(nextCloud);
+  }
+
   return json.data as T;
 }
 

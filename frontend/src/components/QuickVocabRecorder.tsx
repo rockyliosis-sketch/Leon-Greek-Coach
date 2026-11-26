@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X, Loader2 } from 'lucide-react';
+import { GeminiBadge } from './GeminiBadge';
 import {
   findVocabSuggestions,
   getMondayDateStr,
@@ -583,10 +584,14 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
               {isTranslating ? (
                 <Loader2 size={16} className="qvr-spin" />
               ) : (
-                <Sparkles size={16} />
+                <GeminiBadge
+                  variant={pendingTranslateCount === 0 ? 'light' : 'onDark'}
+                  label="Gemini"
+                  size="sm"
+                />
               )}
               {isTranslating
-                ? '正在智能翻译…'
+                ? 'Gemini 正在智能翻译…'
                 : `一键自动填中文${pendingTranslateCount > 0 ? `（${pendingTranslateCount} 词）` : ''}`}
             </button>
 

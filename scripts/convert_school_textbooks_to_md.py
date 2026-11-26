@@ -315,7 +315,7 @@ def is_arial_cid_span(font: str, span_text: str) -> bool:
     return False
 
 
-def decode_span(font: str, raw_chars: list) -> list:
+def decode_span(font: str, raw_chars: list, prefer_macgreek: bool = False) -> list:
     """Return list of (decoded_str, bbox) for a single span."""
     span_text = "".join(c["c"] for c in raw_chars)
     base_font = font.split("+")[-1]
@@ -344,6 +344,21 @@ def decode_span(font: str, raw_chars: list) -> list:
     if base_font == "UBHelvetica-Regular" and ("\x9c" in span_text or "\x9d" in span_text):
         return [(CP737_GLITCH_MAP.get(ch_obj["c"], ch_obj["c"]), ch_obj["bbox"]) for ch_obj in raw_chars]
 
+    if (prefer_macgreek and not base_font.startswith("ZapfDingbats") and base_font not in ("Wingdings-Regular", "Webdings")) or base_font in MACGREEK_FONTS:
+        has_macgreek = any(c in MACGREEK_MAP for c in span_text)
+        if has_macgreek or base_font in MACGREEK_FONTS:
+            out = []
+            for ch_obj in raw_chars:
+                c = ch_obj["c"]
+                if c in ("\x00", "\x01", "\x03"):
+                    continue
+                if c == "\xad":
+                    out.append(("\xad", ch_obj["bbox"]))
+                    continue
+                dc = MACGREEK_MAP.get(c, c) if has_macgreek else c
+                out.append((dc, ch_obj["bbox"]))
+            return out
+
     if base_font in CP1253_FONTS:
         out = []
         for ch_obj in raw_chars:
@@ -357,20 +372,6 @@ def decode_span(font: str, raw_chars: list) -> list:
                 out.append((" ", ch_obj["bbox"]))
                 continue
             dc = PUA_AND_DINGBAT_MAP.get(c, decode_cp1253_char(c))
-            out.append((dc, ch_obj["bbox"]))
-        return out
-
-    if base_font in MACGREEK_FONTS:
-        has_macgreek = any(c in MACGREEK_MAP for c in span_text)
-        out = []
-        for ch_obj in raw_chars:
-            c = ch_obj["c"]
-            if c in ("\x00", "\x01", "\x03"):
-                continue
-            if c == "\xad":
-                out.append(("\xad", ch_obj["bbox"]))
-                continue
-            dc = MACGREEK_MAP.get(c, c) if has_macgreek else c
             out.append((dc, ch_obj["bbox"]))
         return out
 
@@ -562,9 +563,14 @@ def join_line_segments(segs: list) -> str:
             gap = seg.x0 - prev_seg.x1
             h = max(6.0, min(seg.y1 - seg.y0, prev_seg.y1 - prev_seg.y0))
             prev_t = prev_seg.text.strip()
+            next_t = seg.text.lstrip()
             # Standalone 1-2 digit exercise number on the left gutter joins with space, not '|'
             is_left_ex_num = bool(re.match(r"^\d{1,2}[.)]?$", prev_t)) and gap <= 62.0
-            if gap > 36.0 and not is_left_ex_num and not is_dotted_leader(prev_seg.text) and not is_dotted_leader(seg.text):
+            # Blank fill-in gap right before a parenthesized verb/grammar prompt like `(τρώω)`
+            is_blank_before_paren = gap > 16.0 and bool(re.match(r"^\([\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]{1,40}\)", next_t))
+            if is_blank_before_paren:
+                parts.append(" ______ ")
+            elif gap > 36.0 and not is_left_ex_num and not is_dotted_leader(prev_seg.text) and not is_dotted_leader(seg.text):
                 parts.append(" | ")
             elif gap > max(2.6, h * 0.22) or is_left_ex_num:
                 if not prev_seg.text.endswith(" ") and not seg.text.startswith(" "):
@@ -589,12 +595,12 @@ _GREEK_SHORT_WORDS = {
 }
 
 _RUNNING_BANNER_RE = re.compile(
-    r"^(?:\d{1,3}\s*(?:\|\s*)?)?(?:ΣΤΑ ΑΡΧΑΙΑ ΧΡΟΝΙΑ|ΑΠΟ ΤΗ ΜΥΘΟΛΟΓΙΑ ΣΤΗΝ ΙΣΤΟΡΙΑ|.*[●•]\s*ΓΛΩΣΣΑ\s*[ΓΔ][΄'´]?\s*ΔΗΜΟΤΙΚΟΥ|ΓΛΩΣΣΑ\s*[ΓΔ][΄'´]?\s*ΔΗΜΟΤΙΚΟΥ\s*[●•].*)(?:\s*(?:\|\s*)?\d{1,3})?$",
+    r"^(?:\d{1,3}\s*(?:\|\s*)?)?(?:ΣΤΑ ΑΡΧΑΙΑ ΧΡΟΝΙΑ|ΑΠΟ ΤΗ ΜΥΘΟΛΟΓΙΑ ΣΤΗΝ ΙΣΤΟΡΙΑ|ΕΛΛΗΝΙΚΑ\s*Β[’'´΄]?|.*[●•]\s*ΓΛΩΣΣΑ\s*[ΓΔ][΄'´]?\s*ΔΗΜΟΤΙΚΟΥ|ΓΛΩΣΣΑ\s*[ΓΔ][΄'´]?\s*ΔΗΜΟΤΙΚΟΥ\s*[●•].*)(?:\s*(?:\|\s*)?\d{1,3})?$",
     re.I,
 )
 
 _HEADING_TEXT_RE = re.compile(
-    r"^(?:###\s+|ΕΝΟΤΗΤΑ\b|\d+\s*ΕΝΟΤΗΤΑ\b|Ενότητα\s*\d+|ΚΕΦΑΛΑΙΟ\s*\d+|Κεφάλαιο\s*\d+|Unit\s+\d+|Lesson\s+\d+|παράθεμα\s*\d+|Παράθεμα\s*\d+|Οριζόντια$|Κάθετα$)",
+    r"^(?:###\s+|ΕΝΟΤΗΤΑ\b|\d+\s*ΕΝΟΤΗΤΑ\b|\d+\s*ενότητα\b|Ενότητα\s*\d+|ΚΕΦΑΛΑΙΟ\s*\d+|Κεφάλαιο\s*\d+|Unit\s+\d+|Lesson\s+\d+|παράθεμα\s*\d+|Παράθεμα\s*\d+|Για\s+δες\b|Πώς\s+το\s+λένε;|Λέξεις,\s*λέξεις\b|Η\s+σειρά\s+μου\s+τώρα\b|Παίζω\s+έναν\s+ρόλο\b|\d{0,2}\s*Σωστό\s+ή\s+λάθος;|\d{0,2}\s*Απαντάω\s*:?|Γραμματική$|Λεξιλόγιο$|Σκέφτομαι\s+και\s+γράφω\b|Οριζόντια$|Κάθετα$)",
     re.I,
 )
 
@@ -653,7 +659,7 @@ def line_ends_with_hyphen(text: str) -> bool:
     return len(t) >= 2 and t[-1] in ("-", "‑") and bool(_WORD_CHAR_RE.match(t[-2]))
 
 
-def reconstruct_curved_titles(raw_blocks: list, is_english_book: bool, book_pno: int):
+def reconstruct_curved_titles(raw_blocks: list, is_english_book: bool, book_pno: int, prefer_macgreek: bool = False):
     """
     Detect arched/wave decorative lesson titles (e.g. 'Οι μικροί ταξιδιώτες ανεβαίνουν στο βουνό')
     where glyphs sit along a curved path at sz >= 17.5 in the upper band of the page.
@@ -691,7 +697,7 @@ def reconstruct_curved_titles(raw_blocks: list, is_english_book: bool, book_pno:
         # Decode each span, deduplicate drop shadows, and sort spans left-to-right
         span_pieces = []
         for b_idx, l_idx, s_idx, dy_dir, span in items:
-            decoded = decode_span(span.get("font", ""), span.get("chars", []))
+            decoded = decode_span(span.get("font", ""), span.get("chars", []), prefer_macgreek=prefer_macgreek)
             if not decoded:
                 continue
             txt = "".join(ch for ch, _ in decoded)
@@ -776,13 +782,13 @@ def reconstruct_curved_titles(raw_blocks: list, is_english_book: bool, book_pno:
     return curved_lines, consumed
 
 
-def extract_page_markdown(page: fitz.Page, is_english_book: bool, book_pno: int = 0) -> list:
+def extract_page_markdown(page: fitz.Page, is_english_book: bool, book_pno: int = 0, prefer_macgreek: bool = False) -> list:
     raw = page.get_text("rawdict")
     raw_blocks = raw.get("blocks", [])
     page_w = page.rect.width
     page_h = page.rect.height
 
-    curved_lines, consumed_curved = reconstruct_curved_titles(raw_blocks, is_english_book, book_pno)
+    curved_lines, consumed_curved = reconstruct_curved_titles(raw_blocks, is_english_book, book_pno, prefer_macgreek=prefer_macgreek)
 
     atomic_lines = list(curved_lines)
     vert_up_chars = []
@@ -802,7 +808,7 @@ def extract_page_markdown(page: fitz.Page, is_english_book: bool, book_pno: int 
                     # Skip tiny vertical photo credits on lesson pages (keep copyright on p.1-3)
                     if book_pno >= 4 and sz <= 9.5:
                         continue
-                    decoded = decode_span(span.get("font", ""), span.get("chars", []))
+                    decoded = decode_span(span.get("font", ""), span.get("chars", []), prefer_macgreek=prefer_macgreek)
                     for ch_s, bb in decoded:
                         if dy_dir < 0:
                             vert_up_chars.append((ch_s, bb))
@@ -832,7 +838,7 @@ def extract_page_markdown(page: fitz.Page, is_english_book: bool, book_pno: int 
                         ub_p3_chars.append((ch_s, bb))
                     continue
 
-                decoded = decode_span(span.get("font", ""), raw_chars)
+                decoded = decode_span(span.get("font", ""), raw_chars, prefer_macgreek=prefer_macgreek)
                 if not decoded:
                     continue
                 line_segs.extend(split_span_into_segments(decoded, b_idx))
@@ -966,9 +972,7 @@ def extract_page_markdown(page: fitz.Page, is_english_book: bool, book_pno: int 
         for ln in rendered_lines:
             t_clean = ln["text"].replace("\xad", "").strip()
             in_header_or_footer = (ln["y0"] < 56.0) or (ln["y1"] > page_h - 56.0)
-            if in_header_or_footer and t_clean == str(book_pno):
-                continue
-            if ln["y0"] < 52.0 and _RUNNING_BANNER_RE.match(t_clean):
+            if in_header_or_footer and (t_clean == str(book_pno) or _RUNNING_BANNER_RE.match(t_clean)):
                 continue
             filtered.append(ln)
         rendered_lines = filtered
@@ -1541,7 +1545,17 @@ def order_and_reflow_page(lines: list, page_width: float, is_toc_page: bool) -> 
             # 2 items on the same y_row
             gap = its[1]["x0"] - its[0]["x1"]
             sx = 0.5 * (its[0]["x1"] + its[1]["x0"])
-            if gap > 10.0 and mid_min <= sx <= mid_max and not is_dotted_leader(its[0]["text"]) and not is_dotted_leader(its[1]["text"]):
+            is_paren_blank = bool(re.match(r"^\([\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]{1,40}\)", its[1]["text"].lstrip()))
+            if is_paren_blank:
+                flush_twocol()
+                single_buf.append({
+                    "x0": its[0]["x0"], "y0": min(x["y0"] for x in its),
+                    "x1": its[1]["x1"], "y1": max(x["y1"] for x in its),
+                    "yc": r["yc"], "h": r["h"], "sz": max(x["sz"] for x in its),
+                    "text": f"{its[0]['text'].rstrip()} ______ {its[1]['text'].lstrip()}",
+                    "blocks": its[0]["blocks"] | its[1]["blocks"],
+                })
+            elif gap > 10.0 and mid_min <= sx <= mid_max and not is_dotted_leader(its[0]["text"]) and not is_dotted_leader(its[1]["text"]):
                 flush_single()
                 twocol_buf.append(r)
             else:

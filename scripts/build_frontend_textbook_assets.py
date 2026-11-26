@@ -50,17 +50,26 @@ def parse_dual_md_pages(md_path: str) -> dict:
 
 
 def clean_and_reflow_tutor_page(body: str) -> str:
-    """Clean OCR blank-line splits before (verb) hints and reflow mid-sentence hard wraps in Tutor B / A2."""
-    # Strip Wingdings/PUA bullets in older Tutor MD into clean '• '
+    """Clean OCR blank-line splits, table blank lines, and bullet artifacts in Tutor A2."""
     body = re.sub(r"[\ue000-\uf8ff]+", "• ", body)
     body = body.replace("\xad", "")
-    # 1. Rejoin fill-in-the-blank `(τρώω)` that jumped onto a new line right after a missing blank
+    # Remove redundant '* •' double bullets -> '•'
+    body = re.sub(r"^\s*\*\s*•\s*", "• ", body, flags=re.M)
+    # Clean spacing inside **bold :** -> **bold:**
+    body = re.sub(r"\*\*([^*\n]+?)\s+\*\*", r"**\1**", body)
+    # Strip mechanical splitter header '### 【课文、对话与练习】' or '## 【课文/对话】'
+    body = re.sub(r"^#{1,4}\s*【(?:课文、对话与练习|课文/对话)】\s*$", "", body, flags=re.M)
+    # Collapse blank lines between consecutive Markdown table rows `| ... |`
+    body = re.sub(r"(\|[^\n]+\|)\n\s*\n(?=\s*\|)", r"\1\n", body)
+    body = re.sub(r"(\|[^\n]+\|)\n\s*\n(?=\s*\|)", r"\1\n", body)
+    # Put inline numbered list items `1. ... 2. ...` onto separate lines
+    body = re.sub(r"\s+(?=\d{1,2}\.\s+[\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫA-Za-z])", "\n", body)
+    # Rejoin fill-in-the-blank `(τρώω)` that jumped onto a new line right after a missing blank
     body = re.sub(
         r"([^\n.!;?:»])\n\s*\(([\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]{1,45})\)",
         r"\1 ______ (\2)",
         body,
     )
-    # 2. Collapse long runs of dots/underscores
     body = re.sub(r"(?:[._…]\s*){6,}", " ______ ", body)
 
     raw_lines = [l.rstrip() for l in body.split("\n")]
@@ -68,7 +77,7 @@ def clean_and_reflow_tutor_page(body: str) -> str:
     cur = ""
 
     new_block_re = re.compile(
-        r"^(?:#{1,4}\s|\*\*|\||>\s|[•◆▪\-—–]\s|\d{1,2}[.)\s]\s*[Α-ΩΆ-ΏA-Z]|[α-ωΑ-Ωa-zA-Z][.)]\s|[Α-ΩΆ-ΏA-Z][\wά-ώϊϋΐΰ.\s]{0,16}:\s)"
+        r"^(?:#{1,4}\s|\*\*|\||>\s|[•◆▪*\-—–]\s|\d{1,2}[.)]\s+|[α-ωΑ-Ωa-zA-Z][.)]\s+|[Α-ΩΆ-ΏA-Z][\wά-ώϊϋΐΰ.\s]{0,16}:\s)"
     )
 
     for ln in raw_lines:
@@ -81,7 +90,7 @@ def clean_and_reflow_tutor_page(body: str) -> str:
                 out.append("")
             continue
 
-        if s.startswith("#") or "|" in s:
+        if s.startswith("#"):
             if cur:
                 out.append(cur)
                 cur = ""
@@ -91,11 +100,23 @@ def clean_and_reflow_tutor_page(body: str) -> str:
             out.append("")
             continue
 
+        if s.startswith("|") or " | " in s:
+            if cur:
+                out.append(cur)
+                cur = ""
+            if out and out[-1] != "" and not (out[-1].startswith("|") or " | " in out[-1]):
+                out.append("")
+            out.append(s)
+            continue
+
+        if out and (out[-1].startswith("|") or " | " in out[-1]):
+            out.append("")
+
         if not cur:
             cur = s
             continue
 
-        prev_done = bool(re.search(r"[.;!?:»”]$", cur))
+        prev_done = bool(re.search(r"[.;!?:»”。）]$", cur))
         if new_block_re.match(s) or prev_done:
             out.append(cur)
             out.append("")
@@ -119,6 +140,24 @@ def clean_and_reflow_tutor_page(body: str) -> str:
     while cleaned and cleaned[-1] == "":
         cleaned.pop()
     return "\n".join(cleaned)
+
+
+def extract_vector_tutor_pdf_pages(pdf_path: str, pdf_to_book_offset: int = 1) -> dict:
+    """Extract Tutor Book B directly from original vector PDF (`Ελληνικά Β.pdf`) with MacGreek decoding!"""
+    import sys as _sys
+    _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from convert_school_textbooks_to_md import extract_page_markdown
+
+    doc = fitz.open(pdf_path)
+    pages = {}
+    for pdf_p in range(1, len(doc) + 1):
+        book_p = pdf_p - pdf_to_book_offset
+        if book_p < 1:
+            continue
+        plines = extract_page_markdown(doc[pdf_p - 1], False, book_pno=book_p, prefer_macgreek=True)
+        pages[str(book_p)] = "\n".join(plines).strip() if plines else "*(本页为空白页或纯插图页)*"
+    doc.close()
+    return pages
 
 
 def parse_tutor_book_md_pages(md_path: str, pdf_to_book_offset: int = 1) -> dict:
@@ -696,7 +735,10 @@ def main():
         if os.path.exists(raw_pdf):
             render_cover(raw_pdf, cover_out)
 
-        pages = parse_tutor_book_md_pages(md_path, pdf_to_book_offset=tb["offset"])
+        if tb["id"] == "tutor-b" and os.path.exists(raw_pdf):
+            pages = extract_vector_tutor_pdf_pages(raw_pdf, pdf_to_book_offset=tb["offset"])
+        else:
+            pages = parse_tutor_book_md_pages(md_path, pdf_to_book_offset=tb["offset"])
         p_nums = [int(k) for k in pages.keys()]
         min_p, max_p = min(p_nums), max(p_nums)
 

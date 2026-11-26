@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Award, CheckCircle2, Loader2, Lock, Sparkles, Trophy } from 'lucide-react';
+import { Award, CheckCircle2, ChevronDown, ChevronUp, Loader2, Lock, RotateCw, Trophy } from 'lucide-react';
 import type {
   G3ChallengeDailyLog,
   G3GlossaProgressState,
@@ -10,8 +10,10 @@ import {
   computeG3ChallengeSummary,
   getBookById,
   loadBookPages,
+  peekTextbookAssistCache,
   type ReviewCoachResult,
 } from '../lib/textbookService';
+import { GeminiBadge } from './GeminiBadge';
 import { InteractiveTextbookViewer } from './InteractiveTextbookViewer';
 
 interface G3GlossaChallengePanelProps {
@@ -65,16 +67,24 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
   const [quizErr, setQuizErr] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [wordsAddedHere, setWordsAddedHere] = useState(0);
+  const [quizCollapsed, setQuizCollapsed] = useState(false);
 
-  useEffect(() => {
-    setCoachData(null);
-    setQuizErr(null);
-    setAnswers({});
-  }, [currentLesson.id]);
+  const cacheKey = `g3_challenge_quiz:${currentLesson.id}`;
 
-  // Auto-load the mandatory 3-question challenge quiz for today's Grade 3 lesson!
-  const loadChallengeQuiz = async () => {
+  // Auto-load the mandatory 3-question challenge quiz (uses persistent local + cloud cache first!)
+  const loadChallengeQuiz = async (forceRefresh = false) => {
     if (loadingQuiz) return;
+    if (!forceRefresh) {
+      const cached = peekTextbookAssistCache<ReviewCoachResult>(
+        cacheKey,
+        textbookPrefs?.aiAssistCache
+      );
+      if (cached) {
+        setCoachData(cached);
+        setQuizErr(null);
+        return;
+      }
+    }
     setLoadingQuiz(true);
     setQuizErr(null);
     try {
@@ -91,14 +101,26 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
         if (wbPages[String(p)]) wbSlice.push(`【练习册第 ${p} 页】\n${wbPages[String(p)]}`);
       }
 
-      const cacheKey = `g3_challenge_quiz:${currentLesson.id}`;
-      const res = await callTextbookAssist<ReviewCoachResult>(cacheKey, {
-        mode: 'review_coach',
-        bookTitle: `${tbBook?.zhTitle || '三年级语言课本'} · ${currentUnit.titleEl} · ${currentLesson.title}`,
-        pageRange: `课本 P.${currentLesson.tb[0]}-${currentLesson.tb[1]} + 练习册 P.${currentLesson.wb[0]}-${currentLesson.wb[1]}`,
-        pageText: tbSlice.join('\n\n'),
-        workbookText: wbSlice.join('\n\n'),
-      });
+      const res = await callTextbookAssist<ReviewCoachResult>(
+        cacheKey,
+        {
+          mode: 'review_coach',
+          bookTitle: `${tbBook?.zhTitle || '三年级语言课本'} · ${currentUnit.titleEl} · ${currentLesson.title}`,
+          pageRange: `课本 P.${currentLesson.tb[0]}-${currentLesson.tb[1]} + 练习册 P.${currentLesson.wb[0]}-${currentLesson.wb[1]}`,
+          pageText: tbSlice.join('\n\n'),
+          workbookText: wbSlice.join('\n\n'),
+        },
+        {
+          forceRefresh,
+          cloudCache: textbookPrefs?.aiAssistCache,
+          onSaveCloudCache: (nextCloudCache) => {
+            onUpdateTextbookPrefs({
+              ...(textbookPrefs || {}),
+              aiAssistCache: nextCloudCache,
+            });
+          },
+        }
+      );
       setCoachData(res);
     } catch (e: any) {
       setQuizErr(e?.message || '闯关题加载失败，请点按钮重试');
@@ -108,7 +130,19 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
   };
 
   useEffect(() => {
-    loadChallengeQuiz();
+    setQuizErr(null);
+    setAnswers({});
+    setQuizCollapsed(false);
+    const cached = peekTextbookAssistCache<ReviewCoachResult>(
+      cacheKey,
+      textbookPrefs?.aiAssistCache
+    );
+    if (cached) {
+      setCoachData(cached);
+    } else {
+      setCoachData(null);
+      loadChallengeQuiz(false);
+    }
   }, [currentLesson.id]);
 
   const quizList = coachData?.quiz || [];
@@ -311,27 +345,83 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
         }}
       >
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 900, color: isCurrentLessonCompleted ? '#065f46' : '#c2410c' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 16, fontWeight: 900, color: isCurrentLessonCompleted ? '#065f46' : '#c2410c' }}>
             {isCurrentLessonCompleted ? <CheckCircle2 size={20} color="#10b981" /> : <Lock size={19} color="#ea580c" />}
-            {isCurrentLessonCompleted
-              ? '🎉 本课 3 道三年级闯关题已全部答对，成功解锁下一步预习！'
-              : '🔥 必过闯关测验：3 道题全部答对（错题看懂详解后可重选），即可通关解锁下一步！'}
+            <span>
+              {isCurrentLessonCompleted
+                ? '🎉 本课 3 道三年级闯关题已全部答对，成功解锁下一步预习！'
+                : '🔥 必过闯关测验：3 道题全部答对（错题看懂详解后可重选），即可通关解锁下一步！'}
+            </span>
+            <GeminiBadge label="Gemini 出题" size="sm" />
           </div>
-          {!loadingQuiz && quizErr && (
-            <button
-              type="button"
-              onClick={loadChallengeQuiz}
-              style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ea580c', color: '#fff', fontWeight: 800, cursor: 'pointer' }}
-            >
-              重新加载闯关题
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {!loadingQuiz && coachData && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => loadChallengeQuiz(true)}
+                  title="重新调用 Gemini 换一套题"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '5px 10px',
+                    borderRadius: 8,
+                    border: '1px solid #fdba74',
+                    background: '#fff',
+                    color: '#9a3412',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <RotateCw size={12} /> 换题
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuizCollapsed((v) => !v)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '5px 11px',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    background: '#fff',
+                    color: '#334155',
+                    fontSize: 12.5,
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {quizCollapsed ? (
+                    <>
+                      展开闯关题 <ChevronDown size={14} />
+                    </>
+                  ) : (
+                    <>
+                      收起 <ChevronUp size={14} />
+                    </>
+                  )}
+                </button>
+              </>
+            )}
+            {!loadingQuiz && quizErr && (
+              <button
+                type="button"
+                onClick={() => loadChallengeQuiz(true)}
+                style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#ea580c', color: '#fff', fontWeight: 800, cursor: 'pointer' }}
+              >
+                重新加载闯关题
+              </button>
+            )}
+          </div>
         </div>
 
         {loadingQuiz && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#9a3412', fontWeight: 700, padding: '10px 0' }}>
             <Loader2 size={18} className="qvr-spin" />
-            正在根据本节三年级课文与配套练习册生成必会重点与 3 道闯关题…
+            Gemini 正在根据本节三年级课文与配套练习册生成必会重点与 3 道闯关题…
           </div>
         )}
 
@@ -339,7 +429,7 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
           <div style={{ fontSize: 13.5, color: '#dc2626', fontWeight: 700 }}>{quizErr}</div>
         )}
 
-        {coachData?.corePoints && coachData.corePoints.length > 0 && (
+        {!quizCollapsed && coachData?.corePoints && coachData.corePoints.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ fontSize: 13.5, fontWeight: 900, color: '#7c2d12' }}>
               💡 做题前先抓稳本课三年级基础语法/词汇重点：
@@ -353,7 +443,7 @@ export const G3GlossaChallengePanel: React.FC<G3GlossaChallengePanelProps> = ({
           </div>
         )}
 
-        {quizList.length > 0 && (
+        {!quizCollapsed && quizList.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {quizList.map((q, qIdx) => {
               const picked = answers[qIdx];
