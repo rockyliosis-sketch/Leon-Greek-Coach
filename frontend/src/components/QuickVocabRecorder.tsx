@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Mic, Plus, Volume2, Trash2, CheckCircle2, Sparkles, BookOpen, X, Loader2 } from 'lucide-react';
 import { GeminiBadge } from './GeminiBadge';
+import { recordGeminiTokenUsage } from '../lib/textbookService';
 import {
   findVocabSuggestions,
   getMondayDateStr,
@@ -162,6 +163,9 @@ export const QuickVocabRecorder: React.FC<QuickVocabRecorderProps> = ({
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         throw new Error(data?.error || `翻译请求失败（HTTP ${resp.status}）`);
+      }
+      if (data?.usage) {
+        recordGeminiTokenUsage(data.usage);
       }
 
       const results: Array<{ index: number; chinese: string; correctedGreek?: string }> =

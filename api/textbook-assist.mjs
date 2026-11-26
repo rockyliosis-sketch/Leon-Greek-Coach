@@ -217,7 +217,11 @@ async function callGemini(apiKey, model, mode, payload) {
   if (!text) {
     throw new Error(`Gemini ${model} returned empty content`);
   }
-  return JSON.parse(text);
+  const meta = data?.usageMetadata || {};
+  const promptTokens = Number(meta.promptTokenCount) || 0;
+  const outputTokens = (Number(meta.candidatesTokenCount) || 0) + (Number(meta.thoughtsTokenCount) || 0);
+  const totalTokens = Number(meta.totalTokenCount) || promptTokens + outputTokens;
+  return { parsed: JSON.parse(text), usage: { promptTokens, outputTokens, totalTokens } };
 }
 
 export default async function handler(req, res) {
@@ -278,7 +282,7 @@ export default async function handler(req, res) {
   let lastErr = null;
   for (const model of modelsToTry) {
     try {
-      const result = await callGemini(apiKey, model, mode, body);
+      const { parsed: result, usage } = await callGemini(apiKey, model, mode, body);
       if (mode === 'word' && result) {
         result.chinese = sanitizeCleanChinese(result.chinese) || result.chinese;
       }
@@ -288,7 +292,7 @@ export default async function handler(req, res) {
           chinese: sanitizeCleanChinese(w.chinese) || w.chinese,
         }));
       }
-      return sendJson(res, 200, { ok: true, mode, model, data: result });
+      return sendJson(res, 200, { ok: true, mode, model, data: result, usage });
     } catch (err) {
       lastErr = err;
       if (err?.status === 401 || err?.status === 403) {

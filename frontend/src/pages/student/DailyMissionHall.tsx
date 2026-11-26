@@ -65,6 +65,7 @@ import { DailyStudyReport } from '../../components/DailyStudyReport';
 import { LevelRulesModal } from '../../components/LevelRulesModal';
 import { InteractiveTextbookViewer } from '../../components/InteractiveTextbookViewer';
 import { G3GlossaChallengePanel } from '../../components/G3GlossaChallengePanel';
+import { GeminiStarIcon } from '../../components/GeminiBadge';
 import { computeG3ChallengeSummary, getTutorBookId } from '../../lib/textbookService';
 
 interface WizardStepDef {
@@ -157,6 +158,7 @@ const NumberStepper: React.FC<{
 
 const HW_ACTION_OPTIONS = [
   '书面作业全做完',
+  '用Gemini看懂了作业题干',
   '独立完成没查词',
   '查词后才做完',
   '朗读了课文',
@@ -169,6 +171,8 @@ const HW_ACTION_OPTIONS = [
 ];
 
 const TUTOR_REVIEW_ACTIONS = [
+  '遮中文自测了本页圈词',
+  '做了本页Gemini随堂小测',
   '口头重做了上节错题',
   '复习了语法变格',
   '复习了动词变位',
@@ -179,6 +183,8 @@ const TUTOR_REVIEW_ACTIONS = [
 ];
 
 const TUTOR_PREVIEW_ACTIONS = [
+  '按Gemini导读标了重点词',
+  '用Gemini看懂了新题干',
   '未来1-2页生词全查懂',
   '每道练习题干都看懂',
   '基础题已用铅笔试填',
@@ -222,6 +228,7 @@ const renderHighlightedText = (text: string) => {
 };
 
 const WORKBOOK_CHECK_OPTIONS = [
+  '用Gemini讲题看懂了思路',
   '读懂了全部题干',
   '标出了题目指令生词',
   '看懂了选择题要求',
@@ -273,8 +280,11 @@ const SCHOOL_SUBJECTS = [
 ];
 
 const PREVIEW_ACTIONS = [
+  '按Gemini导读抄了重点词',
   '通读了新课文',
   '查并标了重点词',
+  '对照核查了课本3要点',
+  '听了本课历史故事音频',
   '看懂了大概意思',
   '用中文复述了大意',
   '看了课本插图与词典框',
@@ -325,44 +335,47 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     bg: '#f0fdfa',
     steps: [
       {
-        title: mode === 'saturday' ? 'Step 1：本周课本旧标记清盘' : 'Step 1：学校当天课本复习排雷',
-        shortLabel: mode === 'saturday' ? '翻本周旧圈词和 ?，懂了擦掉' : '选今日科目页码 + 查懂当天书上每个生词',
-        whyShort: '先扫清今天课本里每一个不懂的词，写作业才不卡壳！',
+        title: mode === 'saturday' ? 'Step 1：本周课本旧标记清盘' : 'Step 1：学校当天课本复习排雷（对照互动电子课本）',
+        shortLabel:
+          mode === 'saturday'
+            ? '展开本周课本页码：遮中文自测圈词，懂了打 ✓'
+            : '选科目页码展开电子课本：点词标黄入库 + Gemini 重点小测',
+        whyShort: '纸质书对照下方电子课本：不懂的词直接点选即听发音、看变形并入库，写作业再也不卡壳！',
         checklist: mode === 'saturday'
           ? [
-              '翻开本周所有学校课本，只看留着圈和 ? 的地方',
-              '遮住中文考自己：看懂的直接擦掉或打 ✓',
-              '还是没记住的词，留到下一步全部录进系统',
+              '翻开本周学校课本（或展开下方电子课本页），开启【🙈 遮住中文考自己】抽查旧圈词和 ?',
+              '已经记牢的地方在纸质书上打 ✓；仍卡壳的词点选右侧小窗【圈为重点并入库】',
+              '笔记本或数学/环境学等纸质书上的顽固生词，留到下一步统一补录',
             ]
           : [
-              '下方点选今天上过的学校科目和页码',
-              '逐页检查今天课文：确认【每一个单词】都看懂，不懂立刻【铅笔标中文】',
-              '课本页眉【写上今天日期】（方便以后规律复习）',
-              '把今天新接触的所有句子和单词，全部【出声朗读 3 遍】',
+              '点选今天上过的学校科目、分册与页码，点开下方【电子课本页码条】（数学/环境学直接翻纸质书）',
+              '对照纸质书逐段过一遍：遇到不熟的词【直接点网页课文里的词】，听发音、在右侧悬浮小窗点【圈为重点并入库】，同时用铅笔把中文标在纸质书上并写今天日期',
+              '点上方【✦ Gemini 提炼本页重点 + 3道随堂小测】（或用【🙈 遮住中文考自己】），检验今天重点是否真听懂',
+              '把今天新接触的重点句子和刚圈出的生词【出声朗读 3 遍】',
             ],
-        buttonText: '当天课本排雷完成，去录生词',
+        buttonText: '当天课本排雷完成，去核对补录生词',
         kind: 'school_plan',
       },
       {
-        title: 'Step 2：把今天所有生词全部入库（本区块最核心！）',
-        shortLabel: '把今天标过/记过的生词全部语音入库',
-        whyShort: '录词 = 再学一遍！哪怕昨天预习标过、今天又记的词，只要不熟就全录进来。',
+        title: 'Step 2：补录其余笔记生词 & 核对今日入库词表（不重复劳动！）',
+        shortLabel: '补录笔记本/其他科生词（点 ✦ Gemini 一键填中文）',
+        whyShort: '刚才在电子课本里点选入库的词已自动列在最下方，不用重录！这里只补录课堂笔记或数学/环境学等剩余生词。',
         checklist: [
-          '翻开今天学过的课本和笔记本，找出【所有还不完全熟的生词】',
-          '用 iPad 语音输入批量填进下方（不够就点【+ 再加 1 行】）',
-          '点【一键全部入库】，未来 7 天网站每天自动帮你巩固',
+          '先看一眼最下方【今日已入库词表】：确认刚才在电子课本点选的生词已经自动存好',
+          '翻开课堂笔记本或数学/环境学等纸质书，把【还没入库的剩余生词】用 iPad 语音念进左边希腊语框',
+          '点【✦ Gemini 一键自动填中文】秒填准确释义，核对后点【一键全部入库】排入遗忘曲线',
         ],
-        buttonText: '生词全部入库了，去写作业',
+        buttonText: '生词全部齐了，去写作业',
         kind: 'vocab_recorder',
       },
       {
         title: 'Step 3：完成今日学校书面作业',
-        shortLabel: '完成各科书面作业并点选完成项',
-        whyShort: '趁刚查完词一口气写完！如果提前做完，可直接去推进一部分区块二的私教课。',
+        shortLabel: '完成各科书面作业（看不懂题干可回看 Gemini 讲题思路）',
+        whyShort: '看不懂希腊语题目要求时别干卡着！可点开课本底部的「关联练习册 · Gemini 讲思路」看懂题意再自己动笔写。',
         checklist: [
           '一口气认真完成今天各科的【全部书面作业】',
-          '实在不会做的题目【先标出来】，全部写完后再查书或明天问老师',
-          '在下方逐科点选完成项（提前做完可直接去做【区块二私教课】）',
+          '若遇到看不懂希腊语题干的题，可回看上方课本的【关联练习册 · ✦ Gemini 讲题思路】，看懂要求后自己动笔做',
+          '真拿不准的题在纸质本上【画 ?】明天问老师，并在下方逐科点选完成项（提前做完可先去做区块二私教课）',
         ],
         buttonText: '区块一全部通关！',
         kind: 'school_homework',
@@ -377,7 +390,7 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     title: isLight && mode === 'sunday'
       ? '区块二：网站刷题 + 私教备课（轻享 25 分）'
       : '区块二：网站刷题 + 希腊语私教课',
-    subtitle: '40 分钟 · 工作量较大，私教课清单可随时拆到区块一/三接力完成',
+    subtitle: '40 分钟 · 内置矢量精排《私教 B 本 / A2》与 Gemini 讲题助学',
     minutes: isLight && mode === 'sunday' ? 25 : 40,
     accent: '#0071E3',
     bg: '#eff6ff',
@@ -385,7 +398,7 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
       {
         title: 'Step 1：完成今日网站八大模块刷题',
         shortLabel: '完成今日网站八大模块日常刷题',
-        whyShort: '听、说、拼、译四维反复提取，记忆效率比死看书高 3 倍！',
+        whyShort: '听、说、拼、译四维反复提取（含你在电子课本点选入库的生词），记忆效率翻 3 倍！',
         checklist: [
           '点下方按钮进入刷题中心，完成今日八大模块',
           '卡壳时先想 3 秒再点提示，不胡乱按键',
@@ -397,13 +410,13 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
         linkLabel: '去刷题 →',
       },
       {
-        title: 'Step 2：希腊语私教课（预习 / 复习专属清单）',
-        shortLabel: '按私教课预习/复习清单逐项打勾并记录单元页码',
-        whyShort: '自己把复习和预习做好，老师上课才不用陪你炒冷饭，全堂直接学新课、进度翻倍！',
+        title: 'Step 2：希腊语私教课（互动《B 本 / A2》复习与预习）',
+        shortLabel: '对照互动版《B本/A2》完成复习自测与新课预习清单',
+        whyShort: '用好电子版《B 本》的语法放大镜、遮中文自测和 Gemini 题干讲解，上课全程学新干货、进度翻倍！',
         checklist: [
-          '先选今天私教课模式（课前预习 / 课后复习 / 预习+复习）',
-          '对照下方亮出的【预习清单】或【复习清单】逐条打勾完成',
-          '选好教材、单元号、页码区间与问号数，记入今日学习报告',
+          '先选今天私教课模式（只复习 / 预习 + 复习），选好《B 本》或《A2》页码区间',
+          '点开下方电子书页码条：结合【🔍 语法放大镜】【🙈 遮中文自测】与【✦ Gemini 重点/讲题】逐项打勾',
+          '记录单元号、页码与纸质书上标的 ? 数量，自动记入今日学习报告',
         ],
         buttonText: '区块二全部通关！',
         kind: 'tutor_prep',
@@ -416,48 +429,48 @@ function buildBlocksForMode(mode: DayMode, record: DailyMissionRecord): MissionB
     iconName: 'icon_block_preview',
     bgImage: '/images/ui/bg_block_preview.png',
     title: isLight
-      ? '区块三：旧笔记复习 + 明天预习（轻享 20 分）'
-      : '区块三：旧笔记规律复习 + 明天新课/练习册预习',
+      ? '区块三：三年级跳单元闯关 + 明天预习（轻享 20 分）'
+      : '区块三：三年级跳单元闯关 + 明天新课/练习册预习',
     subtitle: isLight
-      ? '20 分钟轻享 · 1/3 时间看旧笔记 + 重点预习 1 科'
-      : '40 分钟 · 1/3 时间规律复习旧笔记 + 预习明天至少 2 科与练习册',
+      ? '20 分钟轻享 · 先过 1 节三年级语言闯关 + 重点预习 1 科'
+      : '40 分钟 · 先通 1 节三年级语言跳单元闯关 + 预习明天至少 2 科与练习册',
     minutes: isLight ? 20 : 40,
     accent: '#7c3aed',
     bg: '#f5f3ff',
     steps: [
       {
         title: 'Step 1：三年级《语言 + 练习册》跳单元强制闯关（必过解锁下一步！）',
-        shortLabel: '跨册跳单元攻克三年级语言课文+练习册（答对3题通关）',
+        shortLabel: '跳单元攻克三年级语言课文+练习册（3题全对解锁下一步）',
         whyShort: '把三年级漏掉的 20% 实词和基础语法地基彻底补牢，四年级听课写作业才能轻松起飞！',
         checklist: [
-          '通读下方自动摊开的【三年级课文】：遇到不熟的词【直接用手指点选】看讲解并入库',
-          '点开【本课自动关联的三年级练习册】：看懂题干要求与语法规律',
+          '点开下方【三年级课本页码条】通读课文：遇到不熟的词【直接点选】看右侧悬浮小窗讲解并一键入库',
+          '点开课本底部的【自动关联三年级练习册】：结合 Gemini 讲题看懂题干要求与语法规律',
           '完成最下方的【3 道必过闯关题】（全部答对自动亮绿灯，解锁下一步预习！）',
         ],
         buttonText: '三年级今日闯关通过，去预习明天新课 →',
         kind: 'five_min_scan',
       },
       {
-        title: 'Step 2：预习明天学校新课（至少 2 科 · 预习时不用录生词）',
-        shortLabel: '预习明天至少 2 科：标生词、通读、写中文大意',
-        whyShort: '预习做好了，明天听课像开卷，区块一的工作量也会越来越少！（预习不用录词，明天区块一再录）',
+        title: 'Step 2：预习明天学校新课（至少 2 科 · 对照导读往书上做记号）',
+        shortLabel: '预习明天至少 2 科：Gemini 抄书导读、通读、写大意核对要点',
+        whyShort: '提前把重点生词标在纸质书上、搞懂课文讲什么，明天听课像开卷！（预习历史还可点上方按钮直接去听本课故事音频）',
         checklist: [
-          '选好明天要预习的【科目和页码】（建议至少 2 科）',
-          '把未来 1–2 页里所有看不懂的词句【提前标中文】',
-          '出声通读 1 遍，确保【看懂大概讲了什么事】',
-          '合上书，在下方用语音写一句【中文大意】',
+          '选好明天要预习的【科目、分册和页码】（建议至少 2 科；数学/环境学直接翻纸质书预习）',
+          '语言/历史/英语：点【✦ Gemini 预习导读 & 抄书指南】，把推荐重点词和自己点选的不懂词【用铅笔标在纸质书上】（核心词也可顺手圈重点入库）',
+          '展开电子书页对照纸质书【出声通读 1 遍】（历史课可顺手点听对应的历史故事音频！）',
+          '合上书在下方写出【中文大意】，立即对照自动解锁的【课本 3 条真实要点】自查理解是否准确',
         ],
         buttonText: '新课预习完成，去扫练习册',
         kind: 'multi_preview',
       },
       {
-        title: 'Step 3：预习对应练习册（和私教课方法一样！）',
-        shortLabel: '把练习册每道题干读懂、标出不懂的词（支持多本）',
-        whyShort: '不要求提前做完，但必须把每道题干读懂、生词标好，明天上课立刻抓住重点！',
+        title: 'Step 3：预习明天对应练习册（Gemini 助你提前看懂每道题干！）',
+        shortLabel: '展开练习册页码，结合 Gemini 讲题读懂题干要求并标指令词',
+        whyShort: '不要求提前做完，但必须把每道题的希腊语要求（划线/填空/改写）看懂标好，明天课堂动笔稳准快！',
         checklist: [
-          '翻开明天对应练习册，选好书目和页码（多本可点【+ 再增加一本】）',
-          '把每一道题的题目要求读一遍，看不懂的指令词【提前标中文】',
-          '勾选发现情况，把最想明天听老师讲的题记一句备注',
+          '选好明天对应练习册与页码（支持多本；数学/环境学直接翻纸质练习册）',
+          '展开练习册页或点【✦ Gemini 翻译本页题干 & 讲讲怎么做】，把看不懂的指令词【用铅笔标在纸质练习册上】',
+          '勾选下方预习发现项，把明天最想重点听老师讲的题记一句备注',
         ],
         buttonText: '区块三全部通关！',
         kind: 'workbook_check',
@@ -2085,10 +2098,9 @@ const DailyMissionHall: React.FC = () => {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                       {[
-                        '选好今天复习的【单元号与页码区间】（大单元分几次扎实复习完）',
-                        '盖住答案，把上次老师改过的【错题口头重做一遍】',
-                        '把本单元【语法笔记、变格/变位和重点句】完整过一遍',
-                        '把当天或本单元的课文【出声朗读 1 遍】',
+                        '选好今天复习的页码并点开下方电子版《B 本》，对照【🔍 语法放大镜卡片】把变格/变位和重点句过一遍',
+                        '开启【🙈 遮住中文考自己】抽查本页圈词，并盖住纸质书答案把上次【错题口头重做一遍】',
+                        '点【✦ Gemini 提炼重点 + 3道随堂小测】检验掌握度，并把课文对话【出声朗读 1 遍】',
                       ].map((line, i) => {
                         const k = `tutor_rv_${i}`;
                         const ck = Boolean(checkedItems[k]);
@@ -2261,9 +2273,9 @@ const DailyMissionHall: React.FC = () => {
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                         {[
-                          '翻开【未来 1–2 页】：把所有看不懂的词句全部查懂【提前标中文】',
-                          '看【未来 1–2 页练习题】：不求全会做，但必须【把每道题干看懂】',
-                          '会做的先用铅笔试填，真不会的地方【画大 ?】上课直接问老师',
+                          '点开下方【未来 1–2 页】电子书：用【✦ Gemini 预习导读 & 抄书指南】把关键生词【铅笔标在纸质书上】（不懂的词随时点选听读）',
+                          '点【✦ Gemini 翻译本页题干 & 讲讲怎么做】，把未来 1–2 页练习题的【每道题干要求看懂】',
+                          '会做的基础题先用铅笔试填，真不会的地方【画大 ?】上课直接问老师',
                         ].map((line, i) => {
                           const k = `tutor_pv_${i}`;
                           const ck = Boolean(checkedItems[k]);
@@ -2942,7 +2954,7 @@ const DailyMissionHall: React.FC = () => {
           gap: 16px;
         }
         .mission-rank-slot {
-          margin-right: 175px;
+          margin-right: 140px;
         }
         @media (max-width: 1024px) {
           .mission-container {
@@ -2955,7 +2967,7 @@ const DailyMissionHall: React.FC = () => {
             display: none !important;
           }
           .mission-rank-slot {
-            margin-right: 110px;
+            margin-right: 48px;
           }
         }
         @media (max-width: 767px) {
@@ -3121,7 +3133,7 @@ const DailyMissionHall: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dedicated Gold Saint / Rank Showcase Card (Reserved spacious slot for Gold Saints portraits!) */}
+              {/* Dedicated Gold Saint / Rank Showcase Card + Matching Gemini AI Live Token Card */}
               {(() => {
                 const scoreVal = sharedState.score || 0;
                 const nextIdx = SCOUT_LEVELS.findIndex((l) => l.id === currentLevel.id) + 1;
@@ -3131,64 +3143,137 @@ const DailyMissionHall: React.FC = () => {
                   currentLevel.maxPoints >= 999999
                     ? 100
                     : Math.min(100, Math.max(5, Math.round(((scoreVal - currentLevel.minPoints) / span) * 100)));
+
+                const todayGemini = sharedState.textbook_preferences?.geminiUsageByDate?.[todayStr] || {
+                  totalTokens: 0,
+                  promptTokens: 0,
+                  outputTokens: 0,
+                  calls: 0,
+                };
+                const cachedGuideCount = Object.keys(sharedState.textbook_preferences?.aiAssistCache || {}).length;
+
                 return (
-                  <button
-                    type="button"
-                    className="mission-rank-slot"
-                    onClick={() => setShowRulesModal(true)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '12px 16px',
-                      borderRadius: 18,
-                      background: 'rgba(15, 23, 42, 0.28)',
-                      backdropFilter: 'blur(12px)',
-                      border: '1.5px solid rgba(255, 255, 255, 0.32)',
-                      color: '#fff',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      minWidth: 235,
-                    }}
-                    title="点击查看黄金十二宫完整天梯与积分规则"
-                  >
-                    <img
-                      src={currentLevel.badgeUrl}
-                      alt={currentLevel.name}
+                  <div className="mission-rank-slot" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 12 }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowRulesModal(true)}
                       style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: 14,
-                        objectFit: 'cover',
-                        border: '2px solid #fbbf24',
-                        background: 'rgba(255,255,255,0.12)',
-                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '12px 16px',
+                        borderRadius: 18,
+                        background: 'rgba(15, 23, 42, 0.28)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1.5px solid rgba(255, 255, 255, 0.32)',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        minWidth: 235,
                       }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 11, opacity: 0.88, fontWeight: 700 }}>
-                        当前段位 · {scoreVal} XP
-                      </div>
-                      <div style={{ fontSize: 15, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <span>{currentLevel.name}</span>
-                        {currentLevel.stars && (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                            {Array.from({ length: Math.min(currentLevel.stars, 5) }).map((_, i) => (
-                              <img key={i} src={RANK_STAR_URL} alt="" style={{ width: 12, height: 12, objectFit: 'contain' }} />
-                            ))}
-                          </span>
+                      title="点击查看黄金十二宫完整天梯与积分规则"
+                    >
+                      <img
+                        src={currentLevel.badgeUrl}
+                        alt={currentLevel.name}
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 14,
+                          objectFit: 'cover',
+                          border: '2px solid #fbbf24',
+                          background: 'rgba(255,255,255,0.12)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, opacity: 0.88, fontWeight: 700 }}>
+                          当前段位 · {scoreVal} XP
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <span>{currentLevel.name}</span>
+                          {currentLevel.stars && (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                              {Array.from({ length: Math.min(currentLevel.stars, 5) }).map((_, i) => (
+                                <img key={i} src={RANK_STAR_URL} alt="" style={{ width: 12, height: 12, objectFit: 'contain' }} />
+                              ))}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 5 }}>
+                          <div style={{ height: '100%', width: `${rankPct}%`, background: '#fde047', borderRadius: 999 }} />
+                        </div>
+                        {nextLvl && (
+                          <div style={{ fontSize: 10.5, opacity: 0.88, marginTop: 3 }}>
+                            距下一阶还差 {Math.max(0, nextLvl.minPoints - scoreVal)} XP →
+                          </div>
                         )}
                       </div>
-                      <div style={{ height: 5, borderRadius: 999, background: 'rgba(255,255,255,0.25)', overflow: 'hidden', marginTop: 5 }}>
-                        <div style={{ height: '100%', width: `${rankPct}%`, background: '#fde047', borderRadius: 999 }} />
+                    </button>
+
+                    {/* Matching Frosted-Glass Gemini AI Status & Daily Real Token Usage Card */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: '12px 16px',
+                        borderRadius: 18,
+                        background: 'rgba(15, 23, 42, 0.28)',
+                        backdropFilter: 'blur(12px)',
+                        border: '1.5px solid rgba(255, 255, 255, 0.32)',
+                        color: '#fff',
+                        minWidth: 235,
+                      }}
+                      title={`今日实时统计（跨设备云端同步）\n输入 Prompt: ${todayGemini.promptTokens.toLocaleString()} Tokens\n输出 Output: ${todayGemini.outputTokens.toLocaleString()} Tokens\n今日调用: ${todayGemini.calls} 次｜云端已缓存讲义: ${cachedGuideCount} 份`}
+                    >
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 14,
+                          background: 'rgba(255, 255, 255, 0.94)',
+                          border: '2px solid rgba(196, 181, 253, 0.9)',
+                          boxShadow: '0 4px 14px rgba(139, 92, 246, 0.28)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <GeminiStarIcon size={26} />
                       </div>
-                      {nextLvl && (
-                        <div style={{ fontSize: 10.5, opacity: 0.88, marginTop: 3 }}>
-                          距下一阶还差 {Math.max(0, nextLvl.minPoints - scoreVal)} XP →
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800 }}>
+                          <span
+                            style={{
+                              width: 7,
+                              height: 7,
+                              borderRadius: '50%',
+                              background: '#34d399',
+                              boxShadow: '0 0 0 3px rgba(52, 211, 153, 0.28)',
+                              display: 'inline-block',
+                            }}
+                          />
+                          <span style={{ opacity: 0.95 }}>网站已接入 Gemini AI</span>
                         </div>
-                      )}
+                        <div
+                          style={{
+                            fontSize: 15,
+                            fontWeight: 900,
+                            marginTop: 2,
+                            fontVariantNumeric: 'tabular-nums',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          今日 {todayGemini.totalTokens.toLocaleString()} <span style={{ fontSize: 12, fontWeight: 700, opacity: 0.9 }}>Tokens</span>
+                        </div>
+                        <div style={{ fontSize: 10.5, opacity: 0.88, marginTop: 3, whiteSpace: 'nowrap' }}>
+                          调用 {todayGemini.calls} 次 · 云端已缓存 {cachedGuideCount} 页
+                        </div>
+                      </div>
                     </div>
-                  </button>
+                  </div>
                 );
               })()}
             </div>
@@ -4094,7 +4179,7 @@ const DailyMissionHall: React.FC = () => {
                       )}
                       {block.id === 'block_preview' && (
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, padding: '3px 8px', borderRadius: 6, background: '#ede9fe', color: '#6d28d9' }}>
-                          <UiIcon name="icon_block_preview" size={14} /> 学校课业 · 下节课预习与练习册
+                          <UiIcon name="icon_block_preview" size={14} /> 三年级闯关 · 下节课预习与练习册
                         </span>
                       )}
                     </div>
@@ -4167,6 +4252,11 @@ const DailyMissionHall: React.FC = () => {
                                 {step.kind === 'vocab_recorder' && todayWords.length > 0 && (
                                   <span style={{ marginLeft: 4, color: '#0f766e', fontWeight: 700 }}>
                                     (已录{todayWords.length}词)
+                                  </span>
+                                )}
+                                {step.kind === 'five_min_scan' && sharedState.g3_glossa_progress?.dailyCompletedLesson?.[todayStr] && (
+                                  <span style={{ marginLeft: 4, color: '#047857', fontWeight: 800 }}>
+                                    (今日已通关 ✓)
                                   </span>
                                 )}
                               </span>

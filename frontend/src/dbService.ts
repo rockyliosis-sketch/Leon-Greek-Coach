@@ -169,6 +169,14 @@ export interface G3GlossaProgressState {
   lastCompletedDate?: string;
 }
 
+export interface GeminiDailyUsage {
+  totalTokens: number;
+  promptTokens: number;
+  outputTokens: number;
+  calls: number;
+  cacheHits?: number;
+}
+
 export interface TextbookPreferencesState {
   /** 记住每个科目上次选中的具体册别 ID，如 { "希腊语 (Γλώσσα)": "g4-glossa-a" } */
   selectedBookBySubject?: Record<string, string>;
@@ -178,6 +186,8 @@ export interface TextbookPreferencesState {
   circledWordsByBookPage?: Record<string, CircledBookWord[]>;
   /** 云端持久化的 Gemini 课本伴读/重点小测/讲题缓存，跨刷新、跨设备免重复调用 API */
   aiAssistCache?: Record<string, any>;
+  /** 按希腊日期累计全站 Gemini API 真实 Token 消耗与调用次数（跨设备实时同步） */
+  geminiUsageByDate?: Record<string, GeminiDailyUsage>;
 }
 
 export interface SharedState {

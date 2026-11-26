@@ -1,6 +1,12 @@
 import catalogData from '../data/school_textbooks_catalog.json';
 import historyCatalogData from '../data/history_catalog.json';
-import type { G3GlossaProgressState } from '../dbService';
+import {
+  getInitialLocalState,
+  saveSharedState,
+  type G3GlossaProgressState,
+  type GeminiDailyUsage,
+} from '../dbService';
+import { getTodayStr } from './dailyMissionHelpers';
 
 export interface TextbookMeta {
   id: string;
@@ -391,6 +397,56 @@ export interface CallAssistOptions {
   onSaveCloudCache?: (nextCloudCache: Record<string, any>) => void;
 }
 
+/**
+ * 记录一次真实的 Gemini API Token 消耗（同步更新本地与 Firestore 云端 `geminiUsageByDate`）
+ */
+export function recordGeminiTokenUsage(usage?: {
+  promptTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+}) {
+  const total = Number(usage?.totalTokens) || 0;
+  const prompt = Number(usage?.promptTokens) || 0;
+  const output = Number(usage?.outputTokens) || 0;
+  if (total <= 0 && prompt <= 0 && output <= 0) return;
+
+  try {
+    const dateKey = getTodayStr();
+    const curState = getInitialLocalState();
+    const prevPrefs = curState.textbook_preferences || {};
+    const prevByDate = { ...(prevPrefs.geminiUsageByDate || {}) };
+    const prevDay: GeminiDailyUsage = prevByDate[dateKey] || {
+      totalTokens: 0,
+      promptTokens: 0,
+      outputTokens: 0,
+      calls: 0,
+      cacheHits: 0,
+    };
+
+    prevByDate[dateKey] = {
+      totalTokens: (prevDay.totalTokens || 0) + (total || prompt + output),
+      promptTokens: (prevDay.promptTokens || 0) + prompt,
+      outputTokens: (prevDay.outputTokens || 0) + output,
+      calls: (prevDay.calls || 0) + 1,
+      cacheHits: prevDay.cacheHits || 0,
+    };
+
+    // Keep only recent 30 days to keep Firestore document compact
+    const sortedDates = Object.keys(prevByDate).sort();
+    while (sortedDates.length > 30) {
+      const old = sortedDates.shift();
+      if (old) delete prevByDate[old];
+    }
+
+    saveSharedState({
+      textbook_preferences: {
+        ...prevPrefs,
+        geminiUsageByDate: prevByDate,
+      },
+    });
+  } catch {}
+}
+
 export async function callTextbookAssist<T = any>(
   cacheKey: string,
   payload: Record<string, any>,
@@ -419,17 +475,58 @@ export async function callTextbookAssist<T = any>(
     isWord ? 500 : 180
   );
 
-  // Sync page-level guides/quizzes to Firestore cloud state so refreshing or switching devices never re-calls API!
-  if (!isWord && options?.onSaveCloudCache) {
-    const nextCloud: Record<string, any> = { ...(options.cloudCache || {}) };
-    delete nextCloud[cacheKey];
-    nextCloud[cacheKey] = json.data;
-    const cKeys = Object.keys(nextCloud);
+  // Build updated cloud textbook_preferences in a single atomic merge so cache + token usage never overwrite each other!
+  const curPrefs = getInitialLocalState().textbook_preferences || {};
+  let nextAiCache = curPrefs.aiAssistCache || options?.cloudCache || {};
+  if (!isWord) {
+    nextAiCache = { ...nextAiCache };
+    delete nextAiCache[cacheKey];
+    nextAiCache[cacheKey] = json.data;
+    const cKeys = Object.keys(nextAiCache);
     while (cKeys.length > 90) {
       const oldest = cKeys.shift();
-      if (oldest) delete nextCloud[oldest];
+      if (oldest) delete nextAiCache[oldest];
     }
-    options.onSaveCloudCache(nextCloud);
+  }
+
+  const u = json?.usage;
+  const totalT = Number(u?.totalTokens) || 0;
+  const promptT = Number(u?.promptTokens) || 0;
+  const outputT = Number(u?.outputTokens) || 0;
+  const dateKey = getTodayStr();
+  const nextUsageMap = { ...(curPrefs.geminiUsageByDate || {}) };
+  if (totalT > 0 || promptT > 0 || outputT > 0) {
+    const prevDay: GeminiDailyUsage = nextUsageMap[dateKey] || {
+      totalTokens: 0,
+      promptTokens: 0,
+      outputTokens: 0,
+      calls: 0,
+      cacheHits: 0,
+    };
+    nextUsageMap[dateKey] = {
+      totalTokens: (prevDay.totalTokens || 0) + (totalT || promptT + outputT),
+      promptTokens: (prevDay.promptTokens || 0) + promptT,
+      outputTokens: (prevDay.outputTokens || 0) + outputT,
+      calls: (prevDay.calls || 0) + 1,
+      cacheHits: prevDay.cacheHits || 0,
+    };
+    const sDates = Object.keys(nextUsageMap).sort();
+    while (sDates.length > 30) {
+      const old = sDates.shift();
+      if (old) delete nextUsageMap[old];
+    }
+  }
+
+  if (!isWord || totalT > 0) {
+    const mergedPrefs = {
+      ...curPrefs,
+      aiAssistCache: nextAiCache,
+      geminiUsageByDate: nextUsageMap,
+    };
+    if (!isWord && options?.onSaveCloudCache) {
+      options.onSaveCloudCache(nextAiCache);
+    }
+    saveSharedState({ textbook_preferences: mergedPrefs });
   }
 
   return json.data as T;

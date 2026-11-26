@@ -109,7 +109,11 @@ async function callGeminiModel(apiKey, model, words) {
   if (!Array.isArray(parsed)) {
     throw new Error(`Gemini ${model} returned non-array JSON`);
   }
-  return parsed;
+  const meta = data?.usageMetadata || {};
+  const promptTokens = Number(meta.promptTokenCount) || 0;
+  const outputTokens = (Number(meta.candidatesTokenCount) || 0) + (Number(meta.thoughtsTokenCount) || 0);
+  const totalTokens = Number(meta.totalTokenCount) || promptTokens + outputTokens;
+  return { items: parsed, usage: { promptTokens, outputTokens, totalTokens } };
 }
 
 export default async function handler(req, res) {
@@ -164,7 +168,7 @@ export default async function handler(req, res) {
   let lastErr = null;
   for (const model of modelsToTry) {
     try {
-      const items = await callGeminiModel(apiKey, model, words);
+      const { items, usage } = await callGeminiModel(apiKey, model, words);
       const byIndex = new Map();
       for (const it of items) {
         const idx = Number(it?.index);
@@ -184,7 +188,7 @@ export default async function handler(req, res) {
         return { index: idx, input, chinese, correctedGreek };
       });
 
-      return sendJson(res, 200, { results, model });
+      return sendJson(res, 200, { results, model, usage });
     } catch (err) {
       lastErr = err;
       if (err?.status === 401 || err?.status === 403) {
