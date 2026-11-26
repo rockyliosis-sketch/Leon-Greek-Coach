@@ -564,81 +564,421 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
     }
   };
 
+  const renderInlineInteractiveText = (text: string, sentenceCtx: string, pageNo: number) => {
+    // Handle bold **...**, fill-in blanks ______, and grammar hints (τρώω) cleanly while keeping words clickable
+    const segments = text.split(/(\*\*[^*]+\*\*|_{4,}|\([\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]{1,40}\))/g);
+    return segments.map((seg, sIdx) => {
+      if (!seg) return null;
+      if (/^_{4,}$/.test(seg)) {
+        return (
+          <span
+            key={sIdx}
+            aria-label="填空横线"
+            style={{
+              display: 'inline-block',
+              minWidth: 54,
+              borderBottom: '2px solid #94a3b8',
+              margin: '0 5px',
+              transform: 'translateY(-2px)',
+            }}
+          />
+        );
+      }
+      const isBoldWrap = seg.startsWith('**') && seg.endsWith('**') && seg.length > 4;
+      const isParenHint =
+        seg.startsWith('(') &&
+        seg.endsWith(')') &&
+        /^[\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]+$/.test(seg.slice(1, -1));
+
+      const inner = isBoldWrap ? seg.slice(2, -2) : seg;
+      const tokens = inner.split(WORD_SPLIT_RE);
+
+      const renderedTokens = tokens.map((tok, tIdx) => {
+        if (!IS_CLICKABLE_WORD_RE.test(tok)) {
+          return <React.Fragment key={tIdx}>{tok}</React.Fragment>;
+        }
+        const norm = normalizeGreekKey(tok);
+        const isCircled = norm && circledRawNormSet.has(norm);
+        const isRecorded = norm && recordedNormSet.has(norm);
+        const isSelected =
+          selectedWordInfo?.word === tok.replace(/^[’']+|[’']+$/g, '') &&
+          selectedWordInfo?.pageNo === pageNo;
+
+        return (
+          <span
+            key={tIdx}
+            className="tb-word-tok"
+            onClick={() => handleTapWord(tok, sentenceCtx, pageNo)}
+            title="点一下听发音、看本句意思与用法，可一键加入生词库"
+            style={{
+              cursor: 'pointer',
+              padding: '1px 2.5px',
+              margin: '0 0.5px',
+              borderRadius: 5,
+              fontWeight: isBoldWrap ? 800 : undefined,
+              background: isSelected
+                ? '#fde047'
+                : isCircled
+                  ? '#fef3c7'
+                  : isRecorded
+                    ? '#dcfce7'
+                    : undefined,
+              borderBottom: isSelected
+                ? '2px solid #d97706'
+                : isCircled
+                  ? '2px solid #f59e0b'
+                  : isRecorded
+                    ? '1.5px dashed #10b981'
+                    : undefined,
+            }}
+          >
+            {tok}
+          </span>
+        );
+      });
+
+      if (isParenHint) {
+        return (
+          <span
+            key={sIdx}
+            style={{
+              background: '#eef2ff',
+              color: '#4338ca',
+              fontWeight: 700,
+              padding: '0 5px',
+              borderRadius: 6,
+              margin: '0 2px',
+              fontSize: '0.95em',
+            }}
+          >
+            {renderedTokens}
+          </span>
+        );
+      }
+      if (isBoldWrap) {
+        return (
+          <strong key={sIdx} style={{ fontWeight: 800, color: '#0f172a' }}>
+            {renderedTokens}
+          </strong>
+        );
+      }
+      return <React.Fragment key={sIdx}>{renderedTokens}</React.Fragment>;
+    });
+  };
+
   const renderClickablePageText = (pageText: string, pageNo: number) => {
     if (!pageText || pageText.includes('*(本页为空白页或纯插图页)*')) {
       return (
-        <div style={{ padding: '18px 14px', color: '#94a3b8', fontStyle: 'italic', fontSize: 14 }}>
-          （本页在纸质原书中为纯插图页或过渡页，请对照纸质书插图查看）
+        <div style={{ padding: '20px 16px', color: '#94a3b8', fontStyle: 'italic', fontSize: 14.5, textAlign: 'center' }}>
+          🖼️ 本页在纸质原书中为纯插图页或过渡页，请对照纸质书插图查看
         </div>
       );
     }
 
-    const lines = pageText.split('\n');
+    // Separate `> 📌 ...` margin sidebars from main blocks so sidebars render in a dedicated neat box
+    const rawBlocks = pageText
+      .replace(/\r\n/g, '\n')
+      .split(/\n{2,}/)
+      .map((b) => b.trim())
+      .filter(Boolean);
+
+    const mainBlocks: string[] = [];
+    const sidebarItems: string[] = [];
+
+    for (const blk of rawBlocks) {
+      const blkLines = blk.split('\n').map((l) => l.trim()).filter(Boolean);
+      const nonSidebarLines: string[] = [];
+      for (const ln of blkLines) {
+        if (ln.startsWith('> 📌') || ln.startsWith('> ')) {
+          sidebarItems.push(ln.replace(/^>\s*(?:📌\s*)?/, '').trim());
+        } else {
+          nonSidebarLines.push(ln);
+        }
+      }
+      if (nonSidebarLines.length > 0) {
+        mainBlocks.push(nonSidebarLines.join('\n'));
+      }
+    }
+
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {lines.map((line, lIdx) => {
-          const trimmed = line.trim();
-          if (!trimmed) return <div key={lIdx} style={{ height: 4 }} />;
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+        <style>{`
+          .tb-word-tok { transition: background 0.14s ease, box-shadow 0.14s ease; }
+          .tb-word-tok:hover { background: #e0f2fe; box-shadow: inset 0 -1.5px 0 #38bdf8; }
+        `}</style>
 
-          const isHeaderLine =
-            trimmed.startsWith('###') ||
-            /^(ΕΝΟΤΗΤΑ|ΚΕΦΑΛΑΙΟ|Unit\s+\d+|Lesson\s+\d+)/i.test(trimmed);
+        {mainBlocks.map((blk, bIdx) => {
+          const blkLines = blk.split('\n').map((l) => l.trim()).filter(Boolean);
+          if (blkLines.length === 0) return null;
 
-          const tokens = trimmed.split(WORD_SPLIT_RE);
+          // 1. Standalone writing line marker
+          if (blkLines.length === 1 && blkLines[0] === '[✏️ 纸质书作答横线]') {
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  background: '#f8fafc',
+                  border: '1px dashed #cbd5e1',
+                  color: '#94a3b8',
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                <span>✏️ 纸质书手写横线区</span>
+                <span style={{ flex: 1, borderBottom: '1px dotted #cbd5e1', height: 1 }} />
+              </div>
+            );
+          }
+
+          // 2. Table block (lines containing ' | ')
+          if (blkLines.every((l) => l.includes(' | ')) || (blkLines.length >= 2 && blkLines.filter((l) => l.includes(' | ')).length >= blkLines.length - 1 && blkLines[0].includes(' | '))) {
+            const rows = blkLines.map((l) =>
+              l
+                .replace(/^\|+|\|+$/g, '')
+                .split(/\s*\|\s*/)
+                .map((c) => c.trim())
+            );
+            const colCount = Math.max(...rows.map((r) => r.length), 1);
+            // Skip pure Markdown separator row `|---|---|`
+            const cleanRows = rows.filter((r) => !r.every((c) => /^[-:]+$/.test(c)));
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  overflowX: 'auto',
+                  borderRadius: 11,
+                  border: '1px solid #cbd5e1',
+                  background: '#ffffff',
+                }}
+              >
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14.5 }}>
+                  <tbody>
+                    {cleanRows.map((row, rIdx) => {
+                      const isHdr = rIdx === 0 && cleanRows.length > 1;
+                      return (
+                        <tr
+                          key={rIdx}
+                          style={{
+                            background: isHdr ? '#f1f5f9' : rIdx % 2 === 1 ? '#ffffff' : '#f8fafc',
+                            borderBottom: rIdx < cleanRows.length - 1 ? '1px solid #e2e8f0' : 'none',
+                          }}
+                        >
+                          {Array.from({ length: colCount }, (_, cIdx) => {
+                            const cellTxt = row[cIdx] || '';
+                            return (
+                              <td
+                                key={cIdx}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontWeight: isHdr ? 800 : 500,
+                                  color: isHdr ? '#1e3a8a' : '#1e293b',
+                                  borderRight: cIdx < colCount - 1 ? '1px solid #e2e8f0' : 'none',
+                                  lineHeight: 1.6,
+                                  verticalAlign: 'top',
+                                }}
+                              >
+                                {renderInlineInteractiveText(cellTxt, cellTxt, pageNo)}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
+
+          // 3. Heading block (`### ...` or `## ...`)
+          if (blkLines.length === 1 && /^#{2,4}\s+/.test(blkLines[0])) {
+            const hText = blkLines[0].replace(/^#{2,4}\s+/, '').trim();
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  marginTop: bIdx === 0 ? 0 : 4,
+                  padding: '8px 14px',
+                  borderLeft: '4px solid #2563eb',
+                  borderRadius: '0 10px 10px 0',
+                  background: 'linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%)',
+                  fontSize: 17,
+                  fontWeight: 900,
+                  color: '#1e3a8a',
+                  letterSpacing: '-0.01em',
+                  lineHeight: 1.45,
+                }}
+              >
+                {renderInlineInteractiveText(hText, hText, pageNo)}
+              </div>
+            );
+          }
+
+          // 4. Multi-line block -> Poem stanza / multi-line list
+          if (blkLines.length >= 2) {
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  padding: '8px 16px',
+                  borderLeft: '3px solid #93c5fd',
+                  borderRadius: '0 10px 10px 0',
+                  background: '#f8fafc',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 4,
+                }}
+              >
+                {blkLines.map((vLine, vIdx) => (
+                  <div
+                    key={vIdx}
+                    style={{
+                      fontSize: 15.5,
+                      color: '#1e293b',
+                      lineHeight: 1.75,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {renderInlineInteractiveText(vLine, vLine, pageNo)}
+                  </div>
+                ))}
+              </div>
+            );
+          }
+
+          // 5. Single-line block: detect Exercise item / Bullet / Speaker dialogue vs. Prose paragraph
+          const single = blkLines[0];
+
+          // 5a. Speaker dialogue (`κ. Άννα: ...`, `Σοφία: ...`, `Andrew: ...`)
+          const speakerMatch = single.match(/^([Α-ΩΆ-ΏA-Z][\wά-ώϊϋΐΰ.\s]{0,16}):\s+(.+)$/);
+          if (speakerMatch) {
+            const [, speaker, speech] = speakerMatch;
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 8,
+                  fontSize: 16,
+                  lineHeight: 1.85,
+                  color: '#1e293b',
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    background: '#fef3c7',
+                    color: '#92400e',
+                    fontWeight: 800,
+                    fontSize: 13.5,
+                    padding: '1px 9px',
+                    borderRadius: 7,
+                    border: '1px solid #fde68a',
+                  }}
+                >
+                  {speaker}
+                </span>
+                <div style={{ flex: 1 }}>{renderInlineInteractiveText(speech, single, pageNo)}</div>
+              </div>
+            );
+          }
+
+          // 5b. Exercise number or bullet (`1. ...`, `6 Με έναν...`, `• ...`, `◆ ...`, `— ...`)
+          const itemMatch = single.match(
+            /^([•◆▪❑❒▲▼❖☐✓➤—–]|(?:\d{1,2}[.)]|[α-ωΑ-Ωa-zA-Z][.)])|\d{1,2}(?=\s+[Α-ΩΆ-ΏA-Z«"“]))\s+(.+)$/
+          );
+          if (itemMatch) {
+            const [, marker, rest] = itemMatch;
+            const isNum = /^\d/.test(marker) || /^[α-ωΑ-Ωa-zA-Z][.)]$/.test(marker);
+            return (
+              <div
+                key={bIdx}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  fontSize: 15.8,
+                  lineHeight: 1.82,
+                  color: '#1e293b',
+                }}
+              >
+                <span
+                  style={{
+                    flexShrink: 0,
+                    marginTop: isNum ? 3 : 1,
+                    minWidth: isNum ? 26 : 20,
+                    height: isNum ? 24 : undefined,
+                    padding: isNum ? '0 7px' : '0 2px',
+                    borderRadius: 7,
+                    background: isNum ? '#e0f2fe' : 'transparent',
+                    color: isNum ? '#0369a1' : '#2563eb',
+                    fontWeight: 900,
+                    fontSize: isNum ? 13 : 15,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {marker}
+                </span>
+                <div style={{ flex: 1 }}>{renderInlineInteractiveText(rest, single, pageNo)}</div>
+              </div>
+            );
+          }
+
+          // 5c. Clean book-grade prose paragraph
+          const isCitationOrCaption =
+            /^(?:\d+\.\s+.+\(.+\)|.*εκδ\..*|\(.*διασκευή.*\))$/.test(single) && single.length < 140;
+
           return (
-            <div
-              key={lIdx}
+            <p
+              key={bIdx}
               style={{
-                fontSize: isHeaderLine ? 16 : 15.5,
-                fontWeight: isHeaderLine ? 800 : 500,
-                color: isHeaderLine ? '#1e3a8a' : '#1e293b',
-                lineHeight: 1.75,
+                margin: 0,
+                fontSize: isCitationOrCaption ? 13.5 : 16,
+                fontStyle: isCitationOrCaption ? 'italic' : 'normal',
+                fontWeight: 500,
+                color: isCitationOrCaption ? '#64748b' : '#1e293b',
+                lineHeight: 1.88,
+                letterSpacing: '0.01em',
                 wordBreak: 'break-word',
               }}
             >
-              {tokens.map((tok, tIdx) => {
-                if (!IS_CLICKABLE_WORD_RE.test(tok)) {
-                  return <React.Fragment key={tIdx}>{tok}</React.Fragment>;
-                }
-                const norm = normalizeGreekKey(tok);
-                const isCircled = norm && circledRawNormSet.has(norm);
-                const isRecorded = norm && recordedNormSet.has(norm);
-                const isSelected =
-                  selectedWordInfo?.word === tok.replace(/^[’']+|[’']+$/g, '') &&
-                  selectedWordInfo?.pageNo === pageNo;
-
-                return (
-                  <span
-                    key={tIdx}
-                    onClick={() => handleTapWord(tok, trimmed, pageNo)}
-                    title="点一下听发音、看本句意思与用法，可一键加入生词库"
-                    style={{
-                      cursor: 'pointer',
-                      padding: '1px 3px',
-                      margin: '0 0.5px',
-                      borderRadius: 5,
-                      transition: 'background 0.15s',
-                      background: isSelected
-                        ? '#fde047'
-                        : isCircled
-                          ? '#fef3c7'
-                          : isRecorded
-                            ? '#dcfce7'
-                            : 'transparent',
-                      borderBottom: isCircled
-                        ? '2px solid #f59e0b'
-                        : isRecorded
-                          ? '1.5px dashed #10b981'
-                          : '1px dotted rgba(100, 116, 139, 0.35)',
-                    }}
-                  >
-                    {tok}
-                  </span>
-                );
-              })}
-            </div>
+              {renderInlineInteractiveText(single, single, pageNo)}
+            </p>
           );
         })}
+
+        {/* Dedicated Margin Glossary / Notes Card at Bottom of Page */}
+        {sidebarItems.length > 0 && (
+          <div
+            style={{
+              marginTop: 4,
+              padding: '11px 14px',
+              borderRadius: 12,
+              background: '#fffbeb',
+              border: '1.5px solid #fde68a',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }}
+          >
+            <div style={{ fontSize: 12.5, fontWeight: 900, color: '#b45309', display: 'flex', alignItems: 'center', gap: 5 }}>
+              📌 页边小词典与旁注（同样可点词听读与入库）
+            </div>
+            {sidebarItems.map((sb, sIdx) => (
+              <div key={sIdx} style={{ fontSize: 14, color: '#451a03', lineHeight: 1.7 }}>
+                {renderInlineInteractiveText(sb, sb, pageNo)}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
@@ -1357,11 +1697,12 @@ export const InteractiveTextbookViewer: React.FC<InteractiveTextbookViewerProps>
             <div
               key={pNo}
               style={{
-                borderRadius: 14,
-                background: '#fffdf8',
+                borderRadius: 16,
+                background: '#fffefb',
                 border: '1px solid #e2e8f0',
-                padding: '14px 16px',
-                maxHeight: 420,
+                boxShadow: '0 2px 10px rgba(15, 23, 42, 0.03)',
+                padding: '18px 22px',
+                maxHeight: 560,
                 overflowY: 'auto',
               }}
             >

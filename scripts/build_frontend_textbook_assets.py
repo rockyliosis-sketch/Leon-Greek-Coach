@@ -49,6 +49,78 @@ def parse_dual_md_pages(md_path: str) -> dict:
     return pages
 
 
+def clean_and_reflow_tutor_page(body: str) -> str:
+    """Clean OCR blank-line splits before (verb) hints and reflow mid-sentence hard wraps in Tutor B / A2."""
+    # Strip Wingdings/PUA bullets in older Tutor MD into clean '• '
+    body = re.sub(r"[\ue000-\uf8ff]+", "• ", body)
+    body = body.replace("\xad", "")
+    # 1. Rejoin fill-in-the-blank `(τρώω)` that jumped onto a new line right after a missing blank
+    body = re.sub(
+        r"([^\n.!;?:»])\n\s*\(([\u0370-\u03FF\u1F00-\u1FFFά-ώϊϋΐΰΆ-ΏΪΫ\s/,.-]{1,45})\)",
+        r"\1 ______ (\2)",
+        body,
+    )
+    # 2. Collapse long runs of dots/underscores
+    body = re.sub(r"(?:[._…]\s*){6,}", " ______ ", body)
+
+    raw_lines = [l.rstrip() for l in body.split("\n")]
+    out = []
+    cur = ""
+
+    new_block_re = re.compile(
+        r"^(?:#{1,4}\s|\*\*|\||>\s|[•◆▪\-—–]\s|\d{1,2}[.)\s]\s*[Α-ΩΆ-ΏA-Z]|[α-ωΑ-Ωa-zA-Z][.)]\s|[Α-ΩΆ-ΏA-Z][\wά-ώϊϋΐΰ.\s]{0,16}:\s)"
+    )
+
+    for ln in raw_lines:
+        s = ln.strip()
+        if not s:
+            if cur:
+                out.append(cur)
+                cur = ""
+            if out and out[-1] != "":
+                out.append("")
+            continue
+
+        if s.startswith("#") or "|" in s:
+            if cur:
+                out.append(cur)
+                cur = ""
+            if out and out[-1] != "":
+                out.append("")
+            out.append(s)
+            out.append("")
+            continue
+
+        if not cur:
+            cur = s
+            continue
+
+        prev_done = bool(re.search(r"[.;!?:»”]$", cur))
+        if new_block_re.match(s) or prev_done:
+            out.append(cur)
+            out.append("")
+            cur = s
+        else:
+            if len(cur) >= 2 and cur[-1] in ("-", "‑") and s[:1].isalpha():
+                cur = f"{cur[:-1]}{s}" if s[:1].islower() else f"{cur}{s}"
+            else:
+                cur = f"{cur} {s}"
+
+    if cur:
+        out.append(cur)
+
+    cleaned = []
+    for l in out:
+        if l == "":
+            if cleaned and cleaned[-1] != "":
+                cleaned.append("")
+        else:
+            cleaned.append(re.sub(r"[ \t]{2,}", " ", l).strip())
+    while cleaned and cleaned[-1] == "":
+        cleaned.pop()
+    return "\n".join(cleaned)
+
+
 def parse_tutor_book_md_pages(md_path: str, pdf_to_book_offset: int = 1) -> dict:
     """Parse Tutor Book MD (## Page K) into printed book pages."""
     raw = open(md_path, encoding="utf-8", errors="replace").read()
@@ -63,6 +135,7 @@ def parse_tutor_book_md_pages(md_path: str, pdf_to_book_offset: int = 1) -> dict
             continue
         body = parts[i + 1].split("\n---\n")[0].strip()
         body = re.sub(r"^——\s*原书第\s*\d+\s*页\s*——\s*", "", body).strip()
+        body = clean_and_reflow_tutor_page(body)
         pages[str(book_p)] = body
     return pages
 
