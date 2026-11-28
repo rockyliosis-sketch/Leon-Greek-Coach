@@ -4,6 +4,18 @@
 
 ---
 
+## [2.33.0] - 2026-11-28
+
+> 完整专题档案见：`docs/v2.33.0_版本更新说明_2026-11-28.md`
+
+- **全站计时 100% 手动启停 + 跨设备云端事务同步 + iPad 锁屏「正在计时」通知条**：
+  - **取消所有自动开始计时**（`DailyMissionHall.tsx`）：进入三大区块不再自动启动/恢复计时，返回首页不再擅自改计时状态，按钮明确区分「开始计时 / 继续计时 / 暂停计时」。
+  - **MacBook ↔ iPad 跨设备原子同步与单活互斥**（`dbService.ts`、`dailyMissionHelpers.ts`、`GlobalTimerWidget.tsx`）：新增 Firestore 事务 `mutateMissionTimersAtomic`（仅原子更新 `daily_missions.<today>`）与 `freezeAllRunningTimers`（跨区块/背单词/旧笔记全局单活互斥），切回前台自动调用 `refreshSharedStateFromServer` 秒级对齐，杜绝旧缓存复活已暂停计时。
+  - **iPad 锁屏前台「正在计时」通知条**（新建 `lockScreenTimerBar.ts` + `GlobalTimerWidget.tsx`）：手动开启计时时通过极轻量静音保活音轨 + `MediaSession` 动态时间封面，在 iPad 锁屏与控制中心弹出「⏱️ 正在计时 · MM:SS」系统通知条并支持锁屏直接点暂停同步停掉云端计时；自动避让历史故事馆音频；MacBook 标签页标题同步显示实时计时。
+- **全套 18 册互动课本深度纠偏（修复 10 册 15 页 PDF 粘连与字符乱序）**：
+  - 同步还原 `materials/textbooks/*.md` 与 `frontend/public/textbooks/*.json` 中 7 册版权页（第 2 页）、7 册封底印刷声明、四年级英语练习册 P.26 正文段落及四年级语言 Α 册 P.33 粘连词；核实并保留四年级语言 Α 册 P.87 原书故意连字趣味练习题。
+- **点词精讲本地缓存升级至 v3 并自动清理遗留 v2 脏缓存**（`textbookService.ts`）：彻底清除旧版复读残留的 `localStorage` v2 词条。
+
 ## [2.32.1] - 2026-11-26
 
 > 完整专题档案见：`docs/v2.32.1_版本更新说明_2026-11-26.md`
