@@ -252,6 +252,76 @@ export function getLiveElapsedSec(
   return base + Math.min(delta, 14400);
 }
 
+export type TimerTargetKey =
+  | { kind: 'block'; id: string }
+  | { kind: 'vocab'; slot: 'morning' | 'afternoon' | 'night' }
+  | { kind: 'old_notes' };
+
+/**
+ * 全局单活互斥冻结：将当天记录中除 `except` 之外的所有正在运行计时器
+ * （三大区块、背单词早/中/晚、旧笔记复习）一次性精准结算并暂停。
+ * 确保 MacBook / iPad 跨设备任意切换任务时，同一时刻最多只有一个计时器在跑。
+ */
+export function freezeAllRunningTimers(
+  prev: DailyMissionRecord,
+  nowMs: number,
+  except?: TimerTargetKey
+): DailyMissionRecord {
+  let blocksChanged = false;
+  const nextBlocks = { ...(prev.blocks || {}) };
+  for (const [k, b] of Object.entries(nextBlocks)) {
+    if (!b || !b.runningSinceMs) continue;
+    if (except?.kind === 'block' && except.id === k) continue;
+    nextBlocks[k] = {
+      ...b,
+      elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, nowMs),
+      runningSinceMs: null,
+    };
+    blocksChanged = true;
+  }
+
+  let vocabChanged = false;
+  let nextVocabTimers = prev.vocabTimers;
+  if (prev.vocabTimers) {
+    const cloned = { ...prev.vocabTimers };
+    (['morning', 'afternoon', 'night'] as const).forEach((slot) => {
+      const s = cloned[slot];
+      if (!s || !s.runningSinceMs) return;
+      if (except?.kind === 'vocab' && except.slot === slot) return;
+      cloned[slot] = {
+        ...s,
+        elapsedSec: getLiveElapsedSec(s.elapsedSec, s.runningSinceMs, nowMs),
+        runningSinceMs: null,
+      };
+      vocabChanged = true;
+    });
+    if (vocabChanged) nextVocabTimers = cloned;
+  }
+
+  let oldNotesChanged = false;
+  let nextOldNotes = prev.oldNotesTimer;
+  if (prev.oldNotesTimer?.runningSinceMs && except?.kind !== 'old_notes') {
+    nextOldNotes = {
+      ...prev.oldNotesTimer,
+      elapsedSec: getLiveElapsedSec(
+        prev.oldNotesTimer.elapsedSec,
+        prev.oldNotesTimer.runningSinceMs,
+        nowMs
+      ),
+      runningSinceMs: null,
+    };
+    oldNotesChanged = true;
+  }
+
+  if (!blocksChanged && !vocabChanged && !oldNotesChanged) return prev;
+  return {
+    ...prev,
+    ...(blocksChanged ? { blocks: nextBlocks } : {}),
+    ...(vocabChanged ? { vocabTimers: nextVocabTimers } : {}),
+    ...(oldNotesChanged ? { oldNotesTimer: nextOldNotes } : {}),
+  };
+}
+
 export const CORE_DRILL_MODULES = [
   'matching',
   'spelling',

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftRight,
   ArrowUpRight,
+  Bell,
   Clock,
   Minimize2,
   Maximize2,
@@ -11,7 +12,8 @@ import {
 } from 'lucide-react';
 import {
   getInitialLocalState,
-  saveSharedState,
+  mutateMissionTimersAtomic,
+  refreshSharedStateFromServer,
   subscribeToSharedState,
   type DailyMissionBlockState,
   type DailyMissionRecord,
@@ -20,9 +22,17 @@ import {
 import {
   createDefaultMissionRecord,
   formatDurationMinSec,
+  freezeAllRunningTimers,
   getLiveElapsedSec,
   getTodayStr,
 } from '../lib/dailyMissionHelpers';
+import {
+  hasOtherMediaPlaying,
+  isLockScreenTimerBarActive,
+  primeLockScreenTimerBar,
+  stopLockScreenTimerBar,
+  syncLockScreenTimerBar,
+} from '../lib/lockScreenTimerBar';
 
 type ActiveTimerKind =
   | { kind: 'block'; id: string; label: string; elapsedSec: number; runningSinceMs?: number | null }
@@ -55,32 +65,47 @@ export const GlobalTimerWidget: React.FC = () => {
   const [dockSide, setDockSide] = useState<'right' | 'left'>('right');
   // Remember last interacted timer in this tab so if user pauses from widget it stays visible in Paused state
   const [lastInteractedKey, setLastInteractedKey] = useState<string | null>(null);
+  const [lockBarActive, setLockBarActive] = useState(false);
+  const lastServerSyncRef = useRef<number>(0);
+  const originalTitleRef = useRef<string>(typeof document !== 'undefined' ? document.title : 'Leon Greek Coach');
 
   useEffect(() => {
     const unsub = subscribeToSharedState((next) => setSharedState(next));
     return () => unsub();
   }, []);
 
-  // Watch Greek midnight rollover & wake from sleep
+  // Watch Greek midnight rollover, wake from sleep & cross-device foreground sync
   useEffect(() => {
-    const checkDate = () => {
+    const syncNow = (forceServer = false) => {
       const cur = getTodayStr();
       if (cur !== todayStr) {
         setTodayStr(cur);
         setLastInteractedKey(null);
       }
-      setNowMs(Date.now());
+      const now = Date.now();
+      setNowMs(now);
+      if (forceServer && now - lastServerSyncRef.current > 2000) {
+        lastServerSyncRef.current = now;
+        void refreshSharedStateFromServer();
+      }
     };
-    const id = window.setInterval(checkDate, 30_000);
+    const id = window.setInterval(() => syncNow(false), 30_000);
     const onVis = () => {
-      if (document.visibilityState === 'visible') checkDate();
+      if (document.visibilityState === 'visible') syncNow(true);
     };
+    const onFocus = () => syncNow(true);
+    const onOnline = () => syncNow(true);
+    const onPageShow = () => syncNow(true);
     document.addEventListener('visibilitychange', onVis);
-    window.addEventListener('focus', checkDate);
+    window.addEventListener('focus', onFocus);
+    window.addEventListener('online', onOnline);
+    window.addEventListener('pageshow', onPageShow);
     return () => {
       window.clearInterval(id);
       document.removeEventListener('visibilitychange', onVis);
-      window.removeEventListener('focus', checkDate);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('pageshow', onPageShow);
     };
   }, [todayStr]);
 
@@ -184,6 +209,61 @@ export const GlobalTimerWidget: React.FC = () => {
     return () => window.clearInterval(id);
   }, [isRunning, secondaryRunning]);
 
+  const pauseAllRunningAtomic = () => {
+    const now = Date.now();
+    setNowMs(now);
+    stopLockScreenTimerBar(true);
+    setLockBarActive(false);
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) =>
+      freezeAllRunningTimers(prev, serverNow)
+    );
+  };
+
+  // Sync browser tab title + iPad lock-screen MediaSession notification bar
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+      stopLockScreenTimerBar(true);
+      setLockBarActive(false);
+      return;
+    }
+    if (!primaryTimer || !isRunning) {
+      if (typeof document !== 'undefined' && document.title.startsWith('⏱ ')) {
+        document.title = originalTitleRef.current || 'Leon Greek Coach';
+      }
+      stopLockScreenTimerBar(true);
+      setLockBarActive(false);
+      return;
+    }
+
+    const timeText = formatDurationMinSec(
+      getLiveElapsedSec(primaryTimer.elapsedSec, primaryTimer.runningSinceMs, nowMs)
+    );
+    if (typeof document !== 'undefined') {
+      if (!document.title.startsWith('⏱ ')) {
+        originalTitleRef.current = document.title;
+      }
+      document.title = `⏱ ${timeText} · ${primaryTimer.label}`;
+    }
+
+    syncLockScreenTimerBar({
+      running: true,
+      label: primaryTimer.label,
+      timeText,
+      onPause: pauseAllRunningAtomic,
+    });
+    setLockBarActive(isLockScreenTimerBarActive());
+  }, [isRunning, primaryTimer, nowMs, location.pathname, todayStr]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopLockScreenTimerBar(true);
+      if (typeof document !== 'undefined' && document.title.startsWith('⏱ ')) {
+        document.title = originalTitleRef.current || 'Leon Greek Coach';
+      }
+    };
+  }, []);
+
   // Hide on admin pages or when there is no active/paused timer at all
   if (location.pathname.startsWith('/admin') || !primaryTimer) {
     return null;
@@ -198,105 +278,90 @@ export const GlobalTimerWidget: React.FC = () => {
     ? getLiveElapsedSec(secondaryRunning.elapsedSec, secondaryRunning.runningSinceMs, nowMs)
     : 0;
 
-  const updateMission = (updater: (prev: DailyMissionRecord) => DailyMissionRecord) => {
-    const latest = sharedStateRef.current;
-    const prevRec = latest.daily_missions?.[todayStr] || createDefaultMissionRecord(todayStr);
-    const nextRec = updater(prevRec);
-    const nextAll = {
-      ...(latest.daily_missions || {}),
-      [todayStr]: nextRec,
-    };
-    const nextState: SharedState = { ...latest, daily_missions: nextAll };
-    sharedStateRef.current = nextState;
-    setSharedState(nextState);
-    saveSharedState({ daily_missions: nextAll });
-  };
-
   const handleTogglePrimary = () => {
     const now = Date.now();
     setNowMs(now);
+    const willStart = !primaryTimer.runningSinceMs;
+
+    // 必须在点击手势同步调用栈内解锁 iPad 锁屏通知条
+    if (willStart) {
+      primeLockScreenTimerBar();
+      setLockBarActive(true);
+    } else {
+      stopLockScreenTimerBar(true);
+      setLockBarActive(false);
+    }
 
     if (primaryTimer.kind === 'block') {
       const blockId = primaryTimer.id;
       setLastInteractedKey(`block:${blockId}`);
-      updateMission((prev) => {
-        const nextBlocks: Record<string, DailyMissionBlockState> = { ...(prev.blocks || {}) };
-        const cur = nextBlocks[blockId];
+      void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
+        const cur = prev.blocks?.[blockId];
         if (!cur) return prev;
         if (cur.runningSinceMs) {
-          nextBlocks[blockId] = {
-            ...cur,
-            elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
-            runningSinceMs: null,
-          };
-        } else {
-          Object.keys(nextBlocks).forEach((k) => {
-            const b = nextBlocks[k];
-            if (k !== blockId && b?.runningSinceMs) {
-              nextBlocks[k] = {
-                ...b,
-                elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, now),
-                runningSinceMs: null,
-              };
-            }
-          });
-          nextBlocks[blockId] = {
-            ...cur,
-            status: cur.status === 'idle' ? 'in_progress' : cur.status,
-            runningSinceMs: now,
-          };
+          return freezeAllRunningTimers(prev, serverNow);
         }
-        return { ...prev, blocks: nextBlocks };
+        const frozen = freezeAllRunningTimers(prev, serverNow);
+        const nextBlocks: Record<string, DailyMissionBlockState> = { ...(frozen.blocks || {}) };
+        const latestCur = nextBlocks[blockId] || cur;
+        nextBlocks[blockId] = {
+          ...latestCur,
+          status: latestCur.status === 'idle' ? 'in_progress' : latestCur.status,
+          runningSinceMs: serverNow,
+        };
+        return { ...frozen, blocks: nextBlocks };
       });
     } else if (primaryTimer.kind === 'vocab') {
       const slot = primaryTimer.slot;
       setLastInteractedKey(`vocab:${slot}`);
-      updateMission((prev) => {
+      void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
         const prevTimers = prev.vocabTimers || {
           morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
           afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
           night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.night) },
         };
         const cur = prevTimers[slot];
-        const nextTimers = { ...prevTimers };
-        if (cur.runningSinceMs) {
-          nextTimers[slot] = {
-            ...cur,
-            elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
-            runningSinceMs: null,
-          };
-        } else {
-          (['morning', 'afternoon', 'night'] as const).forEach((k) => {
-            const s = nextTimers[k];
-            if (k !== slot && s?.runningSinceMs) {
-              nextTimers[k] = {
-                ...s,
-                elapsedSec: getLiveElapsedSec(s.elapsedSec, s.runningSinceMs, now),
-                runningSinceMs: null,
-              };
-            }
-          });
-          nextTimers[slot] = { ...cur, runningSinceMs: now };
+        if (cur?.runningSinceMs) {
+          return freezeAllRunningTimers(prev, serverNow);
         }
-        return { ...prev, vocabTimers: nextTimers };
+        const frozen = freezeAllRunningTimers(prev, serverNow);
+        const baseTimers = frozen.vocabTimers || prevTimers;
+        return {
+          ...frozen,
+          vocabTimers: {
+            ...baseTimers,
+            [slot]: { ...baseTimers[slot], runningSinceMs: serverNow },
+          },
+        };
       });
     } else {
       setLastInteractedKey('old_notes');
-      updateMission((prev) => {
+      void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
         const cur = prev.oldNotesTimer || { elapsedSec: 0, runningSinceMs: null };
         if (cur.runningSinceMs) {
-          return {
-            ...prev,
-            oldNotesTimer: {
-              elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
-              runningSinceMs: null,
-            },
-          };
+          return freezeAllRunningTimers(prev, serverNow);
         }
+        const frozen = freezeAllRunningTimers(prev, serverNow);
         return {
-          ...prev,
-          oldNotesTimer: { elapsedSec: cur.elapsedSec || 0, runningSinceMs: now },
+          ...frozen,
+          oldNotesTimer: {
+            elapsedSec: frozen.oldNotesTimer?.elapsedSec || 0,
+            runningSinceMs: serverNow,
+          },
         };
+      });
+    }
+  };
+
+  const handleEnableLockScreenBar = () => {
+    const ok = primeLockScreenTimerBar();
+    setLockBarActive(ok);
+    if (primaryTimer && isRunning) {
+      syncLockScreenTimerBar({
+        running: true,
+        label: primaryTimer.label,
+        timeText: formatDurationMinSec(liveSec),
+        onPause: pauseAllRunningAtomic,
       });
     }
   };
@@ -525,6 +590,52 @@ export const GlobalTimerWidget: React.FC = () => {
             <span>同时计时：{secondaryRunning.label}</span>
             <span>{formatDurationMinSec(secondaryLiveSec)}</span>
           </div>
+        )}
+
+        {/* iPad / 锁屏通知条状态与一键挂起 */}
+        {isRunning && !hasOtherMediaPlaying() && (
+          lockBarActive ? (
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#86efac',
+                background: 'rgba(34, 197, 94, 0.14)',
+                border: '1px solid rgba(34, 197, 94, 0.28)',
+                padding: '5px 8px',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <Bell size={12} />
+              <span>锁屏计时通知条已开启（锁屏可直接暂停）</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEnableLockScreenBar}
+              style={{
+                width: '100%',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 5,
+                padding: '6px 10px',
+                borderRadius: 9,
+                border: '1px solid rgba(96, 165, 250, 0.45)',
+                background: 'rgba(37, 99, 235, 0.22)',
+                color: '#bfdbfe',
+                fontWeight: 700,
+                fontSize: 11.5,
+                cursor: 'pointer',
+              }}
+            >
+              <Bell size={12} />
+              在锁屏显示「正在计时」通知条
+            </button>
+          )
         )}
 
         {/* Quick jump back to Mission Hall when on /practice or /history */}

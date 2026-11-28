@@ -25,6 +25,7 @@ import {
   subscribeToSharedState,
   saveSharedState,
   getInitialLocalState,
+  mutateMissionTimersAtomic,
   type DailyBlockLogs,
   type DailyMissionBlockState,
   type DailyMissionRecord,
@@ -44,6 +45,7 @@ import {
   evaluateDailyXpRewards,
   formatDurationMinSec,
   formatElapsedHuman,
+  freezeAllRunningTimers,
   getDayMode,
   getLiveElapsedSec,
   getMondayDateStr,
@@ -62,6 +64,7 @@ import historyVocabIndexData from '../../data/history_vocab_index.json';
 import { QuickVocabRecorder } from '../../components/QuickVocabRecorder';
 import { DailyFlashcardModal, type VocabSlot } from '../../components/DailyFlashcardModal';
 import { DailyStudyReport } from '../../components/DailyStudyReport';
+import { primeLockScreenTimerBar, stopLockScreenTimerBar } from '../../lib/lockScreenTimerBar';
 import { LevelRulesModal } from '../../components/LevelRulesModal';
 import { InteractiveTextbookViewer } from '../../components/InteractiveTextbookViewer';
 import { G3GlossaChallengePanel } from '../../components/G3GlossaChallengePanel';
@@ -864,50 +867,47 @@ const DailyMissionHall: React.FC = () => {
   const handleToggleVocabTimer = (slot: 'morning' | 'afternoon' | 'night') => {
     const now = Date.now();
     setNowMs(now);
-    updateTodayMission((prev) => {
+    const currentlyRunning = Boolean(todayMission.vocabTimers?.[slot]?.runningSinceMs);
+    if (!currentlyRunning) {
+      primeLockScreenTimerBar();
+    } else {
+      stopLockScreenTimerBar(true);
+    }
+
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
       const prevTimers = prev.vocabTimers || {
         morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
         afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
         night: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.night) },
       };
       const curSlot = prevTimers[slot] || { elapsedSec: 0, runningSinceMs: null, completed: false };
-      const isCurrentlyRunning = Boolean(curSlot.runningSinceMs);
-
-      const nextTimers = { ...prevTimers };
-      // Freeze any other running vocab slot first so only 1 vocab timer runs at a time
-      (['morning', 'afternoon', 'night'] as const).forEach((k) => {
-        const s = nextTimers[k] || { elapsedSec: 0, runningSinceMs: null, completed: false };
-        if (s.runningSinceMs && k !== slot) {
-          nextTimers[k] = {
-            ...s,
-            elapsedSec: getLiveElapsedSec(s.elapsedSec, s.runningSinceMs, now),
-            runningSinceMs: null,
-          };
-        }
-      });
-
-      if (isCurrentlyRunning) {
-        // Pause & freeze exact accumulated seconds
-        nextTimers[slot] = {
-          ...curSlot,
-          elapsedSec: getLiveElapsedSec(curSlot.elapsedSec, curSlot.runningSinceMs, now),
-          runningSinceMs: null,
-        };
-      } else {
-        // Start / Resume from exact accumulated seconds
-        nextTimers[slot] = {
-          ...curSlot,
-          runningSinceMs: now,
-        };
+      if (curSlot.runningSinceMs) {
+        return freezeAllRunningTimers(prev, serverNow);
       }
-      return { ...prev, vocabTimers: nextTimers };
+      // 先全局单活冻结云端其他所有正在跑的计时器（含区块一/二/三、其他背单词段、旧笔记），再启动本段
+      const frozen = freezeAllRunningTimers(prev, serverNow);
+      const baseTimers = frozen.vocabTimers || prevTimers;
+      const latestSlot = baseTimers[slot] || curSlot;
+      return {
+        ...frozen,
+        vocabTimers: {
+          ...baseTimers,
+          [slot]: {
+            ...latestSlot,
+            runningSinceMs: serverNow,
+          },
+        },
+      };
     });
   };
 
   const handleFinishVocabSlot = (slot: 'morning' | 'afternoon' | 'night') => {
     const now = Date.now();
     setNowMs(now);
-    updateTodayMission((prev) => {
+    if (todayMission.vocabTimers?.[slot]?.runningSinceMs) {
+      stopLockScreenTimerBar(true);
+    }
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
       const prevTimers = prev.vocabTimers || {
         morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
         afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
@@ -923,7 +923,7 @@ const DailyMissionHall: React.FC = () => {
         vocabTimers: {
           ...prevTimers,
           [slot]: {
-            elapsedSec: getLiveElapsedSec(curSlot.elapsedSec, curSlot.runningSinceMs, now),
+            elapsedSec: getLiveElapsedSec(curSlot.elapsedSec, curSlot.runningSinceMs, serverNow),
             runningSinceMs: null,
             completed: true,
           },
@@ -956,53 +956,24 @@ const DailyMissionHall: React.FC = () => {
   };
 
   const openBlockWizard = (block: MissionBlockDef) => {
-    const now = Date.now();
-    setNowMs(now);
+    setNowMs(Date.now());
     setActiveWizardBlock(block.id);
     setEarlyFinishMsg(null);
-
-    updateTodayMission((prev) => {
-      const nextBlocks: Record<string, DailyMissionBlockState> = { ...(prev.blocks || {}) };
-      // 先冻结其他正在计时的区块，避免两个区块同时计时
-      Object.keys(nextBlocks).forEach((k) => {
-        const b = nextBlocks[k];
-        if (k !== block.id && b?.runningSinceMs) {
-          nextBlocks[k] = {
-            ...b,
-            elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, now),
-            runningSinceMs: null,
-          };
-        }
-      });
-
-      const existing = nextBlocks[block.id];
-      if (!existing || existing.status === 'idle') {
-        nextBlocks[block.id] = {
-          status: 'in_progress',
-          currentStep: 0,
-          elapsedSec: existing?.elapsedSec || 0,
-          runningSinceMs: now,
-          extraMinutes: existing?.extraMinutes || 0,
-          subject: existing?.subject,
-        };
-      } else if (existing.status !== 'done' && !existing.runningSinceMs) {
-        // 已在进行中但此前暂停了：恢复计时，保留全部已用秒数
-        nextBlocks[block.id] = {
-          ...existing,
-          runningSinceMs: now,
-        };
-      }
-      // 如果已在计时（existing.runningSinceMs != null）或已通关（done），保持原样不动！
-      return { ...prev, blocks: nextBlocks };
-    });
+    // 所有计时必须由用户手动点击「开始计时 / 暂停」，进入区块不再自动开启计时，也不擅自改动其他计时器状态
   };
 
   const handleToggleBlockTimer = (blockId: string) => {
     const now = Date.now();
     setNowMs(now);
-    updateTodayMission((prev) => {
-      const nextBlocks: Record<string, DailyMissionBlockState> = { ...(prev.blocks || {}) };
-      const cur = nextBlocks[blockId] || {
+    const currentlyRunning = Boolean(todayMission.blocks?.[blockId]?.runningSinceMs);
+    if (!currentlyRunning) {
+      primeLockScreenTimerBar();
+    } else {
+      stopLockScreenTimerBar(true);
+    }
+
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
+      const cur = prev.blocks?.[blockId] || {
         status: 'in_progress' as const,
         currentStep: 0,
         elapsedSec: 0,
@@ -1010,31 +981,18 @@ const DailyMissionHall: React.FC = () => {
         extraMinutes: 0,
       };
       if (cur.runningSinceMs) {
-        // 暂停：精准冻结累计秒数
-        nextBlocks[blockId] = {
-          ...cur,
-          elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
-          runningSinceMs: null,
-        };
-      } else {
-        // 恢复/开始：先暂停其他区块，再从当前累计秒数无缝续计
-        Object.keys(nextBlocks).forEach((k) => {
-          const b = nextBlocks[k];
-          if (k !== blockId && b?.runningSinceMs) {
-            nextBlocks[k] = {
-              ...b,
-              elapsedSec: getLiveElapsedSec(b.elapsedSec, b.runningSinceMs, now),
-              runningSinceMs: null,
-            };
-          }
-        });
-        nextBlocks[blockId] = {
-          ...cur,
-          status: cur.status === 'idle' ? 'in_progress' : cur.status,
-          runningSinceMs: now,
-        };
+        return freezeAllRunningTimers(prev, serverNow);
       }
-      return { ...prev, blocks: nextBlocks };
+      // 先全局单活冻结云端其他所有正在跑的计时器（含其他区块、背单词、旧笔记），再开启本区块
+      const frozen = freezeAllRunningTimers(prev, serverNow);
+      const nextBlocks: Record<string, DailyMissionBlockState> = { ...(frozen.blocks || {}) };
+      const latestCur = nextBlocks[blockId] || cur;
+      nextBlocks[blockId] = {
+        ...latestCur,
+        status: latestCur.status === 'idle' ? 'in_progress' : latestCur.status,
+        runningSinceMs: serverNow,
+      };
+      return { ...frozen, blocks: nextBlocks };
     });
   };
 
@@ -1063,22 +1021,24 @@ const DailyMissionHall: React.FC = () => {
   const handleToggleOldNotesTimer = () => {
     const now = Date.now();
     setNowMs(now);
-    updateTodayMission((prev) => {
+    const currentlyRunning = Boolean(todayMission.oldNotesTimer?.runningSinceMs);
+    if (!currentlyRunning) {
+      primeLockScreenTimerBar();
+    } else {
+      stopLockScreenTimerBar(true);
+    }
+
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
       const cur = prev.oldNotesTimer || { elapsedSec: 0, runningSinceMs: null };
       if (cur.runningSinceMs) {
-        return {
-          ...prev,
-          oldNotesTimer: {
-            elapsedSec: getLiveElapsedSec(cur.elapsedSec, cur.runningSinceMs, now),
-            runningSinceMs: null,
-          },
-        };
+        return freezeAllRunningTimers(prev, serverNow);
       }
+      const frozen = freezeAllRunningTimers(prev, serverNow);
       return {
-        ...prev,
+        ...frozen,
         oldNotesTimer: {
-          elapsedSec: cur.elapsedSec || 0,
-          runningSinceMs: now,
+          elapsedSec: frozen.oldNotesTimer?.elapsedSec || 0,
+          runningSinceMs: serverNow,
         },
       };
     });
@@ -1090,7 +1050,8 @@ const DailyMissionHall: React.FC = () => {
     if (live >= 30 && !window.confirm(`旧笔记复习已计时 ${formatElapsedHuman(live)}，确定要重置吗？`)) {
       return;
     }
-    updateTodayMission((prev) => ({
+    if (cur?.runningSinceMs) stopLockScreenTimerBar(true);
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev) => ({
       ...prev,
       oldNotesTimer: { elapsedSec: 0, runningSinceMs: null },
     }));
@@ -1100,7 +1061,8 @@ const DailyMissionHall: React.FC = () => {
     if (activeBlockId === blockId) {
       setEarlyFinishMsg(null);
     }
-    updateTodayMission((prev) => {
+    if (todayMission.blocks?.[blockId]?.runningSinceMs) stopLockScreenTimerBar(true);
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev) => {
       const nextBlocks = { ...(prev.blocks || {}) };
       delete nextBlocks[blockId];
       return {
@@ -1118,7 +1080,8 @@ const DailyMissionHall: React.FC = () => {
         ? `确定要重置「${label || slot}」吗？当前已累计 ${formatElapsedHuman(cur.elapsedSec)} 将被清空。`
         : `确定要重置「${label || slot}」的打卡状态吗？`;
     if (!window.confirm(msg)) return;
-    updateTodayMission((prev) => {
+    if (cur.runningSinceMs) stopLockScreenTimerBar(true);
+    void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev) => {
       const prevTimers = prev.vocabTimers || {
         morning: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.morning) },
         afternoon: { elapsedSec: 0, runningSinceMs: null, completed: Boolean(prev.vocabChecks?.afternoon) },
@@ -1139,40 +1102,7 @@ const DailyMissionHall: React.FC = () => {
   };
 
   const closeBlockWizard = () => {
-    const now = Date.now();
-    setNowMs(now);
-    if (activeBlockId) {
-      const blockToPause = activeBlockId;
-      updateTodayMission((prev) => {
-        const prevBlock = prev.blocks?.[blockToPause];
-        const nextOldNotes = prev.oldNotesTimer?.runningSinceMs
-          ? {
-              elapsedSec: getLiveElapsedSec(
-                prev.oldNotesTimer.elapsedSec,
-                prev.oldNotesTimer.runningSinceMs,
-                now
-              ),
-              runningSinceMs: null,
-            }
-          : prev.oldNotesTimer;
-
-        if (!prevBlock) {
-          return nextOldNotes !== prev.oldNotesTimer ? { ...prev, oldNotesTimer: nextOldNotes } : prev;
-        }
-        return {
-          ...prev,
-          oldNotesTimer: nextOldNotes,
-          blocks: {
-            ...(prev.blocks || {}),
-            [blockToPause]: {
-              ...prevBlock,
-              elapsedSec: getLiveElapsedSec(prevBlock.elapsedSec, prevBlock.runningSinceMs, now),
-              runningSinceMs: null,
-            },
-          },
-        };
-      });
-    }
+    // 仅返回首页，不擅自开启或暂停计时（所有计时由孩子手动启停，右下角悬浮条与首页顶栏随时可控）
     setActiveWizardBlock(null);
   };
 
@@ -1210,15 +1140,16 @@ const DailyMissionHall: React.FC = () => {
       const deficitSec = Math.max(0, targetSec - liveElapsed);
       const deficitMin = Math.floor(deficitSec / 60);
 
-      updateTodayMission((prev) => {
+      stopLockScreenTimerBar(true);
+      void mutateMissionTimersAtomic(todayStr, createDefaultMissionRecord, (prev, serverNow) => {
         const latestBlock = prev.blocks?.[activeBlock.id] || curState;
-        const latestElapsed = getLiveElapsedSec(latestBlock.elapsedSec, latestBlock.runningSinceMs, now);
+        const latestElapsed = getLiveElapsedSec(latestBlock.elapsedSec, latestBlock.runningSinceMs, serverNow);
         const nextOldNotes = prev.oldNotesTimer?.runningSinceMs
           ? {
               elapsedSec: getLiveElapsedSec(
                 prev.oldNotesTimer.elapsedSec,
                 prev.oldNotesTimer.runningSinceMs,
-                now
+                serverNow
               ),
               runningSinceMs: null,
             }
@@ -1478,7 +1409,13 @@ const DailyMissionHall: React.FC = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>
-                  {isOvertime ? '已超出计划（可点右侧延时）' : isBlockRunning ? '后台持续计时中（刷新/切页不丢）' : '已暂停（进度已自动保存）'}
+                  {isOvertime
+                    ? '已超出计划（可点右侧延时）'
+                    : isBlockRunning
+                      ? '正在计时 · 跨设备实时同步'
+                      : liveElapsedSec > 0
+                        ? '已暂停（进度已云端保存）'
+                        : '尚未开始计时 · 请点击右侧手动开启'}
                   {carrySec >= 60 ? ` · 含顺延 +${Math.floor(carrySec / 60)}分` : ''}
                   {blockExtraMinutes > 0 ? ` · 延时 +${blockExtraMinutes}分` : ''}
                   （已用 {formatElapsedHuman(liveElapsedSec)}）
@@ -1513,7 +1450,7 @@ const DailyMissionHall: React.FC = () => {
                 }}
               >
                 {isBlockRunning ? <Pause size={16} /> : <Play size={16} />}
-                {isBlockRunning ? '暂停' : '继续'}
+                {isBlockRunning ? '暂停计时' : liveElapsedSec > 0 ? '继续计时' : '开始计时'}
               </button>
               <button
                 type="button"

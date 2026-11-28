@@ -1,4 +1,4 @@
-import { doc, onSnapshot, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc, getDoc, updateDoc, runTransaction } from "firebase/firestore";
 import { db } from "./firebase";
 
 export interface DailyMissionBlockState {
@@ -553,5 +553,97 @@ export const saveSharedState = async (updates: Partial<SharedState>) => {
       }
     }
     console.error("Error updating Firestore:", err);
+  }
+};
+
+/**
+ * 主动向 Firestore 服务端拉取一次最新共享状态（用于 iPad 锁屏唤醒 / 切回前台时立即对齐跨设备计时状态）。
+ */
+export const refreshSharedStateFromServer = async (): Promise<SharedState | null> => {
+  const docRef = doc(db, "leon_greek_coach", "shared_state");
+  try {
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) return null;
+    const data = snapshot.data() as SharedState;
+    persistUpdatesToLocalStorage(data);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('leon-shared-state-updated'));
+    }
+    return {
+      ...getInitialLocalState(),
+      ...data,
+    };
+  } catch (err) {
+    console.warn("refreshSharedStateFromServer failed:", err);
+    return null;
+  }
+};
+
+/**
+ * 跨设备原子计时器更新（Firestore Transaction）：
+ * 每次在 MacBook / iPad 手动开启、暂停、完成或重置计时器时，直接在云端最新快照上计算并只更新
+ * `daily_missions.<dateStr>`，彻底杜绝某台设备刚从锁屏醒来拿旧缓存把另一台设备已暂停的计时复活。
+ * 离线或弱网时自动回退到本地乐观更新 + 局部字段 updateDoc。
+ */
+export const mutateMissionTimersAtomic = async (
+  dateStr: string,
+  createFallback: (d: string) => DailyMissionRecord,
+  mutator: (prev: DailyMissionRecord, nowMs: number) => DailyMissionRecord
+): Promise<DailyMissionRecord> => {
+  const nowMs = Date.now();
+
+  // 1. 先做本地乐观更新，保证点击秒响应
+  const localBefore = getInitialLocalState();
+  const localPrevRec = localBefore.daily_missions?.[dateStr] || createFallback(dateStr);
+  const optimisticRec = mutator(localPrevRec, nowMs);
+  const optimisticAll = {
+    ...(localBefore.daily_missions || {}),
+    [dateStr]: optimisticRec,
+  };
+  persistUpdatesToLocalStorage({ daily_missions: optimisticAll });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('leon-shared-state-updated'));
+  }
+
+  // 2. 在 Firestore 服务端最新快照上原子执行（防止跨设备旧状态覆盖）
+  const docRef = doc(db, "leon_greek_coach", "shared_state");
+  try {
+    const committedRec = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(docRef);
+      if (!snap.exists()) {
+        const fullState = { ...getInitialLocalState(), daily_missions: optimisticAll };
+        tx.set(docRef, fullState);
+        return optimisticRec;
+      }
+      const data = snap.data() as SharedState;
+      const serverMissions = (data.daily_missions || {}) as Record<string, DailyMissionRecord>;
+      const serverPrevRec = serverMissions[dateStr] || createFallback(dateStr);
+      const serverNextRec = mutator(serverPrevRec, Date.now());
+      tx.update(docRef, {
+        [`daily_missions.${dateStr}`]: serverNextRec,
+      });
+      return serverNextRec;
+    });
+
+    const latestLocal = getInitialLocalState();
+    const syncedAll = {
+      ...(latestLocal.daily_missions || {}),
+      [dateStr]: committedRec,
+    };
+    persistUpdatesToLocalStorage({ daily_missions: syncedAll });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('leon-shared-state-updated'));
+    }
+    return committedRec;
+  } catch (err) {
+    console.warn("mutateMissionTimersAtomic transaction fallback:", err);
+    try {
+      await updateDoc(docRef, {
+        [`daily_missions.${dateStr}`]: optimisticRec,
+      });
+    } catch (fallbackErr) {
+      console.error("mutateMissionTimersAtomic fallback updateDoc failed:", fallbackErr);
+    }
+    return optimisticRec;
   }
 };
